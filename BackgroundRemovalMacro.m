@@ -3,14 +3,15 @@
 % Description: Wrapper for background field removal (default using LBV)
 %   Flags:
 %       'method'        : background revomal method, 
-%                          'LBV', 'PDF', 'SHARP' and 'RESHARP' 
+%                          'LBV', 'PDF', 'SHARP', 'RESHARP', 'VSHARP, and
+%                          'iHARPERELLA'
 %       'refine'        : refine the RDF by 5th order polynomial fitting (all)
 %       'tol'           : error tolerance (LBV or PDF)
 %       'depth'         : multigrid level (LBV)
 %       'peel'          : thickness of the boundary layer to be peeled off
 %                         (LBV)
 %       'b0dir'         : B0 direction (PDF)
-%       'iteration'     : no. of maximum iteration for cgsolver (PDF)
+%       'iteration'     : no. of maximum iteration for cgsolver (PDF or iHARPERELLA)
 %       'CGsolver'      : true for default cgsolver; false for matlab pcg
 %                         solver (PDF)
 %       'noisestd'      : noise standard deviation on the field map (PDF)                         
@@ -43,6 +44,12 @@ if ~isempty(varargin)
                 case 'resharp'
                     [method, radius, alpha, refine] = parse_vararginRESHARP(varargin);
                     break
+                case 'vsharp'
+                    [method, refine] = parse_vararginVSHARP(varargin);
+                    break
+                case 'iharperella'
+                    [method, iteration, refine] = parse_vararginiHARPERELLA(varargin);
+                    break
             end
         end
     end
@@ -62,11 +69,15 @@ switch method
         RDF = LBV(bkgField, mask, matrixSize, voxelSize, tol,depth,peel);
     case 'PDF'
         RDF = PDF(bkgField, N_std, mask,matrixSize,voxelSize, B0_dir, ...
-            'tol', tol, 'iteration', iteration, 'CGsolver', CGdefault);
+            'tol', tol,'iteration', iteration,'CGsolver', CGdefault);
     case 'SHARP'
         RDF = SHARP(bkgField, mask, matrixSize, voxelSize, radius,threshold);
     case 'RESHARP'
         RDF = RESHARP(bkgField, mask, matrixSize, voxelSize, radius, alpha);
+    case 'VSHARP'
+        RDF = V_SHARP(bkgField, mask,'voxelsize',voxelSize);
+    case 'iHARPERELLA'
+        RDF = iHARPERELLA(bkgField, mask,'voxelsize',voxelSize,'niter',iteration);
 end
 
 %% If refine is needed, do it now
@@ -176,6 +187,35 @@ for kkvar = 1:length(arg)
     end
     if  strcmpi(arg{kkvar},'alpha')
         alpha = arg{kkvar+1};
+        continue
+    end
+    if strcmpi(arg{kkvar},'refine')
+        refine = arg{kkvar+1};
+        continue
+    end
+end
+end
+
+% RESHARP
+function [method, refine] = parse_vararginVSHARP(arg)
+method = 'VSHARP';
+refine = false;
+for kkvar = 1:length(arg)
+    if strcmpi(arg{kkvar},'refine')
+        refine = arg{kkvar+1};
+        continue
+    end
+end
+end
+
+% iHARPERELLA
+function [method, iteration, refine] = parse_vararginiHARPERELLA(arg)
+method = 'iHARPERELLA';
+iteration = 100;
+refine = false;
+for kkvar = 1:length(arg)
+    if strcmpi(arg{kkvar},'iteration')
+        iteration = arg{kkvar+1};
         continue
     end
     if strcmpi(arg{kkvar},'refine')
