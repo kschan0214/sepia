@@ -1,25 +1,58 @@
 %% RDF = BackgroundRemovalMacro(bkgField,mask,matrixSize,voxelSize,varargin)
 %
+% Usage: 
+%       RDF = BackgroundRemovalMacro(fieldMap,mask,matrixSize,voxelSize,...
+%               'method','LBV','refine',true,'tol',1e-4,'depth',4,'peel',2);
+%       RDF = BackgroundRemovalMacro(fieldMap,mask,matrixSize,voxelSize,...
+%               'method','RDF','refine',true,'tol',0.1,'b0dir',[0,0,1],...
+%               'iteration',100,'CGsolver',true,'noisestd',N_std);
+%       RDF = BackgroundRemovalMacro(fieldMap,mask,matrixSize,voxelSize,...
+%               'method','SHARP','refine',true,'radius',4,'threshold',0.03);
+%       RDF = BackgroundRemovalMacro(fieldMap,mask,matrixSize,voxelSize,...
+%               'method','RESHARP','refine',true,'radius',4,'threshold',0.01);
+%       RDF = BackgroundRemovalMacro(fieldMap,mask,matrixSize,voxelSize,...
+%               'method','VSHARP','refine',true); 
+%       RDF = BackgroundRemovalMacro(fieldMap,mask,matrixSize,voxelSize,...
+%               'method','iHARPERELLA','refine',true,'iteration',100);
+%
 % Description: Wrapper for background field removal (default using LBV)
 %   Flags:
 %       'method'        : background revomal method, 
 %                          'LBV', 'PDF', 'SHARP', 'RESHARP', 'VSHARP, and
 %                          'iHARPERELLA'
-%       'refine'        : refine the RDF by 5th order polynomial fitting (all)
-%       'tol'           : error tolerance (LBV or PDF)
-%       'depth'         : multigrid level (LBV)
+%       'refine'        : refine the RDF by 5th order polynomial fitting
+%
+%       LBV
+%       ----------------
+%       'tol'           : error tolerance
+%       'depth'         : multigrid level
 %       'peel'          : thickness of the boundary layer to be peeled off
-%                         (LBV)
-%       'b0dir'         : B0 direction (PDF)
-%       'iteration'     : no. of maximum iteration for cgsolver (PDF or iHARPERELLA)
+%
+%       PDF
+%       ----------------
+%       'tol'           : error tolerance
+%       'b0dir'         : B0 direction (e.g. [x,y,z])
+%       'iteration'     : no. of maximum iteration for cgsolver
 %       'CGsolver'      : true for default cgsolver; false for matlab pcg
-%                         solver (PDF)
-%       'noisestd'      : noise standard deviation on the field map (PDF)                         
+%                         solver
+%       'noisestd'      : noise standard deviation on the field map
+%
+%       SHARP
+%       ----------------
 %       'radius'        : radius of the spherical mean value operation
-%                         (SHARP or RESHARP)
 %       'threshold'     : threshold used in Truncated SVD (SHARP)
+%
+%       RESHARP
+%       ----------------
+%       'radius'        : radius of the spherical mean value operation
 %       'alpha'         : regularizaiton parameter used in Tikhonov
-%                         (RESHARP)
+%
+%       VSHARP
+%       ----------------
+%
+%       iHARPERELLA
+%       ----------------
+%       'iteration'     : no. of maximum iteration
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
@@ -36,7 +69,7 @@ if ~isempty(varargin)
                     [method, tol, depth, peel, refine] = parse_vararginLBV(varargin);
                     break
                 case 'pdf'
-                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(varargin);
+                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,varargin);
                     break
                 case 'sharp'
                     [method, radius, threshold, refine] = parse_vararginSHARP(varargin);
@@ -66,7 +99,7 @@ end
 %% background field removal
 switch method
     case 'LBV'
-        RDF = LBV(bkgField, mask, matrixSize, voxelSize, tol,depth,peel);
+        RDF = LBV(bkgField,mask,matrixSize,voxelSize,tol,depth,peel);
     case 'PDF'
         RDF = PDF(bkgField, N_std, mask,matrixSize,voxelSize, B0_dir, ...
             'tol', tol,'iteration', iteration,'CGsolver', CGdefault);
@@ -116,13 +149,13 @@ end
 end
 
 % PDF
-function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(arg)
+function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,arg)
 method = 'PDF';
 B0_dir = [0,0,1];
 tol = 0.1;
 iteration = 30;
 CGdefault = true;
-N_std = ones(size(bkgField))*1e-4;
+N_std = ones(matrixSize)*1e-4;
 refine = false;
 for kkvar = 1:length(arg)
     if strcmpi(arg{kkvar},'b0dir')
@@ -196,7 +229,7 @@ for kkvar = 1:length(arg)
 end
 end
 
-% RESHARP
+% VSHARP
 function [method, refine] = parse_vararginVSHARP(arg)
 method = 'VSHARP';
 refine = false;
