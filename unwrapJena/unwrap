@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+echo 'doing this'
+"~/Dropbox/MRI/Tools/swi/phase_unwrap/JenaUnwrapDONDERS.sh" "$@"
+echo 'done this'
