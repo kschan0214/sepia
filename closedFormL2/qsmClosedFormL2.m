@@ -1,11 +1,11 @@
-%% function chi = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin) 
+%% function [chi, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin) 
 %
 % Description: compute QSM based on closed-form solution
 % Ref        : Bilgic et al. JMRI 40:181-191(2014)
 %            : Bilgic et al. MRM 72:1444-1459(2014)
 %
 % Input
-% _____
+% -----
 %   localField      : local field perturbatios
 %   mask            : user-defined mask
 %   matrixSize      : image matrix size
@@ -16,7 +16,7 @@
 %                       L-curve (ref.2)
 % 
 % Ouput
-% _____
+% -----
 %   chi             : QSM
 %   lamdaOptimal    : optimal regularisation value based on L-curve
 % 
@@ -25,7 +25,8 @@
 % Date created: 24 March 2017
 % Date last modified: 28 June 2017
 %
-function [chi, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin) 
+function [chi, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin)
+DEBUG=false;
 %% Parsing varargin
 [lambda, optimise] = parse_vararginCFL2norm(varargin);
 
@@ -96,14 +97,16 @@ switch optimise
         % KC: optimal when the curvature is maximum
         [~, I] = sort(curvatureInterp,'descend');
         lambdaOptimal = lambdaCandidateInterp(I(1));
-
-        % KC: display L-curve and L-curve curvature and optimal lambda
-        figure;plot(normDataFidelity,normRegularisation,'bx-');title('L-curve');
-        xlabel('Data fidelity');ylabel('chi maps Gradient');
-        figure;plot(lambdaCandidateInterp,curvatureInterp,'ro-');title('Curvature of L-curve');
-        xlabel('Regularisation parameter');ylabel('Curvature');
+        
+        if DEBUG
+            % KC: display L-curve and L-curve curvature and optimal lambda
+            figure;plot(normDataFidelity,normRegularisation,'bx-');title('L-curve');
+            xlabel('Data fidelity');ylabel('chi maps Gradient');
+            figure;plot(lambdaCandidateInterp,curvatureInterp,'ro-');title('Curvature of L-curve');
+            xlabel('Regularisation parameter');ylabel('Curvature');
+            drawnow
+        end
         display(['Curvature of L-curve is maximal when lambda = ' num2str(lambdaOptimal)]);
-        drawnow
         
         % KC: apply closed-form solution to optimal lambda
         chi_cplx = ifftn(kernel .* kLocalField ./ (DtD + lambdaOptimal^2 * EtE));
