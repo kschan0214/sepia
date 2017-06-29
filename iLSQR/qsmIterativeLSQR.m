@@ -1,4 +1,4 @@
-%% function chi_L2iterative = qsmIterativeLSQR(imDataParameter)
+%% function [chi, lambdaOptimal] = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,varargin)
 %
 % Description: compute QSM based on iterative LSQR
 %
@@ -14,6 +14,8 @@
 %       'iteration' -   no. of maximum iteration for iLSQR
 %       'weight'    -   weighting of error computation
 %       'initGuess' -   initial guess for iLSQR
+%       'optimise'  -	self-define regularisation based on curvature of 
+%                       L-curve
 % 
 % Ouput
 % _____
@@ -24,14 +26,20 @@
 % Date created: 24 March 2017
 % Date last modified: 28 June 2017
 %
-function chi = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,varargin)
+function [chi, lambdaOptimal] = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,varargin)
+lambdaOptimal = [];
 %% Parsing varargin
-[lambda, tol, maxiter, wmap, initGuess] = parse_vararginiLSQR(matrixSize,varargin);
+[lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(matrixSize,varargin);
 
 % dipole kernel
 kernel = DipoleKernal(matrixSize,voxelSize);
 
 %% Core
+
+if optimise
+    [~, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,'optimise',optimise);
+    lambda = lambdaOptimal;
+end
 % defining gradient operators in k-space
 [k1,k2,k3] = ndgrid(-matrixSize(1)/2:matrixSize(1)/2-1, ...
                     -matrixSize(2)/2:matrixSize(2)/2-1, ...
@@ -72,7 +80,7 @@ chi = reshape( chi_L2iterative , params_in.dims ).*mask;
 end
 
 %% Parsing varargin
-function [lambda, tol, maxiter, wmap, initGuess] = parse_vararginiLSQR(matrixSize,arg)
+function [lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(matrixSize,arg)
 lambda = 1e-1;
 tol = 1e-3;
 maxiter = 50;
@@ -95,6 +103,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'initGuess')
             initGuess = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'optimise')
+            optimise = arg{kvar+1};
         end
     end
 end

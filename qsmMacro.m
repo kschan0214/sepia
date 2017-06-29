@@ -1,24 +1,54 @@
-%% [chi, lamdaOptimal] = qsmMacro(localField,mask,matrixSize,voxelSize,varargin)
+%% function [chi, lamdaOptimal] = qsmMacro(localField,mask,matrixSize,voxelSize,varargin)
+%
+% Usage: 
+%       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
+%               'method','TKD','threshold',0.15);
+%       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
+%               'method','ClosedFormL2','lambda',0.1,'optimise',false);
+%       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
+%               'method','iLSQR','lambda',0.1,'optimise',false,'tol',1e-3,..
+%               'iteration',100,'weight',wmap,'initGuess',initGuessmap);
+%       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
+%               'method','STISuiteiLSQR','threshold',0.01,'iteration',100,
+%               'tol_step1',0.01,'tol_step2',0.001,'b0dir',[0,0,1],'TE',1
+%               'fieldStrength',3,'padsize',[4,4,4]);
 %
 % Description: Wrapper for QSM (default using TKD)
 %   Flags:
 %       'method'        : QSM method, 
 %                          'TKD', 'ClosedFormL2', 'iLSQR' and
 %                          'STISuiteiLSQR'
-%       'threshold'     : threshold for TKD (TKD or STISuiteiLSQR)
-%       'lambda'        : regularisation value (ClosedFormL2 or iLSQR)
+%
+%       TKD
+%       ----------------
+%       'threshold'     : threshold for TKD
+%
+%       ClosedFormL2
+%       ----------------           
+%       'lambda'        : regularisation value
 %       'optimise'      : self-define regularisation based on curvature of 
-%                         L-curve (ClosedFormL2)
-%       'tol'           : error tolerance (iLSQR)
-%       'iteration' 	: no. of maximum iteration for iLSQR (iLSQR or STISuiteiLSQR)
-%       'weight'    	: weighting of error computation (iLSQR)
-%       'initGuess'     : initial guess for iLSQR (iLSQR)
-%       'tol_step1'     : error tolerance (STISuiteiLSQR)
-%       'tol_step2'     : error tolerance (STISuiteiLSQR)
-%       'b0dir'         : main magnetic field direction (STISuiteiLSQR)
-%       'TE'            : echo time (STISuiteiLSQR)
-%       'fieldStrength' : magntic field strength of the scanner (STISuiteiLSQR)
-%       'padsize'       : size for padarray to increase numerical accuracy (STISuiteiLSQR)
+%                         L-curve
+%
+%       iLSQR
+%       ----------------
+%       'lambda'        : regularisation value
+%       'tol'           : error tolerance
+%       'iteration' 	: no. of maximum iteration for iLSQR
+%       'weight'    	: weighting of error computation
+%       'initGuess'     : initial guess for iLSQR
+%       'optimise'      : self-define regularisation based on curvature of 
+%                         L-curve
+%
+%       STISuiteiLSQR
+%       ----------------
+%       'threshold'     : threshold for STISuiteiLSQR
+%       'iteration' 	: no. of maximum iteration for iLSQR
+%       'tol_step1'     : error tolerance
+%       'tol_step2'     : error tolerance
+%       'b0dir'         : main magnetic field direction
+%       'TE'            : echo time
+%       'fieldStrength' : magntic field strength of the scanner
+%       'padsize'       : size for padarray to increase numerical accuracy
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
@@ -39,7 +69,13 @@ if ~isempty(varargin)
                     [method, lambda, optimise] = parse_vararginCFL2(varargin);
                     break
                 case 'ilsqr'
-                    [method, lambda, tol, maxiter, wmap, initGuess] = parse_vararginiLSQR(varargin);
+                    [method, lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(varargin);
+                    if isempty(wmap)
+                        wmap = ones(matrixSize);
+                    end
+                    if isempty(initGuess)
+                        initGuess = zeros(matrixSize);
+                    end
                     break
                 case 'stisuiteilsqr'
                     [method, algoPara] = parse_vararginSTISuiteiLSQR(varargin);
@@ -65,7 +101,7 @@ switch method
     case 'iLSQR'
         chi = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,...
             'lambda',lambda,'tol',tol,'iteration',maxiter,'weight',wmap,...
-            'initGuess',initGuess);
+            'initGuess',initGuess,'optimise',optimise);
     case 'STISuiteiLSQR'
         chi = QSM_iLSQR(localField,mask,'params',algoPara);
 end
@@ -103,14 +139,14 @@ end
 end
 
 % iLSQR
-function [method, lambda, tol, maxiter, wmap, initGuess] = parse_vararginiLSQR(arg)
+function [method, lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(arg)
 method = 'iLSQR';
 lambda = 1e-1;
 tol = 1e-3;
 maxiter = 50;
-wmap = ones(matrixSize);
-initGuess = zeros(matrixSize);
-
+wmap = [];
+initGuess = [];
+optimise = false;
 for kvar = 1:length(arg)
     if strcmpi(arg{kvar},'lambda')
         lambda = arg{kvar+1};
@@ -132,6 +168,10 @@ for kvar = 1:length(arg)
         initGuess = arg{kvar+1};
         continue
     end
+    if  strcmpi(arg{kkvar},'optimise')
+        optimise = arg{kkvar+1};
+        continue
+    end
 end
 end
 
@@ -145,7 +185,7 @@ params.B0=3;
 params.tol_step1=0.01;
 params.tol_step2=0.001;
 params.Kthreshold=0.25;
-params.padsize=4;
+params.padsize=[4,4,4];
 
 for kvar = 1:length(arg)
     if strcmpi(arg{kvar},'b0dir')
