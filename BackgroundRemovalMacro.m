@@ -70,6 +70,9 @@ if ~isempty(varargin)
                     break
                 case 'pdf'
                     [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(varargin);
+                    if isempty(N_std)
+                        N_std = ones(matrixSize)*1e-4;
+                    end
                     break
                 case 'sharp'
                     [method, radius, threshold, refine] = parse_vararginSHARP(varargin);
@@ -94,10 +97,6 @@ else
     depth = 4
     peel = 1
     refine = false
-end
-
-if isempty(N_std)
-    N_std = ones(matrixSize)*1e-4;
 end
 
 %% background field removal
