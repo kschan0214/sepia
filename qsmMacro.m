@@ -6,11 +6,11 @@
 %       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
 %               'method','ClosedFormL2','lambda',0.1,'optimise',false);
 %       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
-%               'method','iLSQR','lambda',0.1,'optimise',false,'tol',1e-3,..
+%               'method','iLSQR','lambda',0.1,'optimise',false,'tol',1e-3,...
 %               'iteration',100,'weight',wmap,'initGuess',initGuessmap);
 %       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
-%               'method','STISuiteiLSQR','threshold',0.01,'iteration',100,
-%               'tol_step1',0.01,'tol_step2',0.001,'b0dir',[0,0,1],'TE',1
+%               'method','STISuiteiLSQR','threshold',0.01,'iteration',100,...
+%               'tol_step1',0.01,'tol_step2',0.001,'b0dir',[0,0,1],'TE',1,...
 %               'fieldStrength',3,'padsize',[4,4,4]);
 %
 % Description: Wrapper for QSM (default using TKD)
@@ -168,8 +168,8 @@ for kvar = 1:length(arg)
         initGuess = arg{kvar+1};
         continue
     end
-    if  strcmpi(arg{kkvar},'optimise')
-        optimise = arg{kkvar+1};
+    if  strcmpi(arg{kvar},'optimise')
+        optimise = arg{kvar+1};
         continue
     end
 end

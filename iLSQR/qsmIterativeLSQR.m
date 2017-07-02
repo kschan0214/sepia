@@ -29,13 +29,19 @@
 function [chi, lambdaOptimal] = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,varargin)
 lambdaOptimal = [];
 %% Parsing varargin
-[lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(matrixSize,varargin);
+[lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(varargin);
+
+if isempty(initGuess)
+    initGuess = zeros(matrixSize);
+end
+if isempty(wmap)
+    wmap = ones(matrixSize);
+end
 
 % dipole kernel
 kernel = DipoleKernal(matrixSize,voxelSize);
 
 %% Core
-
 if optimise
     [~, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,'optimise',optimise);
     lambda = lambdaOptimal;
@@ -80,12 +86,12 @@ chi = reshape( chi_L2iterative , params_in.dims ).*mask;
 end
 
 %% Parsing varargin
-function [lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(matrixSize,arg)
+function [lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(arg)
 lambda = 1e-1;
 tol = 1e-3;
 maxiter = 50;
-wmap = ones(matrixSize);
-initGuess = zeros(matrixSize);
+wmap = [];
+initGuess = [];
 
 if ~isempty(arg)
     for kvar = 1:length(arg)
