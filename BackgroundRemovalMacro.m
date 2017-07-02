@@ -69,7 +69,7 @@ if ~isempty(varargin)
                     [method, tol, depth, peel, refine] = parse_vararginLBV(varargin);
                     break
                 case 'pdf'
-                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,varargin);
+                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(varargin);
                     break
                 case 'sharp'
                     [method, radius, threshold, refine] = parse_vararginSHARP(varargin);
@@ -94,6 +94,10 @@ else
     depth = 4
     peel = 1
     refine = false
+end
+
+if isempty(N_std)
+    N_std = ones(matrixSize)*1e-4;
 end
 
 %% background field removal
@@ -149,13 +153,13 @@ end
 end
 
 % PDF
-function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,arg)
+function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(arg)
 method = 'PDF';
 B0_dir = [0,0,1];
 tol = 0.1;
 iteration = 30;
 CGdefault = true;
-N_std = ones(matrixSize)*1e-4;
+N_std = [];
 refine = false;
 for kkvar = 1:length(arg)
     if strcmpi(arg{kkvar},'b0dir')
