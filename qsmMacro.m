@@ -12,12 +12,18 @@
 %               'method','STISuiteiLSQR','threshold',0.01,'iteration',100,...
 %               'tol_step1',0.01,'tol_step2',0.001,'b0dir',[0,0,1],'TE',1,...
 %               'fieldStrength',3,'padsize',[4,4,4]);
+%       chi = qsmMacro(localField,mask,matrixSize,voxelSize,...
+%               'method','FANSI','tol',tol,'lambda',alpha1,'mu',mu1,'iteration',maxiter,'weight',wmap,...
+%               'tgv','nonlinear');
+%       chi = qsmMacro(totalField,mask,matrixSize,voxelSize,...
+%               'method','SSVSHARP','tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
+%               'vkernel',Kernel_Sizes);
 %
 % Description: Wrapper for QSM (default using TKD)
 %   Flags:
 %       'method'        : QSM method, 
-%                          'TKD', 'ClosedFormL2', 'iLSQR' and
-%                          'STISuiteiLSQR'
+%                          'TKD', 'ClosedFormL2', 'iLSQR', 'FANSI',
+%                          'ssvsharp', 'STISuiteiLSQR'
 %
 %       TKD
 %       ----------------
@@ -50,10 +56,20 @@
 %       'fieldStrength' : magntic field strength of the scanner
 %       'padsize'       : size for padarray to increase numerical accuracy
 %
+%       FANSI
+%       ----------------
+%       'lambda'        : user defined regularisation parameter for gradient L1 penalty
+%       'mu'            : user defined regularisation parameter for gradient consistency 
+%       'tol'           : tolerance for iteration
+%       'iteration'     : maximum number of iterations
+%       'weight'        : weighting of error computation
+%       'linear'        : linear TGV/TV, without this flag will be nonlinear
+%       'tv'            : Total variation constraints, without this flag will
+%
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified:
+% Date last modified: 15 July 2017
 %
 function [chi, lamdaOptimal] = qsmMacro(localField,mask,matrixSize,voxelSize,varargin)
 lamdaOptimal = [];
@@ -81,6 +97,10 @@ if ~isempty(varargin)
                     [method, algoPara] = parse_vararginSTISuiteiLSQR(varargin);
                     algoPara.voxelsize= voxelSize;
                     break
+                case 'fansi'
+                    [method,mu1,alpha1,tol,maxiter,wmap,isNonLinear,isTGV]=parse_vararginFANSI(varargin);
+                case 'ssvsharp'
+                    [method,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(varargin);
             end
         end
     end
@@ -104,6 +124,14 @@ switch method
             'initGuess',initGuess,'optimise',optimise);
     case 'STISuiteiLSQR'
         chi = QSM_iLSQR(localField,mask,'params',algoPara);
+    case 'FANSI'
+        chi = qsmFANSI(localField,mask,matrixSize,voxelSize,...
+          'tol',tol,'lambda',alpha1,'mu',mu1,'iteration',maxiter,'weight',wmap,...
+          isNonLinear,isTGV);
+    case 'SSVSHARP'
+        chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...
+            'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
+            'vkernel',Kernel_Sizes);
 end
 
 end
@@ -219,6 +247,83 @@ for kvar = 1:length(arg)
     if strcmpi(arg{kvar},'padsize')
         params.padsize = arg{kvar+1};
         continue
+    end
+end
+end
+
+% FANSI
+function [method,mu1,alpha1,tol,maxiter,wmap,isNonLinear,isTGV]=parse_vararginFANSI(arg)
+method = 'FANSI';
+alpha1 = 3e-5;
+mu1 = 5e-5;
+maxiter = 40;
+wmap = [];
+isNonLinear = [];
+isTGV = [];
+tol = 1;
+
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'lambda')
+            alpha1 = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'mu')
+            mu1 = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'tol')
+            tol = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'iteration')
+            maxiter = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'weight')
+            wmap = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'linear')
+            isNonLinear = 'linear';
+        end
+        if strcmpi(arg{kvar},'tv')
+            isTGV = 'tv';
+        end
+    end
+end
+end
+
+% SSVSHARP
+function [method,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+% function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+% B0 = 3;
+% TE = 1;             %second
+method = 'SSVSHARP';
+lambda = 2.9e-2;
+magn = [];
+maxiter = 30;
+tol = 1e-2;
+Kernel_Sizes = [];
+
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+%         if strcmpi(arg{kvar},'fieldStrength')
+%             B0 = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'te')
+%             TE = arg{kvar+1};
+%         end
+        if strcmpi(arg{kvar},'tol')
+            tol = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'iteration')
+            maxiter = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'magnitude')
+            magn = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'lambda')
+            lambda = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'vkernel')
+            Kernel_Sizes = arg{kvar+1};
+        end
     end
 end
 end

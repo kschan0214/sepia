@@ -31,18 +31,11 @@ DEBUG=false;
 [lambda, optimise] = parse_vararginCFL2norm(varargin);
 
 % dipole kernel
-kernel = DipoleKernal(matrixSize,voxelSize);
+kernel = DipoleKernel(matrixSize,voxelSize);
 
 %% core
 % defining gradient operators in k-space
-[k1,k2,k3] = ndgrid(-matrixSize(1)/2:matrixSize(1)/2-1, ...
-                    -matrixSize(2)/2:matrixSize(2)/2-1, ...
-                    -matrixSize(3)/2:matrixSize(3)/2-1);
-% KC: gradient terms in fourier space
-Ex = fftshift(1 - exp(2i*pi .* k1 / matrixSize(1)));
-Ey = fftshift(1 - exp(2i*pi .* k2 / matrixSize(2)));
-Ez = fftshift(1 - exp(2i*pi .* k3 / matrixSize(3)));
-EtE = abs(Ex).^2 + abs(Ey).^2 + abs(Ez).^2;
+[~,~,~,EtE] = GradientOperatorKspace(matrixSize);
 
 DtD = abs(kernel).^2;
 

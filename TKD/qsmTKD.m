@@ -26,7 +26,7 @@ function chi = qsmTKD(localField,mask,matrixSize,voxelSize,varargin)
 thre_tkd = parse_vararginTKD(varargin);
 %% Core
 % dipole kernel
-kernel = DipoleKernal(matrixSize,voxelSize);
+kernel = DipoleKernel(matrixSize,voxelSize);
 
 % initiate inverse kernel with zeros
 kernel_inv = zeros(matrixSize);

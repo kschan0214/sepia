@@ -39,7 +39,7 @@ if isempty(wmap)
 end
 
 % dipole kernel
-kernel = DipoleKernal(matrixSize,voxelSize);
+kernel = DipoleKernel(matrixSize,voxelSize);
 
 %% Core
 if optimise
@@ -47,13 +47,7 @@ if optimise
     lambda = lambdaOptimal;
 end
 % defining gradient operators in k-space
-[k1,k2,k3] = ndgrid(-matrixSize(1)/2:matrixSize(1)/2-1, ...
-                    -matrixSize(2)/2:matrixSize(2)/2-1, ...
-                    -matrixSize(3)/2:matrixSize(3)/2-1);
-% KC: gradient terms in fourier space
-Ex = fftshift(1 - exp(2i*pi .* k1 / matrixSize(1)));
-Ey = fftshift(1 - exp(2i*pi .* k2 / matrixSize(2)));
-Ez = fftshift(1 - exp(2i*pi .* k3 / matrixSize(3)));
+[Ex,Ey,Ez,~] = GradientOperatorKspace(matrixSize);
 
 % input parameters for lsqr optimization
 % optimization parameters
@@ -92,6 +86,7 @@ tol = 1e-3;
 maxiter = 50;
 wmap = [];
 initGuess = [];
+optimise = false;
 
 if ~isempty(arg)
     for kvar = 1:length(arg)
