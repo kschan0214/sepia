@@ -277,10 +277,10 @@ if ~isempty(arg)
             tmp = arg{kvar+1};
             radius = sort(tmp,'descend');
         end
-    end
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
+        if strcmpi(arg{kkvar},'refine')
+            refine = arg{kkvar+1};
+            continue
+        end
     end
 end
 end
