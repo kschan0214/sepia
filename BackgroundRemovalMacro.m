@@ -18,7 +18,7 @@
 % Description: Wrapper for background field removal (default using LBV)
 %   Flags:
 %       'method'        : background revomal method, 
-%                          'LBV', 'PDF', 'SHARP', 'RESHARP', 'VSHARP, and
+%                          'LBV', 'PDF', 'SHARP', 'RESHARP', 'VSHARPSTI, and
 %                          'iHARPERELLA'
 %       'refine'        : refine the RDF by 5th order polynomial fitting
 %
@@ -47,8 +47,12 @@
 %       'radius'        : radius of the spherical mean value operation
 %       'alpha'         : regularizaiton parameter used in Tikhonov
 %
-%       VSHARP
+%       VSHARPSTI 
 %       ----------------
+%
+%       VSHARPSTI 
+%       ----------------
+%       'radius'        : radius of sphere
 %
 %       iHARPERELLA
 %       ----------------
@@ -57,9 +61,9 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified:
+% Date last modified: 19 July 2017
 %
-function RDF = BackgroundRemovalMacro(bkgField,mask,matrixSize,voxelSize,varargin)
+function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)
@@ -69,10 +73,7 @@ if ~isempty(varargin)
                     [method, tol, depth, peel, refine] = parse_vararginLBV(varargin);
                     break
                 case 'pdf'
-                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(varargin);
-                    if isempty(N_std)
-                        N_std = ones(matrixSize)*1e-4;
-                    end
+                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,varargin);
                     break
                 case 'sharp'
                     [method, radius, threshold, refine] = parse_vararginSHARP(varargin);
@@ -80,12 +81,14 @@ if ~isempty(varargin)
                 case 'resharp'
                     [method, radius, alpha, refine] = parse_vararginRESHARP(varargin);
                     break
-                case 'vsharp'
-                    [method, refine] = parse_vararginVSHARP(varargin);
+                case 'vsharpsti'
+                    [method, refine] = parse_vararginVSHARPSTI(varargin);
                     break
                 case 'iharperella'
                     [method, iteration, refine] = parse_vararginiHARPERELLA(varargin);
                     break
+                case 'vsharp'
+                    [method, radius, refine] = parse_vararginVSHARP(varargin);
             end
         end
     end
@@ -102,18 +105,20 @@ end
 %% background field removal
 switch method
     case 'LBV'
-        RDF = LBV(bkgField,mask,matrixSize,voxelSize,tol,depth,peel);
+        RDF = LBV(totalField,mask,matrixSize,voxelSize,tol,depth,peel);
     case 'PDF'
-        RDF = PDF(bkgField, N_std, mask,matrixSize,voxelSize, B0_dir, ...
+        RDF = PDF(totalField, N_std, mask,matrixSize,voxelSize, B0_dir, ...
             'tol', tol,'iteration', iteration,'CGsolver', CGdefault);
     case 'SHARP'
-        RDF = SHARP(bkgField, mask, matrixSize, voxelSize, radius,threshold);
+        RDF = SHARP(totalField, mask, matrixSize, voxelSize, radius,threshold);
     case 'RESHARP'
-        RDF = RESHARP(bkgField, mask, matrixSize, voxelSize, radius, alpha);
-    case 'VSHARP'
-        RDF = V_SHARP(bkgField, mask,'voxelsize',voxelSize);
+        RDF = RESHARP(totalField, mask, matrixSize, voxelSize, radius, alpha);
+    case 'VSHARPSTI'
+        RDF = V_SHARP(totalField, mask,'voxelsize',double(voxelSize(:))');
     case 'iHARPERELLA'
-        RDF = iHARPERELLA(bkgField, mask,'voxelsize',voxelSize,'niter',iteration);
+        RDF = iHARPERELLA(totalField, mask,'voxelsize',voxelSize,'niter',iteration);
+    case 'VSHARP'
+        [RDF,mask] = BKGRemovalVSHARP(totalField,mask,voxelSize,'radius',radius);
 end
 
 %% If refine is needed, do it now
@@ -152,13 +157,13 @@ end
 end
 
 % PDF
-function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(arg)
+function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,arg)
 method = 'PDF';
 B0_dir = [0,0,1];
 tol = 0.1;
 iteration = 30;
 CGdefault = true;
-N_std = [];
+N_std = ones(matrixSize)*1e-4;
 refine = false;
 for kkvar = 1:length(arg)
     if strcmpi(arg{kkvar},'b0dir')
@@ -232,9 +237,9 @@ for kkvar = 1:length(arg)
 end
 end
 
-% VSHARP
-function [method, refine] = parse_vararginVSHARP(arg)
-method = 'VSHARP';
+% VSHARP STI
+function [method, refine] = parse_vararginVSHARPSTI(arg)
+method = 'VSHARPSTI';
 refine = false;
 for kkvar = 1:length(arg)
     if strcmpi(arg{kkvar},'refine')
@@ -253,6 +258,25 @@ for kkvar = 1:length(arg)
     if strcmpi(arg{kkvar},'iteration')
         iteration = arg{kkvar+1};
         continue
+    end
+    if strcmpi(arg{kkvar},'refine')
+        refine = arg{kkvar+1};
+        continue
+    end
+end
+end
+
+% VSHARP
+function [method, radius,refine] = parse_vararginVSHARP(arg)
+method = 'VSHARP';
+radius = [];
+refine = false;
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'radius')
+            tmp = arg{kvar+1};
+            radius = sort(tmp,'descend');
+        end
     end
     if strcmpi(arg{kkvar},'refine')
         refine = arg{kkvar+1};
