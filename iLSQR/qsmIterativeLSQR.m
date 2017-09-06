@@ -29,7 +29,7 @@
 function [chi, lambdaOptimal] = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,varargin)
 lambdaOptimal = [];
 %% Parsing varargin
-[lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(varargin);
+[lambda, tol, maxiter, wmap, initGuess, optimise] = parse_varargini_LSQR(varargin);
 
 if isempty(initGuess)
     initGuess = zeros(matrixSize);

@@ -39,6 +39,9 @@
 function chi = qsmFANSI(localField,mask,matrixSize,voxelSize,varargin)
 % parse input argument
 [mu1,alpha1,tol,maxiter,wmap,solver,constraint] = parse_varargin_FANSI(varargin);
+if isempty(wmap)
+    wmap = ones(matrixSize);
+end
 params = [];
 params.K = DipoleKernel(matrixSize,voxelSize);
 params.N = matrixSize;
