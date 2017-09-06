@@ -79,13 +79,16 @@ if ~isempty(varargin)
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
                 case 'tkd'
-                    [method, thre_tkd] = parse_vararginTKD(varargin);
+                    method = 'TKD';
+                    thre_tkd = parse_varargin_TKD(varargin);
                     break
                 case 'closedforml2'
-                    [method, lambda, optimise] = parse_vararginCFL2(varargin);
+                    method = 'CFL2';
+                    [lambda, optimise] = parse_varargin_CFL2norm(varargin);
                     break
                 case 'ilsqr'
-                    [method, lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(varargin);
+                    method = 'iLSQR';
+                    [lambda, tol, maxiter, wmap, initGuess, optimise] = parse_varargin_iLSQR(varargin);
                     if isempty(wmap)
                         wmap = ones(matrixSize);
                     end
@@ -94,18 +97,21 @@ if ~isempty(varargin)
                     end
                     break
                 case 'stisuiteilsqr'
-                    [method, algoPara] = parse_vararginSTISuiteiLSQR(varargin);
+                    method = 'STISuiteiLSQR';
+                    algoPara = parse_varargin_STISuiteiLSQR(varargin);
                     algoPara.voxelsize= voxelSize;
                     break
                 case 'fansi'
-                    [method,mu1,alpha1,tol,maxiter,wmap,isNonLinear,isTGV]=parse_vararginFANSI(varargin);
+                    method = 'FANSI';
+                    [mu1,alpha1,tol,maxiter,wmap,solver,constraint]=parse_varargin_FANSI(varargin);
                 case 'ssvsharp'
-                    [method,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(varargin);
+                    method = 'SSVSHARP';
+                    [lambda,magn,tol,maxiter,Kernel_Sizes]=parse_varargin_SSQSM(varargin);
             end
         end
     end
 else
-    % predefine paramater: if no varargin, use LBV
+    % predefine paramater: if no varargin, use TKD
     disp('No method selected. Using the default setting:');
     method = 'TKD'
     thre_tkd = 0.15
@@ -127,7 +133,7 @@ switch method
     case 'FANSI'
         chi = qsmFANSI(localField,mask,matrixSize,voxelSize,...
           'tol',tol,'lambda',alpha1,'mu',mu1,'iteration',maxiter,'weight',wmap,...
-          isNonLinear,isTGV);
+          solver,constraint);
     case 'SSVSHARP'
         chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...
             'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
@@ -138,192 +144,192 @@ end
 
 %% Parsing varargin
 % TKD
-function [method, thre_tkd] = parse_vararginTKD(arg)
-method = 'TKD';
-thre_tkd = 0.15;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'threshold')
-        thre_tkd = arg{kkvar+1};
-        continue
-    end
-end
-end
+% function [method, thre_tkd] = parse_vararginTKD(arg)
+% method = 'TKD';
+% thre_tkd = 0.15;
+% for kkvar = 1:length(arg)
+%     if strcmpi(arg{kkvar},'threshold')
+%         thre_tkd = arg{kkvar+1};
+%         continue
+%     end
+% end
+% end
 
-% Closed form solution L2norm
-function [method, lambda, optimise] = parse_vararginCFL2(arg)
-method = 'CFL2';
-lambda = 1e-1;
-optimise = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'lambda')
-        lambda = arg{kkvar+1};
-        continue
-    end
-    if  strcmpi(arg{kkvar},'optimise')
-        optimise = arg{kkvar+1};
-        continue
-    end
-end
-end
+% % Closed form solution L2norm
+% function [method, lambda, optimise] = parse_vararginCFL2(arg)
+% method = 'CFL2';
+% lambda = 1e-1;
+% optimise = false;
+% for kkvar = 1:length(arg)
+%     if strcmpi(arg{kkvar},'lambda')
+%         lambda = arg{kkvar+1};
+%         continue
+%     end
+%     if  strcmpi(arg{kkvar},'optimise')
+%         optimise = arg{kkvar+1};
+%         continue
+%     end
+% end
+% end
 
 % iLSQR
-function [method, lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(arg)
-method = 'iLSQR';
-lambda = 1e-1;
-tol = 1e-3;
-maxiter = 50;
-wmap = [];
-initGuess = [];
-optimise = false;
-for kvar = 1:length(arg)
-    if strcmpi(arg{kvar},'lambda')
-        lambda = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'tol')
-        tol = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'iteration')
-        maxiter = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'weight')
-        wmap = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'initGuess')
-        initGuess = arg{kvar+1};
-        continue
-    end
-    if  strcmpi(arg{kvar},'optimise')
-        optimise = arg{kvar+1};
-        continue
-    end
-end
-end
+% function [method, lambda, tol, maxiter, wmap, initGuess, optimise] = parse_vararginiLSQR(arg)
+% method = 'iLSQR';
+% lambda = 1e-1;
+% tol = 1e-3;
+% maxiter = 50;
+% wmap = [];
+% initGuess = [];
+% optimise = false;
+% for kvar = 1:length(arg)
+%     if strcmpi(arg{kvar},'lambda')
+%         lambda = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'tol')
+%         tol = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'iteration')
+%         maxiter = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'weight')
+%         wmap = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'initGuess')
+%         initGuess = arg{kvar+1};
+%         continue
+%     end
+%     if  strcmpi(arg{kvar},'optimise')
+%         optimise = arg{kvar+1};
+%         continue
+%     end
+% end
+% end
 
 % STI suite iLSQR
-function [method, params] = parse_vararginSTISuiteiLSQR(arg)
-method = 'STISuiteiLSQR';
-params.H=[0 0 1];
-params.niter=100;
-params.TE=1;
-params.B0=3;
-params.tol_step1=0.01;
-params.tol_step2=0.001;
-params.Kthreshold=0.25;
-params.padsize=[4,4,4];
-
-for kvar = 1:length(arg)
-    if strcmpi(arg{kvar},'b0dir')
-        params.H = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'tol_step1')
-        params.tol_step1 = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'tol_step2')
-        params.tol_step2 = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'iteration')
-        params.niter = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'TE')
-        params.TE = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'fieldStrength')
-        params.B0 = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'threshold')
-        params.Kthreshold = arg{kvar+1};
-        continue
-    end
-    if strcmpi(arg{kvar},'padsize')
-        params.padsize = arg{kvar+1};
-        continue
-    end
-end
-end
+% function [method, params] = parse_vararginSTISuiteiLSQR(arg)
+% method = 'STISuiteiLSQR';
+% params.H=[0 0 1];
+% params.niter=100;
+% params.TE=1;
+% params.B0=3;
+% params.tol_step1=0.01;
+% params.tol_step2=0.001;
+% params.Kthreshold=0.25;
+% params.padsize=[4,4,4];
+% 
+% for kvar = 1:length(arg)
+%     if strcmpi(arg{kvar},'b0dir')
+%         params.H = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'tol_step1')
+%         params.tol_step1 = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'tol_step2')
+%         params.tol_step2 = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'iteration')
+%         params.niter = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'TE')
+%         params.TE = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'fieldStrength')
+%         params.B0 = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'threshold')
+%         params.Kthreshold = arg{kvar+1};
+%         continue
+%     end
+%     if strcmpi(arg{kvar},'padsize')
+%         params.padsize = arg{kvar+1};
+%         continue
+%     end
+% end
+% end
 
 % FANSI
-function [method,mu1,alpha1,tol,maxiter,wmap,isNonLinear,isTGV]=parse_vararginFANSI(arg)
-method = 'FANSI';
-alpha1 = 3e-5;
-mu1 = 5e-5;
-maxiter = 40;
-wmap = [];
-isNonLinear = [];
-isTGV = [];
-tol = 1;
-
-if ~isempty(arg)
-    for kvar = 1:length(arg)
-        if strcmpi(arg{kvar},'lambda')
-            alpha1 = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'mu')
-            mu1 = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'tol')
-            tol = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'iteration')
-            maxiter = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'weight')
-            wmap = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'linear')
-            isNonLinear = 'linear';
-        end
-        if strcmpi(arg{kvar},'tv')
-            isTGV = 'tv';
-        end
-    end
-end
-end
+% function [method,mu1,alpha1,tol,maxiter,wmap,isNonLinear,isTGV]=parse_vararginFANSI(arg)
+% method = 'FANSI';
+% alpha1 = 3e-5;
+% mu1 = 5e-5;
+% maxiter = 40;
+% wmap = [];
+% isNonLinear = [];
+% isTGV = [];
+% tol = 1;
+% 
+% if ~isempty(arg)
+%     for kvar = 1:length(arg)
+%         if strcmpi(arg{kvar},'lambda')
+%             alpha1 = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'mu')
+%             mu1 = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'tol')
+%             tol = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'iteration')
+%             maxiter = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'weight')
+%             wmap = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'linear')
+%             isNonLinear = 'linear';
+%         end
+%         if strcmpi(arg{kvar},'tv')
+%             isTGV = 'tv';
+%         end
+%     end
+% end
+% end
 
 % SSVSHARP
-function [method,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
-% function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
-% B0 = 3;
-% TE = 1;             %second
-method = 'SSVSHARP';
-lambda = 2.9e-2;
-magn = [];
-maxiter = 30;
-tol = 1e-2;
-Kernel_Sizes = [];
-
-if ~isempty(arg)
-    for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'fieldStrength')
-%             B0 = arg{kvar+1};
+% function [method,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+% % function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+% % B0 = 3;
+% % TE = 1;             %second
+% method = 'SSVSHARP';
+% lambda = 2.9e-2;
+% magn = [];
+% maxiter = 30;
+% tol = 1e-2;
+% Kernel_Sizes = [];
+% 
+% if ~isempty(arg)
+%     for kvar = 1:length(arg)
+% %         if strcmpi(arg{kvar},'fieldStrength')
+% %             B0 = arg{kvar+1};
+% %         end
+% %         if strcmpi(arg{kvar},'te')
+% %             TE = arg{kvar+1};
+% %         end
+%         if strcmpi(arg{kvar},'tol')
+%             tol = arg{kvar+1};
 %         end
-%         if strcmpi(arg{kvar},'te')
-%             TE = arg{kvar+1};
+%         if strcmpi(arg{kvar},'iteration')
+%             maxiter = arg{kvar+1};
 %         end
-        if strcmpi(arg{kvar},'tol')
-            tol = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'iteration')
-            maxiter = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'magnitude')
-            magn = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'lambda')
-            lambda = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'vkernel')
-            Kernel_Sizes = arg{kvar+1};
-        end
-    end
-end
-end
+%         if strcmpi(arg{kvar},'magnitude')
+%             magn = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'lambda')
+%             lambda = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'vkernel')
+%             Kernel_Sizes = arg{kvar+1};
+%         end
+%     end
+% end
+% end

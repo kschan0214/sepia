@@ -23,12 +23,12 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 24 March 2017
-% Date last modified: 28 June 2017
+% Date last modified: 6 September 2017
 %
 function [chi, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin)
 DEBUG=false;
 %% Parsing varargin
-[lambda, optimise] = parse_vararginCFL2norm(varargin);
+[lambda, optimise] = parse_varargin_CFL2norm(varargin);
 
 % dipole kernel
 kernel = DipoleKernel(matrixSize,voxelSize);
@@ -117,18 +117,18 @@ function res = myDerivative(x,y)
     res = gradient(x)./gradient(y);
 end
 
-%% Parsing varargin
-function [lambda, optimise] = parse_vararginCFL2norm(arg)
-lambda = 1e-1;
-optimise = false;
-if ~isempty(arg)
-    for kvar = 1:length(arg)
-        if strcmpi(arg{kvar},'lambda')
-            lambda = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'optimise')
-            optimise = arg{kvar+1};
-        end
-    end
-end
-end
+% %% Parsing varargin
+% function [lambda, optimise] = parse_vararginCFL2norm(arg)
+% lambda = 1e-1;
+% optimise = false;
+% if ~isempty(arg)
+%     for kvar = 1:length(arg)
+%         if strcmpi(arg{kvar},'lambda')
+%             lambda = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'optimise')
+%             optimise = arg{kvar+1};
+%         end
+%     end
+% end
+% end

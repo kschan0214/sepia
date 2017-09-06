@@ -130,41 +130,41 @@ chi = real(ifftn(reshape(F_chi, matrixSize))) .* mask_sharp;
 end
 
 %% Parse input arguments
-function [lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
-% function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
-% B0 = 3;
-% TE = 1;             %second
-lambda = 2.9e-2;
-magn = [];
-maxiter = 30;
-tol = 1e-2;
-Kernel_Sizes = 11:-2:3;
-
-if ~isempty(arg)
-    for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'fieldStrength')
-%             B0 = arg{kvar+1};
+% function [lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+% % function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+% % B0 = 3;
+% % TE = 1;             %second
+% lambda = 2.9e-2;
+% magn = [];
+% maxiter = 30;
+% tol = 1e-2;
+% Kernel_Sizes = 11:-2:3;
+% 
+% if ~isempty(arg)
+%     for kvar = 1:length(arg)
+% %         if strcmpi(arg{kvar},'fieldStrength')
+% %             B0 = arg{kvar+1};
+% %         end
+% %         if strcmpi(arg{kvar},'te')
+% %             TE = arg{kvar+1};
+% %         end
+%         if strcmpi(arg{kvar},'tol')
+%             tol = arg{kvar+1};
 %         end
-%         if strcmpi(arg{kvar},'te')
-%             TE = arg{kvar+1};
+%         if strcmpi(arg{kvar},'iteration')
+%             maxiter = arg{kvar+1};
 %         end
-        if strcmpi(arg{kvar},'tol')
-            tol = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'iteration')
-            maxiter = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'magnitude')
-            magn = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'lambda')
-            lambda = arg{kvar+1};
-        end
-        if strcmpi(arg{kvar},'vkernel')
-            if ~isempty(arg{kvar+1})
-                Kernel_Sizes = arg{kvar+1};
-            end
-        end
-    end
-end
-end
+%         if strcmpi(arg{kvar},'magnitude')
+%             magn = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'lambda')
+%             lambda = arg{kvar+1};
+%         end
+%         if strcmpi(arg{kvar},'vkernel')
+%             if ~isempty(arg{kvar+1})
+%                 Kernel_Sizes = arg{kvar+1};
+%             end
+%         end
+%     end
+% end
+% end
