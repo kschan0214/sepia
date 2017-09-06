@@ -24,6 +24,10 @@
 function chi = qsmTKD(localField,mask,matrixSize,voxelSize,varargin)
 %% Parsing varargin
 thre_tkd = parse_varargin_TKD(varargin);
+
+% display message
+fprintf('Threshold for k-space division is %f \n',thre_tkd);
+
 %% Core
 % dipole kernel
 kernel = DipoleKernel(matrixSize,voxelSize);
@@ -36,16 +40,3 @@ kernel_inv( abs(kernel) > thre_tkd ) = 1 ./ kernel(abs(kernel) > thre_tkd);
 chi = real( ifftn( fftn(localField) .* kernel_inv ) ) .* mask;
 
 end
-
-% %% Parsing varargin
-% function thre_tkd = parse_vararginTKD(arg)
-% % predefine parameters
-% thre_tkd = 0.15;
-% if ~isempty(arg)
-%     for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'threshold')
-%             thre_tkd = arg{kvar+1};
-%         end
-%     end
-% end
-% end

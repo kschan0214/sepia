@@ -18,7 +18,7 @@
 %       'mu'        -	user defined regularisation parameter for gradient consistency 
 %       'tol'       - tolerance for iteration
 %       'iteration' - maximum number of iterations
-%       'weight'    - weighting of error computation
+%       'weight'    - weighting of error computation, values have to be <1
 %       'linear'    - linear solver
 %       'nonlinear' - nonlinear solver
 %       'tv'        - Total variation constraints
@@ -39,6 +39,14 @@
 function chi = qsmFANSI(localField,mask,matrixSize,voxelSize,varargin)
 % parse input argument
 [mu1,alpha1,tol,maxiter,wmap,solver,constraint] = parse_varargin_FANSI(varargin);
+
+% display message
+fprintf('Regularisation parameter for gradient L1: %f \n',alpha1);
+fprintf('Regularisation parameter for gradient consistency: %f \n',mu1);
+fprintf('Tolerance: %f \n',tol);
+fprintf('Maximum iterations: %i \n',maxiter);
+
+
 if isempty(wmap)
     wmap = ones(matrixSize);
 end
@@ -56,17 +64,23 @@ params.tol_update = tol;
 
 switch solver
     case 'linear'
+        disp('Solver: Linear');
         switch constraint
             case 'TV'
+                disp('Constraint: TV');
                 out = wTV(params);
             case 'TGV'
+                disp('Constraint: TGV');
                 out = wTGV(params);
         end
     case 'nonlinear'
+        disp('Solver: Non-linear');
         switch constraint
             case 'TV'
+                disp('Constraint: TV');
                 out = nlTV(params);
             case 'TGV'
+                disp('Constraint: TGV');
                 out = nlTGV(params);
         end
 end

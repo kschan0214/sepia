@@ -30,6 +30,14 @@ DEBUG=false;
 %% Parsing varargin
 [lambda, optimise] = parse_varargin_CFL2norm(varargin);
 
+% display message
+if ~optimise
+    disp('Self-defined regularisation parameter? No');
+    fprintf('Regularisation parameter: %f \n',lambda);
+else
+     disp('Self-defined regularisation parameter? Yes');   
+end
+
 % dipole kernel
 kernel = DipoleKernel(matrixSize,voxelSize);
 
@@ -116,19 +124,3 @@ end
 function res = myDerivative(x,y)
     res = gradient(x)./gradient(y);
 end
-
-% %% Parsing varargin
-% function [lambda, optimise] = parse_vararginCFL2norm(arg)
-% lambda = 1e-1;
-% optimise = false;
-% if ~isempty(arg)
-%     for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'lambda')
-%             lambda = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'optimise')
-%             optimise = arg{kvar+1};
-%         end
-%     end
-% end
-% end
