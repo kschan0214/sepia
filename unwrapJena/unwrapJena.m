@@ -1,6 +1,6 @@
 %% function unwrappedField = unwrapJena(wrappedField,mask,matrixSize)
 %
-% Description: phase unwrapping using Jena's library (Only works in the cluster)
+% Description: phase unwrapping using Jena's library (Only works in the DCCN cluster)
 %
 % Input
 % ----------------
@@ -17,7 +17,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified:
+% Date last modified: 8 September 2017
 %
 function unwrappedField = unwrapJena(wrappedField,mask,matrixSize)
 load_module_NIFTI;
@@ -29,7 +29,11 @@ temp.img = temp.img.*mask+(1-mask).*(rand(matrixSize(1:3))*2*pi-pi);
 temp.hdr.dime.datatype=16;
 temp.hdr.dime.bitpix=16;
 save_nii(temp,'temp.hdr');
+fn = mfilename('fullpath');
+[pathstr,~,~] = fileparts(fn);
+unix(['sh ' pathstr '/unwrap temp.hdr']);
 %     unix('sh  /home/rebelo/Documents/MATLAB/phase_unwrapping/test temp.hdr')
-unix('sh  /home/mrphys/kwocha/Tools/phase_unwrap/unwrapJena/unwrap temp.hdr')
-unwrappedField = load_nii('uwtemp.hdr');
+% unix('sh  /home/mrphys/kwocha/Tools/phase_unwrap/unwrapJena/unwrap temp.hdr')
+unwrappedField = load_nii_img_only('uwtemp.hdr');
+system('rm temp.hdr temp.img uwtemp.img qmtemp.img qmtemp.hdr temp.mat');
 end
