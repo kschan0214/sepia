@@ -4,25 +4,25 @@
 %   unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,...
 %                       'method','laplacian');
 %   unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,...
-%                       'method','regiongrowing','Magn',magn);
+%                       'method','rg','Magn',magn);
 %   unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,...
-%                       'method','graphcut','Magn',magn,'subsampling',2);
+%                       'method','gc','Magn',magn,'subsampling',2);
 %   unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,...
-%                       'method','graphcut','mask',mask);
+%                       'method','jena','mask',mask);
 %
 % Description: Wrapper for phase unwrapping (default using Laplacian)
 %   Flags:
 %       'method'        : phase unwrapping method, 
-%                          'Laplacian', 'RegionGrowing' and 'Graphcut' 
+%                          'Laplacian', 'rg' and 'gc' 
 %
 %       Laplacian
 %       ----------------
 %
-%       RegionGrowing
+%       rg (RegionGrowing)
 %       ----------------           
 %       'Magn'          : magnitude data
 %
-%       Graphcut
+%       gc (Graphcut)
 %       ----------------
 %       'Magn'          : magnitude data
 %       'subsampling'	: Downsampling factor for speed
@@ -34,7 +34,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified:
+% Date last modified: 8 September 2017
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,varargin)
 %% Parsing argument input flags
@@ -45,21 +45,27 @@ if ~isempty(varargin)
                 case 'laplacian'
                     method = 'Laplacian';
                     break
-                case 'regiongrowing'
-                    [method, magn] = parse_vararginRegionGrowing(varargin);
+                case 'rg'
+                    method = 'RegionGrowing';
+                    [magn] = parse_varargin_RegionGrowing(varargin);
                     if isempty(magn)
+                        disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
                     break
-                case 'graphcut'
-                    [method, magn, subsampling] = parse_vararginGraphcut(varargin);
+                case 'gc'
+                    method = 'Graphcut';
+                    [magn, subsampling] = parse_varargin_Graphcut(varargin);
                     if isempty(magn)
+                        disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
                     break
                 case 'jena'
-                    [method, mask] = parse_vararginJena(varargin);
+                    method = 'Jena';
+                    [mask] = parse_varargin_Jena(varargin);
                     if isempty(mask)
+                        disp('Running algorithm without brain mask could be problematic');
                         mask = ones(matrixSize);
                     end
                     break
@@ -68,10 +74,11 @@ if ~isempty(varargin)
     end
 else
     % predefine paramater: if no varargin, use Laplacian
-    disp('No method selected. Using the default setting:');
-    method = 'Laplacian'
+    disp('No method selected. Using default setting.');
+    method = 'Laplacian';
 end
 
+disp(['The following unwrapping method is being used: ' method]);
 %% phase unwrapping
 switch method
     case 'Laplacian'
@@ -81,49 +88,12 @@ switch method
     case 'Graphcut'
         unwrappedField = unwrapping_gc(wrappedField,magn,voxelSize,subsampling);
     case 'Jena'
-        unwrappedField = unwrapJena(wrappedField,mask,matrixSize);
+        try
+            unwrappedField = unwrapJena(wrappedField,mask,matrixSize);
+        catch
+            disp('The library cannot be run in this platform, running Laplacian unwrapping instead...');
+            unwrappedField = unwrapLaplacian(wrappedField,matrixSize,voxelSize);
+        end
 end
 
-end
-
-%% Parsing varargin
-% Region growing
-function [method, magn] = parse_vararginRegionGrowing(arg)
-method = 'RegionGrowing';
-magn = [];
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'Magn')
-        magn = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% Graphcut
-function [method, magn, subsampling] = parse_vararginGraphcut(arg)
-method = 'Graphcut';
-magn = [];
-subsampling = 1;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'Magn')
-        magn = arg{kkvar+1};
-        continue
-    end
-    if  strcmpi(arg{kkvar},'Subsampling')
-        subsampling = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% Jena
-function [method, mask] = parse_vararginJena(arg)
-method = 'Jena';
-mask = [];
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'mask')
-        mask = arg{kkvar+1};
-        continue
-    end
-end
 end
