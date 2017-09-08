@@ -20,7 +20,7 @@
 % Date last modified: 8 September 2017
 %
 function unwrappedField = unwrapJena(wrappedField,mask,matrixSize)
-load_module_NIFTI;
+load_module_NIfTI;
 
 temp = make_nii(single(wrappedField));
 %     temp.img=temp.img;
@@ -31,7 +31,7 @@ temp.hdr.dime.bitpix=16;
 save_nii(temp,'temp.hdr');
 fn = mfilename('fullpath');
 [pathstr,~,~] = fileparts(fn);
-unix(['sh ' pathstr '/unwrap temp.hdr']);
+unix([pathstr '/JenaUnwrapDONDERS.sh temp.hdr']);
 %     unix('sh  /home/rebelo/Documents/MATLAB/phase_unwrapping/test temp.hdr')
 % unix('sh  /home/mrphys/kwocha/Tools/phase_unwrap/unwrapJena/unwrap temp.hdr')
 unwrappedField = load_nii_img_only('uwtemp.hdr');
