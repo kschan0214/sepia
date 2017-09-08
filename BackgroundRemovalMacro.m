@@ -56,12 +56,12 @@
 %
 %       iHARPERELLA
 %       ----------------
-%       'iteration'     : no. of maximum iteration
+%       'iteration'     : no. of maximum iterations
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified: 19 July 2017
+% Date last modified: 8 September 2017
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
 %% Parsing argument input flags
@@ -70,45 +70,57 @@ if ~isempty(varargin)
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
                 case 'lbv'
-                    [method, tol, depth, peel, refine] = parse_vararginLBV(varargin);
+                    method = 'LBV';
+                    [tol, depth, peel, refine] = parse_varargin_LBV(varargin);
                     break
                 case 'pdf'
-                    [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,varargin);
+                    method = 'PDF';
+                    [B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_varargin_PDF(varargin);
+                    if isempty(N_std)
+                        N_std = ones(matrixSize)*1e-4;
+                    end
                     break
                 case 'sharp'
-                    [method, radius, threshold, refine] = parse_vararginSHARP(varargin);
+                    method = 'SHARP';
+                    [radius, threshold, refine] = parse_varargin_SHARP(varargin);
                     break
                 case 'resharp'
-                    [method, radius, alpha, refine] = parse_vararginRESHARP(varargin);
+                    method = 'RESHARP';
+                    [radius, alpha, refine] = parse_varargin_RESHARP(varargin);
                     break
                 case 'vsharpsti'
-                    [method, refine] = parse_vararginVSHARPSTI(varargin);
+                    method = 'VSHARPSTI';
+                    [refine] = parse_varargin_VSHARPSTI(varargin);
                     break
                 case 'iharperella'
-                    [method, iteration, refine] = parse_vararginiHARPERELLA(varargin);
+                    method = 'iHARPERELLA';
+                    [iteration, refine] = parse_varargin_iHARPERELLA(varargin);
                     break
                 case 'vsharp'
-                    [method, radius, refine] = parse_vararginVSHARP(varargin);
+                    method = 'VSHARP';
+                    [radius, refine] = parse_vararginVSHARP(varargin);
             end
         end
     end
 else
     % predefine paramater: if no varargin, use LBV
     disp('No method selected. Using the default setting:');
-    method = 'LBV'
-    tol = 1e-4
-    depth = 4
-    peel = 1
-    refine = false
+    method = 'LBV';
+    tol = 1e-4;
+    depth = 4;
+    peel = 1;
+    refine = false;
 end
+
+disp(['The following method is being used: ' method]);
 
 %% background field removal
 switch method
     case 'LBV'
         RDF = LBV(totalField,mask,matrixSize,voxelSize,tol,depth,peel);
     case 'PDF'
-        RDF = PDF(totalField, N_std, mask,matrixSize,voxelSize, B0_dir, ...
-            'tol', tol,'iteration', iteration,'CGsolver', CGdefault);
+        RDF = PDF(totalField,mask,matrixSize,voxelSize,'b0dir',B0_dir,...
+            'tol', tol,'iteration', iteration,'CGsolver', CGdefault,'noisestd',N_std);
     case 'SHARP'
         RDF = SHARP(totalField, mask, matrixSize, voxelSize, radius,threshold);
     case 'RESHARP'
@@ -118,7 +130,7 @@ switch method
     case 'iHARPERELLA'
         RDF = iHARPERELLA(totalField, mask,'voxelsize',voxelSize,'niter',iteration);
     case 'VSHARP'
-        [RDF,mask] = BKGRemovalVSHARP(totalField,mask,voxelSize,'radius',radius);
+        [RDF,~] = BKGRemovalVSHARP(totalField,mask,voxelSize,'radius',radius);
 end
 
 %% If refine is needed, do it now
@@ -126,161 +138,4 @@ if refine
      [~,RDF,~]=PolyFit(RDF,RDF~=0,5);
 end
 
-end
-
-%% Parsing varargin
-% LBV
-function [method, tol, depth, peel, refine] = parse_vararginLBV(arg)
-method = 'LBV';
-tol = 1e-4;
-depth = 4;
-peel = 1;
-refine = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'tol')
-        tol = arg{kkvar+1};
-        continue
-    end
-    if  strcmpi(arg{kkvar},'depth')
-        depth = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'peel')
-        peel = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% PDF
-function [method, B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_vararginPDF(matrixSize,arg)
-method = 'PDF';
-B0_dir = [0,0,1];
-tol = 0.1;
-iteration = 30;
-CGdefault = true;
-N_std = ones(matrixSize)*1e-4;
-refine = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'b0dir')
-        B0_dir = arg{kkvar+1};
-        continue
-    end
-    if  strcmpi(arg{kkvar},'tol')
-        tol = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'iteration')
-        iteration = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'CGsolver')
-        CGdefault = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'noisestd')
-        N_std = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% SHARP
-function [method, radius, threshold, refine] = parse_vararginSHARP(arg)
-method = 'SHARP';
-radius = 4;
-threshold = 0.03;
-refine = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'radius')
-        radius = arg{kkvar+1};
-        continue
-    end
-    if  strcmpi(arg{kkvar},'threshold')
-        threshold = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% RESHARP
-function [method, radius, alpha, refine] = parse_vararginRESHARP(arg)
-method = 'RESHARP';
-radius = 4;
-alpha = 0.01;
-refine = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'radius')
-        radius = arg{kkvar+1};
-        continue
-    end
-    if  strcmpi(arg{kkvar},'alpha')
-        alpha = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% VSHARP STI
-function [method, refine] = parse_vararginVSHARPSTI(arg)
-method = 'VSHARPSTI';
-refine = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% iHARPERELLA
-function [method, iteration, refine] = parse_vararginiHARPERELLA(arg)
-method = 'iHARPERELLA';
-iteration = 100;
-refine = false;
-for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'iteration')
-        iteration = arg{kkvar+1};
-        continue
-    end
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
-end
-end
-
-% VSHARP
-function [method, radius,refine] = parse_vararginVSHARP(arg)
-method = 'VSHARP';
-radius = [];
-refine = false;
-if ~isempty(arg)
-    for kvar = 1:length(arg)
-        if strcmpi(arg{kvar},'radius')
-            tmp = arg{kvar+1};
-            radius = sort(tmp,'descend');
-        end
-        if strcmpi(arg{kkvar},'refine')
-            refine = arg{kkvar+1};
-            continue
-        end
-    end
-end
 end
