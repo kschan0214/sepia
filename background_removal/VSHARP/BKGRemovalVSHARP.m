@@ -21,7 +21,7 @@
 %
 function [RDF,mask]=BKGRemovalVSHARP(totalField,mask,matrixSize,varargin)
 % parse argument input
-[radius] = parse_vararginVSHARP(varargin);
+[radius,~] = parse_varargin_VSHARP(varargin);
 
 % total field in k-space
 kTotalField = fftn(totalField);
@@ -64,16 +64,16 @@ mask = Mask_Sharp(:,:,:,end);
 end
 
 %% parse input arguments
-function [radius] = parse_vararginVSHARP(arg)
-radius = 5:-1:1;
-if ~isempty(arg)
-    for kvar = 1:length(arg)
-        if strcmpi(arg{kvar},'radius')
-            if ~isempty(arg{kvar+1})
-                tmp = arg{kvar+1};
-                radius = sort(tmp,'descend');
-            end
-        end
-    end
-end
-end
+% function [radius] = parse_vararginVSHARP(arg)
+% radius = 5:-1:1;
+% if ~isempty(arg)
+%     for kvar = 1:length(arg)
+%         if strcmpi(arg{kvar},'radius')
+%             if ~isempty(arg{kvar+1})
+%                 tmp = arg{kvar+1};
+%                 radius = sort(tmp,'descend');
+%             end
+%         end
+%     end
+% end
+% end
