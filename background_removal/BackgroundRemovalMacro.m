@@ -98,7 +98,7 @@ if ~isempty(varargin)
                     break
                 case 'vsharp'
                     method = 'VSHARP';
-                    [radius, refine] = parse_vararginVSHARP(varargin);
+                    [radius, refine] = parse_varargin_VSHARP(varargin);
             end
         end
     end
