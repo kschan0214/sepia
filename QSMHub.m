@@ -1,4 +1,4 @@
-%% function output = function_name(input)
+%% function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
 %
 % Usage:
 %
@@ -12,7 +12,7 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 
+% Date created: 14 September 2017
 % Date last modified:
 %
 %

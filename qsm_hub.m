@@ -1,4 +1,4 @@
-function qsm_hub
+% function qsm_hub
 % gui
 clear 
 
@@ -105,12 +105,12 @@ h.panel_bkgRemoval = uipanel(fig,'Title','Background field removal',...
             'String','2',...
             'units','normalized','position',[0.25 0.5 0.2 0.2],...
             'backgroundcolor','white');
-        h.text_LBV_depth = uicontrol('Parent',h.panel_bkgRemoval_LBV,'Style','text',...
+        h.text_LBV_peel = uicontrol('Parent',h.panel_bkgRemoval_LBV,'Style','text',...
             'String','Peel:',...
             'units','normalized','position',[0.01 0.25 0.2 0.2],...
             'HorizontalAlignment','left',...
             'backgroundcolor',get(fig,'color'));
-        h.edit_LBV_depth = uicontrol('Parent',h.panel_bkgRemoval_LBV,'Style','edit',...
+        h.edit_LBV_peel = uicontrol('Parent',h.panel_bkgRemoval_LBV,'Style','edit',...
             'String','5',...
             'units','normalized','position',[0.25 0.25 0.2 0.2],...
             'backgroundcolor','white');
@@ -249,12 +249,12 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
     h.panel_qsm_TKD = uipanel(h.panel_qsm,'Title','Thresholded k-space division (TKD)',...
         'position',[0.01 0.04 0.95 0.75],...
         'backgroundcolor',get(fig,'color'),'Visible','on');
-        h.text_TKD_maxIter = uicontrol('Parent',h.panel_qsm_TKD,'Style','text',...
+        h.text_TKD_threshold = uicontrol('Parent',h.panel_qsm_TKD,'Style','text',...
             'String','Threshold:',...
             'units','normalized','position',[0.01 0.75 0.2 0.2],...
             'HorizontalAlignment','left',...
             'backgroundcolor',get(fig,'color'));
-        h.edit_TKD_maxIter = uicontrol('Parent',h.panel_qsm_TKD,'Style','edit',...
+        h.edit_TKD_threshold = uicontrol('Parent',h.panel_qsm_TKD,'Style','edit',...
             'String','0.15',...
             'units','normalized','position',[0.25 0.75 0.2 0.2],...
             'backgroundcolor','white');
@@ -439,7 +439,7 @@ set(h.popup_qsm,                'Callback',{@PopupQSM_Callback});
 set(h.checkbox_cfs_lambda,      'Callback',{@CheckboxCFS_Callback});
 set(h.checkbox_iLSQR_lambda,    'Callback',{@CheckboxiLSQR_Callback});
 set(h.pushbutton_start,           'Callback',{@PushbuttonStart_Callback});
-end
+% end
 %% Callback
 function ButtonGetInputDir_Callback(source,eventdata)
 
@@ -637,6 +637,67 @@ BFR = h.popup_bkgRemoval.String{h.popup_bkgRemoval.Value,1};
 QSM_method = h.popup_qsm.String{h.popup_qsm.Value,1};
 refine = get(h.checkbox_bkgRemoval,'Value');
 
+% get backgroud field removal algorithm parameters
+switch BFR
+    case 'LBV'
+        try BFR_tol = get(h.edit_LBV_tol,'String'); catch; BFR_tol=1e-4; end
+        try BFR_depth = get(h.edit_LBV_depth,'String'); catch; BFR_depth=4; end
+        try BFR_peel = get(h.edit_LBV_peel,'String'); catch; BFR_peel=4; end
+    case 'PDF'
+        try BFR_tol = get(h.edit_PDF_tol,'String'); catch; BFR_tol=1e-2; end
+        try BFR_iteration = get(h.edit_PDF_maxIter,'String'); catch; BFR_iteration=50; end
+        try BFR_CGdefault = h.popup_PDF_cgSolver.String{h.popup_PDF_cgSolver.Value,1}; catch; BFR_CGdefault=true; end
+    case 'RESHARP'
+        try BFR_radius = get(h.edit_RESHARP_radius,'String'); catch; BFR_radius=4; end
+        try BFR_alpha = get(h.edit_RESHARP_lambda,'String'); catch; BFR_alpha=0.01; end
+    case 'SHARP'
+        try BFR_radius = get(h.edit_SHARP_radius,'String'); catch; BFR_radius=4; end
+        try BFR_threshold = get(h.edit_SHARP_threshold,'String'); catch; BFR_threshold=0.03; end
+    case 'VSHARP'
+        try maxRadius = get(h.edit_VSHARP_maxRadius,'String'); catch; maxRadius=10; end
+        try minRadius = get(h.edit_VSHARP_minRadius,'String'); catch; minRadius=3; end
+        BFR_radius = maxRadius:-2:minRadius;
+    case 'iHARPERELLA'
+        try BFR_iteration = get(h.edit_iHARPERELLA_maxIter,'String'); catch; BFR_iteration=100; end 
+end
+
+% get QSM algorithm parameters
+switch QSM_method
+    case 'TKD'
+        try QSM_threshold = get(h.edit_TKD_threshold,'String'); catch; QSM_threshold=0.15; end
+    case 'Closed-form solution'
+        try QSM_lambda = get(h.edit_cfs_lambda,'String'); catch; QSM_lambda=0.13; end
+        try QSM_optimise = get(h.checkbox_cfs_lambda,'Value'); catch; QSM_optimise=false; end
+    case 'STI suite iLSQR'
+        try QSM_threshold = get(h.edit_STIiLSQR_threshold,'String'); catch; QSM_threshold=0.01; end
+        try QSM_maxiter = get(h.edit_STIiLSQR_maxIter,'String'); catch; QSM_maxiter=100; end
+        try QSM_tol1 = get(h.edit_STIiLSQR_tol1,'String'); catch; QSM_tol1=0.01; end
+        try QSM_tol2 = get(h.edit_STIiLSQR_tol2,'String'); catch; QSM_tol2=0.001; end
+        try QSM_padsize = get(h.edit_STIiLSQR_padSize,'String'); catch; QSM_padsize=4; end
+        QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
+    case 'iLSQR'
+        try QSM_tol = get(h.edit_iLSQR_tol,'String'); catch; QSM_tol=0.001; end
+        try QSM_maxiter = get(h.edit_iLSQR_maxIter,'String'); catch; QSM_maxiter=100; end
+        try QSM_lambda = get(h.edit_iLSQR_lambda,'String'); catch; QSM_lambda=0.13; end
+        try QSM_optimise = get(h.checkbox_iLSQR_lambda,'Value'); catch; QSM_optimise=false; end 
+    case 'FANSI'
+        try QSM_tol = get(h.edit_FANSI_tol,'String'); catch; QSM_tol=1; end
+        try QSM_lambda = get(h.edit_FANSI_lambda,'String'); catch; QSM_lambda=3e-5; end
+        try QSM_mu1 = get(h.edit_FANSI_mu,'String'); catch; QSM_mu1=5e-5; end
+        try QSM_maxiter = get(h.edit_FANSI_maxIter,'String'); catch; QSM_maxiter=50; end
+        try 
+            QSM_solver = h.popup_FANSI_solver.String{h.popup_FANSI_solver.Value,1}; 
+        catch
+            QSM_solver='linear'; 
+        end 
+        try 
+            QSM_constraint = h.popup_FANSI_constraints.String{h.popup_FANSI_constraints.Value,1}; 
+        catch
+            QSM_constraint='tv'; 
+        end 
+end
+
+% look for mask
 try 
     mask = load_nii_img_only(maskDir);
 catch
@@ -644,7 +705,12 @@ catch
 end
 
 QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',mask,'unwrap',phaseUnwrap,...
-    'unit',units,'Subsampling',subsampling)
+    'unit',units,'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
+    'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'CGsolver',BFR_CGdefault,...
+    'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
+    'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
+    'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
+    'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint);
 
 end
 
