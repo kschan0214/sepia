@@ -8,7 +8,7 @@
 % Date last modified: 
 %
 function [radius,refine] = parse_varargin_VSHARP(arg)
-radius = [];
+radius = 5:-1:1;
 refine = false;
 if ~isempty(arg)
     for kvar = 1:length(arg)
