@@ -38,7 +38,7 @@ for kvar = 1:length(arg)
         params.TE = arg{kvar+1};
         continue
     end
-    if strcmpi(arg{kvar},'fieldStrength')
+    if strcmpi(arg{kvar},'B0')
         params.B0 = arg{kvar+1};
         continue
     end
