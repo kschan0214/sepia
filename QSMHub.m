@@ -41,15 +41,15 @@ disp('Saving DICOM data...');
 nii_fieldMap = make_nii(fieldMap, voxelSize);
 nii_magn = make_nii(magn, voxelSize);
 
-save_nii(nii_fieldMap,[outputDir 'qsmhub_phase.nii.gz']);
-save_nii(nii_magn,[outputDir 'qsmhub_magn.nii.gz']);
-save([outputDir 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
+save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
+save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
+save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
     'TE','B0_dir','B0');
 %% FSL's BET
 if isempty(mask) || isBET
     disp('Performing FSL BET...');
     nii_temp = make_nii(magn(:,:,:,1), voxelSize);
-    save_nii(nii_temp,[outputDir 'qsmhub_temp.nii.gz']);
+    save_nii(nii_temp,[outputDir filesep 'qsmhub_temp.nii.gz']);
     system('bet -R qsmhub_temp temp_brain');
     mask = load_nii_img_only('temp_brain.nii.gz');
     system('rm qsmhub_temp.nii.gz temp_brain.nii.gz');
@@ -67,8 +67,8 @@ disp('Saving total field map...');
 nii_totalField = make_nii(totalField, voxelSize);
 nii_fieldmapSD = make_nii(fieldmapSD, voxelSize);
                     
-save_nii(nii_totalField,[outputDir 'qsmhub_totalField.nii.gz']);
-save_nii(nii_fieldmapSD,[outputDir 'qsmhub_fieldMapSD.nii.gz']);
+save_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
+save_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
 
 
 %% create weight map
@@ -90,8 +90,8 @@ disp('Saving local field map...');
 nii_localField = make_nii(localField, voxelSize);
 nii_maskFinal = make_nii(maskFinal, voxelSize);
                     
-save_nii(nii_localField,[outputDir 'qsmhub_localField.nii.gz']);
-save_nii(nii_maskFinal,[outputDir 'qsmhub_finalMask.nii.gz']);
+save_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
+save_nii(nii_maskFinal,[outputDir filesep 'qsmhub_finalMask.nii.gz']);
                     
 %% qsm
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
