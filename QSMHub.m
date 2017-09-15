@@ -58,8 +58,8 @@ if isempty(mask) || isBET
         setenv('PATH', [getenv('PATH'),':','/usr/local/fsl/bin']);
         system(['bet ' tempDir brianDir ' -R']);
     end
-    mask = load_nii_img_only('temp_brain.nii.gz');
-    system('rm qsmhub_temp.nii.gz temp_brain.nii.gz');
+    mask = load_nii_img_only(brianDir);
+    system(['rm ' tempDir]);
 end
 
 %% total field and Laplacian phase unwrap
@@ -95,7 +95,7 @@ maskFinal = localField ~=0;
 disp('Saving local field map...');
 
 nii_localField = make_nii(localField, voxelSize);
-nii_maskFinal = make_nii(maskFinal, voxelSize);
+nii_maskFinal = make_nii(uint8(maskFinal), voxelSize);
                     
 save_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
 save_nii(nii_maskFinal,[outputDir filesep 'qsmhub_finalMask.nii.gz']);
@@ -106,5 +106,9 @@ chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
       'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
       'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',1,'B0',B0,...
       'padsize',QSM_padsize,'mu',QSM_mu1,QSM_solver,QSM_constraint);
+  
+nii_chi = make_nii(chi, voxelSize);
+
+save_nii(nii_chi,[outputDir filesep 'qsmhub_QSM.nii.gz']);
           
 end

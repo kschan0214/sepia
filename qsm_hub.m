@@ -483,7 +483,7 @@ function ButtonGetMaskDir_Callback(source,eventdata)
 
 global h
 
-pathDir = uigetdir;
+pathDir = uigetfile({'*.nii.gz';'*.nii'},'Select the mask file');
 
 if pathDir ~= 0
     set(h.edit_maskdir,'String',pathDir);
@@ -642,51 +642,64 @@ refine = get(h.checkbox_bkgRemoval,'Value');
 % get backgroud field removal algorithm parameters
 switch BFR
     case 'LBV'
-        try BFR_tol = get(h.edit_LBV_tol,'String'); catch; BFR_tol=1e-4; end
-        try BFR_depth = get(h.edit_LBV_depth,'String'); catch; BFR_depth=4; end
-        try BFR_peel = get(h.edit_LBV_peel,'String'); catch; BFR_peel=4; end
+        BFR='lbv';
+        try BFR_tol = str2double(get(h.edit_LBV_tol,'String')); catch; BFR_tol=1e-4; end
+        try BFR_depth = str2double(get(h.edit_LBV_depth,'String')); catch; BFR_depth=4; end
+        try BFR_peel = str2double(get(h.edit_LBV_peel,'String')); catch; BFR_peel=4; end
     case 'PDF'
-        try BFR_tol = get(h.edit_PDF_tol,'String'); catch; BFR_tol=1e-2; end
-        try BFR_iteration = get(h.edit_PDF_maxIter,'String'); catch; BFR_iteration=50; end
+        BFR='pdf';
+        try BFR_tol = str2double(get(h.edit_PDF_tol,'String')); catch; BFR_tol=1e-2; end
+        try BFR_iteration = str2double(get(h.edit_PDF_maxIter,'String')); catch; BFR_iteration=50; end
         try BFR_CGdefault = h.popup_PDF_cgSolver.String{h.popup_PDF_cgSolver.Value,1}; catch; BFR_CGdefault=true; end
     case 'RESHARP'
-        try BFR_radius = get(h.edit_RESHARP_radius,'String'); catch; BFR_radius=4; end
-        try BFR_alpha = get(h.edit_RESHARP_lambda,'String'); catch; BFR_alpha=0.01; end
+        BFR='resharp';
+        try BFR_radius = str2double(get(h.edit_RESHARP_radius,'String')); catch; BFR_radius=4; end
+        try BFR_alpha = str2double(get(h.edit_RESHARP_lambda,'String')); catch; BFR_alpha=0.01; end
     case 'SHARP'
-        try BFR_radius = get(h.edit_SHARP_radius,'String'); catch; BFR_radius=4; end
-        try BFR_threshold = get(h.edit_SHARP_threshold,'String'); catch; BFR_threshold=0.03; end
+        BFR='sharp';
+        try BFR_radius = str2double(get(h.edit_SHARP_radius,'String')); catch; BFR_radius=4; end
+        try BFR_threshold = str2double(get(h.edit_SHARP_threshold,'String')); catch; BFR_threshold=0.03; end
     case 'VSHARP'
-        try maxRadius = get(h.edit_VSHARP_maxRadius,'String'); catch; maxRadius=10; end
-        try minRadius = get(h.edit_VSHARP_minRadius,'String'); catch; minRadius=3; end
+        BFR='vsharp';
+        try maxRadius = str2double(get(h.edit_VSHARP_maxRadius,'String')); catch; maxRadius=10; end
+        try minRadius = str2double(get(h.edit_VSHARP_minRadius,'String')); catch; minRadius=3; end
         BFR_radius = maxRadius:-2:minRadius;
     case 'iHARPERELLA'
-        try BFR_iteration = get(h.edit_iHARPERELLA_maxIter,'String'); catch; BFR_iteration=100; end 
+        BFR='iharperella';
+        try BFR_iteration = str2double(get(h.edit_iHARPERELLA_maxIter,'String')); catch; BFR_iteration=100; end 
+    case 'VSHARP STI suite'
+        BFR='vsharpsti';
 end
 
 % get QSM algorithm parameters
 switch QSM_method
     case 'TKD'
-        try QSM_threshold = get(h.edit_TKD_threshold,'String'); catch; QSM_threshold=0.15; end
+        QSM_method='tkd';
+        try QSM_threshold = str2double(get(h.edit_TKD_threshold,'String')); catch; QSM_threshold=0.15; end
     case 'Closed-form solution'
-        try QSM_lambda = get(h.edit_cfs_lambda,'String'); catch; QSM_lambda=0.13; end
+        QSM_method='closedforml2';
+        try QSM_lambda = str2double(get(h.edit_cfs_lambda,'String')); catch; QSM_lambda=0.13; end
         try QSM_optimise = get(h.checkbox_cfs_lambda,'Value'); catch; QSM_optimise=false; end
     case 'STI suite iLSQR'
-        try QSM_threshold = get(h.edit_STIiLSQR_threshold,'String'); catch; QSM_threshold=0.01; end
-        try QSM_maxiter = get(h.edit_STIiLSQR_maxIter,'String'); catch; QSM_maxiter=100; end
-        try QSM_tol1 = get(h.edit_STIiLSQR_tol1,'String'); catch; QSM_tol1=0.01; end
-        try QSM_tol2 = get(h.edit_STIiLSQR_tol2,'String'); catch; QSM_tol2=0.001; end
-        try QSM_padsize = get(h.edit_STIiLSQR_padSize,'String'); catch; QSM_padsize=4; end
+        QSM_method='stisuiteilsqr';
+        try QSM_threshold = str2double(get(h.edit_STIiLSQR_threshold,'String')); catch; QSM_threshold=0.01; end
+        try QSM_maxiter = str2double(get(h.edit_STIiLSQR_maxIter,'String')); catch; QSM_maxiter=100; end
+        try QSM_tol1 = str2double(get(h.edit_STIiLSQR_tol1,'String')); catch; QSM_tol1=0.01; end
+        try QSM_tol2 = str2double(get(h.edit_STIiLSQR_tol2,'String')); catch; QSM_tol2=0.001; end
+        try QSM_padsize = str2double(get(h.edit_STIiLSQR_padSize,'String')); catch; QSM_padsize=4; end
         QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
     case 'iLSQR'
-        try QSM_tol = get(h.edit_iLSQR_tol,'String'); catch; QSM_tol=0.001; end
-        try QSM_maxiter = get(h.edit_iLSQR_maxIter,'String'); catch; QSM_maxiter=100; end
-        try QSM_lambda = get(h.edit_iLSQR_lambda,'String'); catch; QSM_lambda=0.13; end
+        QSM_method='ilsqr';
+        try QSM_tol = str2double(get(h.edit_iLSQR_tol,'String')); catch; QSM_tol=0.001; end
+        try QSM_maxiter = str2double(get(h.edit_iLSQR_maxIter,'String')); catch; QSM_maxiter=100; end
+        try QSM_lambda = str2double(get(h.edit_iLSQR_lambda,'String')); catch; QSM_lambda=0.13; end
         try QSM_optimise = get(h.checkbox_iLSQR_lambda,'Value'); catch; QSM_optimise=false; end 
     case 'FANSI'
-        try QSM_tol = get(h.edit_FANSI_tol,'String'); catch; QSM_tol=1; end
-        try QSM_lambda = get(h.edit_FANSI_lambda,'String'); catch; QSM_lambda=3e-5; end
-        try QSM_mu1 = get(h.edit_FANSI_mu,'String'); catch; QSM_mu1=5e-5; end
-        try QSM_maxiter = get(h.edit_FANSI_maxIter,'String'); catch; QSM_maxiter=50; end
+        QSM_method='fansi';
+        try QSM_tol = str2double(get(h.edit_FANSI_tol,'String')); catch; QSM_tol=1; end
+        try QSM_lambda = str2double(get(h.edit_FANSI_lambda,'String')); catch; QSM_lambda=3e-5; end
+        try QSM_mu1 = str2double(get(h.edit_FANSI_mu,'String')); catch; QSM_mu1=5e-5; end
+        try QSM_maxiter = str2double(get(h.edit_FANSI_maxIter,'String')); catch; QSM_maxiter=50; end
         try 
             QSM_solver = h.popup_FANSI_solver.String{h.popup_FANSI_solver.Value,1}; 
         catch
