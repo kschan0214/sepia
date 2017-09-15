@@ -49,8 +49,15 @@ save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delt
 if isempty(mask) || isBET
     disp('Performing FSL BET...');
     nii_temp = make_nii(magn(:,:,:,1), voxelSize);
-    save_nii(nii_temp,[outputDir filesep 'qsmhub_temp.nii.gz']);
-    system('bet -R qsmhub_temp temp_brain');
+    tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
+    brianDir = [outputDir filesep 'temp_brain.nii.gz'];
+    save_nii(nii_temp,tempDir);
+    try 
+        system(['bet ' tempDir ' ' brianDir ' -R']);
+    catch
+        setenv('PATH', [getenv('PATH'),':','/usr/local/fsl/bin']);
+        system(['bet ' tempDir brianDir ' -R']);
+    end
     mask = load_nii_img_only('temp_brain.nii.gz');
     system('rm qsmhub_temp.nii.gz temp_brain.nii.gz');
 end
