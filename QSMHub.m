@@ -17,6 +17,8 @@
 %
 %
 function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
+%% add Path
+qsm_hub_AddPath;
 %% Check output directory exist or not
 if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);

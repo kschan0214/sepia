@@ -24,6 +24,7 @@
 %       'method'        : QSM method, 
 %                          'TKD', 'ClosedFormL2', 'iLSQR', 'FANSI',
 %                          'ssvsharp', 'STISuiteiLSQR'
+%       'b0dir'         : B0 direction
 %
 %       TKD
 %       ----------------
@@ -82,15 +83,15 @@ if ~isempty(varargin)
             switch lower(varargin{kvar+1})
                 case 'tkd'
                     method = 'TKD';
-                    thre_tkd = parse_varargin_TKD(varargin);
+                    [thre_tkd,b0dir] = parse_varargin_TKD(varargin);
                     break
                 case 'closedforml2'
                     method = 'CFL2';
-                    [lambda, optimise] = parse_varargin_CFL2norm(varargin);
+                    [lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
                     break
                 case 'ilsqr'
                     method = 'iLSQR';
-                    [lambda, tol, maxiter, wmap, initGuess, optimise] = parse_varargin_iLSQR(varargin);
+                    [lambda, tol, maxiter, wmap, initGuess, optimise,b0dir] = parse_varargin_iLSQR(varargin);
                     if isempty(wmap)
                         wmap = ones(matrixSize);
                     end
@@ -105,10 +106,10 @@ if ~isempty(varargin)
                     break
                 case 'fansi'
                     method = 'FANSI';
-                    [mu1,alpha1,tol,maxiter,wmap,solver,constraint]=parse_varargin_FANSI(varargin);
+                    [mu1,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
                 case 'ssvsharp'
                     method = 'SSVSHARP';
-                    [lambda,magn,tol,maxiter,Kernel_Sizes]=parse_varargin_SSQSM(varargin);
+                    [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
             end
         end
     end
@@ -124,24 +125,24 @@ disp(['The following QSM algorithm will be used: ' method]);
 %% qsm algorithm
 switch method
     case 'TKD'
-        chi = qsmTKD(localField,mask,matrixSize,voxelSize,'threshold',thre_tkd);
+        chi = qsmTKD(localField,mask,matrixSize,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
     case 'CFL2'
         [chi, lamdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,...
-            'lambda',lambda,'optimise',optimise);
+            'lambda',lambda,'optimise',optimise,'b0dir',b0dir);
     case 'iLSQR'
         chi = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,...
             'lambda',lambda,'tol',tol,'iteration',maxiter,'weight',wmap,...
-            'initGuess',initGuess,'optimise',optimise);
+            'initGuess',initGuess,'optimise',optimise,'b0dir',b0dir);
     case 'STISuiteiLSQR'
         chi = QSM_iLSQR(localField,mask,'params',algoPara);
     case 'FANSI'
         chi = qsmFANSI(localField,mask,matrixSize,voxelSize,...
           'tol',tol,'lambda',alpha1,'mu',mu1,'iteration',maxiter,'weight',wmap,...
-          solver,constraint);
+          solver,constraint,'b0dir',b0dir);
     case 'SSVSHARP'
         chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...
             'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
-            'vkernel',Kernel_Sizes);
+            'b0dir',b0dir,'vkernel',Kernel_Sizes);
 end
 
 end
