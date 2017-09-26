@@ -16,6 +16,7 @@
 %       'initGuess' -   initial guess for iLSQR
 %       'optimise'  -	self-define regularisation based on curvature of 
 %                       L-curve
+%       'b0dir'     -   B0 direction
 % 
 % Ouput
 % _____
@@ -29,7 +30,7 @@
 function [chi, lambdaOptimal] = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,varargin)
 lambdaOptimal = [];
 %% Parsing varargin
-[lambda, tol, maxiter, wmap, initGuess, optimise] = parse_varargin_iLSQR(varargin);
+[lambda,tol,maxiter,wmap,initGuess,optimise,b0dir] = parse_varargin_iLSQR(varargin);
 
 % display message
 disp('The following parameters are used:');
@@ -47,11 +48,11 @@ if isempty(wmap)
 end
 
 % dipole kernel
-kernel = DipoleKernel(matrixSize,voxelSize);
+kernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 
 %% Core
 if optimise
-    [~, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,'optimise',optimise);
+    [~, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,'optimise',optimise,'b0dir',b0dir);
     lambda = lambdaOptimal;
 end
 % defining gradient operators in k-space

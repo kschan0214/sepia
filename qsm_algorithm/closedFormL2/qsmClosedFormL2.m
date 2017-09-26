@@ -28,7 +28,7 @@
 function [chi, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin)
 DEBUG=false;
 %% Parsing varargin
-[lambda, optimise] = parse_varargin_CFL2norm(varargin);
+[lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
 
 % display message
 if ~optimise
@@ -39,7 +39,7 @@ else
 end
 
 % dipole kernel
-kernel = DipoleKernel(matrixSize,voxelSize);
+kernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 
 %% core
 % defining gradient operators in k-space

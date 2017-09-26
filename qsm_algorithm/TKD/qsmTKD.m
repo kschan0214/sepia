@@ -23,14 +23,14 @@
 %
 function chi = qsmTKD(localField,mask,matrixSize,voxelSize,varargin)
 %% Parsing varargin
-thre_tkd = parse_varargin_TKD(varargin);
+[thre_tkd,b0dir] = parse_varargin_TKD(varargin);
 
 % display message
 fprintf('Threshold for k-space division is %f \n',thre_tkd);
 
 %% Core
 % dipole kernel
-kernel = DipoleKernel(matrixSize,voxelSize);
+kernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 
 % initiate inverse kernel with zeros
 kernel_inv = zeros(matrixSize);

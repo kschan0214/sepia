@@ -22,7 +22,8 @@
 %       'linear'    - linear solver
 %       'nonlinear' - nonlinear solver
 %       'tv'        - Total variation constraints
-%       'tgv'        - Total general variation constraints
+%       'tgv'       - Total general variation constraints
+%       'b0dir'     - B0 direction
 %
 % Output
 % --------------
@@ -33,12 +34,12 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 July 2017
-% Date last modified: 6 September 2017
+% Date last modified: 26 September 2017
 %
 %
 function chi = qsmFANSI(localField,mask,matrixSize,voxelSize,varargin)
 % parse input argument
-[mu1,alpha1,tol,maxiter,wmap,solver,constraint] = parse_varargin_FANSI(varargin);
+[mu1,alpha1,tol,maxiter,wmap,solver,constraint,b0dir] = parse_varargin_FANSI(varargin);
 
 % display message
 fprintf('Regularisation parameter for gradient L1: %f \n',alpha1);
@@ -46,12 +47,11 @@ fprintf('Regularisation parameter for gradient consistency: %f \n',mu1);
 fprintf('Tolerance: %f \n',tol);
 fprintf('Maximum iterations: %i \n',maxiter);
 
-
 if isempty(wmap)
     wmap = ones(matrixSize);
 end
 params = [];
-params.K = DipoleKernel(matrixSize,voxelSize);
+params.K = DipoleKernel(matrixSize,voxelSize,b0dir);
 params.N = matrixSize;
 params.input = localField;
 params.weight = wmap; 
@@ -88,46 +88,3 @@ end
 chi = real(out.x).*mask;
 
 end
-
-%% parse argument input
-% function [mu1,alpha1,tol,maxiter,wmap,solver,constraint]=parse_vararginFANSI(arg)
-% alpha1 = 3e-5;
-% mu1 = 5e-5;
-% maxiter = 40;
-% wmap = [];
-% solver = 'nonlinear';
-% constraint = 'TGV';
-% tol = 1;
-% 
-% if ~isempty(arg)
-%     for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'lambda')
-%             alpha1 = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'mu')
-%             mu1 = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'tol')
-%             tol = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'iteration')
-%             maxiter = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'weight')
-%             wmap = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'linear')
-%             solver = 'linear';
-%         end
-%         if strcmpi(arg{kvar},'nonlinear')
-%             solver = 'nonlinear';
-%         end
-%         if strcmpi(arg{kvar},'tv')
-%             constraint = 'TV';
-%         end
-%         if strcmpi(arg{kvar},'tgv')
-%             constraint = 'TGV';
-%         end
-%     end
-% end
-% end
