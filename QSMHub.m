@@ -60,7 +60,7 @@ if isempty(mask) || isBET
         setenv('PATH', [getenv('PATH'),':','/usr/local/fsl/bin']);
         system(['bet ' tempDir brianDir ' -R']);
     end
-    mask = load_nii_img_only(brianDir);
+    mask = load_nii_img_only(brianDir) > 0;
     system(['rm ' tempDir]);
 end
 
@@ -78,10 +78,6 @@ nii_fieldmapSD = make_nii(fieldmapSD, voxelSize);
                     
 save_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
 save_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
-
-
-%% create weight map
-wmap = fieldmapSD./norm(fieldmapSD(mask==1));
 
 %% Background field removal
 disp('Recovering local field...');
@@ -101,7 +97,10 @@ nii_maskFinal = make_nii(uint8(maskFinal), voxelSize);
                     
 save_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
 save_nii(nii_maskFinal,[outputDir filesep 'qsmhub_finalMask.nii.gz']);
-                    
+            
+%% create weight map
+wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
+
 %% qsm
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
       'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...

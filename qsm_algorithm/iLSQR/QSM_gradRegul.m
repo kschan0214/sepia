@@ -81,4 +81,6 @@ elseif strcmp(tflag,'notransp') % y = A*x
     % KC: Ax has the same number of elements as b with order:
     %     local field>x-gradient>y-gradient>z-gradient
     Ax = real(Ax(:));
+    
+    fprintf('+');
 end
