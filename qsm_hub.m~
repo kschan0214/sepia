@@ -6,13 +6,9 @@ qsm_hub_AddPath
 
 global h
 
-screenSize = get(0,'ScreenSize');
-posLeft = round(screenSize(3)/4);
-posBottom = round(screenSize(4)/5);
-guiSizeHori = round(screenSize(3)/3);
-guiSizeVert = round(screenSize(4)*2/3);
+screen
 
-fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
+fig=figure('Units','pixels','position',[400 20 500 650],...
     'MenuBar','None','Toolbar','None','Name','QSM hub','NumberTitle','off');
 
 %% I/O
