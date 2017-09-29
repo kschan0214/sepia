@@ -4,7 +4,7 @@
 %
 % Input
 % _____
-%   localField      : local field perturbatios
+%   localField      : local field perturbations
 %   mask            : user-defined mask
 %   matrixSize      : image matrix size
 %   voxelSize       : spatial resolution of image 
