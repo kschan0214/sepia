@@ -86,6 +86,7 @@ switch method
     case 'RegionGrowing'
         unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
     case 'Graphcut'
+        disp(['Graphcut subsampling factor: ' num2str(subsampling)]);
         unwrappedField = unwrapping_gc(wrappedField,magn,voxelSize,subsampling);
     case 'Jena'
         try

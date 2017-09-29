@@ -125,6 +125,7 @@ disp(['The following QSM algorithm will be used: ' method]);
 %% qsm algorithm
 switch method
     case 'TKD'
+        disp(['TKD threshold = ' thre_tkd]);
         chi = qsmTKD(localField,mask,matrixSize,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
     case 'CFL2'
         [chi, lamdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,...

@@ -61,7 +61,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified: 8 September 2017
+% Date last modified: 29 September 2017
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
 %% Parsing argument input flags
@@ -115,27 +115,42 @@ end
 disp(['The following method is being used: ' method]);
 
 %% background field removal
+disp('The following parameters are being used...');
+
 switch method
     case 'LBV'
+        disp(['Tolerance = ' num2str(tol)]);
+        disp(['Depth = ' num2str(depth)]);
+        disp(['Peel = ' num2str(peel)]);
         RDF = LBV(totalField,mask,matrixSize,voxelSize,tol,depth,peel);
     case 'PDF'
+        disp(['Tolerance = ' num2str(tol)]);
+        disp(['Maximum iterations = ' num2str(iteration)]);
+        disp(['CGsolver = ' CGdefault]);
         RDF = PDF(totalField,mask,matrixSize,voxelSize,'b0dir',B0_dir,...
             'tol', tol,'iteration', iteration,'CGsolver', CGdefault,'noisestd',N_std);
     case 'SHARP'
+        disp(['Radius(voxel) = ' num2str(radius)]);
+        disp(['Threshold = ' num2str(threshold)]);
         RDF = SHARP(totalField, mask, matrixSize, voxelSize, radius,threshold);
     case 'RESHARP'
+        disp(['Radius(voxel) = ' num2str(radius)]);
+        disp(['Lambda = ' num2str(alpha)]);
         RDF = RESHARP(totalField, mask, matrixSize, voxelSize, radius, alpha);
     case 'VSHARPSTI'
         RDF = V_SHARP(totalField, mask,'voxelsize',double(voxelSize(:))');
     case 'iHARPERELLA'
+        disp(['Maximum iterations = ' num2str(iteration)]);
         RDF = iHARPERELLA(totalField, mask,'voxelsize',voxelSize,'niter',iteration);
     case 'VSHARP'
+        disp(['Radius range(voxel) = ' num2str(radius)]);
         [RDF,~] = BKGRemovalVSHARP(totalField,mask,voxelSize,'radius',radius);
 end
 
 %% If refine is needed, do it now
 if refine
-     [~,RDF,~]=PolyFit(RDF,RDF~=0,5);
+    disp('Performing polynomial fitting...');
+    [~,RDF,~]=PolyFit(RDF,RDF~=0,5);
 end
 
 end
