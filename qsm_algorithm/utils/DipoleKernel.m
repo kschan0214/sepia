@@ -47,9 +47,9 @@ k2 = kx.^2 + ky.^2 + kz.^2;
 % dipoleKernel = fftshift( 1/3 - (kx*b0dir(2) + ky*b0dir(1) + kz*b0dir(3)).^2 ./ (k2 + eps) );
 dipoleKernel = fftshift( 1/3 - (kx*b0dir(1) + ky*b0dir(2) + kz*b0dir(3)).^2 ./ (k2 + eps) );
 
-dKComponents.kx = kx;
-dKComponents.ky = ky;
-dKComponents.kz = kz;
-dKComponents.k2 = k2;
+dKComponents.kx = fftshift(kx);
+dKComponents.ky = fftshift(ky);
+dKComponents.kz = fftshift(kz);
+dKComponents.k2 = dKComponents.kx.^2 + dKComponents.ky.^2 + dKComponents.kz.^2;
 
 end
