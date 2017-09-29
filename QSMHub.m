@@ -38,7 +38,7 @@ B0 = CF/(gyro*1e6);
 disp('Basic DICOM information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
 disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
-disp(['B0 direction(x,y,z) =  ' num2str(B0_dir)]);
+disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
     
 fieldMap = angle(iField);

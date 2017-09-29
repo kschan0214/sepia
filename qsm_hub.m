@@ -11,6 +11,9 @@ posLeft = round(screenSize(3)/4);
 posBottom = round(screenSize(4)/5);
 guiSizeHori = round(screenSize(3)/3);
 guiSizeVert = round(screenSize(4)*2/3);
+if guiSizeVert < 650
+    guiSizeVert = 650;
+end
 
 fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
     'MenuBar','None','Toolbar','None','Name','QSM hub','NumberTitle','off');
