@@ -59,18 +59,23 @@ if isempty(mask) || isBET
     nii_temp = make_nii(magn(:,:,:,1), voxelSize);
     tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
     brianDir = [outputDir filesep 'temp_brain.nii.gz'];
+    
     save_nii(nii_temp,tempDir);
+    
+    system(['bet ' tempDir ' ' brianDir ' -R']);
     try 
-        system(['bet ' tempDir ' ' brianDir ' -R']);
+        mask = load_nii_img_only(brianDir) > 0;
     catch
         setenv( 'FSLDIR', '/usr/local/fsl');
         fsldir = getenv('FSLDIR');
         fsldirmpath = sprintf('%s/etc/matlab',fsldir);
         path(path, fsldirmpath);
-        clear fsldir fsldirmpath;
-        system(['bet ' tempDir brianDir ' -R']);
+        oldPATH = getenv('PATH');
+        setenv('PATH',[oldPATH ':' fsldir '/bin']);
+        call_fsl(['bet ' tempDir ' ' brianDir ' -R']);
+        mask = load_nii_img_only(brianDir) > 0;
     end
-    mask = load_nii_img_only(brianDir) > 0;
+
     system(['rm ' tempDir]);
 end
 
