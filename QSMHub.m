@@ -25,35 +25,75 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument
-[isBET,mask,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+[isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint] = parse_varargin_QSMHub(varargin);
 
-%% Read DICOM
+%% Read input
 disp('Reading data...');
-[iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
-gyro = 42.58;
-B0 = CF/(gyro*1e6);
+% look for nifti files first
+inputNiiList = dir([inputDir '/*.nii*']);
+if ~isempty(inputNiiList)
+    % look for magnitude and phase files
+    for klist = 1:length(inputNiiList)
+        if contains(inputNiiList(klist).name,'magn')
+            inputMagnNii = load_nii([inputDir filesep inputNiiList(klist).name]);
+            magn = inputMagnNii.img;
+        end
+        if contains(inputNiiList(klist).name,'phase')
+            inputPhaseNii = load_nii([inputDir filesep inputNiiList(klist).name]);
+            fieldMap = inputPhaseNii.img;
+            voxelSize = inputPhaseNii.hdr.dime.pixdim(2:4);
+            matrixSize = inputPhaseNii.hdr.dime.dim(2:4);
+            B0_dir = [0 0 1];
+            B0 = 3;
+            TE = linspace(1e-3,30e-3,inputPhaseNii.hdr.dime.dim(5));
+        end
+    end
+    % look for header file
+    if ~isempty(dir([inputDir '/*header*']))
+        headerList = dir([inputDir '/*header*']);
+        load([inputDir filesep headerList(1).name]);
+    end
+else
+    % if no nifti files than check for DICOM files
+    [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
+    gyro = 42.57747892;
+    B0 = CF/(gyro*1e6);
 
+    fieldMap = angle(iField);
+    magn = abs(iField);
+
+    % save magnitude and phase images as nifti files
+    disp('Saving DICOM data...');
+    
+    nii_fieldMap = make_nii(fieldMap, voxelSize);
+    nii_magn = make_nii(magn, voxelSize);
+    save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
+    save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
+    save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
+        'TE','B0_dir','B0');
+end
+% display some header info
 disp('Basic DICOM information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
 disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
+
+%% get brain mask
+mask = [];
+maskList = dir([inputDir '/*mask*']);
+% first read mask if file is provided
+if ~isempty(maskFullName)
+    mask = load_nii_img_only(maskFullName) > 0;
+elseif ~isempty(maskList) 
+    % read mask if input directory contains 'mask'
+    inputMaskNii = load_nii([inputDir filesep maskList(1).name]);
+	mask = inputMaskNii.img > 0;
+end
     
-fieldMap = angle(iField);
-magn = abs(iField);
-
-disp('Saving DICOM data...');
-
-nii_fieldMap = make_nii(fieldMap, voxelSize);
-nii_magn = make_nii(magn, voxelSize);
-
-save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
-save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
-save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
-    'TE','B0_dir','B0');
-%% FSL's BET
+% is BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
     disp('Performing FSL BET...');
     nii_temp = make_nii(magn(:,:,:,1), voxelSize);
@@ -86,7 +126,7 @@ disp('Calculating field map...');
                         'Unwarp',unwrap,'TE',TE,'B0',B0,'unit',unit,...
                         'Subsampling',subsampling,'mask',mask);
                                         
-disp('Saving total field map...');
+disp('Saving unwrapped field map...');
 
 nii_totalField = make_nii(totalField, voxelSize);
 nii_fieldmapSD = make_nii(fieldmapSD, voxelSize);
