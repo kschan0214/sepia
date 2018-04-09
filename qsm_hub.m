@@ -29,7 +29,7 @@ h.panel_dataIO = uipanel(fig,'Title','I/O',...
         'Units','normalized','Position', [0.01 0.8 0.15 0.15],...
         'HorizontalAlignment','left',...
         'backgroundcolor',get(fig,'color'),...
-        'tooltip','Input DICOM directory');
+        'tooltip','Input directory contains DICOM or NIfTI files');
     h.edit_input = uicontrol('Parent',h.panel_dataIO,'Style','edit',...
         'units','normalized','position',[0.16 0.8 0.7 0.15],...
         'HorizontalAlignment','left',...
@@ -85,6 +85,19 @@ h.panel_phaseUnwrap = uipanel(fig,'Title','Total field recovery and phase unwrap
     h.popup_unit = uicontrol('Parent',h.panel_phaseUnwrap,'Style','popup',...
         'String',{'radHz','ppm','rad','Hz'},...
         'units','normalized','position',[0.31 0.65 0.4 0.15]);
+    h.checkbox_excludeMask = uicontrol('Parent',h.panel_phaseUnwrap,'Style','checkbox','String','Exclude unreliable voxels',...
+        'units','normalized','position',[0.01 0.20 0.6 0.1],...
+        'backgroundcolor',get(fig,'color'));
+    h.text_excludeMask = uicontrol('Parent',h.panel_phaseUnwrap,'Style','text','String','Threshold (0-1):',...
+        'units','normalized','position',[0.01 0.02 0.3 0.15],...
+        'HorizontalAlignment','left',...
+        'backgroundcolor',get(fig,'color'),...
+        'tooltip','Threshold to exclude unreliable voxels [0,1]. Smaller value gives smaller brain volume.');
+    h.edit_excludeMask = uicontrol('Parent',h.panel_phaseUnwrap,'Style','edit',...
+            'String','0.0009',...
+            'units','normalized','position',[0.31 0.02 0.3 0.15],...
+            'backgroundcolor','white',...
+            'Enable','off');
     
 %% background field
 h.panel_bkgRemoval = uipanel(fig,'Title','Background field removal',...
@@ -478,7 +491,9 @@ set(h.popup_bkgRemoval,      	'Callback',{@PopupBkgRemoval_Callback});
 set(h.popup_qsm,                'Callback',{@PopupQSM_Callback});
 set(h.checkbox_cfs_lambda,      'Callback',{@CheckboxCFS_Callback});
 set(h.checkbox_iLSQR_lambda,    'Callback',{@CheckboxiLSQR_Callback});
-set(h.pushbutton_start,           'Callback',{@PushbuttonStart_Callback});
+set(h.pushbutton_start,         'Callback',{@PushbuttonStart_Callback});
+set(h.checkbox_excludeMask,     'Callback',{@CheckboxExcludeMask_Callback});
+set(h.edit_excludeMask,         'Callback',{@EditExcludeMask_Callback});
 % end
 %% Callback
 function ButtonGetInputDir_Callback(source,eventdata)
@@ -670,6 +685,28 @@ else
 end
 end
 
+function CheckboxExcludeMask_Callback(source,eventdata)
+
+global h
+
+if h.checkbox_excludeMask.Value
+    set(h.edit_excludeMask,'Enable','on');
+else
+    set(h.edit_excludeMask,'Enable','off');
+end
+end
+
+function EditExcludeMask_Callback(source,eventdata)
+
+if str2double(source.String)<0
+    source.String = '0';
+end
+if str2double(source.String)>1
+    source.String = '1';
+end
+
+end
+
 function PushbuttonStart_Callback(source,eventdata)
 
 global h
@@ -690,6 +727,12 @@ units = h.popup_unit.String{h.popup_unit.Value,1};
 BFR = h.popup_bkgRemoval.String{h.popup_bkgRemoval.Value,1};
 QSM_method = h.popup_qsm.String{h.popup_qsm.Value,1};
 refine = get(h.checkbox_bkgRemoval,'Value');
+
+if get(h.checkbox_excludeMask,'Value')
+    excludeMaskThreshold = str2double(get(h.edit_excludeMask,'String'));
+else
+    excludeMaskThreshold = 1;
+end
 
 % get backgroud field removal algorithm parameters
 switch BFR
@@ -780,7 +823,7 @@ QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwra
     'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
     'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
     'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-    'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint);
+    'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold);
 
 end
 

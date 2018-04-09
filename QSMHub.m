@@ -27,7 +27,7 @@ end
 %% Parse input argument
 [isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
-QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint] = parse_varargin_QSMHub(varargin);
+QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,exclude_threshold] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -134,7 +134,7 @@ nii_fieldmapSD = make_nii(fieldmapSD, voxelSize);
 save_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
 save_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
 
-maskReliable = fieldmapSD/norm(fieldmapSD(fieldmapSD~=0)) < 0.0009;
+maskReliable = fieldmapSD/norm(fieldmapSD(fieldmapSD~=0)) < exclude_threshold;
 mask = and(mask,maskReliable);
 
 %% Background field removal

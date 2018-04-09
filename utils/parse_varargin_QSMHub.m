@@ -18,7 +18,7 @@
 %
 function [isBET,mask,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
     BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
-    QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint] = parse_varargin_QSMHub(arg)
+    QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,exclude_threshold] = parse_varargin_QSMHub(arg)
 
 mask=[];
 isBET=false;
@@ -28,6 +28,7 @@ BFR_CGdefault=true;BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
 QSM_method='TKD';QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
 QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
+exclude_threshold = 1;
 
 if ~isempty(arg)
     for kvar = 1:length(arg)
@@ -129,6 +130,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'tgv')
             QSM_constraint = 'TGV';
+        end
+        if strcmpi(arg{kvar},'exclude_threshold')
+            exclude_threshold = arg{kvar+1};
         end
 %         if strcmpi(arg{kvar},'QSM_weight')
 %             QSM_wmap = arg{kvar+1};
