@@ -39,8 +39,6 @@
 % Date last modified: 27 February 2018
 %
 function [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
-%% load required modules
-load_module_swi_UnwrapPhase;
 % Larmor frequency of 1H
 gamma = 42.58;
 

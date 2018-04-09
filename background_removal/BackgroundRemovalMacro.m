@@ -144,7 +144,7 @@ switch method
         RDF = iHARPERELLA(totalField, mask,'voxelsize',voxelSize,'niter',iteration);
     case 'VSHARP'
         disp(['Radius range(voxel) = ' num2str(radius)]);
-        [RDF,~] = BKGRemovalVSHARP(totalField,mask,voxelSize,'radius',radius);
+        [RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize,'radius',radius);
 end
 
 %% If refine is needed, do it now

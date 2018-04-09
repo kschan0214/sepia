@@ -32,7 +32,7 @@ QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
 if ~isempty(arg)
     for kvar = 1:length(arg)
         if strcmpi(arg{kvar},'FSLBet')
-            isBET = true;
+            isBET = arg{kvar+1};
         end
         if strcmpi(arg{kvar},'mask')
             mask = arg{kvar+1};
