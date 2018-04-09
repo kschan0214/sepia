@@ -40,7 +40,7 @@
 %
 function [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
 % Larmor frequency of 1H
-gamma = 42.58;
+gamma = 42.57747892;
 
 %% Parsing argument input flags
 if ~isempty(varargin)

@@ -740,7 +740,7 @@ end
 
 % look for mask file full name
 try 
-    maskFullName = load_nii_img_only(maskDir);
+    maskFullName = maskDir;
 catch
     maskFullName = [];
 end

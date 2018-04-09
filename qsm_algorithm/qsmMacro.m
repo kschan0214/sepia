@@ -102,7 +102,7 @@ if ~isempty(varargin)
                 case 'stisuiteilsqr'
                     method = 'STISuiteiLSQR';
                     algoPara = parse_varargin_STISuiteiLSQR(varargin);
-                    algoPara.voxelsize= voxelSize(:).';
+                    algoPara.voxelsize= double(voxelSize(:).');
                     break
                 case 'fansi'
                     method = 'FANSI';
@@ -135,7 +135,7 @@ switch method
             'lambda',lambda,'tol',tol,'iteration',maxiter,'weight',wmap,...
             'initGuess',initGuess,'optimise',optimise,'b0dir',b0dir);
     case 'STISuiteiLSQR'
-        chi = QSM_iLSQR(localField,mask,'params',algoPara);
+        chi = QSM_iLSQR(double(localField),double(mask),'params',algoPara);
     case 'FANSI'
         chi = qsmFANSI(localField,mask,matrixSize,voxelSize,...
           'tol',tol,'lambda',alpha1,'mu',mu1,'iteration',maxiter,'weight',wmap,...
