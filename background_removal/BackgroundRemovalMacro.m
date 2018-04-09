@@ -126,7 +126,7 @@ switch method
     case 'PDF'
         disp(['Tolerance = ' num2str(tol)]);
         disp(['Maximum iterations = ' num2str(iteration)]);
-        disp(['CGsolver = ' CGdefault]);
+        disp(['CGsolver = ' num2str(CGdefault)]);
         RDF = PDF(totalField,mask,matrixSize,voxelSize,'b0dir',B0_dir,...
             'tol', tol,'iteration', iteration,'CGsolver', CGdefault,'noisestd',N_std);
     case 'SHARP'

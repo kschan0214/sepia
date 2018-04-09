@@ -8,7 +8,7 @@
 %   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
 %                           'Unwrap','gc','unit','ppm','Subsampling',2);
 %   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-%                           'Unwrap','jena','unit','ppm','TE',TE,'fieldstrength',...
+%                           'Unwrap','jena','unit','ppm','TE',TE,'B0',3,...
 %                           'mask',mask);
 %
 % Description: compute the unwrapped total field from complex-valued
@@ -36,7 +36,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 31 May, 2017
-% Date last modified: 8 September 2017
+% Date last modified: 27 February 2018
 %
 function [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
 %% load required modules
@@ -52,12 +52,12 @@ if ~isempty(varargin)
     end
 else
     % predefine paramater: if no varargin, use Laplacian
-    disp('No method selected. Using the default setting:');
-    method = 'Laplacian'
-    TE = 1
-    fieldStrength = 3
-    unit = 'ppm'
-    subsampling = 1
+    disp('No method selected. Using the default setting...');
+    method = 'Laplacian';
+    TE = 1;
+    fieldStrength = 3;
+    unit = 'ppm';
+    subsampling = 1;
     mask = magn(:,:,:,1)>0;
 end
 
@@ -112,6 +112,8 @@ totalFieldSD(isinf(totalFieldSD)) = 0;
 
 % totalField now in rads^-1, matching tmp2 to the smae unit
 % tmp2 = tmp2/dTE;
+
+disp(['The resulting field map with the following unit: ' unit]);
 switch unit
     case 'ppm'
         totalField = (totalField/(2*pi))/(fieldStrength*gamma);
@@ -123,6 +125,8 @@ switch unit
         totalField = totalField/(2*pi);
 %         tmp2 = tmp2/(2*pi);
     case 'radhz'
+    otherwise
+        disp(['Input unit is invalid. radHz is used instead.']);
 end
 
 N_std = totalFieldSD;
@@ -164,7 +168,7 @@ for kkvar = 1:length(arg)
         unit = lower(arg{kkvar+1});
         continue
     end
-    if  strcmpi(arg{kkvar},'Unwarp')
+    if  strcmpi(arg{kkvar},'Unwrap')
         method = lower(arg{kkvar+1});
         continue
     end
