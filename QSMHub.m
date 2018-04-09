@@ -134,6 +134,9 @@ nii_fieldmapSD = make_nii(fieldmapSD, voxelSize);
 save_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
 save_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
 
+maskReliable = fieldmapSD/norm(fieldmapSD(fieldmapSD~=0)) < 0.0009;
+mask = and(mask,maskReliable);
+
 %% Background field removal
 disp('Recovering local field...');
 
