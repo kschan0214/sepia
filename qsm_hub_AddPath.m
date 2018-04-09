@@ -23,11 +23,14 @@ qsmAlgorithmFOLDER = [currDir filesep 'qsm_algorithm/'];
 addpath(qsmAlgorithmFOLDER);
 addpath([qsmAlgorithmFOLDER 'closedFormL2']);
 addpath([qsmAlgorithmFOLDER 'iLSQR']);
-addpath([qsmAlgorithmFOLDER 'iLSQR' filesep 'STISuite']);
+addpath([qsmAlgorithmFOLDER 'iLSQR' filesep 'iLSQR_chan']);
+addpath([qsmAlgorithmFOLDER 'iLSQR' filesep 'STISuitev3']);
 addpath([qsmAlgorithmFOLDER 'TKD']);
 addpath([qsmAlgorithmFOLDER 'FANSI']);
 addpath([qsmAlgorithmFOLDER 'SingleStep']);
+addpath([qsmAlgorithmFOLDER 'Star']);
 addpath([qsmAlgorithmFOLDER 'utils']);
+addpath(genpath([qsmAlgorithmFOLDER 'utils' filesep 'STISuitev3']));
 
 utilsFOLDER = [currDir filesep 'utils/'];
 addpath(utilsFOLDER);

@@ -1,0 +1,10 @@
+function  res = p2pDFT_3D(mask,imSize,support,coilSensi)
+
+res.support = support;
+res.adjoint = 0;
+res.mask = mask;
+res.imSize = imSize;
+res.dataSize = size(mask);
+res.coilSensi = coilSensi;
+res = class(res,'p2pDFT_3D');
+

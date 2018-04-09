@@ -268,7 +268,7 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
         'HorizontalAlignment','left',...
         'backgroundcolor',get(fig,'color'));
     h.popup_qsm = uicontrol('Parent',h.panel_qsm,'Style','popup',...
-        'String',{'TKD','Closed-form solution','STI suite iLSQR','iLSQR','FANSI'},...
+        'String',{'TKD','Closed-form solution','STI suite iLSQR','iLSQR','FANSI','Star'},...
         'units','normalized','position',[0.31 0.85 0.4 0.1]) ; 
     
     % TKD    
@@ -447,6 +447,20 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
             'String',{'TV','TGV'},...
             'units','normalized','position',[0.75 0.01 0.2 0.2],...
             'backgroundcolor','white');
+        
+    % Star
+    h.panel_qsm_Star = uipanel(h.panel_qsm,'Title','Star',...
+        'position',[0.01 0.04 0.95 0.75],...
+        'backgroundcolor',get(fig,'color'),'Visible','off');
+        h.text_Star_padSize = uicontrol('Parent',h.panel_qsm_Star,'Style','text',...
+            'String','Pad size:',...
+            'units','normalized','position',[0.01 0.75 0.2 0.2],...
+            'HorizontalAlignment','left',...
+            'backgroundcolor',get(fig,'color'));
+        h.edit_Star_padSize = uicontrol('Parent',h.panel_qsm_Star,'Style','edit',...
+            'String','4',...
+            'units','normalized','position',[0.25 0.75 0.2 0.2],...
+            'backgroundcolor','white');
 
 h.pushbutton_start = uicontrol('Parent',fig,'Style','pushbutton',...
     'String','Start',...
@@ -595,30 +609,42 @@ switch method
         set(h.panel_qsm_iLSQR,'Visible','off');
         set(h.panel_qsm_STIiLSQR,'Visible','off');
         set(h.panel_qsm_FANSI,'Visible','off');
+        set(h.panel_qsm_Star,'Visible','off');
     case 'Closed-form solution'
         set(h.panel_qsm_TKD,'Visible','off');
         set(h.panel_qsm_cfs,'Visible','on');
         set(h.panel_qsm_iLSQR,'Visible','off');
         set(h.panel_qsm_STIiLSQR,'Visible','off');
         set(h.panel_qsm_FANSI,'Visible','off');
+        set(h.panel_qsm_Star,'Visible','off');
     case 'STI suite iLSQR'
         set(h.panel_qsm_TKD,'Visible','off');
         set(h.panel_qsm_cfs,'Visible','off');
         set(h.panel_qsm_iLSQR,'Visible','off');
         set(h.panel_qsm_STIiLSQR,'Visible','on');
         set(h.panel_qsm_FANSI,'Visible','off');
+        set(h.panel_qsm_Star,'Visible','off');
     case 'iLSQR'
         set(h.panel_qsm_TKD,'Visible','off');
         set(h.panel_qsm_cfs,'Visible','off');
         set(h.panel_qsm_iLSQR,'Visible','on');
         set(h.panel_qsm_STIiLSQR,'Visible','off');
         set(h.panel_qsm_FANSI,'Visible','off');
+        set(h.panel_qsm_Star,'Visible','off');
     case 'FANSI'
         set(h.panel_qsm_TKD,'Visible','off');
         set(h.panel_qsm_cfs,'Visible','off');
         set(h.panel_qsm_iLSQR,'Visible','off');
         set(h.panel_qsm_STIiLSQR,'Visible','off');
         set(h.panel_qsm_FANSI,'Visible','on');
+        set(h.panel_qsm_Star,'Visible','off');
+    case 'Star'
+        set(h.panel_qsm_TKD,'Visible','off');
+        set(h.panel_qsm_cfs,'Visible','off');
+        set(h.panel_qsm_iLSQR,'Visible','off');
+        set(h.panel_qsm_STIiLSQR,'Visible','off');
+        set(h.panel_qsm_FANSI,'Visible','off');
+        set(h.panel_qsm_Star,'Visible','on');
 end
 end
 
@@ -736,6 +762,9 @@ switch QSM_method
         catch
             QSM_constraint='tv'; 
         end 
+    case 'Star'
+        QSM_method='star';
+        try QSM_threshold = str2double(get(h.edit_Star_padSize,'String')); catch; QSM_padsize=4; end
 end
 
 % look for mask file full name

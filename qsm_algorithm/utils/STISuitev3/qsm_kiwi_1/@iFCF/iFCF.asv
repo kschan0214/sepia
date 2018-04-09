@@ -1,0 +1,15 @@
+function  res = iFCF(D2,n,)
+
+kernal3D=ball3D(n);
+kernal3D=kernal3D/sum(kernal3D(:));
+NP=size(cleanphase);  
+F0=zeros(NP);
+SS=size(F0);
+F0(SS(1)/2+1-n:SS(1)/2+1+n,SS(2)/2+1-n:SS(2)/2+1+n,SS(3)/2+1-n:SS(3)/2+1+n)=kernal3D;
+F0=fftnc(F0*sqrt(length(F0(:))));
+
+Cmatrix = 1-F0;
+res.adjoint = 0;
+res.mask = D2;
+res = class(res,'iFDF');
+

@@ -13,7 +13,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 29 September 2017
+% Date last modified: 9 April 2018
 %
 %
 function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
@@ -162,7 +162,7 @@ disp('Computing QSM...');
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
       'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
       'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
-      'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',1,'B0',B0,...
+      'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
       'padsize',QSM_padsize,'mu',QSM_mu1,QSM_solver,QSM_constraint);
   
 disp('Saving susceptibility map...');

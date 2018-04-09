@@ -18,12 +18,14 @@
 %       chi = qsmMacro(totalField,mask,matrixSize,voxelSize,...
 %               'method','SSVSHARP','tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
 %               'vkernel',Kernel_Sizes);
+%       chi = qsmMacro(totalField,mask,matrixSize,voxelSize,...
+%               'method','Star','b0dir',[0,0,1],'TE',1,'B0',3,'padsize',[4,4,4]);
 %
 % Description: Wrapper for QSM inversion problem (default using TKD)
 %   Flags:
 %       'method'        : QSM method, 
 %                          'TKD', 'ClosedFormL2', 'iLSQR', 'FANSI',
-%                          'ssvsharp', 'STISuiteiLSQR'
+%                          'ssvsharp', 'STISuiteiLSQR', 'Star'
 %       'b0dir'         : B0 direction
 %
 %       TKD
@@ -69,10 +71,14 @@
 %       'tgv'           : Total generalised variation constraint
 %       'tv'            : Total variation constraints
 %
+%       Star
+%       ----------------
+%       'padsize'        : size for padarray to increase numerical accuracy
+%
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified: 6 September 2017
+% Date last modified: 9 April 2018
 %
 function [chi, lamdaOptimal] = qsmMacro(localField,mask,matrixSize,voxelSize,varargin)
 lamdaOptimal = [];
@@ -101,7 +107,7 @@ if ~isempty(varargin)
                     break
                 case 'stisuiteilsqr'
                     method = 'STISuiteiLSQR';
-                    algoPara = parse_varargin_STISuiteiLSQR(varargin);
+                    algoPara = parse_varargin_STISuiteiLSQRv3(varargin);
                     algoPara.voxelsize= double(voxelSize(:).');
                     break
                 case 'fansi'
@@ -110,6 +116,9 @@ if ~isempty(varargin)
                 case 'ssvsharp'
                     method = 'SSVSHARP';
                     [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
+                case 'star'
+                    method = 'Star';
+                    [te,padSize,b0,b0dir] = parse_varargin_Star(varargin);
             end
         end
     end
@@ -144,6 +153,8 @@ switch method
         chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...
             'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
             'b0dir',b0dir,'vkernel',Kernel_Sizes);
+    case 'Star'
+        chi = QSM_star(localField,mask,'TE',te,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
 end
 
 end
