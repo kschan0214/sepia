@@ -114,8 +114,7 @@ h.panel_bkgRemoval = uipanel(fig,'Title','Background field removal',...
     h.checkbox_bkgRemoval = uicontrol('Parent',h.panel_bkgRemoval,'Style','checkbox','String','Refine local field by polynomial fit',...
         'units','normalized','position',[0.01 0.01 1 0.1],...
         'backgroundcolor',get(fig,'color'),...
-        'tooltip','Enable to remove residual B1 field inhomogeneity',...
-        'value',1);
+        'tooltip','Enable to remove residual B1 field inhomogeneity');
     
     % LBV
     h.panel_bkgRemoval_LBV = uipanel(h.panel_bkgRemoval,'Title','Laplacian boundary value (LBV)',...
@@ -291,8 +290,8 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
         'position',[0.01 0.04 0.95 0.75],...
         'backgroundcolor',get(fig,'color'),'Visible','on');
         h.text_TKD_threshold = uicontrol('Parent',h.panel_qsm_TKD,'Style','text',...
-            'String','Threshold (0-1):',...
-            'units','normalized','position',[0.01 0.75 0.23 0.2],...
+            'String','Threshold:',...
+            'units','normalized','position',[0.01 0.75 0.2 0.2],...
             'HorizontalAlignment','left',...
             'backgroundcolor',get(fig,'color'));
         h.edit_TKD_threshold = uicontrol('Parent',h.panel_qsm_TKD,'Style','edit',...
@@ -400,7 +399,7 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
             'HorizontalAlignment','left',...
             'backgroundcolor',get(fig,'color'));
         h.edit_STIiLSQR_padSize = uicontrol('Parent',h.panel_qsm_STIiLSQR,'Style','edit',...
-            'String','12',...
+            'String','4',...
             'units','normalized','position',[0.25 0.01 0.2 0.2],...
             'backgroundcolor','white');
     
@@ -473,7 +472,7 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
             'HorizontalAlignment','left',...
             'backgroundcolor',get(fig,'color'));
         h.edit_Star_padSize = uicontrol('Parent',h.panel_qsm_Star,'Style','edit',...
-            'String','12',...
+            'String','4',...
             'units','normalized','position',[0.25 0.75 0.2 0.2],...
             'backgroundcolor','white');
 
@@ -513,17 +512,7 @@ set(h.edit_cfs_lambda,          'Callback',{@EditNonNegative_Callback});
 set(h.edit_cfs_lambda,          'Callback',{@EditNonNegative_Callback});
 set(h.edit_Star_padSize,       	'Callback',{@EditNonNegative_Callback});
 set(h.edit_iLSQR_lambda,       	'Callback',{@EditNonNegative_Callback});
-set(h.edit_iLSQR_maxIter,      	'Callback',{@EditNonNegative_Callback});
-set(h.edit_iLSQR_tol,           'Callback',{@EditNonNegative_Callback});
-set(h.edit_STIiLSQR_maxIter,   	'Callback',{@EditNonNegative_Callback});
-set(h.edit_STIiLSQR_padSize,   	'Callback',{@EditNonNegative_Callback});
-set(h.edit_STIiLSQR_threshold, 	'Callback',{@EditNonNegative_Callback});
-set(h.edit_STIiLSQR_tol1,   	'Callback',{@EditNonNegative_Callback});
-set(h.edit_STIiLSQR_tol2,   	'Callback',{@EditNonNegative_Callback});
-set(h.edit_FANSI_lambda,        'Callback',{@EditNonNegative_Callback});
-set(h.edit_FANSI_maxIter,       'Callback',{@EditNonNegative_Callback});
-set(h.edit_FANSI_mu,            'Callback',{@EditNonNegative_Callback});
-set(h.edit_FANSI_tol,           'Callback',{@EditNonNegative_Callback});
+set(h.edit_iLSQR_,       	'Callback',{@EditNonNegative_Callback});
 
 % end
 %% Callback
@@ -727,6 +716,17 @@ else
 end
 end
 
+function EditRange01_Callback(source,eventdata)
+
+if str2double(source.String)<0
+    source.String = '0';
+end
+if str2double(source.String)>1
+    source.String = '1';
+end
+
+end
+
 function EditVSHARPMaxRadius_Callback(source,eventdata)
 global h
 if str2double(source.String) <= str2double(h.edit_VSHARP_minRadius.String)
@@ -738,17 +738,6 @@ function EditNonNegative_Callback(source,eventdata)
 if str2double(source.String)<0
     source.String = '0';
 end
-end
-
-function EditRange01_Callback(source,eventdata)
-
-if str2double(source.String)<0
-    source.String = '0';
-end
-if str2double(source.String)>1
-    source.String = '1';
-end
-
 end
 
 function PushbuttonStart_Callback(source,eventdata)
@@ -870,3 +859,5 @@ QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwra
     'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold);
 
 end
+
+%% TODO: excludes unrealiable bkg remove

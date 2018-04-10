@@ -4,11 +4,13 @@ currDir = fileparts(fullName);
 
 bkgRemovalFOLDER = [currDir filesep 'background_removal/'];
 addpath(bkgRemovalFOLDER);
-addpath([bkgRemovalFOLDER 'iHARPERELLA']);
+addpath([bkgRemovalFOLDER 'iHARPERELLA' filesep 'STISuitev2_2']);
 addpath([bkgRemovalFOLDER 'LBV']);
 addpath([bkgRemovalFOLDER 'PDF']);
 addpath([bkgRemovalFOLDER 'SHARP']);
-addpath([bkgRemovalFOLDER 'VSHARP']);
+addpath([bkgRemovalFOLDER 'VSHARP' filesep 'vsharp_chan']);
+% addpath([bkgRemovalFOLDER 'VSHARP' filesep 'STISuitev2_2']);
+addpath([bkgRemovalFOLDER 'VSHARP' filesep 'STISuitev3']);
 addpath([bkgRemovalFOLDER 'RESHARP']);
 addpath([bkgRemovalFOLDER 'utils']);
 

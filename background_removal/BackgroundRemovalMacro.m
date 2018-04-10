@@ -89,7 +89,7 @@ if ~isempty(varargin)
                     [radius, alpha, refine] = parse_varargin_RESHARP(varargin);
                     break
                 case 'vsharpsti'
-                    method = 'VSHARPSTI';
+                    method = 'VSHARPSTISuite';
                     [refine] = parse_varargin_VSHARPSTI(varargin);
                     break
                 case 'iharperella'
@@ -137,7 +137,7 @@ switch method
         disp(['Radius(voxel) = ' num2str(radius)]);
         disp(['Lambda = ' num2str(alpha)]);
         RDF = RESHARP(totalField, mask, matrixSize, voxelSize, radius, alpha);
-    case 'VSHARPSTI'
+    case 'VSHARPSTISuite'
         RDF = V_SHARP(totalField, mask,'voxelsize',double(voxelSize(:))');
     case 'iHARPERELLA'
         disp(['Maximum iterations = ' num2str(iteration)]);
