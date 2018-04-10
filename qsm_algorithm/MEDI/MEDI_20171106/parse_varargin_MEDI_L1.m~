@@ -1,0 +1,73 @@
+% An interal function to parse input arguments for MEDI_L1
+%   Created by Tian Liu on 2011.03.16
+%   Modified by Tian Liu and Shuai Wang on 2011.03.15
+%   Last modified by Tian Liu on 2013.07.24
+
+function [N_std,iMag,lam,pad,delta_TE,CF,B0_dir,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin)
+
+merit = 0;
+smv = 0;
+lam = 1000;
+radius = 5;
+data_weighting = 1;
+gradient_weighting = 1;
+pad = 0;
+Debug_Mode = 'NoDebug';
+% CSF regularization
+lam_CSF = 100;
+Mask_CSF = [];
+N_std = [];
+
+if size(varargin,2)>0
+    for k=1:size(varargin,2)
+        if strcmpi(varargin{k},'N_std')
+            N_std=varargin{k+1};
+        end
+        if strcmpi(varargin{k},'iMag')
+            N_std=varargin{k+1};
+        end
+        if strcmpi(varargin{k},'lambda')
+            lam=varargin{k+1};
+        end
+        if strcmpi(varargin{k},'data_weighting')
+            data_weighting=varargin{k+1};
+        end
+        if strcmpi(varargin{k},'gradient_weighting')
+            gradient_weighting=varargin{k+1};
+        end
+        if strcmpi(varargin{k},'merit')
+            merit=1;
+        end
+        if strcmpi(varargin{k},'smv')
+            smv = 1;
+            radius = varargin{k+1};
+        end
+        if strcmpi(varargin{k},'zeropad')
+            pad = varargin{k+1};
+        end
+        if strcmpi(varargin{k},'DEBUG')
+            Debug_Mode = varargin{k+1};
+        end
+        if strcmpi(varargin{k},'lambda_CSF')
+            lam_CSF = varargin{k+1};
+        end        
+        % CSF regularization
+        if strcmpi(varargin{k},'Mask_CSF')
+            Mask_CSF = varargin{k+1};
+        end 
+    end
+end
+
+if exist('delta_TE','var')==0
+    delta_TE = input('TE spacing = ');
+end
+
+if exist('CF','var')==0
+    CF = input('Central Frequency = ');
+end
+
+if exist('B0_dir','var')==0
+    B0_dir = input('B0 direction = ');
+end
+
+end

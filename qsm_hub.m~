@@ -543,7 +543,7 @@ h.panel_qsm = uipanel(fig,'Title','QSM','backgroundcolor',get(fig,'color'),...
             'HorizontalAlignment','left',...
             'backgroundcolor',get(fig,'color'));
         h.edit_MEDI_smv_radius = uicontrol('Parent',h.panel_qsm_MEDI,'Style','edit',...
-            'String','5',...
+            'String','0',...
             'units','normalized','position',[0.25 0.25 0.2 0.2],...
             'backgroundcolor','white','enable','off');
         h.checkbox_MEDI_merit = uicontrol('Parent',h.panel_qsm_MEDI,'Style','checkbox',...
@@ -886,7 +886,7 @@ QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
 QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
 QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
-QSM_isSMV=false;QSM_merit=false;
+QSM_isSMV=false;QSM_merit=false;QSM_lambda
 
 inputDir = get(h.edit_input,'String');
 outputDir = get(h.edit_output,'String');
@@ -980,15 +980,14 @@ switch QSM_method
         QSM_method='star';
         try QSM_threshold = str2double(get(h.edit_Star_padSize,'String')); catch; QSM_padsize=4; end
     case 'MEDI'
-        QSM_method='medi_l1';
         try QSM_lambda = str2double(get(h.edit_MEDI_lambda,'String')); catch; QSM_lambda=1000; end 
         try QSM_wData = str2double(get(h.edit_MEDI_weightData,'String')); catch; QSM_wData=1; end 
         try QSM_wGradient = str2double(get(h.edit_MEDI_weightGradient,'String')); catch; QSM_wGradient=1; end 
         try QSM_zeropad = str2double(get(h.edit_MEDI_zeropad,'String')); catch; QSM_zeropad=0; end 
         try QSM_radius = str2double(get(h.edit_MEDI_smv_radius,'String')); catch; QSM_radius=5; end 
-        try QSM_isSMV = get(h.checkbox_MEDI_smv,'Value'); catch; QSM_isSMV=0; end 
-        try QSM_merit = get(h.checkbox_MEDI_merit,'Value'); catch; QSM_merit=0; end 
-        try QSM_isLambdaCSF = get(h.checkbox_MEDI_lambda_csf,'Value'); catch; QSM_isLambdaCSF=0; end 
+        try QSM_isSMV = str2double(get(h.checkbox_MEDI_smv,'String')); catch; QSM_isSMV=0; end 
+        try QSM_merit = str2double(get(h.checkbox_MEDI_merit,'String')); catch; QSM_merit=0; end 
+        try QSM_isLambdaCSF = str2double(get(h.checkbox_MEDI_lambda_csf,'String')); catch; QSM_isLambdaCSF=0; end 
         try QSM_lambdaCSF = str2double(get(h.edit_MEDI_lambda_csf,'String')); catch; QSM_lambdaCSF=100; end 
 end
 
@@ -1014,7 +1013,6 @@ QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwra
     'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
     'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
     'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
-    'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-    'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
+    'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM);
 
 end

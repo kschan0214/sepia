@@ -11,7 +11,7 @@
 function qsm_hub_AddMethodPath(method)
 % specify the qsm algorithm version
 % TODO: may allow user to choose software versions
-MEDI_version = 'MEDI_20170611';
+MEDI_version = 'MEDI_20171106';
 STISuite_version = 'STISuitev3'; % STISuite_version = 'STISuitev2_2';
 
 % get the full path of this file
@@ -88,6 +88,9 @@ if nargin > 0
         case 'star'
             addpath([qsmAlgorithmDir 'Star']);
             addpath(genpath([utilsDir STISuite_version]));
+        case 'medi_l1'
+            addpath([qsmAlgorithmDir 'MEDI' filesep MEDI_version]);
+            addpath(genpath([utilsDir MEDI_version]));
     end
 end
 
