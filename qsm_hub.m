@@ -558,7 +558,8 @@ if pathDir ~= 0
     set(h.edit_input,'String',pathDir);
     parts = strfind(pathDir, '/');
     pathDirParent = pathDir(1:parts(end));
-    set(h.edit_output,'String',[pathDirParent 'output']);
+%     set(h.edit_output,'String',[pathDirParent 'output']);
+    set(h.edit_output,'String',[pathDir filesep 'output']);
 end
 end
 

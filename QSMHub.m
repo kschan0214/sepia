@@ -1,7 +1,5 @@
 %% [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
 %
-% Usage: [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
-%
 % Input
 % --------------
 %
@@ -37,22 +35,22 @@ QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solve
 %% Read input
 disp('Reading data...');
 % look for nifti files first
-inputNiiList = dir([inputDir '/*.nii*']);
-if ~isempty(inputNiiList)
+inputNiftiList = dir([inputDir '/*.nii*']);
+if ~isempty(inputNiftiList)
     % look for magnitude and phase files
-    for klist = 1:length(inputNiiList)
-        if contains(inputNiiList(klist).name,'magn')
-            inputMagnNii = load_nii([inputDir filesep inputNiiList(klist).name]);
-            magn = inputMagnNii.img;
+    for klist = 1:length(inputNiftiList)
+        if contains(inputNiftiList(klist).name,'magn')
+            inputMagnNifti = load_nii([inputDir filesep inputNiftiList(klist).name]);
+            magn = inputMagnNifti.img;
         end
-        if contains(inputNiiList(klist).name,'phase')
-            inputPhaseNii = load_nii([inputDir filesep inputNiiList(klist).name]);
-            fieldMap = inputPhaseNii.img;
-            voxelSize = inputPhaseNii.hdr.dime.pixdim(2:4);
-            matrixSize = inputPhaseNii.hdr.dime.dim(2:4);
+        if contains(inputNiftiList(klist).name,'phase')
+            inputPhaseNifti = load_nii([inputDir filesep inputNiftiList(klist).name]);
+            fieldMap = inputPhaseNifti.img;
+            voxelSize = inputPhaseNifti.hdr.dime.pixdim(2:4);
+            matrixSize = inputPhaseNifti.hdr.dime.dim(2:4);
             B0_dir = [0 0 1];
             B0 = 3;
-            TE = linspace(1e-3,30e-3,inputPhaseNii.hdr.dime.dim(5));
+            TE = linspace(1e-3,30e-3,inputPhaseNifti.hdr.dime.dim(5));
         end
     end
     % look for header file
@@ -60,6 +58,15 @@ if ~isempty(inputNiiList)
         headerList = dir([inputDir '/*header*']);
         load([inputDir filesep headerList(1).name]);
     end
+    % store the header the NIfTI files, all following results will have
+    % the same header
+    outputNiftiTemplate = inputMagnNifti;
+    % make sure the class of output datatype is double
+    outputNiftiTemplate.hdr.dime.datatype = 64;
+    % remove the time dimension info
+    outputNiftiTemplate.hdr.dime.dim(5) = 1;
+    
+    
 else
     % if no nifti file then check for DICOM files
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
@@ -72,12 +79,20 @@ else
     % save magnitude and phase images as nifti files
     disp('Saving DICOM data...');
     
-    nii_fieldMap = make_nii(fieldMap, voxelSize);
-    nii_magn = make_nii(magn, voxelSize);
+    outputNiftiTemplate = make_nii(zeros(size(iField)), voxelSize);
+    % make sure the class of output datatype is double
+    outputNiftiTemplate.hdr.dime.datatype = 64;
+    
+    nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
+    nii_magn = make_nii_quick(outputNiftiTemplate,magn);
+    
     save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
     save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
     save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
+    
+    % remove the time dimension info
+    outputNiftiTemplate.hdr.dime.dim(5) = 1;
 end
 % display some header info
 disp('Basic DICOM information');
@@ -101,10 +116,12 @@ end
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
     disp('Performing FSL BET...');
-    % save the 1st echo for bet
-    nii_temp = make_nii(magn(:,:,:,1), voxelSize);
+    
     tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
     brianDir = [outputDir filesep 'temp_brain.nii.gz'];
+    
+    % save the 1st echo for bet
+    nii_temp = make_nii_quick(outputNiftiTemplate,magn(:,:,:,1));
     
     save_nii(nii_temp,tempDir);
     
@@ -138,8 +155,8 @@ disp('Calculating field map...');
                                         
 disp('Saving unwrapped field map...');
 
-nii_totalField = make_nii(totalField, voxelSize);
-nii_fieldmapSD = make_nii(fieldmapSD, voxelSize);
+nii_totalField = make_nii_quick(outputNiftiTemplate,totalField);
+nii_fieldmapSD = make_nii_quick(outputNiftiTemplate,fieldmapSD);
                     
 save_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
 save_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
@@ -161,8 +178,8 @@ maskFinal = localField ~=0;
   
 disp('Saving local field map...');
 
-nii_localField = make_nii(localField, voxelSize);
-nii_maskFinal = make_nii(uint8(maskFinal), voxelSize);
+nii_localField = make_nii_quick(outputNiftiTemplate,localField);
+nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
                     
 save_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
 save_nii(nii_maskFinal,[outputDir filesep 'qsmhub_finalMask.nii.gz']);
@@ -182,8 +199,14 @@ chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
   
 disp('Saving susceptibility map...');
 
-nii_chi = make_nii(chi, voxelSize);
+nii_chi = make_nii_quick(outputNiftiTemplate,chi);
 
 save_nii(nii_chi,[outputDir filesep 'qsmhub_QSM.nii.gz']);
           
+end
+
+% handy function to save result to nifti format
+function nii = make_nii_quick(template,img)
+    nii = template;
+    nii.img = img;
 end
