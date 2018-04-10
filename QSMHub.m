@@ -1,4 +1,4 @@
-%% function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
+%% [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
 %
 % Usage: [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
 %
@@ -17,16 +17,21 @@
 %
 %
 function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
-%% add Path
-qsm_hub_AddPath;
+%% add general Path
+qsm_hub_AddMethodPath % qsm_hub_AddPath;
+
 %% Check output directory exist or not
 if exist(outputDir,'dir') ~= 7
+    % if not then create the directory
     mkdir(outputDir);
 end
 
 %% Parse input argument
+% [isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+% BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
+% QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,exclude_threshold] = parse_varargin_QSMHub(varargin);
 [isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
-BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
+BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,exclude_threshold] = parse_varargin_QSMHub(varargin);
 
 %% Read input
@@ -56,7 +61,7 @@ if ~isempty(inputNiiList)
         load([inputDir filesep headerList(1).name]);
     end
 else
-    % if no nifti files than check for DICOM files
+    % if no nifti file then check for DICOM files
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
     gyro = 42.57747892;
     B0 = CF/(gyro*1e6);
@@ -93,15 +98,17 @@ elseif ~isempty(maskList)
 	mask = inputMaskNii.img > 0;
 end
     
-% is BET is checked or no mask is found, run FSL's bet
+% if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
     disp('Performing FSL BET...');
+    % save the 1st echo for bet
     nii_temp = make_nii(magn(:,:,:,1), voxelSize);
     tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
     brianDir = [outputDir filesep 'temp_brain.nii.gz'];
     
     save_nii(nii_temp,tempDir);
     
+    % run bet here
     system(['bet ' tempDir ' ' brianDir ' -R']);
     try 
         mask = load_nii_img_only(brianDir) > 0;
@@ -120,6 +127,9 @@ if isempty(mask) || isBET
 end
 
 %% total field and Laplacian phase unwrap
+% add 'unwrap' method PATH
+qsm_hub_AddMethodPath(unwrap);
+
 disp('Calculating field map...');
 
 [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
@@ -138,12 +148,13 @@ maskReliable = fieldmapSD/norm(fieldmapSD(fieldmapSD~=0)) < exclude_threshold;
 mask = and(mask,maskReliable);
 
 %% Background field removal
+qsm_hub_AddMethodPath(BFR);
 disp('Recovering local field...');
 
 localField = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,...
       'method',BFR,'refine',refine,'tol',BFR_tol,'depth',BFR_depth,...
-      'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'CGsolver',...
-      BFR_CGdefault,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
+      'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'padsize',...
+      BFR_padSize,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
       'threshold',BFR_threshold); 
   
 maskFinal = localField ~=0;
@@ -160,6 +171,7 @@ save_nii(nii_maskFinal,[outputDir filesep 'qsmhub_finalMask.nii.gz']);
 wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
 
 %% qsm
+qsm_hub_AddMethodPath(QSM_method);
 disp('Computing QSM...');
 
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...

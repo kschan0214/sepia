@@ -75,7 +75,8 @@ if ~isempty(varargin)
                     break
                 case 'pdf'
                     method = 'PDF';
-                    [B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_varargin_PDF(varargin);
+%                     [B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_varargin_PDF(varargin);
+                    [B0_dir, tol, iteration, padSize, N_std, refine] = parse_varargin_PDF(varargin);
                     if isempty(N_std)
                         N_std = ones(matrixSize)*1e-4;
                     end
@@ -126,9 +127,11 @@ switch method
     case 'PDF'
         disp(['Tolerance = ' num2str(tol)]);
         disp(['Maximum iterations = ' num2str(iteration)]);
-        disp(['CGsolver = ' num2str(CGdefault)]);
-        RDF = PDF(totalField,mask,matrixSize,voxelSize,'b0dir',B0_dir,...
-            'tol', tol,'iteration', iteration,'CGsolver', CGdefault,'noisestd',N_std);
+%         disp(['CGsolver = ' num2str(CGdefault)]);
+%         RDF = PDF(totalField,mask,matrixSize,voxelSize,'b0dir',B0_dir,...
+%             'tol', tol,'iteration', iteration,'CGsolver', CGdefault,'noisestd',N_std);
+        RDF = PDF(totalField,N_std,mask,matrixSize,voxelSize,B0_dir,tol,...
+            iteration,'imagespace',padSize);
     case 'SHARP'
         disp(['Radius(voxel) = ' num2str(radius)]);
         disp(['Threshold = ' num2str(threshold)]);
