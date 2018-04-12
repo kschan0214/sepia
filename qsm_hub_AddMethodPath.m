@@ -59,7 +59,7 @@ if nargin > 0
             addpath([bkgRemovalDir 'LBV' filesep MEDI_version]);
         case 'pdf'
             addpath([bkgRemovalDir 'PDF' filesep MEDI_version]);
-            addpath(genpath([utilsDir 'MEDI_20170611']));
+            addpath(genpath([utilsDir MEDI_version]));
         case 'sharp'
             addpath([bkgRemovalDir 'SHARP']);
         case 'resharp'

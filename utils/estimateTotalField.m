@@ -60,7 +60,7 @@ else
 end
 
 if length(TE)>1
-    dTE = TE(2)-TE(1);
+    dt = TE(2)-TE(1);
 end
 
 %% Core

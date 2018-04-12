@@ -886,7 +886,7 @@ QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
 QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
 QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
-QSM_isSMV=false;QSM_merit=false;
+QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 
 inputDir = get(h.edit_input,'String');
 outputDir = get(h.edit_output,'String');

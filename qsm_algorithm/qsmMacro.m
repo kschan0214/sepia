@@ -122,7 +122,6 @@ if ~isempty(varargin)
                 case 'medi_l1'
                     method = 'MEDI_L1';
                     [N_std,magn,lambda,pad,te,CF,b0dir,merit,smv,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
-
             end
         end
     end
