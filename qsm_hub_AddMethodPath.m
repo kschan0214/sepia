@@ -33,6 +33,7 @@ qsmAlgorithmDir = [currDir filesep 'qsm_algorithm/'];
 addpath(phaseUnwrapDir);
 addpath(bkgRemovalDir);
 addpath(qsmAlgorithmDir);
+addpath([phaseUnwrapDir 'utils']);
 addpath([bkgRemovalDir 'utils']);
 addpath([qsmAlgorithmDir 'utils']);
 
@@ -47,8 +48,13 @@ addpath([utilsDir 'ReadDICOMMEDI/' MEDI_version]);
 % if method is given then add them to PATH
 if nargin > 0
     switch lower(method)
+        case 'bet'
+            addpath(genpath([utilsDir MEDI_version]));
         case 'laplacian'
             addpath([phaseUnwrapDir 'unwrapLaplacian' filesep MEDI_version]);
+        case 'laplacian_stisuite'
+            addpath([phaseUnwrapDir 'unwrapLaplacian' filesep STISuite_version]);
+            addpath(genpath([utilsDir STISuite_version]));
         case 'rg'
             addpath([phaseUnwrapDir 'unwrapRegionGrowing' filesep MEDI_version]);
         case 'gc'    

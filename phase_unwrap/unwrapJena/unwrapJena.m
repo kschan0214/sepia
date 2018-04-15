@@ -17,7 +17,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified: 8 September 2017
+% Date last modified: 13 April 2017
 %
 function unwrappedField = unwrapJena(wrappedField,mask,matrixSize)
 load_module_NIfTI;
@@ -35,5 +35,5 @@ unix([pathstr '/JenaUnwrapDONDERS.sh temp.hdr']);
 %     unix('sh  /home/rebelo/Documents/MATLAB/phase_unwrapping/test temp.hdr')
 % unix('sh  /home/mrphys/kwocha/Tools/phase_unwrap/unwrapJena/unwrap temp.hdr')
 unwrappedField = load_nii_img_only('uwtemp.hdr');
-system('rm temp.hdr temp.img uwtemp.img qmtemp.img qmtemp.hdr temp.mat');
+system('rm temp.hdr temp.img uwtemp.img uwtemp.hdr qmtemp.img qmtemp.hdr temp.mat');
 end

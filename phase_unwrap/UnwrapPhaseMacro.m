@@ -45,6 +45,9 @@ if ~isempty(varargin)
                 case 'laplacian'
                     method = 'Laplacian';
                     break
+                case 'laplacian_stisuite'
+                    method = 'Laplacian_stisuite';
+                    break
                 case 'rg'
                     method = 'RegionGrowing';
                     [magn] = parse_varargin_RegionGrowing(varargin);
@@ -83,6 +86,8 @@ disp(['The following unwrapping method is being used: ' method]);
 switch method
     case 'Laplacian'
         unwrappedField = unwrapLaplacian(wrappedField,matrixSize,voxelSize);
+    case 'Laplacian_stisuite'
+        unwrappedField = MRPhaseUnwrap(wrappedField,'voxelsize',voxelSize,'padsize',[12,12,12]);
     case 'RegionGrowing'
         unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
     case 'Graphcut'

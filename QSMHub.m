@@ -33,7 +33,7 @@ end
 [isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
-exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit] = parse_varargin_QSMHub(varargin);
+exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -42,7 +42,7 @@ inputNiftiList = dir([inputDir '/*.nii*']);
 if ~isempty(inputNiftiList)
     % look for magnitude and phase files
     for klist = 1:length(inputNiftiList)
-        if contains(inputNiftiList(klist).name,'magn')
+        if contains(inputNiftiList(klist).name,'magn') && ~contains(inputNiftiList(klist).name,'brain')
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             magn = double(inputMagnNifti.img);
         end
@@ -52,16 +52,20 @@ if ~isempty(inputNiftiList)
             % if input fieldmap is directly converted from nifti converter
             % then converts the fieldmap in rad and save to output dir
             if max(fieldMap(:))>1000
-                fieldMap = DICOM2Phase(fieldMap);
+                fieldMap = DICOM2Phase(inputPhaseNifti);
                 nii_fieldMap = make_nii_quick(inputPhaseNifti,fieldMap);
+                nii_fieldMap.hdr.dime.scl_inter = 0;
+                nii_fieldMap.hdr.dime.scl_slope = 1;
                 save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
             end
-            % create synthetic header in case no header is provided
-            [B0,B0_dir,~,~,TE,delta_TE,CF]=SyntheticQSMHubHeader(magn);
-            voxelSize = inputPhaseNifti.hdr.dime.pixdim(2:4);
-            matrixSize = inputPhaseNifti.hdr.dime.dim(2:4);
         end
     end
+    % create synthetic header in case no header is provided
+    [B0,~,~,~,TE,delta_TE,CF]=SyntheticQSMHubHeader(magn);
+    a=qGetR([0, inputMagnNifti.hdr.hist.quatern_b,inputMagnNifti.hdr.hist.quatern_c,inputMagnNifti.hdr.hist.quatern_d]);
+    B0_dir = -a(3,:);
+    voxelSize = inputMagnNifti.hdr.dime.pixdim(2:4);
+    matrixSize = inputMagnNifti.hdr.dime.dim(2:4);
     % look for header file
     if ~isempty(dir([inputDir '/*header*']))
         headerList = dir([inputDir '/*header*']);
@@ -82,7 +86,8 @@ if ~isempty(inputNiftiList)
     
 else
     % if no nifti file then check for DICOM files
-    [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
+%     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
+    [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
     
     B0 = CF/(gyro*1e6);
 
@@ -90,7 +95,7 @@ else
     magn = abs(iField);
 
     % save magnitude and phase images as nifti files
-    disp('Saving DICOM data...');
+    disp('Saving DICOM data into NIfTI...');
     
     outputNiftiTemplate = make_nii(zeros(size(iField)), voxelSize);
     % make sure the class of output datatype is double
@@ -98,13 +103,14 @@ else
     
     nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
     nii_magn = make_nii_quick(outputNiftiTemplate,magn);
-    
-    save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
-    save_untouch_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
+    %% TODO: bug fix for load_nii and save_nii
+    save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
+    save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
     save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
     
     % remove the time dimension info
+    outputNiftiTemplate = load_untouch_nii([outputDir filesep 'qsmhub_magn.nii.gz']);
     outputNiftiTemplate.hdr.dime.dim(5) = 1;
 end
 % display some header info
@@ -122,50 +128,68 @@ if ~isempty(maskFullName)
     mask = load_nii_img_only(maskFullName) > 0;
 elseif ~isempty(maskList) 
     % read mask if input directory contains 'mask'
-    inputMaskNii = load_nii([inputDir filesep maskList(1).name]);
+    inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
 	mask = inputMaskNii.img > 0;
 end
     
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
+    qsm_hub_AddMethodPath('bet');
     disp('Performing FSL BET...');
     
-    tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
-    brianDir = [outputDir filesep 'temp_brain.nii.gz'];
-    
-    % save the 1st echo for bet
-    nii_temp = make_nii_quick(outputNiftiTemplate,magn(:,:,:,1));
-    
-    save_untouch_nii(nii_temp,tempDir);
-    
-    % run bet here
-    system(['bet ' tempDir ' ' brianDir ' -R']);
-    try 
-        mask = load_nii_img_only(brianDir) > 0;
-    catch
-        setenv( 'FSLDIR', '/usr/local/fsl');
-        fsldir = getenv('FSLDIR');
-        fsldirmpath = sprintf('%s/etc/matlab',fsldir);
-        path(path, fsldirmpath);
-        oldPATH = getenv('PATH');
-        setenv('PATH',[oldPATH ':' fsldir '/bin']);
-        call_fsl(['bet ' tempDir ' ' brianDir ' -R']);
-        mask = load_nii_img_only(brianDir) > 0;
-    end
+%     tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
+%     brianDir = [outputDir filesep 'temp_brain.nii.gz'];
+%     
+%     % save the 1st echo for bet
+%     nii_temp = make_nii_quick(outputNiftiTemplate,magn(:,:,:,1));
+%     
+%     save_untouch_nii(nii_temp,tempDir);
+%     
+%     % run bet here
+%     system(['bet ' tempDir ' ' brianDir ' -R']);
+%     try 
+%         mask = load_nii_img_only(brianDir) > 0;
+%     catch
+%         setenv( 'FSLDIR', '/usr/local/fsl');
+%         fsldir = getenv('FSLDIR');
+%         fsldirmpath = sprintf('%s/etc/matlab',fsldir);
+%         path(path, fsldirmpath);
+%         oldPATH = getenv('PATH');
+%         setenv('PATH',[oldPATH ':' fsldir '/bin']);
+%         call_fsl(['bet ' tempDir ' ' brianDir ' -R']);
+%         mask = load_nii_img_only(brianDir) > 0;
+%     end
+% 
+%     system(['rm ' tempDir]);
 
-    system(['rm ' tempDir]);
+    mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
+
 end
 
 %% total field and Laplacian phase unwrap
 % add 'unwrap' method PATH
 qsm_hub_AddMethodPath(unwrap);
 
+if isEddyCorrect
+    disp('Correcting eddy current effect on bipolar readout data');
+    imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
+    fieldMap = angle(imgCplx);
+    magn = abs(imgCplx);
+    
+    nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
+    nii_fieldMap.hdr.dime.dim(5) = size(fieldMap,4);
+    nii_magn = make_nii_quick(outputNiftiTemplate,magn); 
+    nii_magn.hdr.dime.dim(5) = size(magn,4);
+    save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase_EC.nii.gz']);
+    save_untouch_nii(nii_magn,[outputDir filesep 'qsmhub_magn_EC.nii.gz']);
+end
+
 disp('Calculating field map...');
 
 % fix the output of field map in Hz
-% unit = 'Hz';
+% unit = 'radHz';
 
-[totalField,fieldmapSD] = estimateTotalField(double(fieldMap),double(magn),matrixSize,voxelSize,...
+[totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
                         'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
                         'Subsampling',subsampling,'mask',mask);
                                         
@@ -177,7 +201,7 @@ nii_fieldmapSD = make_nii_quick(outputNiftiTemplate,fieldmapSD);
 save_untouch_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
 save_untouch_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
 
-maskReliable = fieldmapSD/norm(fieldmapSD(fieldmapSD~=0)) < exclude_threshold;
+maskReliable = fieldmapSD < exclude_threshold;
 mask = and(mask,maskReliable);
 
 %% Background field removal
@@ -220,14 +244,15 @@ switch lower(QSM_method)
     case 'stisuiteilsqr'
         localField = localField;
     case 'fansi'
-        localField = localField;
+        % FANSI parameter is for ppm
+        localField = localField/(B0*gyro);
     case 'ssvsharp'
         localField = localField;
     case 'star'
         localField = localField;
     case 'medi_l1'
-        % input of MEDI is in rad
-        localField = localField*2*pi*delta_TE;
+        % MEDI parameter if for rad
+        localField = localField;
 end
 
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
@@ -249,7 +274,7 @@ switch lower(QSM_method)
     case 'stisuiteilsqr'
         chi = chi/(B0*gyro);
     case 'fansi'
-        chi = chi/(B0*gyro);
+        chi = chi;
     case 'ssvsharp'
         chi = chi/(B0*gyro);
     case 'star'
@@ -264,6 +289,8 @@ disp('Saving susceptibility map...');
 nii_chi = make_nii_quick(outputNiftiTemplate,chi);
 
 save_untouch_nii(nii_chi,[outputDir filesep 'qsmhub_QSM.nii.gz']);
+
+disp('Done!');
           
 end
 
@@ -271,4 +298,5 @@ end
 function nii = make_nii_quick(template,img)
     nii = template;
     nii.img = img;
+    nii.hdr.dime.datatype = 64;
 end

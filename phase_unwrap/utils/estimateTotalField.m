@@ -107,6 +107,7 @@ totalFieldVariance = sum(weight.^2 .* fieldMapSD.^2,4);
 totalFieldSD = sqrt(totalFieldVariance);
 totalFieldSD(isnan(totalFieldSD)) = 0;
 totalFieldSD(isinf(totalFieldSD)) = 0;
+totalFieldSD = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
 
 % totalField now in rads^-1, matching tmp2 to the smae unit
 % tmp2 = tmp2/dTE;

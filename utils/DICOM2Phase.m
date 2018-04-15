@@ -13,15 +13,21 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 11 April 2018
-% Date last modified:
+% Date last modified:13 April 2-18
 %
 %
-function phase = DICOM2Phase(dicomPhase)
-% Siemens DICOM phase range from -4069 to 4094
-% Scale the full range to [0,1]
-dicomPhase = (dicomPhase +4096)/(4094+4096);
-% Scale to [0,2*pi]
-dicomPhase = dicomPhase * 2*pi;
-% shift to [-pi,pi)
-phase = dicomPhase -pi;
+function phase = DICOM2Phase(niiPhase)
+dicomPhase = double(niiPhase.img);
+scaleSlope=niiPhase.hdr.dime.scl_slope;
+scaleIntercept=niiPhase.hdr.dime.scl_inter;
+
+newMax = niiPhase.hdr.dime.glmax*2 + scaleIntercept;
+newMin = niiPhase.hdr.dime.glmin*2 + scaleIntercept;
+fullRange = newMax-newMin + 1;
+
+% scale to true value of nifti file
+dicomPhaseRescale = (dicomPhase*scaleSlope) + scaleIntercept ;
+% Scale the full range to [-pi,pi)
+phase = (dicomPhaseRescale-scaleIntercept) / fullRange * 2*pi - pi;
+
 end
