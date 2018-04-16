@@ -30,7 +30,7 @@ end
 % [isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 % BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
 % QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,exclude_threshold] = parse_varargin_QSMHub(varargin);
-[isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+[isBET,maskFullName,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
 exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(varargin);
@@ -187,7 +187,7 @@ end
 disp('Calculating field map...');
 
 % fix the output of field map in Hz
-% unit = 'radHz';
+unit = 'Hz';
 
 [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
                         'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
@@ -235,24 +235,16 @@ qsm_hub_AddMethodPath(QSM_method);
 disp('Computing QSM...');
 
 switch lower(QSM_method)
-    case 'tkd'
-        localField = localField;
     case 'closedforml2'
-        localField = localField;
     case 'ilsqr'
-        localField = localField;
     case 'stisuiteilsqr'
-        localField = localField;
     case 'fansi'
         % FANSI parameter is for ppm
         localField = localField/(B0*gyro);
     case 'ssvsharp'
-        localField = localField;
     case 'star'
-        localField = localField;
+        localField = localField*2*pi;
     case 'medi_l1'
-        % MEDI parameter if for rad
-        localField = localField;
 end
 
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
@@ -274,14 +266,12 @@ switch lower(QSM_method)
     case 'stisuiteilsqr'
         chi = chi/(B0*gyro);
     case 'fansi'
-        chi = chi;
     case 'ssvsharp'
         chi = chi/(B0*gyro);
     case 'star'
-        chi = chi/(B0*gyro);
+        chi = chi/(2*pi*B0*gyro);
     case 'medi_l1'
-        % output of MEDI is in ppm
-%         chi = (chi*delta_TE/(2*pi))/(B0*gyro);
+        chi = chi/(B0*gyro);
 end
   
 disp('Saving susceptibility map...');

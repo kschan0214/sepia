@@ -16,14 +16,14 @@
 % Date last modified:
 %
 %
-function [isBET,mask,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+function [isBET,mask,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
     BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
     QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
     exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(arg)
 
 mask=[];
 isBET=false;
-unwrap='Laplacian';unit='radHz';subsampling=1;
+unwrap='Laplacian';subsampling=1;
 BFR='LBV';refine=false;BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
 BFR_padSize=40;BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
 QSM_method='TKD';QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
@@ -44,9 +44,9 @@ if ~isempty(arg)
         if strcmpi(arg{kvar},'unwrap')
             unwrap = arg{kvar+1};
         end
-        if strcmpi(arg{kvar},'unit')
-            unit = arg{kvar+1};
-        end
+%         if strcmpi(arg{kvar},'unit')
+%             unit = arg{kvar+1};
+%         end
         if  strcmpi(arg{kvar},'Subsampling')
             subsampling = arg{kvar+1};
             continue
