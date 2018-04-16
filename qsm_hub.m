@@ -37,7 +37,7 @@ h.TabPhaseUnwrap = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.TabBKGRemoval = uitab(h.TabGroup,'Title','Background field removal');
 h.TabQSM = uitab(h.TabGroup,'Title','QSM');
 
-%% QSM one-stop station
+%% initialise GUI with QSM one-stop station tab
 % I/O
 h = qsmhub_handle_panel_dataIO(h.TabQSMWhole,fig,h,[0.01 0.8]);
 % phase unwrap
@@ -52,32 +52,11 @@ h.OneStop_pushbutton_start = uicontrol('Parent',h.TabQSMWhole,'Style','pushbutto
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(fig,'color'));
 
-% %% Phase unwrapping tab
-% % I/O
-% h2 = qsmhub_handle_panel_dataIO(hTabPhaseUnwrap,fig,h2,[0.01 0.8]);
-% % phase unwrap
-% h2 = qsmhub_handle_panel_phaseUnwrap(hTabPhaseUnwrap,fig,h2,[0.01 0.59]);
-% % Start button
-% h2 = qsmhub_handle_pushbutton_start(hTabPhaseUnwrap,fig,h2,[0.85 0.01]);
-% 
-% %% background field removal tab
-% % I/O
-% h3 = qsmhub_handle_panel_dataIO(hTabBKGRemoval,fig,h3,[0.01 0.8]);
-% % background field
-% h3 = qsmhub_handle_panel_bkgRemoval(hTabBKGRemoval,fig,h3,[0.01 0.59]);
-% % Start button
-% h3 = qsmhub_handle_pushbutton_start(hTabBKGRemoval,fig,h3,[0.85 0.01]);
-% 
-% %% qsm tab
-% % I/O
-% h4 = qsmhub_handle_panel_dataIO(hTabQSM,fig,h4,[0.01 0.8]);
-% % QSM
-% h4 = qsmhub_handle_panel_qsm(hTabQSM,fig,h4,[0.01 0.59]);
-% % Start button
-% h4 = qsmhub_handle_pushbutton_start(hTabQSM,fig,h4,[0.85 0.01]);
-
 %% Set Callback
-% h = qsmhub_setAllCallbacks(h);
+h = SetAllCallbacks(h);
+
+%% utils function
+function h=SetAllCallbacks(h)
 set(h.TabGroup,                 'SelectionChangedFcn', {@test_Callback})
 set(h.button_input,           	'Callback',{@ButtonGetInputDir_Callback});
 set(h.button_output,            'Callback',{@ButtonGetOutputDir_Callback});
@@ -124,7 +103,7 @@ set(h.edit_FANSI_lambda,        'Callback',{@EditNonNegative_Callback});
 set(h.edit_FANSI_maxIter,       'Callback',{@EditNonNegative_Callback});
 set(h.edit_FANSI_mu,            'Callback',{@EditNonNegative_Callback});
 set(h.edit_FANSI_tol,           'Callback',{@EditNonNegative_Callback});
-
+end
 % end
 %% Callback
 function test_Callback(source,eventdata)
@@ -183,6 +162,8 @@ switch eventdata.NewValue.Title
             'backgroundcolor',get(fig,'color'));
         
 end
+% set callbacks
+h=SetAllCallbacks(h);
 end
 
 function ButtonGetInputDir_Callback(source,eventdata)

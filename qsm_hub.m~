@@ -52,79 +52,58 @@ h.OneStop_pushbutton_start = uicontrol('Parent',h.TabQSMWhole,'Style','pushbutto
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(fig,'color'));
 
-% %% Phase unwrapping tab
-% % I/O
-% h2 = qsmhub_handle_panel_dataIO(hTabPhaseUnwrap,fig,h2,[0.01 0.8]);
-% % phase unwrap
-% h2 = qsmhub_handle_panel_phaseUnwrap(hTabPhaseUnwrap,fig,h2,[0.01 0.59]);
-% % Start button
-% h2 = qsmhub_handle_pushbutton_start(hTabPhaseUnwrap,fig,h2,[0.85 0.01]);
-% 
-% %% background field removal tab
-% % I/O
-% h3 = qsmhub_handle_panel_dataIO(hTabBKGRemoval,fig,h3,[0.01 0.8]);
-% % background field
-% h3 = qsmhub_handle_panel_bkgRemoval(hTabBKGRemoval,fig,h3,[0.01 0.59]);
-% % Start button
-% h3 = qsmhub_handle_pushbutton_start(hTabBKGRemoval,fig,h3,[0.85 0.01]);
-% 
-% %% qsm tab
-% % I/O
-% h4 = qsmhub_handle_panel_dataIO(hTabQSM,fig,h4,[0.01 0.8]);
-% % QSM
-% h4 = qsmhub_handle_panel_qsm(hTabQSM,fig,h4,[0.01 0.59]);
-% % Start button
-% h4 = qsmhub_handle_pushbutton_start(hTabQSM,fig,h4,[0.85 0.01]);
-
 %% Set Callback
-% h = qsmhub_setAllCallbacks(h);
-% set(h.TabGroup,                 'SelectionChangedFcn', {@test_Callback})
-% set(h.button_input,           	'Callback',{@ButtonGetInputDir_Callback});
-% set(h.button_output,            'Callback',{@ButtonGetOutputDir_Callback});
-% set(h.checkbox_brainExtraction,	'Callback',{@CheckboxBrainExtraction_Callback});
-% set(h.button_maskdir,       	'Callback',{@ButtonGetMaskDir_Callback});
-% % set(h.popup_phaseUnwrap,          'Callback',{@imageselect_Callback,h});
-% % set(h.popup_unit,                 'Callback',{@imageselect_Callback,h});
-% set(h.popup_bkgRemoval,      	'Callback',{@PopupBkgRemoval_Callback});
-% set(h.popup_qsm,                'Callback',{@PopupQSM_Callback});
-% set(h.checkbox_cfs_lambda,      'Callback',{@CheckboxCFS_Callback});
-% set(h.checkbox_iLSQR_lambda,    'Callback',{@CheckboxiLSQR_Callback});
-% set(h.OneStop_pushbutton_start,	'Callback',{@PushbuttonOneStopStart_Callback});
-% set(h.checkbox_excludeMask,     'Callback',{@CheckboxExcludeMask_Callback});
-% set(h.checkbox_MEDI_smv,        'Callback',{@CheckboxMEDISMV_Callback});
-% set(h.checkbox_MEDI_lambda_csf, 'Callback',{@CheckboxMEDILambdaCSF_Callback});
-% set(h.edit_excludeMask,         'Callback',{@EditRange01_Callback});
-% set(h.edit_LBV_depth,           'Callback',{@EditMin_Callback});
-% set(h.edit_LBV_peel,            'Callback',{@EditNonNegative_Callback});
-% set(h.edit_LBV_tol,             'Callback',{@EditNonNegative_Callback});
-% set(h.edit_PDF_maxIter,        	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_PDF_tol,             'Callback',{@EditNonNegative_Callback});
-% set(h.edit_PDF_padSize,      	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_RESHARP_lambda,     	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_RESHARP_radius,     	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_SHARP_radius,     	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_SHARP_threshold,    	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_VSHARP_minRadius,   	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_VSHARP_maxRadius,   	'Callback',{@EditVSHARPMaxRadius_Callback});
-% set(h.edit_VSHARPSTI_smvSize,   'Callback',{@EditNonNegative_Callback});
-% set(h.edit_iHARPERELLA_maxIter,	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_TKD_threshold,       'Callback',{@EditRange01_Callback});
-% set(h.edit_cfs_lambda,          'Callback',{@EditNonNegative_Callback});
-% set(h.edit_cfs_lambda,          'Callback',{@EditNonNegative_Callback});
-% set(h.edit_Star_padSize,       	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_iLSQR_lambda,       	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_iLSQR_maxIter,      	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_iLSQR_tol,           'Callback',{@EditNonNegative_Callback});
-% set(h.edit_STIiLSQR_maxIter,   	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_STIiLSQR_padSize,   	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_STIiLSQR_threshold, 	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_STIiLSQR_tol1,   	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_STIiLSQR_tol2,   	'Callback',{@EditNonNegative_Callback});
-% set(h.edit_FANSI_lambda,        'Callback',{@EditNonNegative_Callback});
-% set(h.edit_FANSI_maxIter,       'Callback',{@EditNonNegative_Callback});
-% set(h.edit_FANSI_mu,            'Callback',{@EditNonNegative_Callback});
-% set(h.edit_FANSI_tol,           'Callback',{@EditNonNegative_Callback});
+h = SetAllCallbacks(h);
 
+%% utils function
+function h=SetAllCallbacks(h)
+set(h.TabGroup,                 'SelectionChangedFcn', {@test_Callback})
+set(h.button_input,           	'Callback',{@ButtonGetInputDir_Callback});
+set(h.button_output,            'Callback',{@ButtonGetOutputDir_Callback});
+set(h.checkbox_brainExtraction,	'Callback',{@CheckboxBrainExtraction_Callback});
+set(h.button_maskdir,       	'Callback',{@ButtonGetMaskDir_Callback});
+% set(h.popup_phaseUnwrap,          'Callback',{@imageselect_Callback,h});
+% set(h.popup_unit,                 'Callback',{@imageselect_Callback,h});
+set(h.popup_bkgRemoval,      	'Callback',{@PopupBkgRemoval_Callback});
+set(h.popup_qsm,                'Callback',{@PopupQSM_Callback});
+set(h.checkbox_cfs_lambda,      'Callback',{@CheckboxCFS_Callback});
+set(h.checkbox_iLSQR_lambda,    'Callback',{@CheckboxiLSQR_Callback});
+set(h.OneStop_pushbutton_start,	'Callback',{@PushbuttonOneStopStart_Callback});
+set(h.checkbox_excludeMask,     'Callback',{@CheckboxExcludeMask_Callback});
+set(h.checkbox_MEDI_smv,        'Callback',{@CheckboxMEDISMV_Callback});
+set(h.checkbox_MEDI_lambda_csf, 'Callback',{@CheckboxMEDILambdaCSF_Callback});
+set(h.edit_excludeMask,         'Callback',{@EditRange01_Callback});
+set(h.edit_LBV_depth,           'Callback',{@EditMin_Callback});
+set(h.edit_LBV_peel,            'Callback',{@EditNonNegative_Callback});
+set(h.edit_LBV_tol,             'Callback',{@EditNonNegative_Callback});
+set(h.edit_PDF_maxIter,        	'Callback',{@EditNonNegative_Callback});
+set(h.edit_PDF_tol,             'Callback',{@EditNonNegative_Callback});
+set(h.edit_PDF_padSize,      	'Callback',{@EditNonNegative_Callback});
+set(h.edit_RESHARP_lambda,     	'Callback',{@EditNonNegative_Callback});
+set(h.edit_RESHARP_radius,     	'Callback',{@EditNonNegative_Callback});
+set(h.edit_SHARP_radius,     	'Callback',{@EditNonNegative_Callback});
+set(h.edit_SHARP_threshold,    	'Callback',{@EditNonNegative_Callback});
+set(h.edit_VSHARP_minRadius,   	'Callback',{@EditNonNegative_Callback});
+set(h.edit_VSHARP_maxRadius,   	'Callback',{@EditVSHARPMaxRadius_Callback});
+set(h.edit_VSHARPSTI_smvSize,   'Callback',{@EditNonNegative_Callback});
+set(h.edit_iHARPERELLA_maxIter,	'Callback',{@EditNonNegative_Callback});
+set(h.edit_TKD_threshold,       'Callback',{@EditRange01_Callback});
+set(h.edit_cfs_lambda,          'Callback',{@EditNonNegative_Callback});
+set(h.edit_cfs_lambda,          'Callback',{@EditNonNegative_Callback});
+set(h.edit_Star_padSize,       	'Callback',{@EditNonNegative_Callback});
+set(h.edit_iLSQR_lambda,       	'Callback',{@EditNonNegative_Callback});
+set(h.edit_iLSQR_maxIter,      	'Callback',{@EditNonNegative_Callback});
+set(h.edit_iLSQR_tol,           'Callback',{@EditNonNegative_Callback});
+set(h.edit_STIiLSQR_maxIter,   	'Callback',{@EditNonNegative_Callback});
+set(h.edit_STIiLSQR_padSize,   	'Callback',{@EditNonNegative_Callback});
+set(h.edit_STIiLSQR_threshold, 	'Callback',{@EditNonNegative_Callback});
+set(h.edit_STIiLSQR_tol1,   	'Callback',{@EditNonNegative_Callback});
+set(h.edit_STIiLSQR_tol2,   	'Callback',{@EditNonNegative_Callback});
+set(h.edit_FANSI_lambda,        'Callback',{@EditNonNegative_Callback});
+set(h.edit_FANSI_maxIter,       'Callback',{@EditNonNegative_Callback});
+set(h.edit_FANSI_mu,            'Callback',{@EditNonNegative_Callback});
+set(h.edit_FANSI_tol,           'Callback',{@EditNonNegative_Callback});
+end
 % end
 %% Callback
 function test_Callback(source,eventdata)
@@ -183,6 +162,8 @@ switch eventdata.NewValue.Title
             'backgroundcolor',get(fig,'color'));
         
 end
+% set callbacks
+h=SetAllCallbacks(h);
 end
 
 function ButtonGetInputDir_Callback(source,eventdata)
