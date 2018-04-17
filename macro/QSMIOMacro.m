@@ -45,7 +45,7 @@ if ~isempty(inputNiftiList)
             inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             localField = double(inputLocalFieldNifti.img);
         end
-        if contains(inputNiftiList(klist).name,'magn') && ~contains(inputNiftiList(klist).name,'brain')
+        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain')
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             magn = double(inputMagnNifti.img);
         end

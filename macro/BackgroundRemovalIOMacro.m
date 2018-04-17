@@ -40,11 +40,11 @@ if ~isempty(inputNiftiList)
     % look for total field map and fieldmap SD files
     fieldmapSD = [];
     for klist = 1:length(inputNiftiList)
-        if contains(inputNiftiList(klist).name,'totalField') 
+        if contains(lower(inputNiftiList(klist).name),'totalfield') 
             inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             totalField = double(inputTotalFieldNifti.img);
         end
-        if contains(inputNiftiList(klist).name,'fieldMapSD')
+        if contains(lower(inputNiftiList(klist).name),'fieldmapsd')
             inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
         end

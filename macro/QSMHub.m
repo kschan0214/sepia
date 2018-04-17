@@ -42,11 +42,11 @@ inputNiftiList = dir([inputDir '/*.nii*']);
 if ~isempty(inputNiftiList)
     % look for magnitude and phase files
     for klist = 1:length(inputNiftiList)
-        if contains(inputNiftiList(klist).name,'magn') && ~contains(inputNiftiList(klist).name,'brain')
+        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain')
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             magn = double(inputMagnNifti.img);
         end
-        if contains(inputNiftiList(klist).name,'phase')
+        if contains(lower(inputNiftiList(klist).name),'phase')
             inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldMap = double(inputPhaseNifti.img);
             % if input fieldmap is directly converted from nifti converter
