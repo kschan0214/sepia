@@ -23,7 +23,11 @@ gyro = 42.57747892;
 
 [b0,b0dir,voxelSize,te] = process_options(varargin,'b0',3,'b0dir',[0,0,1],'voxel',[1,1,1],'te',linspace(1e-3,30e-3,nt));
 
-dte = te(2)-te(1); %s
+if length(te)<2
+    dte = te;
+else
+    dte = te(2)-te(1); %s
+end
 
 CF = gyro * 1e6 * b0;
             

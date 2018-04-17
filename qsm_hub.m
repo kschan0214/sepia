@@ -14,7 +14,7 @@ clear
 
 qsm_hub_AddPath
 
-global h fig
+global h
 
 screenSize = get(0,'ScreenSize');
 posLeft = round(screenSize(3)/4);
@@ -37,7 +37,41 @@ h.TabPhaseUnwrap = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.TabBKGRemoval = uitab(h.TabGroup,'Title','Background field removal');
 h.TabQSM = uitab(h.TabGroup,'Title','QSM');
 
-%% initialise GUI with QSM one-stop station tab
+% initialise all tabs
+%% Phase unwrapping tab
+% I/O
+h = qsmhub_handle_panel_dataIO(h.TabPhaseUnwrap,fig,h,[0.01 0.8]);
+% phase unwrap
+h = qsmhub_handle_panel_phaseUnwrap(h.TabPhaseUnwrap,fig,h,[0.01 0.59]);
+% Start button
+h.PhaseUnwrapTab_pushbutton_start = uicontrol('Parent',h.TabPhaseUnwrap,'Style','pushbutton',...
+    'String','Start',...
+    'units','normalized','Position',[0.85 0.01 0.1 0.05],...
+    'backgroundcolor',get(fig,'color'));
+
+%% background field removal tab
+% I/O
+h = qsmhub_handle_panel_dataIO(h.TabBKGRemoval,fig,h,[0.01 0.8]);
+% background field
+h = qsmhub_handle_panel_bkgRemoval(h.TabBKGRemoval,fig,h,[0.01 0.59]);
+% Start button
+h.BKGRemovalTab_pushbutton_start = uicontrol('Parent',h.TabBKGRemoval,'Style','pushbutton',...
+    'String','Start',...
+    'units','normalized','Position',[0.85 0.01 0.1 0.05],...
+    'backgroundcolor',get(fig,'color'));
+
+%% qsm tab
+% I/O
+h = qsmhub_handle_panel_dataIO(h.TabQSM,fig,h,[0.01 0.8]);
+% QSM
+h = qsmhub_handle_panel_qsm(h.TabQSM,fig,h,[0.01 0.59]);
+% Start button
+h.QSMTab_pushbutton_start = uicontrol('Parent',h.TabQSM,'Style','pushbutton',...
+    'String','Start',...
+    'units','normalized','Position',[0.85 0.01 0.1 0.05],...
+    'backgroundcolor',get(fig,'color'));
+
+%% GUI with QSM one-stop station tab
 % I/O
 h = qsmhub_handle_panel_dataIO(h.TabQSMWhole,fig,h,[0.01 0.8]);
 % phase unwrap
@@ -47,7 +81,7 @@ h = qsmhub_handle_panel_bkgRemoval(h.TabQSMWhole,fig,h,[0.01 0.33]);
 % QSM
 h = qsmhub_handle_panel_qsm(h.TabQSMWhole,fig,h,[0.01 0.07]);
 % Start button
-h.OneStop_pushbutton_start = uicontrol('Parent',h.TabQSMWhole,'Style','pushbutton',...
+h.OneStopTab_pushbutton_start = uicontrol('Parent',h.TabQSMWhole,'Style','pushbutton',...
     'String','Start',...
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(fig,'color'));
@@ -55,20 +89,17 @@ h.OneStop_pushbutton_start = uicontrol('Parent',h.TabQSMWhole,'Style','pushbutto
 %% Set Callback
 h = SetAllCallbacks(h);
 
-%% utils function
+%% utils functions
 function h=SetAllCallbacks(h)
-set(h.TabGroup,                 'SelectionChangedFcn', {@test_Callback})
+set(h.TabGroup,                 'SelectionChangedFcn', {@SwitchTab_Callback})
 set(h.button_input,           	'Callback',{@ButtonGetInputDir_Callback});
 set(h.button_output,            'Callback',{@ButtonGetOutputDir_Callback});
 set(h.checkbox_brainExtraction,	'Callback',{@CheckboxBrainExtraction_Callback});
 set(h.button_maskdir,       	'Callback',{@ButtonGetMaskDir_Callback});
-% set(h.popup_phaseUnwrap,          'Callback',{@imageselect_Callback,h});
-% set(h.popup_unit,                 'Callback',{@imageselect_Callback,h});
 set(h.popup_bkgRemoval,      	'Callback',{@PopupBkgRemoval_Callback});
 set(h.popup_qsm,                'Callback',{@PopupQSM_Callback});
 set(h.checkbox_cfs_lambda,      'Callback',{@CheckboxCFS_Callback});
 set(h.checkbox_iLSQR_lambda,    'Callback',{@CheckboxiLSQR_Callback});
-set(h.OneStop_pushbutton_start,	'Callback',{@PushbuttonOneStopStart_Callback});
 set(h.checkbox_excludeMask,     'Callback',{@CheckboxExcludeMask_Callback});
 set(h.checkbox_MEDI_smv,        'Callback',{@CheckboxMEDISMV_Callback});
 set(h.checkbox_MEDI_lambda_csf, 'Callback',{@CheckboxMEDILambdaCSF_Callback});
@@ -103,67 +134,60 @@ set(h.edit_FANSI_lambda,        'Callback',{@EditNonNegative_Callback});
 set(h.edit_FANSI_maxIter,       'Callback',{@EditNonNegative_Callback});
 set(h.edit_FANSI_mu,            'Callback',{@EditNonNegative_Callback});
 set(h.edit_FANSI_tol,           'Callback',{@EditNonNegative_Callback});
+set(h.OneStopTab_pushbutton_start,     	'Callback',{@PushbuttonOneStopStart_Callback});
+set(h.PhaseUnwrapTab_pushbutton_start,  'Callback',{@PushbuttonPhaseUnwrapStart_Callback});
+set(h.BKGRemovalTab_pushbutton_start,   'Callback',{@PushbuttonBKGRemovalStart_Callback});
+set(h.QSMTab_pushbutton_start,          'Callback',{@PushbuttonQSMStart_Callback});
 end
-% end
-%% Callback
-function test_Callback(source,eventdata)
-global h fig
+
+%% Callback functions
+function SwitchTab_Callback(source,eventdata)
+global h
+% switching parent handle based on current tab
 switch eventdata.NewValue.Title
+    % QSM one-stop station
     case 'One-stop QSM processing'
-        %% QSM one-stop station
         % I/O
-        h = qsmhub_handle_panel_dataIO(h.TabQSMWhole,fig,h,[0.01 0.8]);
+        set(h.panel_dataIO,'Parent',h.TabQSMWhole);
+        set(h.checkbox_brainExtraction,'Enable','on');
         % phase unwrap
-        h = qsmhub_handle_panel_phaseUnwrap(h.TabQSMWhole,fig,h,[0.01 0.59]);
+        set(h.panel_phaseUnwrap,'Parent',h.TabQSMWhole,'Position',[0.01 0.59 0.95 0.2]);
         % background field
-        h = qsmhub_handle_panel_bkgRemoval(h.TabQSMWhole,fig,h,[0.01 0.33]);
+        set(h.panel_bkgRemoval,'Parent',h.TabQSMWhole,'Position',[0.01 0.33 0.95 0.25]);
         % QSM
-        h = qsmhub_handle_panel_qsm(h.TabQSMWhole,fig,h,[0.01 0.07]);
-        % Start button
-        h.OneStopTab_pushbutton_start = uicontrol('Parent',h.TabQSMWhole,'Style','pushbutton',...
-            'String','Start',...
-            'units','normalized','Position',[0.85 0.01 0.1 0.05],...
-            'backgroundcolor',get(fig,'color'));
+        set(h.panel_qsm,'Parent',h.TabQSMWhole,'Position',[0.01 0.07 0.95 0.25]);
         
+    % Phase unwrapping tab
     case 'Phase unwrapping'
-        %% Phase unwrapping tab
         % I/O
-        h = qsmhub_handle_panel_dataIO(h.TabPhaseUnwrap,fig,h,[0.01 0.8]);
+        set(h.panel_dataIO,'Parent',h.TabPhaseUnwrap);
+        set(h.checkbox_brainExtraction,'Enable','on');
         % phase unwrap
-        h = qsmhub_handle_panel_phaseUnwrap(h.TabPhaseUnwrap,fig,h,[0.01 0.59]);
-        % Start button
-        h.PhaseUnwrapTab_pushbutton_start = uicontrol('Parent',h.TabPhaseUnwrap,'Style','pushbutton',...
-            'String','Start',...
-            'units','normalized','Position',[0.85 0.01 0.1 0.05],...
-            'backgroundcolor',get(fig,'color'));
+        set(h.panel_phaseUnwrap,'Parent',h.TabPhaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
         
+    % background field removal tab    
     case 'Background field removal'
-        %% background field removal tab
         % I/O
-        h = qsmhub_handle_panel_dataIO(h.TabBKGRemoval,fig,h,[0.01 0.8]);
+        set(h.panel_dataIO,'Parent',h.TabBKGRemoval);
+            % not bet support with this tab
+            set(h.checkbox_brainExtraction,'Enable','off','Value',0);
+            set(h.edit_maskdir,'Enable','on');
         % background field
-        h = qsmhub_handle_panel_bkgRemoval(h.TabBKGRemoval,fig,h,[0.01 0.59]);
-        % Start button
-        h.BKGRemovalTab_pushbutton_start = uicontrol('Parent',h.TabBKGRemoval,'Style','pushbutton',...
-            'String','Start',...
-            'units','normalized','Position',[0.85 0.01 0.1 0.05],...
-            'backgroundcolor',get(fig,'color'));
-        
+        set(h.panel_bkgRemoval,'Parent',h.TabBKGRemoval,'Position',[0.01 0.59 0.95 0.25]);
+
+    % qsm tab    
     case 'QSM'
-        %% qsm tab
         % I/O
-        h = qsmhub_handle_panel_dataIO(h.TabQSM,fig,h,[0.01 0.8]);
+        set(h.panel_dataIO,'Parent',h.TabQSM);
+            % not bet support with this tab
+            set(h.checkbox_brainExtraction,'Enable','off','Value',0);
+            set(h.edit_maskdir,'Enable','on');
         % QSM
-        h = qsmhub_handle_panel_qsm(h.TabQSM,fig,h,[0.01 0.59]);
-        % Start button
-        h.QSMTab_pushbutton_start = uicontrol('Parent',h.TabQSM,'Style','pushbutton',...
-            'String','Start',...
-            'units','normalized','Position',[0.85 0.01 0.1 0.05],...
-            'backgroundcolor',get(fig,'color'));
+        set(h.panel_qsm,'Parent',h.TabQSM,'Position',[0.01 0.59 0.95 0.25]);
         
 end
-% set callbacks
-h=SetAllCallbacks(h);
+    % set callbacks
+%     h=SetAllCallbacks(h);
 end
 
 function ButtonGetInputDir_Callback(source,eventdata)
@@ -447,23 +471,34 @@ QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
 QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
 QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 
+% get I/O GUI input
 inputDir = get(h.edit_input,'String');
 outputDir = get(h.edit_output,'String');
 maskDir = get(h.edit_maskdir,'String');
 isBET = get(h.checkbox_brainExtraction,'Value');
+% get phase unwrap GUI input
 phaseUnwrap = h.popup_phaseUnwrap.String{h.popup_phaseUnwrap.Value,1};
-% units = h.popup_unit.String{h.popup_unit.Value,1};
-BFR = h.popup_bkgRemoval.String{h.popup_bkgRemoval.Value,1};
-QSM_method = h.popup_qsm.String{h.popup_qsm.Value,1};
-refine = get(h.checkbox_bkgRemoval,'Value');
 isEddyCorrect = get(h.checkbox_eddyCorrect,'Value');
-
 if get(h.checkbox_excludeMask,'Value')
     excludeMaskThreshold = str2double(get(h.edit_excludeMask,'String'));
 else
     excludeMaskThreshold = 1;
 end
+% get background field removal GUI input
+BFR = h.popup_bkgRemoval.String{h.popup_bkgRemoval.Value,1};
+refine = get(h.checkbox_bkgRemoval,'Value');
+% get QSM GUI input
+QSM_method = h.popup_qsm.String{h.popup_qsm.Value,1};
 
+% matching the mask GUI input to QSMHub input format
+% look for mask file full name
+try 
+    maskFullName = maskDir;
+catch
+    maskFullName = [];
+end
+
+% matching the phase unwrapping GUI input to QSMHub input format
 switch phaseUnwrap
     case 'Region growing'
         phaseUnwrap = 'rg';
@@ -473,6 +508,7 @@ switch phaseUnwrap
         phaseUnwrap = 'laplacian_stisuite';
 end
 
+% matching the background field removal GUI input to QSMHub input format
 % get specific backgroud field removal algorithm parameters
 switch BFR
     case 'LBV'
@@ -562,21 +598,7 @@ switch QSM_method
         try QSM_lambdaCSF = str2double(get(h.edit_MEDI_lambda_csf,'String')); catch; QSM_lambdaCSF=100; end 
 end
 
-% look for mask file full name
-try 
-    maskFullName = maskDir;
-catch
-    maskFullName = [];
-end
-
-% QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
-%     'unit',units,'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
-%     'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'CGsolver',BFR_CGdefault,...
-%     'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
-%     'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
-%     'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-%     'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold);
-
+% core for QSm one stop processing
 QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
     'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
     'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
@@ -586,5 +608,211 @@ QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwra
     'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
     'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
     'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'eddy',isEddyCorrect);
+
+end
+
+function PushbuttonPhaseUnwrapStart_Callback(source,eventdata)
+
+global h
+
+% initialise all possible parameters
+subsampling=1;
+
+% get I/O GUI input
+inputDir = get(h.edit_input,'String');
+outputDir = get(h.edit_output,'String');
+maskDir = get(h.edit_maskdir,'String');
+isBET = get(h.checkbox_brainExtraction,'Value');
+
+% get phase unwrap GUI input
+phaseUnwrap = h.popup_phaseUnwrap.String{h.popup_phaseUnwrap.Value,1};
+isEddyCorrect = get(h.checkbox_eddyCorrect,'Value');
+if get(h.checkbox_excludeMask,'Value')
+    excludeMaskThreshold = str2double(get(h.edit_excludeMask,'String'));
+else
+    excludeMaskThreshold = 1;
+end
+
+% matching the mask GUI input to QSMHub input format
+% look for mask file full name
+try 
+    maskFullName = maskDir;
+catch
+    maskFullName = [];
+end
+
+% matching the phase unwrapping GUI input to QSMHub input format
+switch phaseUnwrap
+    case 'Region growing'
+        phaseUnwrap = 'rg';
+    case 'Graphcut'
+        phaseUnwrap = 'gc';
+    case 'Laplacian STI suite'
+        phaseUnwrap = 'laplacian_stisuite';
+end
+
+UnwrapPhaseIOMacro(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+    'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect);
+
+end
+
+function PushbuttonBKGRemovalStart_Callback(source,eventdata)
+
+global h
+
+% initialise all possible parameters
+BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
+BFR_padSize = 40;
+BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
+
+% get I/O GUI input
+inputDir = get(h.edit_input,'String');
+outputDir = get(h.edit_output,'String');
+maskDir = get(h.edit_maskdir,'String');
+
+% get background field removal GUI input
+BFR = h.popup_bkgRemoval.String{h.popup_bkgRemoval.Value,1};
+refine = get(h.checkbox_bkgRemoval,'Value');
+
+% matching the mask GUI input to QSMHub input format
+% look for mask file full name
+try 
+    maskFullName = maskDir;
+catch
+    maskFullName = [];
+end
+
+% matching the background field removal GUI input to QSMHub input format
+% get specific backgroud field removal algorithm parameters
+switch BFR
+    case 'LBV'
+        BFR='lbv';
+        try BFR_tol = str2double(get(h.edit_LBV_tol,'String')); catch; BFR_tol=1e-4; end
+        try BFR_depth = str2double(get(h.edit_LBV_depth,'String')); catch; BFR_depth=4; end
+        try BFR_peel = str2double(get(h.edit_LBV_peel,'String')); catch; BFR_peel=4; end
+    case 'PDF'
+        BFR='pdf';
+        try BFR_tol = str2double(get(h.edit_PDF_tol,'String')); catch; BFR_tol=1e-2; end
+        try BFR_iteration = str2double(get(h.edit_PDF_maxIter,'String')); catch; BFR_iteration=50; end
+        try BFR_padSize = str2double(get(h.edit_PDF_padSize,'String')); catch; BFR_iteration=40; end
+%         try BFR_CGdefault = h.popup_PDF_cgSolver.String{h.popup_PDF_cgSolver.Value,1}; catch; BFR_CGdefault=true; end
+    case 'RESHARP'
+        BFR='resharp';
+        try BFR_radius = str2double(get(h.edit_RESHARP_radius,'String')); catch; BFR_radius=4; end
+        try BFR_alpha = str2double(get(h.edit_RESHARP_lambda,'String')); catch; BFR_alpha=0.01; end
+    case 'SHARP'
+        BFR='sharp';
+        try BFR_radius = str2double(get(h.edit_SHARP_radius,'String')); catch; BFR_radius=4; end
+        try BFR_threshold = str2double(get(h.edit_SHARP_threshold,'String')); catch; BFR_threshold=0.03; end
+    case 'VSHARP'
+        BFR='vsharp';
+        try maxRadius = str2double(get(h.edit_VSHARP_maxRadius,'String')); catch; maxRadius=10; end
+        try minRadius = str2double(get(h.edit_VSHARP_minRadius,'String')); catch; minRadius=3; end
+        BFR_radius = maxRadius:-2:minRadius;
+    case 'iHARPERELLA'
+        BFR='iharperella';
+        try BFR_iteration = str2double(get(h.edit_iHARPERELLA_maxIter,'String')); catch; BFR_iteration=100; end 
+    case 'VSHARP STI suite'
+        BFR='vsharpsti';
+        try BFR_radius = str2double(get(h.edit_VSHARPSTI_smvSize,'String')); catch; BFR_radius=12; end
+end
+
+BackgroundRemovalIOMacro(inputDir,outputDir,'mask',maskFullName,...
+    'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
+    'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
+    'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold);
+
+end
+
+function PushbuttonQSMStart_Callback(source,eventdata)
+
+global h
+
+% initialise all possible parameters
+QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
+QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
+QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
+QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
+QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
+
+% get I/O GUI input
+inputDir = get(h.edit_input,'String');
+outputDir = get(h.edit_output,'String');
+maskDir = get(h.edit_maskdir,'String');
+
+% get QSM GUI input
+QSM_method = h.popup_qsm.String{h.popup_qsm.Value,1};
+
+% matching the mask GUI input to QSMHub input format
+% look for mask file full name
+try 
+    maskFullName = maskDir;
+catch
+    maskFullName = [];
+end
+
+% get QSM algorithm parameters
+switch QSM_method
+    case 'TKD'
+        QSM_method='tkd';
+        try QSM_threshold = str2double(get(h.edit_TKD_threshold,'String')); catch; QSM_threshold=0.15; end
+    case 'Closed-form solution'
+        QSM_method='closedforml2';
+        try QSM_lambda = str2double(get(h.edit_cfs_lambda,'String')); catch; QSM_lambda=0.13; end
+        try QSM_optimise = get(h.checkbox_cfs_lambda,'Value'); catch; QSM_optimise=false; end
+    case 'STI suite iLSQR'
+        QSM_method='stisuiteilsqr';
+        try QSM_threshold = str2double(get(h.edit_STIiLSQR_threshold,'String')); catch; QSM_threshold=0.01; end
+        try QSM_maxiter = str2double(get(h.edit_STIiLSQR_maxIter,'String')); catch; QSM_maxiter=100; end
+        try QSM_tol1 = str2double(get(h.edit_STIiLSQR_tol1,'String')); catch; QSM_tol1=0.01; end
+        try QSM_tol2 = str2double(get(h.edit_STIiLSQR_tol2,'String')); catch; QSM_tol2=0.001; end
+        try QSM_padsize = str2double(get(h.edit_STIiLSQR_padSize,'String')); catch; QSM_padsize=4; end
+        QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
+    case 'iLSQR'
+        QSM_method='ilsqr';
+        try QSM_tol = str2double(get(h.edit_iLSQR_tol,'String')); catch; QSM_tol=0.001; end
+        try QSM_maxiter = str2double(get(h.edit_iLSQR_maxIter,'String')); catch; QSM_maxiter=100; end
+        try QSM_lambda = str2double(get(h.edit_iLSQR_lambda,'String')); catch; QSM_lambda=0.13; end
+        try QSM_optimise = get(h.checkbox_iLSQR_lambda,'Value'); catch; QSM_optimise=false; end 
+    case 'FANSI'
+        QSM_method='fansi';
+        try QSM_tol = str2double(get(h.edit_FANSI_tol,'String')); catch; QSM_tol=1; end
+        try QSM_lambda = str2double(get(h.edit_FANSI_lambda,'String')); catch; QSM_lambda=3e-5; end
+        try QSM_mu1 = str2double(get(h.edit_FANSI_mu,'String')); catch; QSM_mu1=5e-5; end
+        try QSM_maxiter = str2double(get(h.edit_FANSI_maxIter,'String')); catch; QSM_maxiter=50; end
+        try 
+            QSM_solver = h.popup_FANSI_solver.String{h.popup_FANSI_solver.Value,1}; 
+        catch
+            QSM_solver='linear'; 
+        end 
+        try 
+            QSM_constraint = h.popup_FANSI_constraints.String{h.popup_FANSI_constraints.Value,1}; 
+        catch
+            QSM_constraint='tv'; 
+        end 
+    case 'Star'
+        QSM_method='star';
+        try QSM_threshold = str2double(get(h.edit_Star_padSize,'String')); catch; QSM_padsize=4; end
+    case 'MEDI'
+        QSM_method='medi_l1';
+        try QSM_lambda = str2double(get(h.edit_MEDI_lambda,'String')); catch; QSM_lambda=1000; end 
+        try QSM_wData = str2double(get(h.edit_MEDI_weightData,'String')); catch; QSM_wData=1; end 
+        try QSM_wGradient = str2double(get(h.edit_MEDI_weightGradient,'String')); catch; QSM_wGradient=1; end 
+        try QSM_zeropad = str2double(get(h.edit_MEDI_zeropad,'String')); catch; QSM_zeropad=0; end 
+        try QSM_radius = str2double(get(h.edit_MEDI_smv_radius,'String')); catch; QSM_radius=5; end 
+        try QSM_isSMV = get(h.checkbox_MEDI_smv,'Value'); catch; QSM_isSMV=0; end 
+        try QSM_merit = get(h.checkbox_MEDI_merit,'Value'); catch; QSM_merit=0; end 
+        try QSM_isLambdaCSF = get(h.checkbox_MEDI_lambda_csf,'Value'); catch; QSM_isLambdaCSF=0; end 
+        try QSM_lambdaCSF = str2double(get(h.edit_MEDI_lambda_csf,'String')); catch; QSM_lambdaCSF=100; end 
+end
+
+% core for QSm one stop processing
+QSMIOMacro(inputDir,outputDir,'mask',maskFullName,...
+    'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
+    'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
+    'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,...
+    'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
+    'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
+
 
 end

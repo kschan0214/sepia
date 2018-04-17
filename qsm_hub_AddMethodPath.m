@@ -26,6 +26,10 @@ addpath(currDir);
 % enable warning
 warning('on')
 
+% keep GUI and macro directories
+addpath([currDir filesep 'gui_func/']);
+addpath([currDir filesep 'macro/']);
+
 % here are three basic directories of qsm_hub
 phaseUnwrapDir = [currDir filesep 'phase_unwrap/'];
 bkgRemovalDir = [currDir filesep 'background_removal/'];

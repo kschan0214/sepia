@@ -1,4 +1,6 @@
-%% [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
+%% function output = function_name(input)
+%
+% Usage:
 %
 % Input
 % --------------
@@ -10,11 +12,11 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 14 September 2017
-% Date last modified: 9 April 2018
+% Date created: 
+% Date last modified:
 %
 %
-function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
+function [totalField,fieldmapSD]=UnwrapPhaseIOMacro(inputDir,outputDir,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
@@ -27,13 +29,8 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument
-% [isBET,maskFullName,unwrap,unit,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
-% BFR_CGdefault,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
-% QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,exclude_threshold] = parse_varargin_QSMHub(varargin);
-[isBET,maskFullName,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
-BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
-QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
-exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(varargin);
+[isBET,maskFullName,unwrap,subsampling,~,~,~,~,~,~,...
+~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,exclude_threshold,~,~,~,~,~,~,~,isEddyCorrect] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -86,7 +83,6 @@ if ~isempty(inputNiftiList)
     
 else
     % if no nifti file then check for DICOM files
-%     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
     
     B0 = CF/(gyro*1e6);
@@ -113,6 +109,7 @@ else
     outputNiftiTemplate = load_untouch_nii([outputDir filesep 'qsmhub_magn.nii.gz']);
     outputNiftiTemplate.hdr.dime.dim(5) = 1;
 end
+
 % display some header info
 disp('Basic DICOM information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
@@ -136,40 +133,15 @@ end
 if isempty(mask) || isBET
     qsm_hub_AddMethodPath('bet');
     disp('Performing FSL BET...');
-    
-%     tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
-%     brianDir = [outputDir filesep 'temp_brain.nii.gz'];
-%     
-%     % save the 1st echo for bet
-%     nii_temp = make_nii_quick(outputNiftiTemplate,magn(:,:,:,1));
-%     
-%     save_untouch_nii(nii_temp,tempDir);
-%     
-%     % run bet here
-%     system(['bet ' tempDir ' ' brianDir ' -R']);
-%     try 
-%         mask = load_nii_img_only(brianDir) > 0;
-%     catch
-%         setenv( 'FSLDIR', '/usr/local/fsl');
-%         fsldir = getenv('FSLDIR');
-%         fsldirmpath = sprintf('%s/etc/matlab',fsldir);
-%         path(path, fsldirmpath);
-%         oldPATH = getenv('PATH');
-%         setenv('PATH',[oldPATH ':' fsldir '/bin']);
-%         call_fsl(['bet ' tempDir ' ' brianDir ' -R']);
-%         mask = load_nii_img_only(brianDir) > 0;
-%     end
-% 
-%     system(['rm ' tempDir]);
 
     mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
 
 end
-
-%% total field and Laplacian phase unwrap
+%% total field and phase unwrap
 % add 'unwrap' method PATH
 qsm_hub_AddMethodPath(unwrap);
 
+% Eddy current correction for bipolar readout
 if isEddyCorrect
     disp('Correcting eddy current effect on bipolar readout data');
     imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
@@ -192,96 +164,22 @@ unit = 'Hz';
 [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
                         'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
                         'Subsampling',subsampling,'mask',mask);
+                    
+maskReliable = fieldmapSD < exclude_threshold;
+mask = and(mask,maskReliable);
                                         
 disp('Saving unwrapped field map...');
 
 nii_totalField = make_nii_quick(outputNiftiTemplate,totalField);
 nii_fieldmapSD = make_nii_quick(outputNiftiTemplate,fieldmapSD);
+nii_newMask = make_nii_quick(outputNiftiTemplate,mask);
                     
 save_untouch_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
 save_untouch_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
-
-maskReliable = fieldmapSD < exclude_threshold;
-mask = and(mask,maskReliable);
-
-%% Background field removal
-qsm_hub_AddMethodPath(BFR);
-disp('Recovering local field...');
-
-localField = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,...
-      'method',BFR,'refine',refine,'tol',BFR_tol,'depth',BFR_depth,...
-      'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'padsize',...
-      BFR_padSize,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
-      'threshold',BFR_threshold); 
-  
-maskFinal = localField ~=0;
-  
-disp('Saving local field map...');
-
-nii_localField = make_nii_quick(outputNiftiTemplate,localField);
-nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
-                    
-save_untouch_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
-save_untouch_nii(nii_maskFinal,[outputDir filesep 'qsmhub_mask_final.nii.gz']);
-
-% % make sure the input of QSM is in rad
-% localField = localField;
-            
-%% create weight map
-wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
-
-%% qsm
-qsm_hub_AddMethodPath(QSM_method);
-disp('Computing QSM...');
-
-switch lower(QSM_method)
-    case 'closedforml2'
-    case 'ilsqr'
-    case 'stisuiteilsqr'
-    case 'fansi'
-        % FANSI parameter is for ppm
-        localField = localField/(B0*gyro);
-    case 'ssvsharp'
-    case 'star'
-        localField = localField*2*pi;
-    case 'medi_l1'
-end
-
-chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
-      'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-      'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
-      'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
-      'padsize',QSM_padsize,'mu',QSM_mu1,QSM_solver,QSM_constraint,...
-      'noisestd',fieldmapSD,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
-      'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-      'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius);
-
-switch lower(QSM_method)
-    case 'tkd'
-        chi = chi/(B0*gyro);
-    case 'closedforml2'
-        chi = chi/(B0*gyro);
-    case 'ilsqr'
-        chi = chi/(B0*gyro);
-    case 'stisuiteilsqr'
-        chi = chi/(B0*gyro);
-    case 'fansi'
-    case 'ssvsharp'
-        chi = chi/(B0*gyro);
-    case 'star'
-        chi = chi/(2*pi*B0*gyro);
-    case 'medi_l1'
-        chi = chi/(B0*gyro);
-end
-  
-disp('Saving susceptibility map...');
-
-nii_chi = make_nii_quick(outputNiftiTemplate,chi);
-
-save_untouch_nii(nii_chi,[outputDir filesep 'qsmhub_QSM.nii.gz']);
+save_untouch_nii(nii_newMask,[outputDir filesep 'qsmhub_mask_new.nii.gz']);
 
 disp('Done!');
-          
+
 end
 
 % handy function to save result to nifti format
