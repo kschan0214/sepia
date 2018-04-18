@@ -16,7 +16,7 @@
 % Date last modified:
 %
 %
-function [localField,maskFinal] = BackgroundRemovalIOMacro(inputDir,outputDir,varargin)
+function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,outputDir,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 

@@ -16,7 +16,7 @@
 % Date last modified:
 %
 %
-function chi = QSMIOMacro(inputDir,outputDir,varargin)
+function chi = qsmMacroIOWrapper(inputDir,outputDir,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 

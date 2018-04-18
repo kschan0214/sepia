@@ -28,7 +28,7 @@ warning('on')
 
 % keep GUI and macro directories
 addpath([currDir filesep 'gui_func/']);
-addpath([currDir filesep 'macro/']);
+addpath([currDir filesep 'wrapper/']);
 
 % here are three basic directories of qsm_hub
 phaseUnwrapDir = [currDir filesep 'phase_unwrap/'];

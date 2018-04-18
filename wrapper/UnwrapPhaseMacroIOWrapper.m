@@ -16,7 +16,7 @@
 % Date last modified:
 %
 %
-function [totalField,fieldmapSD]=UnwrapPhaseIOMacro(inputDir,outputDir,varargin)
+function [totalField,fieldmapSD]=UnwrapPhaseMacroIOWrapper(inputDir,outputDir,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 

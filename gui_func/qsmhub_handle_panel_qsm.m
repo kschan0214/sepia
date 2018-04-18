@@ -1,19 +1,22 @@
-%% function output = function_name(input)
-%
-% Usage:
+%% h = qsmhub_handle_panel_qsm(hParent,hFig,h,position)
 %
 % Input
 % --------------
+% hParent       : parent handle of this panel
+% hFig          : handle of the GUI
+% h             : global structure contains all handles
+% position      : position of this panel
 %
 % Output
 % --------------
+% h             : global structure contains all new and other handles
 %
-% Description:
+% Description: This GUI function creates a panel for QSM method control
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 
-% Date last modified:
+% Date created: 16 April 2018
+% Date last modified: 18 April 2018
 %
 %
 function h = qsmhub_handle_panel_qsm(hParent,hFig,h,position)
