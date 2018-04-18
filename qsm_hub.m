@@ -1,18 +1,45 @@
 %% qsm_hub
 %
-% levels
-% ---fig
-%  |---Tabs
-%    |---StepsPanel
-%      |---Edit,Text,etc.
-
-% Description: This is a GUI of QSMHub, which is a pipeline control tool
-% for standard QSM processing.
+% Description: This is a GUI of qsm_hHub, which is a pipeline control tool
+% for standard QSM processing. It supports the following processing steps:
+% (1) phase unwrapping
+% (2) background field removal
+% (3) QSM
+% All these processing steps can be performed in one go or worked as
+% standalones.
+%
+% After perfoming all the selected processing steps sucessfully, a log file
+% will be generated. This log file contains the text of how a function is
+% called to run the process(es). You can also use the content of the log
+% file to perform your data processing without calling this GUI  
+% (which in some cases good for batch job).
+%
+% To run this GUI, simply add the directory containing this file in your
+% Matlab's PATH. This GUI will automatically add the related files into
+% your Matlab's PATH during processing.
+%
+% Considering different toolboxes may use their own function for the same
+% processing which has the same name, the specific method will only be
+% loaded just before being used as Matlab does not support function
+% overloading. Nebertheless the GUI will automatically do this for you.
+%
+% Most of the processing methods are provided from other toolboxes,
+% inclduing MEDI, STI Suite and FANSI. Please cite the correspoding
+% paper(s) when you use this GUI.
+%
+% ********************************
+% *Hierarchy of the GUI structure*
+% ********************************
+% |---fig
+%   |---Tabs
+%     |---StepsPanel
+%       |---Method(also Edit,Text,etc.)
+%         |---Edit, text, Popup, etc.
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 10 April 2018
-% Date last modified: 17 April 2018
+% Date last modified: 18 April 2018
 %
 %
 function qsm_hub

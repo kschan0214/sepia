@@ -1,26 +1,61 @@
-%% function output = function_name(input)
-%
-% Usage:
+%% chi = qsmMacroIOWrapper(inputDir,outputDir,varargin)
 %
 % Input
 % --------------
+% inputDir              : input directory contains NIfTI (*localfield*, *magn* and *fieldmapsd*) files 
+% outputDir             : output directory that stores the output (susceptibility map)
+% varargin ('Name','Value' pair)
+% ---------
+% 'mask'                : mask file (in NIfTI format) full name 
+% 'QSM'                 : QSM method (default: 'TKD')
+% 'QSM_threshold'       : threshold of TKD (defualt: 0.15) 
+% 'QSM_lambda'          : regularisation parameter of TKD, CFL2, iLSQR, FANSI and MEDI (overloaded) (default: 0.13)
+% 'QSM_optimise'        : boolean automatically estimate regularisation parameter based on L-curve approach of CFL2 and iLSQR (overloaded) (default: false)
+% 'QSM_tol'             : tolerance of iLSQR and FANSI (overloaded)(default: 1e-3)
+% 'QSM_iteration'       : no. of iterations of iLSQR, STISuiteiLQR and FANSI (overloaded) (default: 50)
+% 'QSM_tol1'            : step 1 tolerance of STISuiteiLQR (default: 0.01)
+% 'QSM_tol2'            : step 2 tolerance of STISuiteiLQR (default: 0.001)
+% 'QSM_padsize'         : pad size of STISuiteiLQR (default: [4,4,4])
+% 'QSM_mu'              : regularisation parameter of data consistency of FANSI (default: 5e-5)
+% 'QSM_zeropad'         : size of zero-padding of MEDI (default: 0)
+% 'QSM_wData'           : weighting of data of MEDI (default: 1)
+% 'QSM_wGradient'       : weighting of gradient regularisation of MEDI (default: 1)
+% 'QSM_radius'          : radius for the spherical mean value operator of MEDI (default: 5)
+% 'QSM_isSMV'           : boolean using spherical mean value operator of MEDI (default: false)
+% 'QSM_merit'           : boolean model error reduction through iterative tuning of MEDI (default: false)
+% 'QSM_isLambdaCSF'     : boolen automatic zero reference (MEDI+0) (required CSF mask) (default: false)
+% 'QSM_lambdaCSF'       : regularisation parameter of CSF reference of MEDI (default: 100)
+% varargin ('flag')
+% 'linear'              : linear solver for FANSI (default)
+% 'non-linear'          : non-linear solver for FANSI
+% 'TV'                  : Total variation constraint for FANSI (default)
+% 'TGV'                 : total generalisaed variation for FANSI 
 %
 % Output
 % --------------
+% chi                   : quantitative susceptibility map (in ppm)
 %
-% Description:
+% Description: This is a wrapper of BackgroundRemovalMacro.m which has the following objeectives:
+%               (1) matches the input format of qsm_hub.m
+%               (2) save the results in NIfTI format
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 
-% Date last modified:
+% Date created: 17 April 2018
+% Date last modified: 18 April 2018
 %
 %
 function chi = qsmMacroIOWrapper(inputDir,outputDir,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
+%% define variables
 gyro = 42.57747892;
+% make sure the input only load once (first one)
+isLotalFieldLoad    = false;
+isFieldmapSDLoad    = false;
+isMagnload          = false; 
+
 
 %% Check output directory exist or not
 if exist(outputDir,'dir') ~= 7
@@ -35,46 +70,66 @@ QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solve
 
 %% Read input
 disp('Reading data...');
+
 % look for nifti files first
 inputNiftiList = dir([inputDir '/*.nii*']);
 if ~isempty(inputNiftiList)
+    
     % look for magnitude,localField and fieldmapSD files
-    fieldmapSD = []; magn = [];
     for klist = 1:length(inputNiftiList)
-        if contains(lower(inputNiftiList(klist).name),'localfield')
+        
+        if contains(lower(inputNiftiList(klist).name),'localfield') && ~isLotalFieldLoad
             inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             localField = double(inputLocalFieldNifti.img);
+            isLotalFieldLoad = true;
         end
-        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain')
+        
+        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain') && ~isMagnload
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+            isMagnload = true;
             magn = double(inputMagnNifti.img);
         end
-        if contains(lower(inputNiftiList(klist).name),'fieldmapsd')
+        
+        if contains(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
             inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
+            isFieldmapSDLoad = true;
         end
+        
     end
-    % create synthetic header in case no header is provided
-    [B0,~,~,~,TE,delta_TE,CF]=SyntheticQSMHubHeader(magn);
-    a=qGetR([0, inputLocalFieldNifti.hdr.hist.quatern_b,inputLocalFieldNifti.hdr.hist.quatern_c,inputLocalFieldNifti.hdr.hist.quatern_d]);
-    B0_dir = -a(3,:);
-    voxelSize = inputLocalFieldNifti.hdr.dime.pixdim(2:4);
-    matrixSize = inputLocalFieldNifti.hdr.dime.dim(2:4);
+    
+    % if no files matched the name format then displays error message
+    if ~isLotalFieldLoad
+        error('No files loaded. Please make sure the input directory contains files with name *localfield*');
+    end
+    
     % look for header file
     if ~isempty(dir([inputDir '/*header*']))
         headerList = dir([inputDir '/*header*']);
+        
+        % load header
         load([inputDir filesep headerList(1).name]);
+        
     else
-        disp('No QSMHub header file detected. Using synthetic header parameters...');
+        disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+        
+        % create synthetic header in case no qsm_hub's header is found
+        [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputLocalFieldNifti);
+        
     end
-    if isempty(magn)
+    
+    % if no magnitude found then creates one with all voxels have the same value
+    if ~isMagnload
         disp('No magnitude data is found.');
         magn = ones(matrixSize);
     end
-    if isempty(fieldmapSD)
+    
+    % if no fieldmapSD found then creates one with all voxels have the same value
+    if ~isFieldmapSDLoad
         disp('No fieldMapSD file is found.');
         fieldmapSD = ones(matrixSize) * 0.01;
     end
+    
     % store the header the NIfTI files, all following results will have
     % the same header
     outputNiftiTemplate = inputLocalFieldNifti;
@@ -85,7 +140,7 @@ if ~isempty(inputNiftiList)
     
     
 else
-    error('This standalone only reads NIfTI format input data (nii or nii.gz).');
+    error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
 end
 
 % display some header info
@@ -96,41 +151,53 @@ disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
 %% get brain mask
+% look for final mask first
 maskList = dir([inputDir '/*mask_final*']);
+% if no final mask then just look for normal mask
 if isempty(maskList)
     maskList = dir([inputDir '/*mask*']);
 end
-% first read mask if file is provided
+
 if ~isempty(maskFullName)
+% first read mask if file is provided
     maskFinal = load_nii_img_only(maskFullName) > 0;
+    
 elseif ~isempty(maskList) 
-    % read mask if input directory contains 'mask'
+% read mask if input directory contains *mask*
     inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
 	maskFinal = inputMaskNii.img > 0;
+    
 else
+    % display error message if nothing is found
     error('No mask is found. Pleasee specific your mask file or put it inside the input directory.');
+    
 end
 
-%% create weight map
+%% create weight map based on final mask
 wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
 
 %% qsm
 qsm_hub_AddMethodPath(QSM_method);
 disp('Computing QSM...');
 
+% some QSM algorithms work better with certain unit of the local field map
 switch lower(QSM_method)
     case 'closedforml2'
     case 'ilsqr'
     case 'stisuiteilsqr'
     case 'fansi'
-        % FANSI parameter is for ppm
+        % FANSI works better with ppm
         localField = localField/(B0*gyro);
+        
     case 'ssvsharp'
     case 'star'
+        % star work better with radHz
         localField = localField*2*pi;
+        
     case 'medi_l1'
 end
 
+% core of QSM
 chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
       'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
       'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
@@ -140,6 +207,7 @@ chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
       'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
       'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius);
 
+% convert the susceptibility map into ppm
 switch lower(QSM_method)
     case 'tkd'
         chi = chi/(B0*gyro);
@@ -157,7 +225,8 @@ switch lower(QSM_method)
     case 'medi_l1'
         chi = chi/(B0*gyro);
 end
-  
+
+% save results
 disp('Saving susceptibility map...');
 
 nii_chi = make_nii_quick(outputNiftiTemplate,chi);
