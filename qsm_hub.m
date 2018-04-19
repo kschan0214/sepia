@@ -27,9 +27,9 @@
 % inclduing MEDI, STI Suite and FANSI. Please cite the correspoding
 % paper(s) when you use this GUI.
 %
-% ********************************
-% *Hierarchy of the GUI structure*
-% ********************************
+% **********************************
+% * Hierarchy of the GUI structure *
+% **********************************
 % |---fig
 %   |---Tabs
 %     |---StepsPanel
@@ -589,9 +589,6 @@ switch QSM_method
         
 end
 
-% generate a log file
-GenerateLogFile(h.StepsPanel.dataIO.Parent.Title);
-
 % run the selected processing step and delay the error (if any)
 try 
     % get the parent of current panel, this determine which script is about to run
@@ -634,6 +631,9 @@ catch ME
     set(source,'Enable','on');
     error(ME.message);
 end
+
+% generate a log file
+GenerateLogFile(h.StepsPanel.dataIO.Parent.Title);
 
 % re-enable the pushbutton
 set(source,'Enable','on');
