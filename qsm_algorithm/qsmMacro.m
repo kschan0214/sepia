@@ -121,7 +121,7 @@ if ~isempty(varargin)
                     [te,padSize,b0,b0dir] = parse_varargin_Star(varargin);
                 case 'medi_l1'
                     method = 'MEDI_L1';
-                    [N_std,magn,lambda,pad,te,CF,b0dir,merit,smv,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
+                    [N_std,magn,lambda,pad,te,CF,b0dir,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
             end
         end
     end
@@ -160,8 +160,8 @@ switch method
         chi = QSM_star(localField,mask,'TE',te,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
     case 'MEDI_L1'
         chi = MEDI_L1_4qsmhub(localField,mask,matrixSize,voxelSize,...
-            'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',merit,...
-            'smv',smv,'radius',radius,'data_weighting',wData,...
+            'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',isMerit,...
+            'smv',isSMV,'radius',radius,'data_weighting',wData,...
             'gradient_weighting',wGrad,'lam_CSF',lam_CSF,...
             'noisestd',N_std,'magnitude',magn,'Mask_CSF',Mask_CSF);
 end

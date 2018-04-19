@@ -1,33 +1,41 @@
-%% phase = DICOM2Phase(dicomPhase)
-%
-% Usage:
+%% phase = DICOM2Phase(niiPhase)
 %
 % Input
 % --------------
+% niiPhase      : NIfTI matlab structure contains phase image directly
+%                 converted from DICOM
 %
 % Output
 % --------------
+% phase         : phase image rescaled to [-pi,pi)
 %
-% Description:
+% Description: This function convert the DICOM phase values (usually
+% [-4096,4095]) to radian ([-pi,pi)])
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 11 April 2018
-% Date last modified:13 April 2-18
+% Date last modified: 19 April 2018
 %
 %
 function phase = DICOM2Phase(niiPhase)
+% change datatype to double
 dicomPhase = double(niiPhase.img);
+% get scale slope
 scaleSlope=niiPhase.hdr.dime.scl_slope;
+% get scale inetercept
 scaleIntercept=niiPhase.hdr.dime.scl_inter;
 
+% compute the new maximum value
 newMax = niiPhase.hdr.dime.glmax*2 + scaleIntercept;
+% compute the new minimum value
 newMin = niiPhase.hdr.dime.glmin*2 + scaleIntercept;
+% +1 for 0
 fullRange = newMax-newMin + 1;
 
 % scale to true value of nifti file
 dicomPhaseRescale = (dicomPhase*scaleSlope) + scaleIntercept ;
-% Scale the full range to [-pi,pi)
+% scale the full range to [-pi,pi)
 phase = (dicomPhaseRescale-scaleIntercept) / fullRange * 2*pi - pi;
 
 end

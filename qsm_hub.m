@@ -38,7 +38,7 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 10 April 2018
+% Date created: 14 September 2017
 % Date last modified: 18 April 2018
 %
 %
@@ -85,13 +85,13 @@ h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.phaseUnwrap,fig,h,[0.01 0.59]);
 % I/O
 h = qsmhub_handle_panel_dataIO(h.Tabs.bkgRemoval,fig,h,[0.01 0.8]);
 % background field
-h = qsmhub_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,fig,h,[0.01 0.59]);
+h = qsmhub_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,fig,h,[0.01 0.54]);
 
 %% qsm tab
 % I/O
 h = qsmhub_handle_panel_dataIO(h.Tabs.qsm,fig,h,[0.01 0.8]);
 % QSM
-h = qsmhub_handle_panel_qsm(h.Tabs.qsm,fig,h,[0.01 0.59]);
+h = qsmhub_handle_panel_qsm(h.Tabs.qsm,fig,h,[0.01 0.54]);
 
 %% GUI with QSM one-stop station tab
 % I/O
@@ -247,7 +247,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
         % background field
-        set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.59 0.95 0.25]);
+        set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.bkgRemoval);
 
@@ -261,7 +261,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
         % QSM
-        set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.59 0.95 0.25]);
+        set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.qsm);
         
@@ -432,7 +432,7 @@ function PushbuttonStart_Callback(source,eventdata)
 
 global h
 
-% Disable the pushbutton to prevent dis-kick
+% Disable the pushbutton to prevent doubel click
 set(source,'Enable','off');
 
 % initialise all possible parameters
@@ -589,44 +589,51 @@ switch QSM_method
         
 end
 
-% get the parent of current panel, this determine which script is about to
-% run
-switch h.StepsPanel.dataIO.Parent.Title
-    case 'One-stop QSM processing'
-        % core of QSM one-stop processing
-        QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
-            'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
-            'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
-            'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
-            'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
-            'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-            'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
-            'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-            'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'eddy',isEddyCorrect);
-    
-    case 'Phase unwrapping'
-        % Core of phase unwrapping only 
-        UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
-            'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect);
-    
-    case 'Background field removal'
-        % core of background field removal only
-        BackgroundRemovalMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
-            'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
-            'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
-            'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold);
-    
-    case 'QSM'
-        % core of QSM only
-        qsmMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
-            'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
-            'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-            'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,...
-            'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-            'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
-end
-
+% generate a log file
 GenerateLogFile(h.StepsPanel.dataIO.Parent.Title);
+
+% run the selected processing step and delay the error (if any)
+try 
+    % get the parent of current panel, this determine which script is about to run
+    switch h.StepsPanel.dataIO.Parent.Title
+        case 'One-stop QSM processing'
+            % core of QSM one-stop processing
+            QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+                'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
+                'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
+                'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
+                'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
+                'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
+                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
+                'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
+                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'eddy',isEddyCorrect);
+
+        case 'Phase unwrapping'
+            % Core of phase unwrapping only 
+            UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+                'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect);
+
+        case 'Background field removal'
+            % core of background field removal only
+            BackgroundRemovalMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
+                'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
+                'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
+                'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold);
+
+        case 'QSM'
+            % core of QSM only
+            qsmMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
+                'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
+                'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
+                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,...
+                'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
+                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
+    end
+catch ME
+    % re-enable the start button before displaying the error
+    set(source,'Enable','on');
+    error(ME.message);
+end
 
 % re-enable the pushbutton
 set(source,'Enable','on');

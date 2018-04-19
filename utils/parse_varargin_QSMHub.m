@@ -1,25 +1,24 @@
-%% function output = function_name(input)
+%% [isBET,mask,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+%%     BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
+%%     QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
+%%     exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
+%%     QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(arg)
 %
-% Usage:
-%
-% Input
-% --------------
-%
-% Output
-% --------------
-%
-% Description:
+% Description: This function parse the 'name'/'value' pair as well as
+% 'flag' for the data processing steps of qsm_hub.m. More information about
+% about these flags can be found in QSMHub.m
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 
-% Date last modified:
+% Date created: 14 September 2017
+% Date last modified: 19 April 2018
 %
 %
 function [isBET,mask,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
     BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
     QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
-    exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(arg)
+    exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
+    QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(arg)
 
 mask=[];
 isBET=false;
@@ -30,7 +29,7 @@ QSM_method='TKD';QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
 QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
 exclude_threshold = 1;
-QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
+QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_isLambdaCSF=false;QSM_lambdaCSF=100;
 QSM_isSMV=false;QSM_merit=false;isEddyCorrect=false;
 
 if ~isempty(arg)

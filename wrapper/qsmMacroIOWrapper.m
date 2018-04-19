@@ -54,7 +54,8 @@ gyro = 42.57747892;
 % make sure the input only load once (first one)
 isLotalFieldLoad    = false;
 isFieldmapSDLoad    = false;
-isMagnload          = false; 
+isMagnLoad          = false; 
+maskCSF             = [];
 
 
 %% Check output directory exist or not
@@ -66,7 +67,7 @@ end
 %% Parse input argument
 [~,maskFullName,~,~,~,~,~,~,~,~,~,~,~,~,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
-~,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_lambdaCSF,QSM_isSMV,QSM_merit,~] = parse_varargin_QSMHub(varargin);
+~,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,QSM_isSMV,QSM_merit,~] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -84,9 +85,9 @@ if ~isempty(inputNiftiList)
             isLotalFieldLoad = true;
         end
         
-        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain') && ~isMagnload
+        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-            isMagnload = true;
+            isMagnLoad = true;
             magn = double(inputMagnNifti.img);
         end
         
@@ -119,7 +120,7 @@ if ~isempty(inputNiftiList)
     end
     
     % if no magnitude found then creates one with all voxels have the same value
-    if ~isMagnload
+    if ~isMagnLoad
         disp('No magnitude data is found.');
         magn = ones(matrixSize);
     end
@@ -191,10 +192,21 @@ switch lower(QSM_method)
         
     case 'ssvsharp'
     case 'star'
-        % star work better with radHz
+        % Star works better with radHz
         localField = localField*2*pi;
         
     case 'medi_l1'
+        % zero reference using CSF requires CSF mask
+        if QSM_isLambdaCSF && isMagnLoad
+            disp('Extracting CSF mask....');
+            
+            % R2* mapping
+            r2s = arlo(TE,magn);
+            maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
+        end
+        
+        % MEDI works better with rad
+        localField = localField*2*pi*delta_TE;
 end
 
 % core of QSM
@@ -205,7 +217,7 @@ chi = qsmMacro(localField,maskFinal,matrixSize,voxelSize,...
       'padsize',QSM_padsize,'mu',QSM_mu1,QSM_solver,QSM_constraint,...
       'noisestd',fieldmapSD,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
       'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-      'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius);
+      'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
 
 % convert the susceptibility map into ppm
 switch lower(QSM_method)
@@ -223,7 +235,7 @@ switch lower(QSM_method)
     case 'star'
         chi = chi/(2*pi*B0*gyro);
     case 'medi_l1'
-        chi = chi/(B0*gyro);
+        chi = chi/(2*pi*B0*gyro*delta_TE);
 end
 
 % save results
