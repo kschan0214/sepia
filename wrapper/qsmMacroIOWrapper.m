@@ -176,8 +176,13 @@ else
     
 end
 
-%% create weight map based on final mask
-wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
+% create weighting map based on final mask
+% for weighting map: higher SNR -> higher weighting
+% wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
+wmap = 1./fieldmapSD;
+wmap(isinf(wmap)) = 0;
+wmap(isnan(wmap)) = 0;
+wmap = wmap./max(wmap(maskFinal>0));
 
 %% qsm
 qsm_hub_AddMethodPath(QSM_method);

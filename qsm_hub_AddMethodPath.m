@@ -88,6 +88,7 @@ if nargin > 0
             addpath([qsmAlgorithmDir 'closedFormL2']);
         case 'ilsqr'
             addpath([qsmAlgorithmDir 'iLSQR' filesep 'iLSQR_chan']);
+            addpath([qsmAlgorithmDir 'closedFormL2']);
         case 'stisuiteilsqr'
             addpath([qsmAlgorithmDir 'iLSQR' filesep STISuite_version]);
             addpath(genpath([utilsDir STISuite_version]));

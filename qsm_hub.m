@@ -554,7 +554,7 @@ switch QSM_method
         try QSM_tol         = str2double(get(h.qsm.iLSQR.edit.tol,'String'));           catch; QSM_tol=0.001;       end
         try QSM_maxiter     = str2double(get(h.qsm.iLSQR.edit.maxIter,'String'));       catch; QSM_maxiter=100;     end
         try QSM_lambda      = str2double(get(h.qsm.iLSQR.edit.lambda,'String'));        catch; QSM_lambda=0.13;     end
-        try QSM_optimise    = get(h.qsm.iLSQR.edit.lambda,'Value');                     catch; QSM_optimise=false;  end 
+        try QSM_optimise    = get(h.qsm.iLSQR.checkbox.lambda,'Value');                     catch; QSM_optimise=false;  end 
         
     case 'FANSI'
         QSM_method='fansi';

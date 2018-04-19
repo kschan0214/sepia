@@ -64,7 +64,7 @@
 %       'lambda'        : user defined regularisation parameter for gradient L1 penalty
 %       'mu'            : user defined regularisation parameter for gradient consistency 
 %       'tol'           : tolerance for iteration
-%       'iteration'     : maximum number of iterations
+%       'iteration'     : maxlocalFieldimum number of iterations
 %       'weight'        : weighting of error computation
 %       'linear'        : linear solver
 %       'nonlinear'     : nonlinear solver
