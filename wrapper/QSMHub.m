@@ -98,12 +98,12 @@ inputNiftiList = dir([inputDir '/*.nii*']);
 if ~isempty(inputNiftiList)
     % look for magnitude and phase files
     for klist = 1:length(inputNiftiList)
-        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
+        if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             magn = double(inputMagnNifti.img);
             isMagnLoad = true;
         end
-        if contains(lower(inputNiftiList(klist).name),'phase') && ~isPhaseLoad
+        if ContainName(lower(inputNiftiList(klist).name),'phase') && ~isPhaseLoad
             inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldMap = double(inputPhaseNifti.img);
             
@@ -390,4 +390,9 @@ function nii = make_nii_quick(template,img)
     nii = template;
     nii.img = img;
     nii.hdr.dime.datatype = 64;
+end
+
+% return boolean value to check if the input name contains certain string
+function bool = ContainName(name,string)
+    bool= ~isempty(strfind(lower(name),string));
 end

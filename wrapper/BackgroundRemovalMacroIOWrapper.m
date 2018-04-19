@@ -61,13 +61,14 @@ inputNiftiList = dir([inputDir '/*.nii*']);
 if ~isempty(inputNiftiList)
     % look for total field map and fieldmap SD (optional) NIfTI files
     for klist = 1:length(inputNiftiList)
-        if contains(lower(inputNiftiList(klist).name),'totalfield') && ~isTotalFieldLoad
+
+        if ContainName(inputNiftiList(klist).name,'totalfield') && ~isTotalFieldLoad
             inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             totalField = double(inputTotalFieldNifti.img);
             isTotalFieldLoad = true;
         end
         
-        if contains(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
+        if ContainName(inputNiftiList(klist).name,'fieldmapsd') && ~isFieldmapSDLoad
             inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
@@ -169,4 +170,9 @@ function nii = make_nii_quick(template,img)
     nii = template;
     nii.img = img;
     nii.hdr.dime.datatype = 64;
+end
+
+% return boolean value to check if the input name contains certain string
+function bool = ContainName(name,string)
+    bool= ~isempty(strfind(lower(name),string));
 end

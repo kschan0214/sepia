@@ -79,19 +79,19 @@ if ~isempty(inputNiftiList)
     % look for magnitude,localField and fieldmapSD files
     for klist = 1:length(inputNiftiList)
         
-        if contains(lower(inputNiftiList(klist).name),'localfield') && ~isLotalFieldLoad
+        if ContainName(lower(inputNiftiList(klist).name),'localfield') && ~isLotalFieldLoad
             inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             localField = double(inputLocalFieldNifti.img);
             isLotalFieldLoad = true;
         end
         
-        if contains(lower(inputNiftiList(klist).name),'magn') && ~contains(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
+        if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             isMagnLoad = true;
             magn = double(inputMagnNifti.img);
         end
         
-        if contains(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
+        if ContainName(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
             inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
@@ -254,4 +254,9 @@ function nii = make_nii_quick(template,img)
     nii = template;
     nii.img = img;
     nii.hdr.dime.datatype = 64;
+end
+
+% return boolean value to check if the input name contains certain string
+function bool = ContainName(name,string)
+    bool= ~isempty(strfind(lower(name),string));
 end
