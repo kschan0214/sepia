@@ -246,6 +246,7 @@ switch eventdata.NewValue.Title
             % no BET support with this tab
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
+            set(h.dataIO.button.maskdir,            'Enable','on');
         % background field
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
@@ -260,6 +261,7 @@ switch eventdata.NewValue.Title
             % no BET support with this tab
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
+            set(h.dataIO.button.maskdir,            'Enable','on');
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
@@ -535,7 +537,7 @@ switch QSM_method
     case 'Closed-form solution'
         QSM_method='closedforml2';
         try QSM_lambda      = str2double(get(h.qsm.cfs.edit.lambda,'String'));          catch; QSM_lambda=0.13;     end
-        try QSM_optimise    = get(h.qsm.cfs.edit.lambda,'Value');                       catch; QSM_optimise=false;  end
+        try QSM_optimise    = get(h.qsm.cfs.checkbox.lambda,'Value');                  	catch; QSM_optimise=false;  end
         
     case 'STI suite iLSQR'
         QSM_method='stisuiteilsqr';

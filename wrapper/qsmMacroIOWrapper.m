@@ -120,7 +120,9 @@ if ~isempty(inputNiftiList)
     end
     
     % if no magnitude found then creates one with all voxels have the same value
-    if ~isMagnLoad
+    if ~isMagnLoad && strcmpi(QSM_method,'medi_l1')
+        error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
+    elseif ~isMagnLoad
         disp('No magnitude data is found.');
         magn = ones(matrixSize);
     end

@@ -125,7 +125,8 @@ switch method
         disp(['Peel = ' num2str(peel)]);
         RDF = LBV(totalField,mask,matrixSize,voxelSize,tol,depth,peel);
         deleteme = dir('mask*.bin');
-        system(['rm ' deleteme.folder filesep deleteme.name]);
+        delete(deleteme(1).name);
+%         system(['rm ' deleteme.folder filesep deleteme.name]);
     case 'PDF'
         disp(['Tolerance = ' num2str(tol)]);
         disp(['Maximum iterations = ' num2str(iteration)]);

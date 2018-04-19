@@ -213,9 +213,18 @@ disp('Calculating field map...');
 unit = 'Hz';
 
 % core of phase unwrapping
-[totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-                        'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
+try 
+    [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
+                            'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
+                            'Subsampling',subsampling,'mask',mask);
+catch
+% if the selected method is not working then do Laplacian 
+    disp('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
+    qsm_hub_AddMethodPath('laplacian');
+    [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
+                        'Unwrap','laplacian','TE',TE,'B0',B0,'unit',unit,...
                         'Subsampling',subsampling,'mask',mask);
+end
                     
 % generate mask based on exclusion threshold
 maskReliable = fieldmapSD < exclude_threshold;
