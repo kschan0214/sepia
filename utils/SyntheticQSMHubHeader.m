@@ -34,19 +34,30 @@ function [b0,b0dir,voxelSize,matrixSize,te,dte,CF]=SyntheticQSMHubHeader(nii,var
 
 gyro = 42.57747892;
 
-% get main field direction
-a=qGetR([0, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
-B0_dir = -a(3,:);
-% get voxel size
-voxelSize = nii.hdr.dime.pixdim(2:4);
-% get matrix size
-matrixSize = nii.hdr.dime.dim(2:4);
-% get no. of echoes
-nt = nii.hdr.dime.dim(5);
+[b0,b0dir,voxelSize,matrixSize,te]=parse_varargin(varargin);
+
+if isempty(b0dir)
+    % get main field direction
+    a=qGetR([0, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
+    b0dir = -a(3,:);
+end
+if isempty(voxelSize)
+    % get voxel size
+    voxelSize = nii.hdr.dime.pixdim(2:4);
+end
+if isempty(matrixSize)
+    % get matrix size
+    matrixSize = nii.hdr.dime.dim(2:4);
+end
+if isempty(te)
+    % get no. of echoes
+    nt = nii.hdr.dime.dim(5);
+    te = linspace(1e-3,30e-3,nt);
+end
 
 % generate the variables needed 
-[b0,b0dir,voxelSize,matrixSize,te] = process_options(varargin,'b0',3,'b0dir',B0_dir,...
-    'voxel',voxelSize,'matrixsize',matrixSize,'te',linspace(1e-3,30e-3,nt));
+% [b0,b0dir,voxelSize,matrixSize,te] = process_options(varargin,'b0',3,'b0dir',B0_dir,...
+%     'voxel',voxelSize,'matrixsize',matrixSize,'te',linspace(1e-3,30e-3,nt));
 
 % compute the echo spacing
 if length(te)<2
@@ -58,4 +69,33 @@ end
 % compute the imaging frequency
 CF = gyro * 1e6 * b0;
             
+end
+
+function [b0,b0dir,voxelSize,matrixSize,te]=parse_varargin(arg)
+% set default header
+b0 = 3; %T
+b0dir = [];
+voxelSize = [];
+matrixSize = [];
+te = [];
+
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'b0')
+            b0 = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'b0dir')
+            b0dir = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'voxel')
+            voxelSize = arg{kvar+1};
+        end
+        if  strcmpi(arg{kvar},'matrixsize')
+            matrixSize = arg{kvar+1};
+        end
+        if  strcmpi(arg{kvar},'te')
+            te = arg{kvar+1};
+        end
+    end
+end
 end

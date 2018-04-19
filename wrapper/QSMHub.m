@@ -74,6 +74,7 @@ gyro = 42.57747892;
 % make sure the input only load once (first one)
 isMagnLoad = false;
 isPhaseLoad = false;
+maskCSF = [];
 
 %% Check output directory exist or not
 if exist(outputDir,'dir') ~= 7
