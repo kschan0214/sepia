@@ -322,8 +322,14 @@ nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
 save_untouch_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
 save_untouch_nii(nii_maskFinal,[outputDir filesep 'qsmhub_mask_final.nii.gz']);
             
-%% create weight map
-wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
+% create weighting map based on final mask
+% for weighting map: higher SNR -> higher weighting
+% wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
+wmap = 1./fieldmapSD;
+wmap(isinf(wmap)) = 0;
+wmap(isnan(wmap)) = 0;
+wmap = wmap./max(wmap(maskFinal>0));
+
 
 %% qsm
 qsm_hub_AddMethodPath(QSM_method);
