@@ -70,6 +70,7 @@ function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,vararg
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
 %% define variables
+prefix = 'squirrel_';
 gyro = 42.57747892;
 % make sure the input only load once (first one)
 isMagnLoad = false;
@@ -114,7 +115,7 @@ if ~isempty(inputNiftiList)
                 nii_fieldMap = make_nii_quick(inputPhaseNifti,fieldMap);
                 nii_fieldMap.hdr.dime.scl_inter = 0;
                 nii_fieldMap.hdr.dime.scl_slope = 1;
-                save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
+                save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
             end
             isPhaseLoad = true;
         end
@@ -179,15 +180,15 @@ else
     nii_magn = make_nii_quick(outputNiftiTemplate,magn);
     
     % save magnitude and phase data as NIfTI_GZ format
-    save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
-    save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
+    save_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
+    save_nii(nii_magn,[outputDir filesep prefix 'magn.nii.gz']);
     % save important header in .mat format
     save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
     
     % reload the NIfTI template so that later can use save_untouch_nii for
     % all results
-    outputNiftiTemplate = load_untouch_nii([outputDir filesep 'qsmhub_magn.nii.gz']);
+    outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
     % remove the time dimension info
     outputNiftiTemplate.hdr.dime.dim(5) = 1;
     
@@ -263,8 +264,8 @@ if isEddyCorrect
     nii_fieldMap.hdr.dime.dim(5) = size(fieldMap,4);
     nii_magn = make_nii_quick(outputNiftiTemplate,magn); 
     nii_magn.hdr.dime.dim(5) = size(magn,4);
-    save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase_EC.nii.gz']);
-    save_untouch_nii(nii_magn,[outputDir filesep 'qsmhub_magn_EC.nii.gz']);
+    save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase_EC.nii.gz']);
+    save_untouch_nii(nii_magn,[outputDir filesep prefix 'magn_EC.nii.gz']);
 end
 
 disp('Calculating field map...');
@@ -293,8 +294,8 @@ disp('Saving unwrapped field map...');
 nii_totalField = make_nii_quick(outputNiftiTemplate,totalField);
 nii_fieldmapSD = make_nii_quick(outputNiftiTemplate,fieldmapSD);
                     
-save_untouch_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
-save_untouch_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
+save_untouch_nii(nii_totalField,[outputDir filesep prefix 'totalField.nii.gz']);
+save_untouch_nii(nii_fieldmapSD,[outputDir filesep prefix 'fieldMapSD.nii.gz']);
 
 maskReliable = fieldmapSD < exclude_threshold;
 mask = and(mask,maskReliable);
@@ -319,8 +320,8 @@ disp('Saving local field map...');
 nii_localField = make_nii_quick(outputNiftiTemplate,localField);
 nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
                     
-save_untouch_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
-save_untouch_nii(nii_maskFinal,[outputDir filesep 'qsmhub_mask_final.nii.gz']);
+save_untouch_nii(nii_localField,[outputDir filesep prefix 'localField.nii.gz']);
+save_untouch_nii(nii_maskFinal,[outputDir filesep prefix 'mask_final.nii.gz']);
             
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weighting
@@ -395,7 +396,7 @@ disp('Saving susceptibility map...');
 
 nii_chi = make_nii_quick(outputNiftiTemplate,chi);
 
-save_untouch_nii(nii_chi,[outputDir filesep 'qsmhub_QSM.nii.gz']);
+save_untouch_nii(nii_chi,[outputDir filesep prefix 'QSM.nii.gz']);
 
 disp('Done!');
           

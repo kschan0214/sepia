@@ -39,6 +39,7 @@ function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,outpu
 qsm_hub_AddMethodPath;
 
 %% define variables
+prefix = 'squirrel_';
 gyro = 42.57747892;
 % make sure the input only load once (first one)
 isTotalFieldLoad = false;
@@ -158,8 +159,8 @@ disp('Saving local field map...');
 nii_localField = make_nii_quick(outputNiftiTemplate,localField);
 nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
                     
-save_untouch_nii(nii_localField,[outputDir filesep 'qsmhub_localField.nii.gz']);
-save_untouch_nii(nii_maskFinal,[outputDir filesep 'qsmhub_mask_final.nii.gz']);
+save_untouch_nii(nii_localField,[outputDir filesep prefix 'localField.nii.gz']);
+save_untouch_nii(nii_maskFinal,[outputDir filesep prefix 'mask_final.nii.gz']);
 
 disp('Done!');
 

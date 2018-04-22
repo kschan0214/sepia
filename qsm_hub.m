@@ -1,6 +1,6 @@
 %% qsm_hub
 %
-% Description: This is a GUI of qsm_hHub, which is a pipeline control tool
+% Description: This is a GUI of qsm_hub, which is a pipeline control tool
 % for standard QSM processing. It supports the following processing steps:
 % (1) phase unwrapping
 % (2) background field removal
@@ -68,7 +68,7 @@ fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVer
     'MenuBar','None','Toolbar','None','Name','QSM hub','NumberTitle','off');
 
 % create Tabs for GUI
-h.TabGroup          = uitabgroup(fig,'position',[.01 .01 1 1]);
+h.TabGroup          = uitabgroup(fig,'position',[.01 .01 0.99 0.99]);
 h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','One-stop QSM processing');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
@@ -453,7 +453,7 @@ QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 % get I/O GUI input
 inputDir        = get(h.dataIO.edit.input,'String');
 outputDir       = get(h.dataIO.edit.output,'String');
-maskFullName    = get(h.dataIO.edit.maskdir,'String');% removal,'Value');
+maskFullName    = get(h.dataIO.edit.maskdir,'String');
 isBET           = get(h.dataIO.checkbox.brainExtraction,'Value');
 
 % get phase unwrap GUI input

@@ -50,6 +50,7 @@ function chi = qsmMacroIOWrapper(inputDir,outputDir,varargin)
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
 %% define variables
+prefix = 'squirrel_';
 gyro = 42.57747892;
 % make sure the input only load once (first one)
 isLotalFieldLoad    = false;
@@ -250,7 +251,7 @@ disp('Saving susceptibility map...');
 
 nii_chi = make_nii_quick(outputNiftiTemplate,chi);
 
-save_untouch_nii(nii_chi,[outputDir filesep 'qsmhub_QSM.nii.gz']);
+save_untouch_nii(nii_chi,[outputDir filesep prefix 'QSM.nii.gz']);
 
 disp('Done!');
 

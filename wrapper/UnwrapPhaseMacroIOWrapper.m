@@ -35,6 +35,7 @@ function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(inputDir,outputD
 qsm_hub_AddMethodPath;
 
 %% define variables
+prefix = 'squirrel_';
 gyro = 42.57747892;
 % make sure the input only load once (first one)
 isMagnLoad = false;
@@ -73,7 +74,7 @@ if ~isempty(inputNiftiList)
                 nii_fieldMap = make_nii_quick(inputPhaseNifti,fieldMap);
                 nii_fieldMap.hdr.dime.scl_inter = 0;
                 nii_fieldMap.hdr.dime.scl_slope = 1;
-                save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
+                save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
             end
             isPhaseLoad = true;
         end
@@ -140,15 +141,15 @@ else
     nii_magn = make_nii_quick(outputNiftiTemplate,magn);
     
     % save magnitude and phase data as NIfTI_GZ format
-    save_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase.nii.gz']);
-    save_nii(nii_magn,[outputDir filesep 'qsmhub_magn.nii.gz']);
+    save_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
+    save_nii(nii_magn,[outputDir filesep prefix 'magn.nii.gz']);
     % save important header in .mat format
     save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
     
     % reload the NIfTI template so that later can use save_untouch_nii for
     % all results
-    outputNiftiTemplate = load_untouch_nii([outputDir filesep 'qsmhub_magn.nii.gz']);
+    outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
     % remove the time dimension info
     outputNiftiTemplate.hdr.dime.dim(5) = 1;
 end
@@ -203,8 +204,8 @@ if isEddyCorrect
     nii_fieldMap.hdr.dime.dim(5) = size(fieldMap,4);
     nii_magn = make_nii_quick(outputNiftiTemplate,magn); 
     nii_magn.hdr.dime.dim(5) = size(magn,4);
-    save_untouch_nii(nii_fieldMap,[outputDir filesep 'qsmhub_phase_EC.nii.gz']);
-    save_untouch_nii(nii_magn,[outputDir filesep 'qsmhub_magn_EC.nii.gz']);
+    save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase_EC.nii.gz']);
+    save_untouch_nii(nii_magn,[outputDir filesep prefix 'magn_EC.nii.gz']);
 end
 
 disp('Calculating field map...');
@@ -238,9 +239,9 @@ nii_totalField = make_nii_quick(outputNiftiTemplate,totalField);
 nii_fieldmapSD = make_nii_quick(outputNiftiTemplate,fieldmapSD);
 nii_newMask = make_nii_quick(outputNiftiTemplate,mask);
                     
-save_untouch_nii(nii_totalField,[outputDir filesep 'qsmhub_totalField.nii.gz']);
-save_untouch_nii(nii_fieldmapSD,[outputDir filesep 'qsmhub_fieldMapSD.nii.gz']);
-save_untouch_nii(nii_newMask,[outputDir filesep 'qsmhub_mask_new.nii.gz']);
+save_untouch_nii(nii_totalField,[outputDir filesep prefix 'totalField.nii.gz']);
+save_untouch_nii(nii_fieldmapSD,[outputDir filesep prefix 'fieldMapSD.nii.gz']);
+save_untouch_nii(nii_newMask,[outputDir filesep prefix 'mask_new.nii.gz']);
 
 disp('Done!');
 
