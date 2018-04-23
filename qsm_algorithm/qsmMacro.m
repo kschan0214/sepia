@@ -82,6 +82,8 @@
 %
 function [chi, lamdaOptimal] = qsmMacro(localField,mask,matrixSize,voxelSize,varargin)
 lamdaOptimal = [];
+voxelSize = voxelSize(:).';
+
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)

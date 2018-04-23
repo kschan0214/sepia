@@ -64,6 +64,9 @@
 % Date last modified: 29 September 2017
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
+matrixSize = matrixSize(:).';
+voxelSize = voxelSize(:).';
+
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)
