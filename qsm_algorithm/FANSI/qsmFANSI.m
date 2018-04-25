@@ -39,11 +39,12 @@
 %
 function chi = qsmFANSI(localField,mask,matrixSize,voxelSize,varargin)
 % parse input argument
-[mu1,alpha1,tol,maxiter,wmap,solver,constraint,b0dir] = parse_varargin_FANSI(varargin);
+[mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir] = parse_varargin_FANSI(varargin);
 
 % display message
-fprintf('Regularisation parameter for gradient L1: %f \n',alpha1);
-fprintf('Regularisation parameter for gradient consistency: %f \n',mu1);
+fprintf('Weight of gradient L1: %f \n',alpha1);
+fprintf('Weight of gradient consistency: %f \n',mu1);
+fprintf('Weight of fidelity consistency: %f \n',mu2);
 fprintf('Tolerance: %f \n',tol);
 fprintf('Maximum iterations: %i \n',maxiter);
 
@@ -60,6 +61,7 @@ params.maxOuterIter = maxiter;
 
 params.mu1 = mu1;          % gradient consistency
 params.alpha1 = alpha1;       % gradient L1 penalty (TGV constraint)
+params.mu2 = mu2;           % fidelity consistency
 params.tol_update = tol;
 
 switch solver

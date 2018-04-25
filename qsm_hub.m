@@ -153,6 +153,7 @@ set(h.qsm.STIiLSQR.edit.tol2,               'Callback',             {@EditInputM
 set(h.qsm.FANSI.edit.lambda,                'Callback',             {@EditInputMinMax_Callback,0,0});
 set(h.qsm.FANSI.edit.maxIter,               'Callback',             {@EditInputMinMax_Callback,1,0});
 set(h.qsm.FANSI.edit.mu,                    'Callback',             {@EditInputMinMax_Callback,0,0});
+set(h.qsm.FANSI.edit.mu2,                   'Callback',             {@EditInputMinMax_Callback,0,0});
 set(h.qsm.FANSI.edit.tol,                   'Callback',             {@EditInputMinMax_Callback,0,0});
 set(h.qsm.MEDI.checkbox.smv,                'Callback',             {@CheckboxEditPair_Callback,h.qsm.MEDI.edit.smv_radius,1});
 set(h.qsm.MEDI.checkbox.lambda_csf,         'Callback',             {@CheckboxEditPair_Callback,h.qsm.MEDI.edit.lambda_csf,1});
@@ -212,7 +213,8 @@ switch eventdata.NewValue.Title
         % I/O
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.QSMHub);
             % This tab supports both DICOM and NIfTI files
-            set(h.dataIO.text.input, 'Tooltip','Input directory contains DICOM or NIfTI files');
+            set(h.dataIO.text.input, 'Tooltip',...
+                'Input directory contains DICOM (both magnitude and phase files under the same directory) or NIfTI (*phase*.nii* and *magn*.nii*) files');
             % BET is supported with this tab
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
         % phase unwrap
@@ -229,7 +231,8 @@ switch eventdata.NewValue.Title
         % I/O
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.phaseUnwrap);
             % This tab supports both DICOM and NIfTI files
-            set(h.dataIO.text.input, 'Tooltip','Input directory contains DICOM or NIfTI files');
+            set(h.dataIO.text.input, 'Tooltip',...
+                'Input directory contains DICOM (both magnitude and phase files under the same directory) or NIfTI (*phase*.nii* and *magn*.nii*) files');
             % BET is supported with this tab
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
         % phase unwrap
@@ -242,7 +245,8 @@ switch eventdata.NewValue.Title
         % I/O
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.bkgRemoval);
             % This tab supports only NIfTI files
-            set(h.dataIO.text.input, 'Tooltip','Input directory contains NIfTI files');
+            set(h.dataIO.text.input, 'Tooltip',...
+                'Input directory contains the unwrapped total field map NIfTI (*totalField*.nii*) files');
             % no BET support with this tab
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -257,7 +261,8 @@ switch eventdata.NewValue.Title
         % I/O
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.qsm);
             % This tab supports only NIfTI files
-            set(h.dataIO.text.input, 'Tooltip','Input directory contains NIfTI files');
+            set(h.dataIO.text.input, 'Tooltip',...
+                'Input directory contains the local field map NIfTI (*localField*.nii*) files; for some QSM methods additional file(s) may also be needed (e.g. *magn*.nii* and *fieldmapSD*.nii*)');
             % no BET support with this tab
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -446,7 +451,7 @@ BFR_padSize = 40;
 BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
 QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
-QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
+QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';QSM_mu2=1;
 QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
 QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 
@@ -561,6 +566,7 @@ switch QSM_method
         try QSM_tol         = str2double(get(h.qsm.FANSI.edit.tol,'String'));           catch; QSM_tol=1;           end
         try QSM_lambda      = str2double(get(h.qsm.FANSI.edit.lambda,'String'));        catch; QSM_lambda=3e-5;     end
         try QSM_mu1         = str2double(get(h.qsm.FANSI.edit.mu,'String'));            catch; QSM_mu1=5e-5;        end
+        try QSM_mu2         = str2double(get(h.qsm.FANSI.edit.mu2,'String'));           catch; QSM_mu2=1;           end
         try QSM_maxiter     = str2double(get(h.qsm.FANSI.edit.maxIter,'String'));       catch; QSM_maxiter=50;      end
         try 
             QSM_solver      = h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1}; 
@@ -603,7 +609,7 @@ try
                 'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
                 'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
                 'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
+                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
                 'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
                 'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'eddy',isEddyCorrect);
 
@@ -624,7 +630,7 @@ try
             qsmMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
                 'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
                 'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,QSM_solver,QSM_constraint,...
+                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,...
                 'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
                 'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
     end
@@ -651,7 +657,7 @@ switch tab
         fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,...\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
         fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
-        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''%s'',''%s'',''exclude_threshold'',%i,...\n',num2str(QSM_padsize),QSM_mu1,QSM_solver,QSM_constraint,excludeMaskThreshold);
+        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',''exclude_threshold'',%i,...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,excludeMaskThreshold);
         fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
         fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g,''eddy'',%i);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF,isEddyCorrect);
         fclose(fid);
@@ -675,7 +681,7 @@ switch tab
         fprintf(fid,'qsmMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputDir,maskFullName);
         fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
-        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_solver,QSM_constraint);
+        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);
         fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
         fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF);
         fclose(fid);

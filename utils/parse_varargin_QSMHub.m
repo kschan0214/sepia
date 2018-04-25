@@ -16,7 +16,7 @@
 %
 function [isBET,mask,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
     BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
-    QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_solver,QSM_constraint,...
+    QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
     exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
     QSM_isSMV,QSM_merit,isEddyCorrect] = parse_varargin_QSMHub(arg)
 
@@ -27,7 +27,7 @@ BFR='LBV';refine=false;BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
 BFR_padSize=40;BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
 QSM_method='TKD';QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
-QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';
+QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';QSM_mu2=1;
 exclude_threshold = 1;
 QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_isLambdaCSF=false;QSM_lambdaCSF=100;
 QSM_isSMV=false;QSM_merit=false;isEddyCorrect=false;
@@ -120,6 +120,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'QSM_mu')
             QSM_mu1 = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'QSM_mu2')
+            QSM_mu2 = arg{kvar+1};
         end
         if strcmpi(arg{kvar},'linear')
             QSM_solver = 'linear';

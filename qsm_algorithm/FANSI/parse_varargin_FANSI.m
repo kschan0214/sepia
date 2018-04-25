@@ -7,9 +7,10 @@
 % Date created: 6 September 2017
 % Date last modified: 26 September 2017
 %
-function [mu1,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(arg)
+function [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(arg)
 alpha1 = 3e-5;
 mu1 = 5e-5;
+mu2 = 1;
 maxiter = 40;
 wmap = [];
 solver = 'nonlinear';
@@ -24,6 +25,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'mu')
             mu1 = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'mu2')
+            mu2 = arg{kvar+1};
         end
         if strcmpi(arg{kvar},'tol')
             tol = arg{kvar+1};

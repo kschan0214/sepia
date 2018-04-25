@@ -114,7 +114,7 @@ if ~isempty(varargin)
                     break
                 case 'fansi'
                     method = 'FANSI';
-                    [mu1,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
+                    [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
                 case 'ssvsharp'
                     method = 'SSVSHARP';
                     [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
@@ -152,7 +152,7 @@ switch method
         chi = QSM_iLSQR(double(localField),double(mask),'params',algoPara);
     case 'FANSI'
         chi = qsmFANSI(localField,mask,matrixSize,voxelSize,...
-          'tol',tol,'lambda',alpha1,'mu',mu1,'iteration',maxiter,'weight',wmap,...
+          'tol',tol,'lambda',alpha1,'mu',mu1,'mu2',mu2,'iteration',maxiter,'weight',wmap,...
           solver,constraint,'b0dir',b0dir);
     case 'SSVSHARP'
         chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...

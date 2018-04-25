@@ -53,7 +53,7 @@ end
 
 %% Parse input argument using parse_varargin_QSMHub.m
 [~,maskFullName,~,~,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
-BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~] = parse_varargin_QSMHub(varargin);
+BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');

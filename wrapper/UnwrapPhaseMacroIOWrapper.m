@@ -49,7 +49,7 @@ end
 
 %% Parse input argument using parse_varargin_QSMHub.m
 [isBET,maskFullName,unwrap,subsampling,~,~,~,~,~,~,...
-~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,exclude_threshold,~,~,~,~,~,~,~,~,isEddyCorrect] = parse_varargin_QSMHub(varargin);
+~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,exclude_threshold,~,~,~,~,~,~,~,~,isEddyCorrect] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
