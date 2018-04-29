@@ -37,6 +37,10 @@
 % Date last modified: 8 September 2017
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,varargin)
+
+matrixSize = matrixSize(:).';
+voxelSize = voxelSize(:).';
+
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)

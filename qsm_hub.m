@@ -581,7 +581,8 @@ switch QSM_method
         
     case 'Star'
         QSM_method='star';
-        try QSM_threshold   = str2double(get(h.qsm.Star.edit.padSize,'String'));        catch; QSM_padsize=4;       end
+        try QSM_padsize   = str2double(get(h.qsm.Star.edit.padSize,'String'));        catch; QSM_padsize=4;       end
+        QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
         
     case 'MEDI'
         QSM_method='medi_l1';

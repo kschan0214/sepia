@@ -200,6 +200,9 @@ disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2))
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
+matrixSize = matrixSize(:).';
+voxelSize = voxelSize(:).';
+
 %% get brain mask
 mask = [];
 maskList = dir([inputDir '/*mask*nii*']);
