@@ -65,7 +65,7 @@ end
 
 % create GUI 
 fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','QSM hub','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','QSM hub (beta)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(fig,'position',[.01 .01 0.99 0.99]);
