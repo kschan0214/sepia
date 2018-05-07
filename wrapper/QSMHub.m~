@@ -143,18 +143,11 @@ if ~isempty(inputNiftiList)
         % create synthetic header in case no qsm_hub's header is found
         [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputMagnNifti);
         
-        % look for text file for TEs information
-        teTextFullName = dir([inputDir filesep '*txt']);
+        teTextFullName = dir([inputDir '*txt']);
         if ~isempty(teTextFullName)
-            te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
+            te_ = readTEfromText(teTextFullName(1).name);
             te_ = te_(:);
             if ~isempty(te_)
-                TE = te_;
-                if length(TE) > 1
-                    delta_TE = TE(2)-TE(1);
-                end
-            end
-        end
         
         % if no header file then save the synthetic header in output dir
         save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
