@@ -34,13 +34,13 @@ Standard QSM data processing usually involves the following procedures:
 
 qsm_hub provides 4 standalone for the above procedures:
 
-1. QSMHub (One-stop QSM processing)  
+1. **QSMHub (One-stop QSM processing)**  
 	one-stop platform from loading the mGRE data(either NIfTI or DICOM) to generating susceptibility map
-2. Phase unwrapping  
+2. **Phase unwrapping**  
 	standalone to convert complex-valued mGRE data (DICOM or NIfTI) to unwrapped total field map
-3. Background field removal  
+3. **Background field removal**  
 	standalone to remove background field contribution from a total fieldmap to produce a local field map
-4. QSM  
+4. **QSM**  
 	standalone to map magnetic susceptibility source from a local field map
 
 Apparently this toolbox is still in development, so you should expect to encounter some bugs.
@@ -95,13 +95,13 @@ the same but in different (arbitrary) scale).
 Alternatively you can create the qsm_hub header file in your own way, but please make sure that the
 header filename contains the string 'header' and the file contains the following variables:
 
-	-	'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
-	-	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
-	-	'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
-	-	'TE' 			: echo times, in s (e.g. TE=[te1,te2,te3,te4,te5])
-	-	'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
-	-	'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
-	-	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
+	'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
+	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
+	'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
+	'TE' 			: echo times, in s (e.g. TE=[te1,te2,te3,te4,te5])
+	'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
+	'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
+	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
 
 I suggest to use SyntheticQSMHubHeader.m to get most of the information from NIfTI header such as
 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get echo time information.
@@ -114,7 +114,9 @@ I suggest to use SyntheticQSMHubHeader.m to get most of the information from NIf
 Every now and again the values of QSM might be inverted. To check if it is the case you could look
 into the QSM map. The deep gray matter structure should be appeared as bright (positive) and white
 matter should be dark (negative value). If it appears in the opposite way then you might invert the
-result by multiply the map with -1, i.e. QSM_corr = -QSM.
+result by multiply the map with -1, i.e. 
+
+> QSM_corr = -QSM.
 
 ----------------------------------------------------------------------------------------------------
 
@@ -147,9 +149,9 @@ result by multiply the map with -1, i.e. QSM_corr = -QSM.
 [Example]
 A standard input directory contains the following files:  
 - magn.nii.gz			(4D real image)
-- phase.nii.gz		(4D real image)
-- mask.nii.gz 		(3D mask image)
-- qsmhub_header.mat	(.mat file)
+- phase.nii.gz			(4D real image)
+- mask.nii.gz 			(3D mask image)
+- qsmhub_header.mat		(.mat file)
 
 ####	Total field recovery and phase unwrapping panel
 --------------------------------------------------
