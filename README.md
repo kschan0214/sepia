@@ -92,13 +92,13 @@ the same but in different (arbitrary) scale)
 
 Alternatively you can create the qsm_hub header file in your own way, but please make sure that the
 header filename contains the string 'header' and the file contains the following variables:
-- 'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
-- 'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
-- 'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
-- 'TE' 			: echo times, in s (e.g. TE=[te1,te2,te3,te4,te5])
-- 'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
-- 'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
-- 'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
+	-	'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
+	-	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
+	-	'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
+	-	'TE' 			: echo times, in s (e.g. TE=[te1,te2,te3,te4,te5])
+	-	'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
+	-	'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
+	-	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
 I suggest to use SyntheticQSMHubHeader.m to get most of the information from NIfTI header such as
 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get echo time information.
 
@@ -201,8 +201,8 @@ A standard input directory contains the following files:
 [Output]
 - 	squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)
 
-
-### Phase unwrapping|
+--------------------------------------------------
+### Phase unwrapping
 
 ####	I/O panel
 --------------------------------------------------
@@ -248,6 +248,7 @@ A standard input directory contains the following files:
 - 	squirrel_totalField.nii.gz 		(unwrapped total (background+local) field, in Hz)
 - 	squirrel_fieldMapSD.nii.gz 		(normalised field map standaed deviation)
 
+--------------------------------------------------
 ### Background field removal
 
 ####	I/O panel
@@ -288,6 +289,7 @@ A standard input directory contains the following files:
 - 	squirrel_mask_final.nii.gz	(final brain mask, might be eroded depended on background field removal
 								algorithms and 'exclude unrelaiable voxels' threshold value)
 
+--------------------------------------------------
 ### QSM
 
 ####	I/O planel
