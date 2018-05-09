@@ -4,14 +4,14 @@
 ## Introduction
 --------------------------------------------------
 
-Welcome to the beta version of qsm_hub. qsm_hub is a graphical user interface for quantitative
+Welcome to the beta version of `qsm_hub`. `qsm_hub` is a graphical user interface for quantitative
 susceptibility mapping (QSM) processing in MATLAB.
 
 This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), 
 [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
-qsm_hub serves with two purposes:
+`qsm_hub` serves with two purposes:
 
 1. acts as a hub to allow user to choose different QSM (pre)processing methods.
 2. allows fast method parameter adjustments with the GUI
@@ -20,10 +20,10 @@ Instead of focusing providing processing methods of its own (indeed there are so
 implemented by me), large amount of effort was paid to create wrappers/macros to provide interface
 to incorporate different methods.
 
-qsm_hub provides a tool to produce QSM (and related) map easily. It is particularly suitable for
+`qsm_hub` provides a tool to produce QSM (and related) map easily. It is particularly suitable for
 testing the best pipeline to process the multi-echo GRE (mGRE) data.
 
-Once you find the best setting of the processing pipeline (and more familiar with qsm_hub), you
+Once you find the best setting of the processing pipeline (and more familiar with `qsm_hub`), you
 might wish to dive into the wrapper functions for batch processing.
 
 Standard QSM data processing usually involves the following procedures:
@@ -58,7 +58,7 @@ Kwok (2018-05-07)
 ## Installation
 --------------------------------------------------
 
-To use the qsm_hub, just add the directory containing qsm_hub.m into your MATLAB PATH
+To use `qsm_hub`, just add the directory containing qsm_hub.m into your MATLAB PATH
 
 This can be done by:  
 'Set Path' -> 'Add Folder' -> /your/qsm_hub/directory/ -> 'Save'  
@@ -74,7 +74,7 @@ Then, you can start by entering `qsm_hub` in the MATLAB's command window.
 ## Compatibility
 --------------------------------------------------
 
-I try to make qsm_hub compatible with as many MATLAB versions as I could. In principle, it works fine
+I try to make `qsm_hub` compatible with as many MATLAB versions as I could. In principle, it works fine
 with MATLAB R2016b or earlier. However, most of the methods should also be working with MATLAB
 R2017a or later, except 'LBV' of background field removal method.  
 
@@ -100,8 +100,8 @@ susceptibility range of the QSM value but not the qualitative assessment QSM (ba
 the same but in different (arbitrary) scale).
 
 Alternatively you can create the qsm_hub header file in your own way, but please make sure that the
-header filename contains the string 'header' and the file contains the following variables:
-
+header filename contains the string 'header' and the file contains the following variables:  
+````
 	'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
 	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
 	'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
@@ -109,7 +109,7 @@ header filename contains the string 'header' and the file contains the following
 	'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
 	'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
 	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
-
+````  
 I suggest to use SyntheticQSMHubHeader.m to get most of the information from NIfTI header such as
 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get echo time information.  
 
@@ -191,10 +191,10 @@ A standard input directory contains the following files:
 	check with 'squirrel_fieldmapSD.nii.gz' to adjust the threshold)  
 	
 *Output  
--	squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)  
-- 	squirrel_magn_EC.nii.gz			(eddy current corrected magnitude, optional)  
-- 	squirrel_totalField.nii.gz 		(unwrapped total (background+local) field, in Hz)  
-- 	squirrel_fieldMapSD.nii.gz 		(normalised field map standaed deviation)*  
+- squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)  
+- squirrel_magn_EC.nii.gz		(eddy current corrected magnitude, optional)  
+- squirrel_totalField.nii.gz 	(unwrapped total (background+local) field, in Hz)  
+- squirrel_fieldMapSD.nii.gz 	(normalised field map standaed deviation)*  
 
 ####	Background field removal panel
 --------------------------------------------------
@@ -221,11 +221,11 @@ A standard input directory contains the following files:
 
 - Refine local field by 4th order 3D polynomial fit
 	enable to remove residual B1(+ & -) contribution in the local field  
-	
+
 *Output  
-- 	squirrel_localField.nii.gz 		(background-field-removed local (or tissue) field, in Hz)
-- 	squirrel_mask_final.nii.gz		(final brain mask, might be eroded depended on background field
-									removal algorithms and 'exclude unrelaiable voxels' threshold value)*
+- squirrel_localField.nii.gz 		(background-field-removed local (or tissue) field, in Hz)  
+- squirrel_mask_final.nii.gz		(final brain mask, might be eroded depended on background field
+									removal algorithms and 'exclude unrelaiable voxels' threshold value)*  
 
 ####	QSM panel
 --------------------------------------------------
@@ -251,7 +251,7 @@ A standard input directory contains the following files:
 		Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
   
 *Output  
--	squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)*
+- squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)*
 
 --------------------------------------------------
 ### Phase unwrapping
@@ -309,10 +309,10 @@ A standard input directory contains the following files:
 	check with 'squirrel_fieldmapSD.nii.gz' to adjust the threshold)    
 	
 *Output    
-- 	squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)  
-- 	squirrel_magn_EC.nii.gz			(eddy current corrected magnitude, optional)  
-- 	squirrel_totalField.nii.gz 		(unwrapped total (background+local) field, in Hz)  
-- 	squirrel_fieldMapSD.nii.gz 		(normalised field map standaed deviation)*    
+- squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)  
+- squirrel_magn_EC.nii.gz		(eddy current corrected magnitude, optional)  
+- squirrel_totalField.nii.gz 	(unwrapped total (background+local) field, in Hz)  
+- squirrel_fieldMapSD.nii.gz 	(normalised field map standaed deviation)*    
 
 --------------------------------------------------
 ### Background field removal
@@ -336,10 +336,10 @@ A standard input directory contains the following files:
 	
 *Example  
 A standard input directory contains the following files:  
-- 	totalField.nii.gz	(unwrapped total field map)  
-- 	fieldMapSD.nii.gz	(normalised field map standard deviation, optional)  
-- 	mask.nii.gz 		(3D mask image)  
-- 	qsmhub_header.mat 	(.mat file)*  
+- totalField.nii.gz		(unwrapped total field map)  
+- fieldMapSD.nii.gz		(normalised field map standard deviation, optional)  
+- mask.nii.gz 			(3D mask image)  
+- qsmhub_header.mat 	(.mat file)*  
 
 ####	Background field removal panel
 --------------------------------------------------
@@ -368,8 +368,8 @@ A standard input directory contains the following files:
 	enable to remove residual B1(+ & -) contribution in the local field
 	
 *Output  
-- 	squirrel_localField.nii.gz 	(background-field-removed local (or tissue) field, in Hz)  
-- 	squirrel_mask_final.nii.gz	(final brain mask, might be eroded depended on background field removal
+- squirrel_localField.nii.gz 	(background-field-removed local (or tissue) field, in Hz)  
+- squirrel_mask_final.nii.gz	(final brain mask, might be eroded depended on background field removal
 								algorithms and 'exclude unrelaiable voxels' threshold value)*  
 
 --------------------------------------------------
@@ -392,11 +392,11 @@ A standard input directory contains the following files:
 	
 *Example  
 A standard input directory contains the following files:  
-- 	localField.nii.gz 	(3D local field map, in Hz)  
-- 	magn.nii.gz			(4D real image used to cerate weighting map for some QSM algorithm, [x,y,slice,time],
+- localField.nii.gz 	(3D local field map, in Hz)  
+- magn.nii.gz			(4D real image used to cerate weighting map for some QSM algorithm, [x,y,slice,time],
 						optional)  
-- 	mask_final.nii.gz 	(3D mask image)  
-- 	qsmhub_header.mat 	(.mat file)*  
+- mask_final.nii.gz 	(3D mask image)  
+- qsmhub_header.mat 	(.mat file)*  
 
 ####	QSM panel
 --------------------------------------------------
@@ -422,4 +422,4 @@ A standard input directory contains the following files:
 		Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
 
 *Output     
-- 	squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)*  
+- squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)*  
