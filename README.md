@@ -7,7 +7,8 @@
 Welcome to the beta version of qsm_hub. qsm_hub is a graphical user interface for quantitative
 susceptibility mapping (QSM) processing in MATLAB.
 
-This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
+This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), 
+[STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
 qsm_hub serves with two purposes:
@@ -63,7 +64,7 @@ This can be done by: 'Set Path' -> 'Add Folder' -> /your/directory/to/qsm_hub.m/
 
 or
 
-with MATLAB's command: addpath('/your/qsm_hub/directory')
+with MATLAB's command: `addpath('/your/qsm_hub/directory')`
 
 ----------------------------------------------------------------------------------------------------
 
@@ -116,7 +117,7 @@ into the QSM map. The deep gray matter structure should be appeared as bright (p
 matter should be dark (negative value). If it appears in the opposite way then you might invert the
 result by multiply the map with -1, i.e. 
 
-> QSM_corr = -QSM.
+`QSM_corr = -QSM; `
 
 ----------------------------------------------------------------------------------------------------
 
@@ -128,9 +129,9 @@ result by multiply the map with -1, i.e.
 #### I/O panel
 --------------------------------------------------
 - Input:
-(Option 1) 	Directory contains all and only mGRE DICOM data, including both magnitude and phase
+	(Option 1) 	Directory contains all and only mGRE DICOM data, including both magnitude and phase
 			images
-(Option 2) 	Directory contains both magnitude and phase 4D-NIfTI data([x,y,slice,time]) and qsmhub
+	(Option 2) 	Directory contains both magnitude and phase 4D-NIfTI data([x,y,slice,time]) and qsmhub
 			header mat file (e.g. qsmhub_header.mat, optional), the magnitude data filename must
 			contain the string 'magn' (e.g. 'magn.nii.gz') and the phase data filename must contain
 			the string 'phase' (e.g. 'phase.nii.gz')
@@ -146,7 +147,7 @@ result by multiply the map with -1, i.e.
 	If the input directory also contains NIfTI file that contains string 'mask' in filename (e.g.
 	'mask.nii.gz'), it will be read automatically so you might skip this steps
 
-[Example]
+*Example*
 A standard input directory contains the following files:  
 - magn.nii.gz			(4D real image)
 - phase.nii.gz			(4D real image)
@@ -156,26 +157,28 @@ A standard input directory contains the following files:
 ####	Total field recovery and phase unwrapping panel
 --------------------------------------------------
 - Method:  
-	1. Laplacian:  
+	1. **Laplacian**  
 		very reliable method for phase unwrapping yet the output values
 								are not accurate
-	2. Laplacian STI suite:  
+	2. **Laplacian STI suite**  
 		Laplacian unwrapping implementation from STI Suite v3.0
-	3. Jena:  
+	3. **Jena**  
 		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)
-	4. Region growing:  
+	4. **Region growing**  
 		MEDI toolbox implementation, might not work well with DICOM phase
 								data (using offline recon data works pretty well)
-	5. Graphcut:  
-		graph-cut algorithm (not recommended)
+	5. **Graphcut**  
+		graph-cut algorithm (not recommended)  
+		
 - Bipolar readout eddy current correction:  
 	enable to correct the phase inconsistence between odd and even echoes and gradient field
 	contribution by eddy current effect due to bipolar readout
 - Exclude unreliable voxels, Threshold:  
 	enable to exclude low SNR voxels that can create strong artefact in susceptibility map (you may
 	check with 'squirrel_fieldmapSD.nii.gz' to adjust the threshold)  
-[Output]  
-- 	squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)
+	
+*Output*  
+-	squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)
 - 	squirrel_magn_EC.nii.gz			(eddy current corrected magnitude, optional)
 - 	squirrel_totalField.nii.gz 		(unwrapped total (background+local) field, in Hz)
 - 	squirrel_fieldMapSD.nii.gz 		(normalised field map standaed deviation)
@@ -183,17 +186,25 @@ A standard input directory contains the following files:
 ####	Background field removal panel
 --------------------------------------------------
 - Method:
-	1. LBV: 				Laplacian boundary value approach to removal background field
+	1. **LBV**  
+		Laplacian boundary value approach to removal background field
 							(recommended)
-	2. PDF: 				Project onto dipole field
-	3. RESHARP: 			Regularised SHARP
-	4. SHARP: 				Sophisticated harmonic artefact reduction for phase data
-	5. VSHARP STI suite: 	STI suite v3.0 variable-kernel SHARP (recommended)
-	6. VSHARP
-	7. iHARPERELLA: 		(not recommended)  
+	2. **PDF**  
+		Project onto dipole field
+	3. **RESHARP**  
+		Regularised SHARP
+	4. **SHARP**  
+		Sophisticated harmonic artefact reduction for phase data
+	5. **VSHARP STI suite**  
+		STI suite v3.0 variable-kernel SHARP (recommended)
+	6. **VSHARP**  
+	7. **iHARPERELLA**  
+		(not recommended)  
+
 - Refine local field by 4th order 3D polynomial fit
 	enable to remove residual B1(+ & -) contribution in the local field  
-[Output]  
+	
+*Output*  
 - 	squirrel_localField.nii.gz 		(background-field-removed local (or tissue) field, in Hz)
 - 	squirrel_mask_final.nii.gz		(final brain mask, might be eroded depended on background field
 									removal algorithms and 'exclude unrelaiable voxels' threshold value)
@@ -201,13 +212,19 @@ A standard input directory contains the following files:
 ####	QSM panel
 --------------------------------------------------
 - Method:
-	1. TKD: 					Thresholded k-space division
-	2. Closed-form solution: 	closed-form solution with L2-norm regularisation
-	3. STI suite iLSQR: 		STI suite v3.0 implementation of iterative LSQR approach
-	4. iLSQR
-	5. FANSI: 					Fast algorithm for nonlinear susceptibility inversion (recommended)
-	6. Star: 					STI suite v3.0 Star-QSM (recommended)
-	7. MEDI: 					Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
+	1. **TKD**  
+		Thresholded k-space division
+	2. **Closed-form solution**  
+		closed-form solution with L2-norm regularisation
+	3. **STI suite iLSQR**  
+		STI suite v3.0 implementation of iterative LSQR approach
+	4. **iLSQR**
+	5. **FANSI**  
+		Fast algorithm for nonlinear susceptibility inversion (recommended)
+	6. **Star**  
+		STI suite v3.0 Star-QSM (recommended)
+	7. **MEDI**  
+		Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
 [Output]  
 - 	squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)
 
@@ -217,46 +234,53 @@ A standard input directory contains the following files:
 ####	I/O panel
 --------------------------------------------------
 - Input:  
-(Option 1) 	Directory contains all and only mGRE DICOM data, including both magnitude and phase
+	(Option 1) 	Directory contains all and only mGRE DICOM data, including both magnitude and phase
 			images
-(Option 2) 	Directory contains both magnitude and phase 4D-NIfTI data([x,y,slice,time]) and qsmhub
+	(Option 2) 	Directory contains both magnitude and phase 4D-NIfTI data([x,y,slice,time]) and qsmhub
 			header mat file (e.g. qsmhub_header.mat, optional), the magnitude data filename must
 			contain the string 'magn' (e.g. 'magn.nii.gz') and the phase data filename must contain
 			the string 'phase' (e.g. 'phase.nii.gz')  
-- Output:
-	Directory to store all qsm_hub output (default: /input/dir/output)
-- FSL brain extraction (optional):
+- Output:  
+	Directory to store all qsm_hub output (default: /input/dir/output)  
+- FSL brain extraction (optional):  
 	Simple FSL's BET script, which can roughly extract a brain yet not too accurate.
 	User is recommended to perform accurate brain extraction outside the qsm_hub app (e.g. using
-	FSL's bet which allows fine tuning for more accurate result)
-- Brain mask file:
+	FSL's bet which allows fine tuning for more accurate result)  
+- Brain mask file:  
 	NIfTI file that brain voxel > 0.
 	QSM relies on brain mask thorough all processing steps.
 	If the input directory also contains NIfTI file that contains string 'mask' in filename (e.g.
-	'mask.nii.gz'), it will be read automatically so you might skip this steps
+	'mask.nii.gz'), it will be read automatically so you might skip this steps  
 
 ####	Total field recovery and phase unwrapping panel
 --------------------------------------------------
 - Method:
-	1. Laplacian: 				very reliable method for phase unwrapping yet the output values
-								are not accurate
-	2. Laplacian STI suite: 	Laplacian unwrapping implementation from STI Suite v3.0
-	3. Jena: 					very robust region growing method yet only works in the DCCN cluster
-								(recommended in the cluster)
-	4. Region growing: 		MEDI toolbox implementation, might not work well with DICOM phase
-								data (using offline recon data works pretty well)
-	5. Graphcut: 				graph-cut algorithm (not recommended)  
+	1. **Laplacian**  
+		very reliable method for phase unwrapping yet the output values
+		are not accurate  
+	2. **Laplacian STI suite**  
+		Laplacian unwrapping implementation from STI Suite v3.0  
+	3. **Jena**   
+		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)  
+	4. **Region growing**  
+		MEDI toolbox implementation, might not work well with DICOM phase data 
+		(using offline recon data works pretty well)
+	5. **Graphcut**  
+		graph-cut algorithm (not recommended)  
+		
 - Bipolar readout eddy current correction:  
 	enable to correct the phase inconsistence between odd and even echoes and gradient field
-	contribution by eddy current effect due to bipolar readout
+	contribution by eddy current effect due to bipolar readout  
+	
 - Exclude unreliable voxels, Threshold:  
 	enable to exclude low SNR voxels that can create strong artefact in susceptibility map (you may
-	check with 'squirrel_fieldmapSD.nii.gz' to adjust the threshold)  
-[Output]  
+	check with 'squirrel_fieldmapSD.nii.gz' to adjust the threshold)    
+	
+*Output*    
 - 	squirrel_phase_EC.nii.gz 		(eddy current corrected phase, optional)
 - 	squirrel_magn_EC.nii.gz			(eddy current corrected magnitude, optional)
 - 	squirrel_totalField.nii.gz 		(unwrapped total (background+local) field, in Hz)
-- 	squirrel_fieldMapSD.nii.gz 		(normalised field map standaed deviation)
+- 	squirrel_fieldMapSD.nii.gz 		(normalised field map standaed deviation)  
 
 --------------------------------------------------
 ### Background field removal
@@ -275,64 +299,80 @@ A standard input directory contains the following files:
 	NIfTI file that brain voxel > 0. QSM relies on brain mask thorough all processing steps. If the input
 	directory also contains NIfTI file that contains string 'mask' in filename (e.g. 'mask.nii.gz'), it
 	doesn't need to be specified and will be read automatically
-[Example]
+*Example*  
 A standard input directory contains the following files:  
-- 	totalField.nii.gz	(unwrapped total field map)
-- 	fieldMapSD.nii.gz	(normalised field map standard deviation, optional)
-- 	mask.nii.gz 		(3D mask image)
-- 	qsmhub_header.mat 	(.mat file)
+- 	totalField.nii.gz	(unwrapped total field map)  
+- 	fieldMapSD.nii.gz	(normalised field map standard deviation, optional)  
+- 	mask.nii.gz 		(3D mask image)  
+- 	qsmhub_header.mat 	(.mat file)  
 
 ####	Background field removal panel
 --------------------------------------------------
 - Method:
-	(1) LBV: Laplacian boundary value approach to removal background field (recommended)
-	(2) PDF: Project onto dipole field
-	(3) RESHARP: Regularised SHARP
-	(4) SHARP: Sophisticated harmonic artefact reduction for phase data
-	(5) VSHARP STI suite: STI suite v3.0 variable-kernel SHARP (recommended)
-	(6) VSHARP
-	(7) iHARPERELLA: (not recommended)
+	1. **LBV**  
+		Laplacian boundary value approach to removal background field (recommended)
+	2. **PDF**  
+		Project onto dipole field
+	3. **RESHARP**  
+		Regularised SHARP
+	4. **SHARP**  
+		Sophisticated harmonic artefact reduction for phase data
+	5. **VSHARP STI suite**  
+		STI suite v3.0 variable-kernel SHARP (recommended)
+	6. **VSHARP**  
+	7. **iHARPERELLA**  
+		(not recommended)  
+		
 - Refine local field by 4th order 3D polynomial fit
 	enable to remove residual B1(+ & -) contribution in the local field
-[Output]
+	
+*Output*  
 - 	squirrel_localField.nii.gz 	(background-field-removed local (or tissue) field, in Hz)
 - 	squirrel_mask_final.nii.gz	(final brain mask, might be eroded depended on background field removal
-								algorithms and 'exclude unrelaiable voxels' threshold value)
+								algorithms and 'exclude unrelaiable voxels' threshold value)  
 
 --------------------------------------------------
 ### QSM
 
 ####	I/O planel
 --------------------------------------------------
-- Input:
+- Input:  
 	Directory contain local field map and (optional) magnitude mGRE NIfTI data and qsmhub header mat file
-	(e.g. qsmhub_header.mat, optional)
+	(e.g. qsmhub_header.mat, optional)  
 	The total field map data filename must contain the string 'totalfield' (e.g. 'squirrel_totalField.nii.gz')
 	and the field map standard deviation data filename must contain the string 'fieldmapsd' (e.g.
-	'squirrel_fieldMapSD.nii.gz')
-- Output:
-	Directory to store local field map and final brain mask (default: /input/dir/output)
-- Brain mask file:
+	'squirrel_fieldMapSD.nii.gz')  
+- Output:  
+	Directory to store local field map and final brain mask (default: /input/dir/output)  
+- Brain mask file:  
 	NIfTI file that brain voxel > 0. QSM relies on brain mask thorough all processing steps. If the input
 	directory also contains NIfTI file that contains string 'mask' in filename (e.g. 'mask.nii.gz'), it doesn't
-	need to be specified and will be read automatically  
-[Example]  
+	need to be specified and will be read automatically    
+	
+*Example*  
 A standard input directory contains the following files:  
-- 	localField.nii.gz 	(3D local field map, in Hz)
+- 	localField.nii.gz 	(3D local field map, in Hz)  
 - 	magn.nii.gz			(4D real image used to cerate weighting map for some QSM algorithm, [x,y,slice,time],
-						optional)
-- 	mask_final.nii.gz 	(3D mask image)
-- 	qsmhub_header.mat 	(.mat file)
+						optional)  
+- 	mask_final.nii.gz 	(3D mask image)  
+- 	qsmhub_header.mat 	(.mat file)  
 
 ####	QSM panel
 --------------------------------------------------
 - Method:
-	1. TKD: Thresholded k-space division
-	2. Closed-form solution: closed-form solution with L2-norm regularisation
-	3. STI suite iLSQR: STI suite v3.0 implementation of iterative LSQR approach
-	4. iLSQR
-	5. FANSI: Fast algorithm for nonlinear susceptibility inversion (recommended)
-	6. Star: STI suite v3.0 Star-QSM (recommended)
-	7. MEDI: morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
-[Output]  
+	1. **TKD**  
+		Thresholded k-space division  
+	2. **Closed-form solution**  
+		closed-form solution with L2-norm regularisation  
+	3. **STI suite iLSQR**  
+		STI suite v3.0 implementation of iterative LSQR approach  
+	4. **iLSQR**  
+	5. **FANSI**  
+		Fast algorithm for nonlinear susceptibility inversion (recommended)  
+	6. **Star**  
+		STI suite v3.0 Star-QSM (recommended)  
+	7. **MEDI**  
+		morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
+		
+*Output*     
 - 	squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)
