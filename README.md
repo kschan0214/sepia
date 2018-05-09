@@ -34,15 +34,14 @@ Standard QSM data processing usually involves the following procedures:
 
 qsm_hub provides 4 standalone for the above procedures:
 
-1. QSMHub (One-stop QSM processing)
-...one-stop platform from loading the mGRE data(either NIfTI or
-	DICOM) to generating susceptibility map
-2. Phase unwrapping
-...standalone to convert complex-valued mGRE data (DICOM or NIfTI) to unwrapped total field map
-3. Background field removal
-...standalone to remove background field contribution from a total fieldmap to produce a local field map
-4. QSM
-...standalone to map magnetic susceptibility source from a local field map
+1. QSMHub (One-stop QSM processing)  
+	one-stop platform from loading the mGRE data(either NIfTI or DICOM) to generating susceptibility map
+2. Phase unwrapping  
+	standalone to convert complex-valued mGRE data (DICOM or NIfTI) to unwrapped total field map
+3. Background field removal  
+	standalone to remove background field contribution from a total fieldmap to produce a local field map
+4. QSM  
+	standalone to map magnetic susceptibility source from a local field map
 
 Apparently this toolbox is still in development, so you should expect to encounter some bugs.
 
@@ -81,11 +80,9 @@ R2017a or later, except 'LBV' of background field removal method.
 --------------------------------------------------
 
 
-If you prefer working with NIfTI files (as I do), I suggest using [MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with 'Option' ->
-'Save multivolumes series as 4D files' checked. In this way your mGRE data will be stored as 4D FSL
-NIfTI data that needed to be the input of qsm_hub. A text file will also be generated with the NIfTI
-data. If your put this text file in your qsm_hub input directory, the actual echo times stated in
-this text file will also be read to generate a synthetic qsm_hub header.
+If you prefer working with NIfTI files (as I do), I suggest using [MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with  
+'Option' -> 'Save multivolumes series as 4D files'  
+In this way your mGRE data will be stored as 4D FSL NIfTI data that needed to be the input of qsm_hub. A text file will also be generated with the NIfTI data. If your put this text file in your qsm_hub input directory, the actual echo times stated in this text file will also be read to generate a synthetic qsm_hub header.
 
 qsm_hub requires a special header file in *.mat* format that stores some information for QSM recon. If
 your input are DICOMs, this header file will be generated automatically. For NIfTI data, if this
@@ -93,10 +90,11 @@ file is absent, qsm_hub will generate a synthetic header based on the informatio
 files. However, for some information such as 'TE' and 'delta_TE', the NIfTI header usually doesn't
 contain them and there some predefined values will be set. The synthetic header may affect the
 susceptibility range of the QSM value but not the qualitative assessment QSM (basically the QSMs are
-the same but in different (arbitrary) scale)
+the same but in different (arbitrary) scale).
 
 Alternatively you can create the qsm_hub header file in your own way, but please make sure that the
 header filename contains the string 'header' and the file contains the following variables:
+
 	-	'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
 	-	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
 	-	'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
@@ -104,6 +102,7 @@ header filename contains the string 'header' and the file contains the following
 	-	'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
 	-	'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
 	-	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
+
 I suggest to use SyntheticQSMHubHeader.m to get most of the information from NIfTI header such as
 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get echo time information.
 
@@ -146,7 +145,7 @@ result by multiply the map with -1, i.e. QSM_corr = -QSM.
 	'mask.nii.gz'), it will be read automatically so you might skip this steps
 
 [Example]
-A standard input directory contains the following files:
+A standard input directory contains the following files:  
 - magn.nii.gz			(4D real image)
 - phase.nii.gz		(4D real image)
 - mask.nii.gz 		(3D mask image)
