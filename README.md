@@ -11,6 +11,7 @@ This GUI is built based on three toolboxes including [MEDI](http://weill.cornell
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
 qsm_hub serves with two purposes:
+
 1. acts as a hub to allow user to choose different QSM (pre)processing methods.
 2. allows fast method parameter adjustments with the GUI
 
@@ -25,19 +26,23 @@ Once you find the best setting of the processing pipeline (and more familiar wit
 might wish to dive into the wrapper functions for batch processing.
 
 Standard QSM data processing usually involves the following procedures:
+
 0. convert DICOM phase values to wrapped phase values
 1. Phase unwrapping and total field recovery
 2. Background field removal
 3. QSM (sometimes people just call it dipole field inversion)
 
 qsm_hub provides 4 standalone for the above procedures:
-1. QSMHub (One-stop QSM processing): one-stop platform from loading the mGRE data(either NIfTI or
+
+1. QSMHub (One-stop QSM processing)
+...one-stop platform from loading the mGRE data(either NIfTI or
 	DICOM) to generating susceptibility map
-2. Phase unwrapping: standalone to convert complex-valued mGRE data (DICOM or NIfTI) to unwrapped
-	total field map
-3. Background field removal: standalone to remove background field contribution from a total field
-	map to produce a local field map
-4. QSM: standalone to map magnetic susceptibility source from a local field map
+2. Phase unwrapping
+...standalone to convert complex-valued mGRE data (DICOM or NIfTI) to unwrapped total field map
+3. Background field removal
+...standalone to remove background field contribution from a total fieldmap to produce a local field map
+4. QSM
+...standalone to map magnetic susceptibility source from a local field map
 
 Apparently this toolbox is still in development, so you should expect to encounter some bugs.
 
