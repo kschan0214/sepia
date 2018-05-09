@@ -1,6 +1,6 @@
 # qsm_hub
 ====================================================================================================
-<h1>Introduction
+<h1>Introduction</h1>
 --------------------------------------------------
 
 Welcome to the beta version of qsm_hub. qsm_hub is a graphical user interface for quantitative
@@ -48,7 +48,7 @@ Have fun!
 Kwok (2018-05-07)
 
 ----------------------------------------------------------------------------------------------------
-<h1>Installation
+<h1>Installation</h1>
 
 To use the qsm_hub, just add the directory containing qsm_hub.m into your MATLAB PATH
 
@@ -59,14 +59,14 @@ or
 with MATLAB's command: addpath('/your/qsm_hub/directory')
 
 ----------------------------------------------------------------------------------------------------
-<h1>Compatibility
+<h1>Compatibility</h1>
 
 I try to make qsm_hub compatible with as many MATLAB version as I could. In principle, it works fine
 with MATLAB R2016b or earlier. However, most of the methods should also be working with MATLAB
 R2017a or later, except 'LBV' of background field removal method.
 
 ----------------------------------------------------------------------------------------------------
-<h1>Working with NIfTI files and qsm_hub header
+<h1>Working with NIfTI files and qsm_hub header</h1>
 
 
 If you prefer working with NIfTI files (as I do), I suggest using MRIConvert
@@ -97,7 +97,7 @@ I encourage to use SyntheticQSMHubHeader.m to get most of the information from N
 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get echo time information.
 
 ----------------------------------------------------------------------------------------------------
-<h1>Checking QSM result
+<h1>Checking QSM result</h1>
 
 
 Every now and again the values of QSM might be inverted. To check if it is the case you could look
@@ -106,7 +106,7 @@ matter should be dark (negative value). If it appears in the opposite way then y
 result by multiply the map with -1, i.e. QSM_corr = -QSM.
 
 ----------------------------------------------------------------------------------------------------
-<h1>Standalone description
+<h1>Standalone description</h1>
 
 
 ----------------------------------
