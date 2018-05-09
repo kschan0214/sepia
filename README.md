@@ -1,12 +1,13 @@
 # qsm_hub
-====================================================================================================
+==================================================
+
 ## Introduction
 --------------------------------------------------
 
 Welcome to the beta version of qsm_hub. qsm_hub is a graphical user interface for quantitative
 susceptibility mapping (QSM) processing in MATLAB.
 
-It is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
+This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
 qsm_hub serves with two purposes:
@@ -18,7 +19,7 @@ implemented by me), large amount of effort was paid to create wrappers/macros to
 to incorporate different methods.
 
 qsm_hub provides a tool to produce QSM (and related) map easily. It is particularly suitable for
-searching the best processing methods for your multi-echo GRE (mGRE) data.
+testing the best pipeline to process the multi-echo GRE (mGRE) data.
 
 Once you find the best setting of the processing pipeline (and more familiar with qsm_hub), you
 might wish to dive into the wrapper functions for batch processing.
@@ -54,7 +55,7 @@ Kwok (2018-05-07)
 
 To use the qsm_hub, just add the directory containing qsm_hub.m into your MATLAB PATH
 
-This can be done by: 'Set Path' -> 'Add Folder' -> *your directory of qsm_hub.m* -> 'Save'
+This can be done by: 'Set Path' -> 'Add Folder' -> /your/directory/to/qsm_hub.m/ -> 'Save'
 
 or
 
@@ -65,48 +66,46 @@ with MATLAB's command: addpath('/your/qsm_hub/directory')
 ## Compatibility
 --------------------------------------------------
 
-I try to make qsm_hub compatible with as many MATLAB version as I could. In principle, it works fine
+I try to make qsm_hub compatible with as many MATLAB versions as I could. In principle, it works fine
 with MATLAB R2016b or earlier. However, most of the methods should also be working with MATLAB
 R2017a or later, except 'LBV' of background field removal method.
 
 ----------------------------------------------------------------------------------------------------
 
-Working with NIfTI files and qsm_hub header
+## Working with NIfTI files and qsm_hub header
 --------------------------------------------------
 
 
-If you prefer working with NIfTI files (as I do), I suggest using MRIConvert
-(https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with 'Option' ->
+If you prefer working with NIfTI files (as I do), I suggest using [MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with 'Option' ->
 'Save multivolumes series as 4D files' checked. In this way your mGRE data will be stored as 4D FSL
 NIfTI data that needed to be the input of qsm_hub. A text file will also be generated with the NIfTI
 data. If your put this text file in your qsm_hub input directory, the actual echo times stated in
 this text file will also be read to generate a synthetic qsm_hub header.
 
-qsm_hub requires a special header file in mat format that stores some information for QSM recon. If
+qsm_hub requires a special header file in *.mat* format that stores some information for QSM recon. If
 your input are DICOMs, this header file will be generated automatically. For NIfTI data, if this
 file is absent, qsm_hub will generate a synthetic header based on the information from the NIfTI
 files. However, for some information such as 'TE' and 'delta_TE', the NIfTI header usually doesn't
 contain them and there some predefined values will be set. The synthetic header may affect the
-susceptibility range of the QSM value but not the qualitative accessment QSM (basiclly the QSMs are
-the same but in different (arbitary) scale)
+susceptibility range of the QSM value but not the qualitative assessment QSM (basically the QSMs are
+the same but in different (arbitrary) scale)
 
-Altenatively you can create the qsm_hub header file in your own way, but please make sure that the
+Alternatively you can create the qsm_hub header file in your own way, but please make sure that the
 header filename contains the string 'header' and the file contains the following variables:
-	-	'B0'			: magnetic field strength, in Telsa (e.g. B0=3 % 3T)
-	-	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
-	-	'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
-	-	'TE' 			: echo times, in s (e.g. TE=[te1,te2,te3,te4,te5])
-	-	'delta_TE'		: echo spaing, in s (e.g. delta_TE=TE(2)-TE(1))
-	-	'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
-	-	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
-I encourage to use SyntheticQSMHubHeader.m to get most of the information from NIfTI header such as
+* 'B0'			: magnetic field strength, in Tesla (e.g. B0=3 % 3T)
+* 'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1])
+* 'CF'			: imaging frequency, in Hz (e.g. CF=3*42.58*1e6 %water 1H at 3T)
+* 'TE' 			: echo times, in s (e.g. TE=[te1,te2,te3,te4,te5])
+* 'delta_TE'		: echo spacing, in s (e.g. delta_TE=TE(2)-TE(1))
+* 'matrixSize'	: image matrix size (e.g. matrixSize=size(img))
+* 'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2] % 2 mm isotropic)
+I suggest to use SyntheticQSMHubHeader.m to get most of the information from NIfTI header such as
 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get echo time information.
 
 ----------------------------------------------------------------------------------------------------
 
 ## Checking QSM result
 --------------------------------------------------
-
 
 Every now and again the values of QSM might be inverted. To check if it is the case you could look
 into the QSM map. The deep gray matter structure should be appeared as bright (positive) and white
@@ -118,11 +117,10 @@ result by multiply the map with -1, i.e. QSM_corr = -QSM.
 ## Standalone description
 --------------------------------------------------
 
-
 ----------------------------------
 |QSMHub (One-stop QSM processing)|
 ----------------------------------
-	I/O planel
+	I/O panel
 --------------------------------------------------
 - Input:
 (Option 1) 	Directory contains all and only mGRE DICOM data, including both magnitude and phase
@@ -145,10 +143,10 @@ result by multiply the map with -1, i.e. QSM_corr = -QSM.
 
 [Example]
 A standard input directory contains the following files:
-- 	magn.nii.gz			(4D real image)
-- 	phase.nii.gz		(4D real image)
-- 	mask.nii.gz 		(3D mask image)
-- 	qsmhub_header.mat	(.mat file)
+* magn.nii.gz			(4D real image)
+* phase.nii.gz		(4D real image)
+* mask.nii.gz 		(3D mask image)
+* qsmhub_header.mat	(.mat file)
 
 	Total field recovery and phase unwrapping
 --------------------------------------------------
