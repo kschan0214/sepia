@@ -28,7 +28,7 @@ might wish to dive into the wrapper functions for batch processing.
 
 Standard QSM data processing usually involves the following procedures:
 
-0. convert DICOM phase values (4096,4095) to wrapped phase values (-pi,pi)  
+0. convert DICOM phase values (4096,4095) to wrapped phase values (-pi,pi) (not neccessary)  
 1. phase unwrapping and total field recovery  
 2. background field removal  
 3. QSM (sometimes people also call it dipole field inversion)  
@@ -44,14 +44,19 @@ Standard QSM data processing usually involves the following procedures:
 4. **QSM**  
 	standalone to map magnetic susceptibility source from a local field map  
 
-Apparently this toolbox is still in development, so you may expect to encounter some bugs.
+Apparently this toolbox is still in development, so you may encounter some bugs.
 
-If you have any question or you would like to report bug please feel free to contact me
+When you use `qsm_hub` in your research, please cite the related papers in your processing pipeline. 
+Clicking the hyperlinks of the methods below will redirect you to the paper webiste. 
+Otherwise, you can also check the citation document for more details.
+
+If you have any question or you would like to report bug(s) please feel free to contact me
 k.chan@donders.ru.nl (Kwok-Shing Chan).
 
-Have fun!
+Have fun!  
 
-Kwok (2018-05-07)
+Kwok  
+2018-05-07
 
 ----------------------------------------------------------------------------------------------------
 
@@ -131,6 +136,7 @@ result by multiply the map with -1, i.e.
 --------------------------------------------------
 
 ### QSMHub (One-stop QSM processing)
+==================================================
 
 #### I/O panel
 --------------------------------------------------
@@ -167,7 +173,7 @@ A standard input directory contains the following files:
 --------------------------------------------------
 - Method:  
 	1. [**Laplacian**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
-		very reliable method for phase unwrapping yet the output values are not accurate  
+		very reliable method for phase unwrapping yet the output values may not be accurate  
 		
 	2. [**Laplacian STI suite**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 		Laplacian unwrapping implementation from STI Suite v3.0  
@@ -255,6 +261,7 @@ A standard input directory contains the following files:
 
 --------------------------------------------------
 ### Phase unwrapping
+==================================================
 
 ####	I/O panel
 --------------------------------------------------
@@ -316,6 +323,7 @@ A standard input directory contains the following files:
 
 --------------------------------------------------
 ### Background field removal
+==================================================
 
 ####	I/O panel
 --------------------------------------------------
@@ -374,6 +382,7 @@ A standard input directory contains the following files:
 
 --------------------------------------------------
 ### QSM
+==================================================
 
 ####	I/O planel
 --------------------------------------------------
