@@ -157,17 +157,16 @@ A standard input directory contains the following files:
 ####	Total field recovery and phase unwrapping panel
 --------------------------------------------------
 - Method:  
-	1. **Laplacian**  
-		very reliable method for phase unwrapping yet the output values
-								are not accurate
-	2. **Laplacian STI suite**  
-		Laplacian unwrapping implementation from STI Suite v3.0
+	1. [**Laplacian**](https://www.sciencedirect.com/science/article/pii/S1053811911000164?via%3Dihub)  
+		very reliable method for phase unwrapping yet the output values are not accurate
+	2. [**Laplacian STI suite**](https://www.sciencedirect.com/science/article/pii/S1053811911000164?via%3Dihub)  
+		Laplacian unwrapping implementation from STI Suite v3.0  
 	3. **Jena**  
 		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)
 	4. **Region growing**  
 		MEDI toolbox implementation, might not work well with DICOM phase
 								data (using offline recon data works pretty well)
-	5. **Graphcut**  
+	5. [**Graphcut**](https://ieeexplore.ieee.org/document/6918521/?arnumber=6918521&tag=1)  
 		graph-cut algorithm (not recommended)  
 		
 - Bipolar readout eddy current correction:  
@@ -186,19 +185,19 @@ A standard input directory contains the following files:
 ####	Background field removal panel
 --------------------------------------------------
 - Method:
-	1. **LBV**  
+	1. [**LBV**](https://onlinelibrary.wiley.com/doi/abs/10.1002/nbm.3064)  
 		Laplacian boundary value approach to removal background field
 							(recommended)
-	2. **PDF**  
+	2. [**PDF**](https://onlinelibrary.wiley.com/doi/abs/10.1002/nbm.1670)  
 		Project onto dipole field
 	3. **RESHARP**  
 		Regularised SHARP
 	4. **SHARP**  
 		Sophisticated harmonic artefact reduction for phase data
-	5. **VSHARP STI suite**  
+	5. [**VSHARP STI suite**](https://www.sciencedirect.com/science/article/pii/S1053811911000164?via%3Dihub)  
 		STI suite v3.0 variable-kernel SHARP (recommended)
-	6. **VSHARP**  
-	7. **iHARPERELLA**  
+	6. [**VSHARP**](https://www.sciencedirect.com/science/article/pii/S1053811911000164?via%3Dihub)  
+	7. [**iHARPERELLA**](https://onlinelibrary.wiley.com/doi/abs/10.1002/nbm.3056)  
 		(not recommended)  
 
 - Refine local field by 4th order 3D polynomial fit
@@ -212,18 +211,18 @@ A standard input directory contains the following files:
 ####	QSM panel
 --------------------------------------------------
 - Method:
-	1. **TKD**  
+	1. [**TKD**](https://onlinelibrary.wiley.com/doi/abs/10.1002/mrm.22334)  
 		Thresholded k-space division
-	2. **Closed-form solution**  
+	2. [**Closed-form solution**](https://onlinelibrary.wiley.com/doi/abs/10.1002/jmri.24365)  
 		closed-form solution with L2-norm regularisation
-	3. **STI suite iLSQR**  
+	3. [**STI suite iLSQR**](https://www.sciencedirect.com/science/article/pii/S1053811911000164?via%3Dihub)  
 		STI suite v3.0 implementation of iterative LSQR approach
-	4. **iLSQR**
-	5. **FANSI**  
+	4. [**iLSQR**](https://www.ncbi.nlm.nih.gov/pubmed/21224002)
+	5. [**FANSI**](https://onlinelibrary.wiley.com/doi/abs/10.1002/mrm.27073)  
 		Fast algorithm for nonlinear susceptibility inversion (recommended)
-	6. **Star**  
+	6. [**Star**](https://onlinelibrary.wiley.com/doi/abs/10.1002/nbm.3383)  
 		STI suite v3.0 Star-QSM (recommended)
-	7. **MEDI**  
+	7. [**MEDI**](https://onlinelibrary.wiley.com/doi/abs/10.1002/mrm.26946)  
 		Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
 [Output]  
 - 	squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)
