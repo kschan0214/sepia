@@ -363,7 +363,8 @@ switch lower(QSM_method)
     case 'ssvsharp'
     case 'star'
         % star work better with radHz
-        localField = localField*2*pi;
+%         localField = localField*2*pi;
+        localField = localField*2*pi*delta_TE;
     case 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
@@ -402,7 +403,8 @@ switch lower(QSM_method)
     case 'ssvsharp'
         chi = chi/(B0*gyro);
     case 'star'
-        chi = chi/(2*pi*B0*gyro);
+%         chi = chi/(2*pi*B0*gyro);
+        chi = chi;
     case 'medi_l1'
         chi = chi/(2*pi*B0*gyro*delta_TE);
 end

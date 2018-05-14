@@ -53,7 +53,7 @@ Installation
 
 To use the qsm_hub, just add the directory containing qsm_hub.m into your MATLAB PATH
 
-This can be done by: 'Set Path' -> 'Add Folder' -> *your directory of qsm_hub.m* -> 'Save'
+This can be done by: 'Set Path' -> 'Add Folder' -> *your directory to qsm_hub.m* -> 'Save'
 
 or 
 
@@ -63,15 +63,15 @@ with MATLAB's command: addpath('/your/qsm_hub/directory')
 Compatibility
 --------------------------------------------------
 
-I try to make qsm_hub compatible with as many MATLAB version as I could. In principle, it works fine 
-with MATLAB R2016b or earlier. However, most of the methods should also be working with MATLAB 
+qsm_hub is designed to compatible with as many MATLAB version as I could. In principle, it works 
+fine with MATLAB R2016b or earlier. However, most of the methods should also be working with MATLAB 
 R2017a or later, except 'LBV' of background field removal method.
 
 ====================================================================================================
 Working with NIfTI files and qsm_hub header
 --------------------------------------------------
 
-If you prefer working with NIfTI files (as I do), I suggest using MRIConvert 
+If you prefer starting with NIfTI files (as I do), I recommend using MRIConvert 
 (https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with 'Option' -> 
 'Save multivolumes series as 4D files' checked. In this way your mGRE data will be stored as 4D FSL
 NIfTI data that needed to be the input of qsm_hub. A text file will also be generated with the NIfTI 
