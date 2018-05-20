@@ -98,8 +98,8 @@ if (~isempty(findstr(upper(Debug_Mode),'SAVEITER')))
     store_CG_results(x/(2*pi*delta_TE*CF)*1e6.*Mask);%add by Shuai for save data
 end
 res_norm_ratio = Inf;
-cost_data_history = zeros(1,max_iter);
-cost_reg_history = zeros(1,max_iter);
+cost_data_history = zeros(1,max_iter, 'like', RDF);
+cost_reg_history = zeros(1,max_iter, 'like', RDF);
 
 e=0.000001; %a very small number to avoid /0
 badpoint = zeros(matrix_size);

@@ -26,9 +26,9 @@ function [RDF,mask]=BKGRemovalVSHARP(totalField,mask,matrixSize,varargin)
 % total field in k-space
 kTotalField = fftn(totalField);
 
-DiffMask = zeros([matrixSize, length(radius)]);
-Mask_Sharp = zeros([matrixSize, length(radius)]);
-Del_Sharp = zeros([matrixSize, length(radius)]);
+DiffMask = zeros([matrixSize, length(radius)], 'like', totalField);
+Mask_Sharp = zeros([matrixSize, length(radius)], 'like', totalField);
+Del_Sharp = zeros([matrixSize, length(radius)], 'like', totalField);
 RDF = 0;
 % variable kernel size
 for k = 1:length(radius)

@@ -35,7 +35,7 @@ if strcmp(tflag,'transp')      % y = A'*x
 %     if true
 %         ATx = zeros([params_in.dims 4], 'gpuArray');
 %     else
-        ATx = zeros([params_in.dims 4]);
+        ATx = zeros([params_in.dims 4], 'like', X_vector);
 %     end
     % --- calculation of FT^{-1}( conj(kernel) *FT(X))
     % KC: work on QSM submatrix problem

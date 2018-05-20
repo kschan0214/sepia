@@ -33,7 +33,7 @@ fprintf('Threshold for k-space division is %f \n',thre_tkd);
 kernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 
 % initiate inverse kernel with zeros
-kernel_inv = zeros(matrixSize);
+kernel_inv = zeros(matrixSize, 'like', matrixSize);
 % get the inverse only when value > threshold
 kernel_inv( abs(kernel) > thre_tkd ) = 1 ./ kernel(abs(kernel) > thre_tkd);
 % direct dipole inversion method
