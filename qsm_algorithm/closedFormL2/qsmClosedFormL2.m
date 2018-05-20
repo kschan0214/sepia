@@ -30,6 +30,16 @@ DEBUG=false;
 %% Parsing varargin
 [lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
 
+% isGPU = false;
+% 
+% if gpuDeviceCount > 0
+%     isGPU = true;
+%     localField = gpuArray(localField);
+%     mask       = gpuArray(mask);
+%     matrixSize = gpuArray(matrixSize);
+%     voxelSize  = gpuArray(voxelSize);
+% end
+
 % display message
 if ~optimise
     disp('Self-defined regularisation parameter? No');
@@ -71,8 +81,15 @@ switch optimise
 
         % KC: compute the residual norm for each lambda being used
         %     chi results won't be saved at this stage to avoid memory usage
-        normDataFidelity = zeros(1,length(lambdaCandidate));
-        normRegularisation = zeros(1,length(lambdaCandidate));
+%         if isGPU
+%             normDataFidelity = zeros(1,length(lambdaCandidate), 'gpuArray');
+%             normRegularisation = zeros(1,length(lambdaCandidate), 'gpuArray');
+%             interpMethod = 'V5CUBIC';
+%         else
+            normDataFidelity = zeros(1,length(lambdaCandidate));
+            normRegularisation = zeros(1,length(lambdaCandidate));
+            interpMethod = 'spline';
+%         end
         for klambda = 1:length(lambdaCandidate)
             chi_temp = ifftn(kernel .* kLocalField ./ (DtD + lambdaCandidate(klambda)^2 * EtE));
             % KC: norm of Residual of data;
@@ -94,7 +111,7 @@ switch optimise
         curvature = (d2rho.*domega - d2omega.*drho)./ (drho.^2 + domega.^2).^1.5;
         % use interpolation to have finer resolution of the curvature
         lambdaCandidateInterp = linspace(min(lambdaCandidate),max(lambdaCandidate),1000);
-        curvatureInterp = interp1(lambdaCandidate,curvature,lambdaCandidateInterp,'spline');
+        curvatureInterp = interp1(lambdaCandidate,curvature,lambdaCandidateInterp,interpMethod);
         % KC: optimal when the curvature is maximum
         [~, I] = sort(curvatureInterp,'descend');
         lambdaOptimal = lambdaCandidateInterp(I(1));
@@ -116,6 +133,10 @@ end
 
 % KC: return real part only
 chi = real(chi_cplx.* mask);
+
+% if isGPU
+%     chi = gather(chi);
+% end
 
 end
 

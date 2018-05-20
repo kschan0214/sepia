@@ -31,8 +31,12 @@ if strcmp(tflag,'transp')      % y = A'*x
     
     %   apply the weighting mask the four submatrices
     X = bsxfun(@times,params_in.msk, X_matrix);
-
-    ATx = zeros([params_in.dims 4]);
+    
+%     if true
+%         ATx = zeros([params_in.dims 4], 'gpuArray');
+%     else
+        ATx = zeros([params_in.dims 4]);
+%     end
     % --- calculation of FT^{-1}( conj(kernel) *FT(X))
     % KC: work on QSM submatrix problem
     ATx(:,:,:,1) = ifftn( conj(params_in.kernel) .* fftn(X(:,:,:,1)) );

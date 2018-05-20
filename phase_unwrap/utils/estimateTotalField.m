@@ -78,17 +78,18 @@ for k=1:size(fieldMapEchoTemp,4)
     tmp2(:,:,:,k)=tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
 end
 fieldMapTemp=cumsum(tmp2,4);
-
+% fieldMapTemp=gather(fieldMapTemp);
 for k=1:size(fieldMapTemp,4)
     fieldMapTemp(:,:,:,k)=fieldMapTemp(:,:,:,k)/(TE(k+1)-TE(1));
 end
 % denominator=zeros(matrixSize(1:3));
 % numerator=zeros(matrixSize(1:3));
 fieldMapSD = zeros(size(fieldMapTemp));
+
 for k=1:size(fieldMapTemp,4)
 %     weight_k(:,:,:,k) = 1./((sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2))/(abs(TE(k+1)-TE(1)))).^2);
     fieldMapSD(:,:,:,k) = 1./(TE(k+1)-TE(1)) ...
-        * sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./(magn(:,:,:,1).*magn(:,:,:,k+1).^2));
+        * sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2));
 %     numerator = numerator + fieldMapTemp(:,:,:,k).*weight_k;
 %     denominator = denominator + weight_k;
 %     numerator= numerator + (fieldMapTemp(:,:,:,k)) ...
