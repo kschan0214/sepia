@@ -132,6 +132,43 @@ result by multiply the map with -1, i.e.
 
 ----------------------------------------------------------------------------------------------------
 
+## GPU computation
+--------------------------------------------------
+
+Some QSM processing algorithms utilise iterative approaches (e.g. `pcg`, `lsqr`, etc.) to obatain a 
+stable resulting map. To ensure convergence, one can be done is to increase the number of 
+iterations but the computation time will also be increasing. `qsm_hub` supports GPU computation in 
+Matlab. The GUI function will automatically detect the number of GPU devices available in local 
+computer (using `gpuDeviceCount`). If the GPU device is detectable in Matlab, the GUI will provide
+an option for user to choose using the GPU feature or not. Based on some preliminary testing, the 
+following methods will be benefical (and/or workable) with GPU computation:  
+
+1. Projection onto dipole field (background field removal)  
+2. Closed-form L2-regularisation (QSM)  
+3. iLSQR (QSM)  
+4. FANSI (QSM)  
+5. Star (QSM)  
+6. MEDI (QSM)  
+
+**Caution**  
+The performance of GPU computation is affected by not only the number of GPUs but also the RAM of
+the GPU device. In principle, the input data of the methods will only be loaded onto the GPUs when 
+it is being called and the GPU device will be reset after the computation. However, the GPU 
+implementations could still be broken if the size of input data is large (e.g. large matrix size 
+data). The rule of thumb is that if you aim at a small iteration number (e.g. 30-50, except the 
+case of using MEDI), the performance of CPU and GPU computation will not have significant 
+differences (sometimes GPU may be even slower due to data distribution prior computation).
+Nevertheless, if you are trying more iterations (i.e. >100), GPU computation usually gives you some
+descent speed improvement.  
+
+This feature is only tested with the following system configuration:  
+- macOS High Sierra 10.13.4  
+- NVIDIA GeForce GT 750M  
+- Matlab R2018a  
+If it doesn't work on your system, you can simply disable (unchecked) the GPU option.
+
+----------------------------------------------------------------------------------------------------
+
 ## Standalone description
 --------------------------------------------------
 
@@ -186,7 +223,7 @@ A standard input directory contains the following files:
 		(using offline recon data works pretty well)
 		
 	5. [**Graphcut**](https://doi.org/10.1109/TMI.2014.2361764)  
-		graph-cut algorithm (not recommended)  
+		graph-cut algorithm (not optimised with this toolbox)  
 		
 - Bipolar readout eddy current correction:  
 	enable to correct the phase inconsistence between odd and even echoes and gradient field
@@ -223,7 +260,7 @@ A standard input directory contains the following files:
 	6. [**VSHARP**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 	
 	7. [**iHARPERELLA**](https://doi.org/10.1002/nbm.3056)  
-		(Is not optimised with this toolbox)  
+		(not optimised with this toolbox)  
 
 - Refine local field by 4th order 3D polynomial fit
 	enable to remove residual B1(+ & -) contribution in the local field  
@@ -254,7 +291,7 @@ A standard input directory contains the following files:
 		STI suite v3.0 Star-QSM (recommended)  
 		
 	7. [**MEDI**](https://doi.org/10.1002/mrm.26946)  
-		Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
+		Morphology enabled dipole inversion (MEDI+0) 
   
 *Output  
 - squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)*
@@ -305,7 +342,7 @@ A standard input directory contains the following files:
   
 	5. [**Graphcut**](https://doi.org/10.1109/TMI.2014.2361764)  
 		graph-cut algorithm 
-		(is not optimised in this toolbox) 
+		(not optimised with this toolbox) 
 		
 - Bipolar readout eddy current correction:  
 	enable to correct the phase inconsistence between odd and even echoes and gradient field
@@ -370,7 +407,7 @@ A standard input directory contains the following files:
 	6. [**VSHARP**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 
 	7. [**iHARPERELLA**](https://doi.org/10.1002/nbm.3056)   
-		(Is not optimised with this toolbox)  
+		(not optimised with this toolbox)  
 		
 - Refine local field by 4th order 3D polynomial fit
 	enable to remove residual B1(+ & -) contribution in the local field
@@ -428,7 +465,7 @@ A standard input directory contains the following files:
 		STI suite v3.0 Star-QSM (recommended)
 
 	7. [**MEDI**](https://doi.org/10.1002/mrm.26946)  
-		Morphology enabled dipole inversion (MEDI+0) (pretty good but slow)  
+		Morphology enabled dipole inversion (MEDI+0)   
 
 *Output     
 - squirrel_QSM.nii.gz 			(quantitative susceptibility map, in ppm)*  
