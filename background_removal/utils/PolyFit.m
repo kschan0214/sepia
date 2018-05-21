@@ -10,10 +10,12 @@ dim=size(Data3D);
     [x1,y1,z1]=ind2sub(size(Data3D(:,:,:)),Indices);
     R=Data3D(Indices);
     %%%%%%%%%%this kind of works... but it would be better to make it 3D
+    model(1:length(Indices),1) = zeros(length(Indices),1, 'like', Data3D);
 %zeroth order
 if length(Indices)>(3*order)^2
     if order>=0
-        model(1:length(Indices),1)=1;
+        model = ones(length(Indices),1, 'like', Data3D);
+%         model(1:length(Indices),1)=1;
     end
         %first order
     if order>=1
@@ -67,7 +69,7 @@ if length(Indices)>(3*order)^2
         desvio=std(squeeze(Fit));
         clear model
         FIT3D=Data3D;
-        FIT3D=zeros(size(Data3D(:,:,:)));
+        FIT3D=zeros(size(Data3D(:,:,:)), 'like', Data3D);
         for pos=1:length(x1)
             FIT3D(x1(pos),y1(pos),z1(pos))=Fit(pos);
         end;

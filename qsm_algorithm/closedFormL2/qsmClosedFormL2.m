@@ -23,22 +23,12 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 24 March 2017
-% Date last modified: 6 September 2017
+% Date last modified: 20 May 2018
 %
 function [chi, lambdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,varargin)
 DEBUG=false;
 %% Parsing varargin
 [lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
-
-% isGPU = false;
-% 
-% if gpuDeviceCount > 0
-%     isGPU = true;
-%     localField = gpuArray(localField);
-%     mask       = gpuArray(mask);
-%     matrixSize = gpuArray(matrixSize);
-%     voxelSize  = gpuArray(voxelSize);
-% end
 
 % display message
 if ~optimise
@@ -81,15 +71,9 @@ switch optimise
 
         % KC: compute the residual norm for each lambda being used
         %     chi results won't be saved at this stage to avoid memory usage
-%         if isGPU
-%             normDataFidelity = zeros(1,length(lambdaCandidate), 'gpuArray');
-%             normRegularisation = zeros(1,length(lambdaCandidate), 'gpuArray');
-%             interpMethod = 'V5CUBIC';
-%         else
-            normDataFidelity = zeros(1,length(lambdaCandidate));
-            normRegularisation = zeros(1,length(lambdaCandidate));
-            interpMethod = 'spline';
-%         end
+        normDataFidelity = zeros(1,length(lambdaCandidate), 'like', localField);
+        normRegularisation = zeros(1,length(lambdaCandidate), 'like', localField);
+        interpMethod = 'spline';
         for klambda = 1:length(lambdaCandidate)
             chi_temp = ifftn(kernel .* kLocalField ./ (DtD + lambdaCandidate(klambda)^2 * EtE));
             % KC: norm of Residual of data;
@@ -111,7 +95,7 @@ switch optimise
         curvature = (d2rho.*domega - d2omega.*drho)./ (drho.^2 + domega.^2).^1.5;
         % use interpolation to have finer resolution of the curvature
         lambdaCandidateInterp = linspace(min(lambdaCandidate),max(lambdaCandidate),1000);
-        curvatureInterp = interp1(lambdaCandidate,curvature,lambdaCandidateInterp,interpMethod);
+        curvatureInterp = interp1(gather(lambdaCandidate),gather(curvature),gather(lambdaCandidateInterp),interpMethod);
         % KC: optimal when the curvature is maximum
         [~, I] = sort(curvatureInterp,'descend');
         lambdaOptimal = lambdaCandidateInterp(I(1));

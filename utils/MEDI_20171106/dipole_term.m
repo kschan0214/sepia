@@ -11,10 +11,11 @@
 %
 %   Created by Tian Liu in 2009
 %   Last modified by Tian Liu on 2013.07.24
+%   Last modified by Kwok-Shing Chan on 2018.05.20 for qsm_hub
 
 function y = dipole_term(W,D,Mask,xx)
 
-x = zeros(size(D));
+x = zeros(size(D), 'like', W);
 x(Mask(:) == 0) = xx(1:end);
 x(Mask(:) == 1) = 0;
 

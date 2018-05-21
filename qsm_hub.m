@@ -39,7 +39,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 18 April 2018
+% Date last modified: 20 May 2018
 %
 %
 function qsm_hub
@@ -107,6 +107,16 @@ h.pushbutton_start = uicontrol('Parent',h.Tabs.QSMHub,'Style','pushbutton',...
     'String','Start',...
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(fig,'color'));
+% GPU checkbox
+h.checkbox_gpu = uicontrol('Parent',h.Tabs.QSMHub,'Style','checkbox',...
+    'String','Enable GPU computation',...
+    'units','normalized','Position',[0.01 0.01 0.4 0.05],...
+    'backgroundcolor',get(fig,'color'), 'Enable','off',...
+    'TooltipString',['Enable to use GPU for some of the algorithms in qsm_hub. ' ...
+                     'Your GPU has to be detectable in Matlab in order to use this feature.']);
+if gpuDeviceCount > 0
+    set(h.checkbox_gpu, 'Enable', 'on');
+end
 
 %% Set Callback functions
 h = SetAllCallbacks(h);
@@ -225,6 +235,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.QSMHub,'Position',[0.01 0.07 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.QSMHub);
+        % GPU checkbox
+        set(h.checkbox_gpu,             'Parent',h.Tabs.QSMHub);
         
     % Phase unwrapping tab
     case 'Phase unwrapping'
@@ -239,6 +251,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.phaseUnwrap);
+        % GPU checkbox
+        set(h.checkbox_gpu,             'Parent',h.Tabs.phaseUnwrap);
         
     % background field removal tab    
     case 'Background field removal'
@@ -255,6 +269,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.bkgRemoval);
+        % GPU checkbox
+        set(h.checkbox_gpu,             'Parent',h.Tabs.bkgRemoval);
 
     % qsm tab    7
     case 'QSM'
@@ -271,6 +287,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.qsm);
+        % GPU checkbox
+        set(h.checkbox_gpu,             'Parent',h.Tabs.qsm);
         
 end
 
@@ -455,6 +473,9 @@ QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';QSM_mu2=1;
 QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
 QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 
+% get GPU enable
+isGPU = get(h.checkbox_gpu,'Value');
+
 % get I/O GUI input
 inputDir        = get(h.dataIO.edit.input,'String');
 outputDir       = get(h.dataIO.edit.output,'String');
@@ -612,28 +633,28 @@ try
                 'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
                 'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,'exclude_threshold',excludeMaskThreshold,...
                 'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'eddy',isEddyCorrect);
+                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'eddy',isEddyCorrect,'GPU',isGPU);
 
         case 'Phase unwrapping'
             % Core of phase unwrapping only 
             UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
-                'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect);
+                'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect,'GPU',isGPU);
 
         case 'Background field removal'
             % core of background field removal only
             BackgroundRemovalMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
                 'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
                 'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
-                'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold);
+                'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,'GPU',isGPU);
 
         case 'QSM'
             % core of QSM only
-            qsmMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
+            QSMMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
                 'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
                 'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
                 'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,...
                 'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
+                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF,'GPU',isGPU);
     end
 catch ME
     % re-enable the start button before displaying the error

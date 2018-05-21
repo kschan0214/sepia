@@ -72,8 +72,10 @@ if nargin > 0
             addpath(genpath([utilsDir MEDI_version]));
         case 'sharp'
             addpath([bkgRemovalDir 'SHARP']);
+            addpath(genpath([utilsDir MEDI_version]));
         case 'resharp'
             addpath([bkgRemovalDir 'RESHARP']);
+            addpath(genpath([utilsDir MEDI_version]));
         case 'vsharpsti'
             addpath([bkgRemovalDir 'VSHARP' filesep STISuite_version]);
             addpath(genpath([utilsDir STISuite_version]));

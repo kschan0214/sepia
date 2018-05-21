@@ -21,6 +21,7 @@
 %   Created by Tian Liu in 2009
 %   Modified by Tian Liu on 2011.02.01
 %   Last modified by Tian Liu on 2013.07.24
+%   Last modified by Kwok-Shing Chan on 2018.05.20 for qsm_hub
 
 
 function [RDF shim] = PDF(iFreq, N_std, Mask, matrix_size, voxel_size, B0_dir, tol, n_CG, space, n_pad)
@@ -63,7 +64,7 @@ if n_pad > 0
     iFreq=iFreq(d1first:d1last,d2first:d2last, d3first:d3last);
     N_std=N_std(d1first:d1last,d2first:d2last, d3first:d3last);
     Mask=Mask(d1first:d1last,d2first:d2last, d3first:d3last);
-    padsize = [matrix_size(1)-size(iFreq,1) matrix_size(2)-size(iFreq,2) matrix_size(3)-size(iFreq,3)];
+    padsize = gather([matrix_size(1)-size(iFreq,1) matrix_size(2)-size(iFreq,2) matrix_size(3)-size(iFreq,3)]);
     iFreq = padarray(iFreq, padsize, 0,'post');
     N_std = padarray(N_std, padsize, 0,'post');
     Mask = padarray(Mask, padsize, 0,'post');
@@ -97,7 +98,7 @@ cg_tol = tol*norm(E_noise_level( Mask(:) == 0))/norm(b(:));
 [x res num_iter] = cgsolve(A, b, cg_tol, itermax, 0);
 fprintf('CG stops at: res %f, iter %d\n', res, num_iter);
  
-xx = zeros(size(D));
+xx = zeros(size(D), 'like', D);
 xx(Mask(:) == 0) = x(1:end);
 xx(Mask(:) > 0) = 0;
 
@@ -109,11 +110,11 @@ p_final = (iFreq-p_dipole).*Mask;
 
 % remove zero pad
 if n_pad > 0
-    RDF = zeros(matrix_size0);
+    RDF = zeros(matrix_size0, 'like', D);
     RDF(d1first:d1last,d2first:d2last, d3first:d3last) = ...
         p_final(1:d1last-d1first+1, 1:d2last-d2first+1, 1:d3last-d3first+1);
 
-    shim = zeros(matrix_size0);
+    shim = zeros(matrix_size0, 'like', D);
     shim(d1first:d1last,d2first:d2last, d3first:d3last) = ...
         xx(1:d1last-d1first+1, 1:d2last-d2first+1, 1:d3last-d3first+1);
 else

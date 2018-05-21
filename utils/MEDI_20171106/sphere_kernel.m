@@ -13,6 +13,7 @@
 %   Modified by Tian on 2011.02.01
 %   Modified by Tian on 2011.03.14 The sphere is now rendered.
 %   Last modified by Tian Liu on 2013.07.23
+%   Modified by Kwok-Shing Chan on 2018.05.20 for qsm_hub
 
 function y = sphere_kernel(matrix_size,voxel_size, radius)
 
@@ -32,7 +33,7 @@ Sphere_in = (  (abs(X)+0.5*voxel_size(1)).^2 ...
                 +(abs(Z)+0.5*voxel_size(3)).^2 )<=radius^2; 
 
             
-Sphere_mid = zeros(matrix_size);
+Sphere_mid = zeros(matrix_size, 'like', matrix_size);
 
 split = 10; %such that error is controlled at <1/(2*10)
 [X_v Y_v Z_v] = meshgrid(-split+0.5:split-0.5, -split+0.5:split-0.5, -split+0.5:split-0.5);
@@ -44,7 +45,7 @@ shell = 1-Sphere_in-Sphere_out;
 X = X(shell==1);
 Y = Y(shell==1);
 Z = Z(shell==1);
-shell_val = zeros(size(X));
+shell_val = zeros(size(X), 'like', matrix_size);
 
 for i = 1:length(X)
     xx = X(i);
