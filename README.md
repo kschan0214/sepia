@@ -1,4 +1,4 @@
-# qsm_hub
+# qsm_hub (work in progress)
 ==================================================
 
 ## Introduction
