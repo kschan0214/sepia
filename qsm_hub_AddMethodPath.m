@@ -63,8 +63,8 @@ if nargin > 0
             addpath([phaseUnwrapDir 'unwrapRegionGrowing' filesep MEDI_version]);
         case 'gc'    
             addpath(genpath([phaseUnwrapDir 'unwrapGraphcut' filesep MEDI_version]));
-        case 'jena'
-            addpath([phaseUnwrapDir 'unwrapJena']);
+        case 'bestpath3d'
+            addpath([phaseUnwrapDir 'unwrapBestpath3D']);
         case 'lbv'
             addpath([bkgRemovalDir 'LBV' filesep MEDI_version]);
         case 'pdf'

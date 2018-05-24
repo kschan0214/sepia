@@ -509,6 +509,9 @@ switch phaseUnwrap
     case 'Laplacian STI suite'
         phaseUnwrap = 'laplacian_stisuite';
         
+    case '3D best path'
+        phaseUnwrap = 'bestpath3d';
+        
 end
 
 % match the background field removal GUI input to QSMHub input format
@@ -681,13 +684,13 @@ switch tab
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
         fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',''exclude_threshold'',%i,...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,excludeMaskThreshold);
         fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
-        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g,''eddy'',%i);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF,isEddyCorrect);
+        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g,''eddy'',%i,''GPU'',%i);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF,isEddyCorrect,isGPU);
         fclose(fid);
         
     case 'Phase unwrapping'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
         fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseUnwrap);
-        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%i,''eddy'',%i);\n',subsampling,excludeMaskThreshold,isEddyCorrect);
+        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%i,''eddy'',%i,''GPU'',%i);\n',subsampling,excludeMaskThreshold,isEddyCorrect,isGPU);
         fclose(fid);
     
     case 'Background field removal'
@@ -695,7 +698,7 @@ switch tab
         fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputDir,maskFullName);
         fprintf(fid,'''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',BFR,refine,BFR_tol);
         fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
-        fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g);\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
+        fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,''GPU'',%i);\n',num2str(BFR_radius),BFR_alpha,BFR_threshold,isGPU);
         fclose(fid);
     
     case 'QSM'
@@ -705,7 +708,7 @@ switch tab
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
         fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);
         fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
-        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF);
+        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g,''GPU'',%i);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF,isGPU);
         fclose(fid);
 
 end

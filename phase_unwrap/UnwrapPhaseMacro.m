@@ -8,12 +8,13 @@
 %   unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,...
 %                       'method','gc','Magn',magn,'subsampling',2);
 %   unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,...
-%                       'method','jena','mask',mask);
+%                       'method','bestpath3d','mask',mask);
 %
 % Description: Wrapper for phase unwrapping (default using Laplacian)
 %   Flags:
 %       'method'        : phase unwrapping method, 
-%                          'Laplacian', 'rg' and 'gc' 
+%                          'laplacian', 'laplacian_stisuite','rg', 'gc' and
+%                          'bestpath3d' 
 %
 %       Laplacian
 %       ----------------
@@ -27,14 +28,14 @@
 %       'Magn'          : magnitude data
 %       'subsampling'	: Downsampling factor for speed
 %
-%       Jena
+%       bestpath3d (3D best path)
 %       ----------------
 %       'mask'          : brain mask
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified: 8 September 2017
+% Date last modified: 24 May 2018
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,varargin)
 
@@ -68,9 +69,9 @@ if ~isempty(varargin)
                         magn = ones(matrixSize);
                     end
                     break
-                case 'jena'
-                    method = 'Jena';
-                    [mask] = parse_varargin_Jena(varargin);
+                case 'bestpath3d'
+                    method = 'BestPath3D';
+                    [mask] = parse_varargin_UnwrapPhase_3DBestPath(varargin);
                     if isempty(mask)
                         disp('Running algorithm without brain mask could be problematic');
                         mask = ones(matrixSize);
@@ -97,9 +98,9 @@ switch method
     case 'Graphcut'
         disp(['Graphcut subsampling factor: ' num2str(subsampling)]);
         unwrappedField = unwrapping_gc(wrappedField,magn,voxelSize,subsampling);
-    case 'Jena'
+    case 'BestPath3D'
         try
-            unwrappedField = unwrapJena(wrappedField,mask,matrixSize);
+            unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);
         catch
             disp('The library cannot be run in this platform, running Laplacian unwrapping instead...');
             unwrappedField = unwrapLaplacian(wrappedField,matrixSize,voxelSize);

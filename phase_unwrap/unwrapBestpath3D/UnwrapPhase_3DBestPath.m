@@ -1,6 +1,4 @@
-%% function unwrappedField = unwrapJena(wrappedField,mask,matrixSize)
-%
-% Description: phase unwrapping using Jena's library (Only works in the DCCN cluster)
+%% function unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize)
 %
 % Input
 % ----------------
@@ -12,15 +10,25 @@
 % ----------------
 %   unwrappedField      : unwrapped field
 %
+% Description: phase unwrapping using Jena's implementation of "Fast 
+% three-dimensional phase-unwrapping algorithm based on sorting by 
+% reliability following a noncontinuous path" 
+% by Hussein Abdul-Rahman, Munther A. Gdeisat, David R. Burton, and 
+% Michael J. Lalor, published in the Applied Optics, 
+% Vol. 46, No. 26, pp. 6623-6635, 2007. (Only works in the DCCN cluster)
+%
+% Required dependency: Tools for NIfTI and ANALYZE image by Jimmy Shen
+% (https://nl.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image)
+% In future, this may be replaced by Matlab's niftiread/niftiwrite functions 
+%
 % This code is modified from the T2starAndFieldCalc.m from Jose P. Marques
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified: 13 April 2017
+% Date last modified: 24 May 2018
 %
-function unwrappedField = unwrapJena(wrappedField,mask,matrixSize)
-load_module_NIfTI;
+function unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize)
 
 temp = make_nii(single(wrappedField));
 %     temp.img=temp.img;

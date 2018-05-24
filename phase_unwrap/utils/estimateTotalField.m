@@ -8,7 +8,7 @@
 %   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
 %                           'Unwrap','gc','unit','ppm','Subsampling',2);
 %   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-%                           'Unwrap','jena','unit','ppm','TE',TE,'B0',3,...
+%                           'Unwrap','bestpath3d','unit','ppm','TE',TE,'B0',3,...
 %                           'mask',mask);
 %
 % Description: compute the unwrapped total field from complex-valued
@@ -24,7 +24,7 @@
 %       'TE'            -   Echo times
 %       'B0'            -   Magnetic field strength
 %       'unit'          -   unit of the total field
-%       'Unwarp'        -   phase unwrapping method (Laplacian,rg,gc,jena)
+%       'Unwarp'        -   phase unwrapping method (Laplacian,rg,gc,bestpath3d)
 %
 % Output
 % ----------------
@@ -36,7 +36,8 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 31 May, 2017
-% Date last modified: 27 February 2018
+% Date modified: 27 February 2018
+% Date modified: 24 May 2018
 %
 function [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
 % Larmor frequency of 1H
