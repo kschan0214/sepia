@@ -5,7 +5,7 @@
 --------------------------------------------------
 
 Welcome to the beta version of `qsm_hub`. `qsm_hub` is a graphical user interface (GUI) to peform 
-quantitative susceptibility mapping (QSM) in MATLAB.
+quantitative susceptibility mapping (QSM) on multi-echo gradient echo MRI data in MATLAB.
 
 This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), 
 [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
@@ -24,7 +24,7 @@ to incorporate different methods.
 testing the best pipeline to process the multi-echo GRE (mGRE) data.
 
 Once you find the best setting of your processing pipeline (and more familiar with `qsm_hub`), you
-might wish to dive into the wrapper functions for batch processing.
+might use the wrapper functions directly without starting the GUI for batch processing.
 
 Standard QSM data processing usually involves the following procedures:
 
@@ -47,7 +47,8 @@ Standard QSM data processing usually involves the following procedures:
 Apparently this toolbox is still in development, so you may encounter some bugs.
 
 When you use `qsm_hub` in your research, please cite the related papers in your processing pipeline. 
-Clicking the hyperlinks of the methods below will redirect you to the paper webiste. 
+Clicking the hyperlinks of the methods below will redirect you to the paper webiste or you can also
+find the full reference below. 
 Otherwise, you can also check the citation document for more details.
 
 If you have any question or you would like to report bug(s) please feel free to contact me
@@ -246,7 +247,7 @@ A standard input directory contains the following files:
 		Laplacian boundary value approach to removal background field (recommended)
 		
 	2. [**PDF**](https://doi.org/10.1002/nbm.1670)  
-		Project onto dipole field
+		Projection onto dipole field
 		
 	3. [**RESHARP**](https://doi.org/10.1002/mrm.24765)  
 		Regularisation enabled SHARP
@@ -277,7 +278,7 @@ A standard input directory contains the following files:
 		Thresholded k-space division  
 		
 	2. [**Closed-form solution**](https://doi.org/10.1002/jmri.24365)  
-		closed-form solution with L2-norm regularisation  
+		Closed-form solution with L2-norm regularisation  
 		
 	3. [**STI suite iLSQR**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 		STI suite v3.0 implementation of iterative LSQR approach  
@@ -393,7 +394,7 @@ A standard input directory contains the following files:
 		Laplacian boundary value approach to removal background field (recommended)  
 
 	2. [**PDF**](https://doi.org/10.1002/nbm.1670)  
-		Project onto dipole field  
+		Projection onto dipole field  
 
 	3. [**RESHARP**](https://doi.org/10.1002/mrm.24765)  
 		Regularisation enabled SHARP  
