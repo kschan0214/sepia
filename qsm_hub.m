@@ -73,6 +73,7 @@ h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','One-stop QSM processing');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
+h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
 % initialise all tabs
 %% Phase unwrapping tab
@@ -92,6 +93,10 @@ h = qsmhub_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,fig,h,[0.01 0.54]);
 h = qsmhub_handle_panel_dataIO(h.Tabs.qsm,fig,h,[0.01 0.8]);
 % QSM
 h = qsmhub_handle_panel_qsm(h.Tabs.qsm,fig,h,[0.01 0.54]);
+
+%% utility tab
+% get header
+h = qsmhub_handle_panel_utility_get_header(h.Tabs.utility,fig,h,[0.01 0.7]);
 
 %% GUI with QSM one-stop station tab
 % I/O
@@ -169,6 +174,11 @@ set(h.qsm.MEDI.checkbox.smv,                'Callback',             {@CheckboxEd
 set(h.qsm.MEDI.checkbox.lambda_csf,         'Callback',             {@CheckboxEditPair_Callback,h.qsm.MEDI.edit.lambda_csf,1});
 set(h.pushbutton_start,                     'Callback',             {@PushbuttonStart_Callback});
 
+set(h.Utility.getHeader.button.teFile,      'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'te'});
+set(h.Utility.getHeader.button.dicomInput,  'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'dicom'});
+set(h.Utility.getHeader.button.niftiInput,  'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'nitfi'});
+set(h.Utility.getHeader.button.outputDir,   'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'output'});
+set(h.Utility.getHeader.button.run,         'Callback',             {@PushbuttonRun_Utility_getHeader_Callback});
 end
 
 %% Callback functions
@@ -714,5 +724,142 @@ switch tab
 end
 
 end
+
+end
+
+%% Utility functions
+
+function ButtonOpen_Utility_getHeader_Callback(source,eventdata,field)
+% get input file/directory for getHeader utility function
+global h
+
+switch field
+    case 'te'
+        % te file can be text file or mat file
+        [tefileName,pathDir] = uigetfile({'*.mat;*.txt'},'Select TE file');
+        
+        % display file directory
+        if pathDir ~= 0
+            set(h.Utility.getHeader.edit.teFile,'String',fullfile(pathDir,tefileName));
+        end
+
+    case 'nitfi'
+        % read NIfTI file 
+        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select mask file');
+
+        if pathDir ~= 0
+            set(h.Utility.getHeader.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
+            % automatically set default output field
+            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
+        end
+        
+    case 'dicom'
+        % get DICOM directory
+        pathDir = uigetdir;
+
+        if pathDir ~= 0
+            % set input edit field for display
+            set(h.Utility.getHeader.edit.dicomInput,    'String',pathDir);
+            % automatically set default output field
+            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
+        end
+        
+    case 'output'
+        
+        % get directory for output
+        pathDir = uigetdir;
+
+        if pathDir ~= 0
+            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
+        end
+end
+
+end
+
+function PushbuttonRun_Utility_getHeader_Callback(source,eventdata)
+% Callback function to detect and save header functino for qsm_hub
+
+global h
+
+% Disable the pushbutton to prevent doubel click
+set(source,'Enable','off');
+
+% get DICOM directory (if any)
+dicomDir    = get(h.Utility.getHeader.edit.dicomInput,'String'); 
+% get NIfTI file (if any)
+niftiFile   = get(h.Utility.getHeader.edit.niftiInput, 'String');
+% get user input magnetic field strength
+b0          = str2double(get(h.Utility.getHeader.edit.userB0, 'String'));
+% get user input magnetic field direction
+b0dir       = str2num(get(h.Utility.getHeader.edit.userB0dir, 'String'));
+% get user input voxel size
+voxelSize   = str2num(get(h.Utility.getHeader.edit.userVoxelSize, 'String'));
+
+% check validity of input voxel size
+if length(voxelSize) ~= 3 && ~isempty(voxelSize) && isempty(dicomDir)
+    error(['qsm_hub currently works with 3D data only. ' 
+           'Please specify the voxel size of all three dimensions']);
+end
+
+% check validity of input B0 direction
+if length(b0dir) ~= 3 && ~isempty(b0dir) && isempty(dicomDir)
+    error('The B0 direction has 3 elements [x,y,z]');
+end
+
+% str2double returns NaN if input field is empty, replace it by []
+if isnan(b0)
+    b0=[];
+end
+
+% get output directory, assume the same directory as input directory/file
+outputDir = get(h.Utility.getHeader.edit.outputDir, 'String');
+
+
+% try to get TE variable in this stage
+teFullName = get(h.Utility.getHeader.edit.teFile, 'String');
+teUserInput = get(h.Utility.getHeader.edit.userTE, 'String');
+if ~isempty(teFullName)
+    % get data type
+    [~,~,ext] = fileparts(teFullName);
+    
+    if strcmpi(ext,'.mat')
+        % if mat file then try to load 'TE' directly
+        try load(teFullName,'TE');  catch; error('No variable named TE.'); end
+    else
+        % if text file the try to read the TEs line by line
+        te = readTEfromText(teFullName);
+        te = te(:);
+    end
+else
+    % read user input array
+    te = str2num(teUserInput);
+    te = te(:);
+end
+% in case TE cannot be found
+if isempty(te) || isnan(te(1))
+    error('Incorrect TE format.');
+end
+
+
+% read header info and save them
+if isempty(dicomDir)
+    if isempty(niftiFile)
+        % This function requires input file/directory
+        error('Please specify a DICOM directory or NIfTI file.');
+    else
+        % specify the input is NIfTI file
+        CreateAndSaveQMSHubHeader(niftiFile,outputDir,...
+            b0,b0dir,voxelSize,te,'nifti');
+    end
+else
+    
+    % specify the input is DICOM directory
+    CreateAndSaveQMSHubHeader(dicomDir,outputDir,...
+        b0,b0dir,voxelSize,te,'dicom');
+        
+end
+
+% re-enable the pushbutton 
+set(source,'Enable','on');
 
 end

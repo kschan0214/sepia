@@ -27,19 +27,19 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 11 April 2018
-% Date last modified: 19 April 2018
+% Date last modified: 24 May 2018
 %
 %
-function [b0,b0dir,voxelSize,matrixSize,te,dte,CF]=SyntheticQSMHubHeader(nii,varargin)
+function [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(nii,varargin)
 
 gyro = 42.57747892;
 
-[b0,b0dir,voxelSize,matrixSize,te]=parse_varargin(varargin);
+[B0,B0_dir,voxelSize,matrixSize,TE]=parse_varargin(varargin);
 
-if isempty(b0dir)
+if isempty(B0_dir)
     % get main field direction
     a=qGetR([0, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
-    b0dir = -a(3,:);
+    B0_dir = -a(3,:);
 end
 if isempty(voxelSize)
     % get voxel size
@@ -49,10 +49,10 @@ if isempty(matrixSize)
     % get matrix size
     matrixSize = nii.hdr.dime.dim(2:4);
 end
-if isempty(te)
+if isempty(TE)
     % get no. of echoes
     nt = nii.hdr.dime.dim(5);
-    te = linspace(1e-3,30e-3,nt);
+    TE = linspace(1e-3,30e-3,nt);
 end
 
 % generate the variables needed 
@@ -60,14 +60,14 @@ end
 %     'voxel',voxelSize,'matrixsize',matrixSize,'te',linspace(1e-3,30e-3,nt));
 
 % compute the echo spacing
-if length(te)<2
-    dte = te;
+if length(TE)<2
+    delta_TE = TE;
 else
-    dte = te(2)-te(1); %s
+    delta_TE = TE(2)-TE(1); %s
 end
 
 % compute the imaging frequency
-CF = gyro * 1e6 * b0;
+CF = gyro * 1e6 * B0;
             
 end
 
