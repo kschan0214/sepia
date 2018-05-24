@@ -186,11 +186,9 @@ Lett 28, 1194–1196 (2003).](https://doi.org/10.1364/OL.28.001194)
 variation in tissue composition. 
 Neuroimage 55, 1645–1656 (2011).](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 
-**Jena**  
-[Hussein Abdul-Rahman, Munther Gdeisat, David Burton, Michael Lalor, "Fast three-dimensional 
-phase-unwrapping algorithm based on sorting by reliability following a non-continuous path", Proc. 
-SPIE 5856, Optical Measurement Systems for Industrial Inspection IV, 
-(13 June 2005).](https://doi.org/10.1117/12.611415)  
+**3D best path**  
+[Abdul-Rahman, H. S. et al. Fast and robust three-dimensional best path phase unwrapping algorithm. 
+Applied Optics 46, 6623–6635 (2007).](https://doi.org/10.1364/AO.46.006623)  
 
 **Graphcut**    
 [Dong, J. et al. Simultaneous phase unwrapping and removal of chemical shift (SPURS) using graph 
@@ -331,7 +329,7 @@ A standard input directory contains the following files:
 	2. [**Laplacian STI suite**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 		Laplacian unwrapping implementation from STI Suite v3.0  
 		
-	3. [**Jena**](https://doi.org/10.1117/12.611415)  
+	3. [**3D best path**](https://doi.org/10.1364/AO.46.006623)   
 		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)  
 		
 	4. **Region growing**  
@@ -449,7 +447,7 @@ A standard input directory contains the following files:
 	2. [**Laplacian STI suite**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 		Laplacian unwrapping implementation from STI Suite v3.0  
 		
-	3. [**Jena**](https://doi.org/10.1117/12.611415)  
+	3. [**3D best path**](https://doi.org/10.1364/AO.46.006623)   
 		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)
 		
 	4. **Region growing**  
