@@ -170,6 +170,121 @@ If it doesn't work on your system, you can simply disable (unchecked) the GPU op
 
 ----------------------------------------------------------------------------------------------------
 
+## Referencing
+--------------------------------------------------
+
+When you can `qsm_hub` in your research, please cite the method(s) that you used:
+
+### Phase unwrapping  
+==================================================
+
+**Laplacian-based method**   
+[Schofield, M. A. & Zhu, Y. Fast phase unwrapping algorithm for interferometric applications. Opt 
+Lett 28, 1194–1196 (2003).](https://doi.org/10.1364/OL.28.001194)  
+
+[Li, W., Wu, B. & Liu, C. Quantitative susceptibility mapping of human brain reflects spatial 
+variation in tissue composition. 
+Neuroimage 55, 1645–1656 (2011).](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
+
+**Jena**  
+[Hussein Abdul-Rahman, Munther Gdeisat, David Burton, Michael Lalor, "Fast three-dimensional 
+phase-unwrapping algorithm based on sorting by reliability following a non-continuous path", Proc. 
+SPIE 5856, Optical Measurement Systems for Industrial Inspection IV, 
+(13 June 2005).](https://doi.org/10.1117/12.611415)  
+
+**Graphcut**    
+[Dong, J. et al. Simultaneous phase unwrapping and removal of chemical shift (SPURS) using graph 
+cuts: application in quantitative susceptibility mapping. IEEE Transactions on Medical Imaging 34, 
+531–540 (2015).](https://doi.org/10.1109/TMI.2014.2361764)    
+
+**Echo phase unwrapping and combination**  
+[Robinson, S. D. et al. An illustrated comparison of processing methods for MR phase imaging and QSM: 
+combining array coil signals and phase unwrapping. 
+NMR Biomed 30, e3601 (2017).](https://doi.org/10.1002/nbm.3601)  
+
+
+### Background field removal  
+==================================================
+
+**LBV**    
+[Zhou, D., Liu, T., Spincemaille, P. & Wang, Y. Background field removal by solving the Laplacian 
+boundary value problem. NMR Biomed 27, 312–319 (2014).](https://doi.org/10.1002/nbm.3064)   
+
+**PDF**  
+[Liu, T. et al. A novel background field removal method for MRI using projection onto dipole 
+fields (PDF). NMR Biomed 24, 1129–1136 (2011).](https://doi.org/10.1002/nbm.1670)    
+
+**RESHARP**    
+[Sun, H. & Wilman, A. H. Background field removal using spherical mean value filtering and Tikhonov 
+regularization. Magn Reson Med 71, 1151–1157 (2014).](https://doi.org/10.1002/mrm.24765)    
+
+**SHARP**  
+[Schweser, F., Deistung, A., Lehr, B. W. & Reichenbach, J. R. Quantitative imaging of intrinsic 
+magnetic tissue properties using MRI signal phase: an approach to in vivo brain iron metabolism? 
+Neuroimage 54, 2789–2807 (2011).](https://doi.org/10.1016/j.neuroimage.2010.10.070)    
+
+**VSHARP**   
+[Li, W., Wu, B. & Liu, C. Quantitative susceptibility mapping of human brain reflects spatial 
+variation in tissue composition. 
+Neuroimage 55, 1645–1656 (2011).](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
+
+**iHARPERELLA**  
+[Li, W., Avram, A. V., Wu, B., Xiao, X. & Liu, C. Integrated Laplacian-based phase unwrapping and 
+background phase removal for quantitative susceptibility mapping. 
+NMR Biomed 27, 219–227 (2014).](https://doi.org/10.1002/nbm.3056)  
+
+### QSM
+==================================================
+
+**TKD**  
+[Wharton, S., Schäfer, A. & Bowtell, R. Susceptibility mapping in the human brain using 
+threshold-based k-space division. 
+Magn Reson Med 63, 1292–1304 (2010).](https://doi.org/10.1002/mrm.22334)  
+
+[Shmueli, K. et al. Magnetic susceptibility mapping of brain tissue in vivo using MRI phase data. 
+Magn Reson Med 62, 1510–1522 (2009).](https://doi.org/10.1002/mrm.22135)  
+
+**Closed-form solution**  
+[Bilgic, B. et al. Fast image reconstruction with L2‐regularization. 
+J Magn Reson Imaging 40, 181–191 (2014).](https://doi.org/10.1002/jmri.24365)  
+
+**LSQR**  
+[Li, W., Wu, B. & Liu, C. Quantitative susceptibility mapping of human brain reflects spatial 
+variation in tissue composition. 
+Neuroimage 55, 1645–1656 (2011).](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
+
+**Star-QSM**  
+[Wei, H. et al. Streaking artifact reduction for quantitative susceptibility mapping of sources with 
+large dynamic range. NMR Biomed 28, 1294–1303 (2015).](https://doi.org/10.1002/nbm.3383)  
+
+[Wei, H. et al. Imaging whole-brain cytoarchitecture of mouse with MRI-based quantitative 
+susceptibility mapping. 
+Neuroimage 137, 107–115 (2016).](https://doi.org/10.1016/j.neuroimage.2016.05.033)  
+
+[Wei, H. et al. Investigating magnetic susceptibility of human knee joint at 7 Tesla. 
+Magn Reson Med 78, 1933–1943 (2017).](https://doi.org/10.1002/mrm.26596)  
+
+**FANSI**  
+[Milovic, C., Bilgic, B., Zhao, B., Acosta-Cabronero, J. & Tejos, C. Fast nonlinear susceptibility 
+inversion with variational regularization. 
+Magn Reson Med 80, 814–821 (2018).](https://doi.org/10.1002/mrm.27073)  
+
+**MEDI**  
+[Liu, T. et al. Morphology enabled dipole inversion (MEDI) from a single-angle acquisition: 
+Comparison with COSMOS in human brain imaging. 
+Magn Reson Med 66, 777–783 (2011).](https://doi.org/10.1002/mrm.22816)  
+
+[Liu, J. et al. Morphology enabled dipole inversion for quantitative susceptibility mapping using 
+structural consistency between the magnitude image and the susceptibility map. 
+Neuroimage 59, 2560–2568 (2012).](https://doi.org/10.1016/j.neuroimage.2011.08.082)  
+
+[Liu, Z., Spincemaille, P., Yao, Y., Zhang, Y. & Wang, Y. MEDI+0: Morphology enabled dipole 
+inversion with automatic uniform cerebrospinal fluid zero reference for quantitative susceptibility 
+mapping. Magn Reson Med 79, 2795–2803 (2018).](https://doi.org/10.1002/mrm.26946)
+
+
+----------------------------------------------------------------------------------------------------
+
 ## Standalone description
 --------------------------------------------------
 
@@ -243,8 +358,8 @@ A standard input directory contains the following files:
 ####	Background field removal panel
 --------------------------------------------------
 - Method:
-	1. [**LBV**](https://doi.org/10.1002/nbm.3064 )  
-		Laplacian boundary value approach to removal background field (recommended)
+	1. [**LBV**](https://doi.org/10.1002/nbm.3064)  
+		Laplacian boundary value approach to removal background field 
 		
 	2. [**PDF**](https://doi.org/10.1002/nbm.1670)  
 		Projection onto dipole field
@@ -256,12 +371,12 @@ A standard input directory contains the following files:
 		Sophisticated harmonic artefact reduction for phase data
 		
 	5. [**VSHARP STI suite**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
-		STI suite v3.0 variable-kernel SHARP (recommended)
+		STI suite v3.0 variable-kernel SHARP 
 		
 	6. [**VSHARP**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 	
 	7. [**iHARPERELLA**](https://doi.org/10.1002/nbm.3056)  
-		(not optimised with this toolbox)  
+		(not optimised for this toolbox)  
 
 - Refine local field by 4th order 3D polynomial fit
 	enable to remove residual B1(+ & -) contribution in the local field  
@@ -286,10 +401,10 @@ A standard input directory contains the following files:
 	4. [**iLSQR**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 	
 	5. [**FANSI**](https://doi.org/10.1002/mrm.27073)  
-		Fast algorithm for nonlinear susceptibility inversion (recommended)  
+		Fast algorithm for nonlinear susceptibility inversion   
 		
 	6. [**Star**](https://doi.org/10.1002/nbm.3383)  
-		STI suite v3.0 Star-QSM (recommended)  
+		STI suite v3.0 Star-QSM   
 		
 	7. [**MEDI**](https://doi.org/10.1002/mrm.26946)  
 		Morphology enabled dipole inversion (MEDI+0) 
