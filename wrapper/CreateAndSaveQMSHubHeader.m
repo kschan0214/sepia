@@ -16,12 +16,19 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 24 May 2018
-% Date last modified:
+% Date last modified: 25 may 2018
 %
 %
 function CreateAndSaveQMSHubHeader(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
 gyro = 42.57747892;
 
+%% Check output directory exist or not
+if exist(outputDir,'dir') ~= 7
+    % if not then create the directory
+    mkdir(outputDir);
+end
+
+%% read header
 switch flag
     case 'dicom'
     % for DICOM input, no user input will be saved
@@ -56,6 +63,7 @@ switch flag
         
 end
 
+%% save header
 save([outputDir filesep 'squirrel_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
 
