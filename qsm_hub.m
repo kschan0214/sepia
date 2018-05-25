@@ -658,7 +658,7 @@ try
 
         case 'Phase unwrapping'
             % Core of phase unwrapping only 
-            UnwrapPhaseMacroIOWrapper(inputDir,outputetDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+            UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
                 'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect,'GPU',isGPU);
 
         case 'Background field removal'
