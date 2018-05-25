@@ -59,8 +59,8 @@ guiSizeVert = round(screenSize(4)*2/3);
 if guiSizeHori < 950
     guiSizeHori = 950;
 end
-if guiSizeVert < 800
-    guiSizeVert = 800;
+if guiSizeVert < 700
+    guiSizeVert = 700;
 end
 
 % create GUI 
@@ -737,6 +737,7 @@ end
 
 %% Utility functions
 
+% 1. Get qsm_hub header
 function ButtonOpen_Utility_getHeader_Callback(source,eventdata,field)
 % get input file/directory for getHeader utility function
 global h
@@ -860,13 +861,13 @@ if isempty(dicomDir)
         end
         
         % specify the input is NIfTI file
-        CreateAndSaveQMSHubHeader(niftiFile,outputDir,...
+        ExportQMSHubHeaderIOWrapper(niftiFile,outputDir,...
             b0,b0dir,voxelSize,TE,'nifti');
     end
 else
     
     % specify the input is DICOM directory
-    CreateAndSaveQMSHubHeader(dicomDir,outputDir,[],[],[],[],'dicom');
+    ExportQMSHubHeaderIOWrapper(dicomDir,outputDir,[],[],[],[],'dicom');
     
 end
 
@@ -883,6 +884,7 @@ set(source,'Enable','on');
 
 end
 
+% 2. Get lateral ventricle mask 
 function ButtonOpen_Utility_csfMask_Callback(source,eventdata,field)
 % get input file/directory for getHeader utility function
 global h

@@ -1,4 +1,4 @@
-%% CreateAndSaveQMSHubHeader(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
+%% ExportQMSHubHeaderIOWrapper(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
 %
 % Input
 % --------------
@@ -19,7 +19,7 @@
 % Date last modified: 25 may 2018
 %
 %
-function CreateAndSaveQMSHubHeader(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
+function ExportQMSHubHeaderIOWrapper(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
 gyro = 42.57747892;
 
 %% Check output directory exist or not
