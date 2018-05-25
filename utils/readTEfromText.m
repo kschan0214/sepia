@@ -13,10 +13,10 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 22 April 2018
-% Date last modified:
+% Date last modified: 25 May 2018
 %
 %
-function TE = readTEfromText(filename)
+function [TE,TR,FA,voxelSize] = readTEfromText(filename)
 % read mode
 fid = fopen(filename,'r');
 % read file line by line
@@ -24,14 +24,33 @@ line = fgetl(fid);
 % set counter of TE
 counter = 1;
 
-TE =[];
+TE =[]; TR=[];
 
 % start reading lines
 while ischar(line)
-    % look for string 'Echo time'
-    idx = strfind(line, 'Echo time');
     
-    if ~isempty(idx)
+    if ~isempty(strfind(line, 'Repetition time'))
+        TR = get_str(line) * 1e-3;
+    end
+    
+    if ~isempty(strfind(line, 'Flip angle'))
+        FA = get_str(line) * 1e-3;
+    end
+    
+    if ~isempty(strfind(line, 'Slice thickness'))
+        vz = get_str(line);
+    end
+    
+    if ~isempty(strfind(line, 'Voxel size x'))
+        vx = get_str(line);
+    end
+    
+    if ~isempty(strfind(line, 'Voxel size y'))
+        vy = get_str(line);
+    end
+    
+    % look for string 'Echo time'
+    if ~isempty(strfind(line, 'Echo time'))
         % in MRIConvert format echo time stored in unit of ms, has to
         % convert to second
 %         TE(counter) = get_str(line) * 1e-3;
@@ -42,6 +61,8 @@ while ischar(line)
     % start the next line
     line = fgetl(fid);
 end
+
+voxelSize = [vx, vy, vz];
 
 fclose(fid);
 

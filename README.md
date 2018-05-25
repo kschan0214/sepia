@@ -85,28 +85,25 @@ should also be working with MATLAB R2017a or later, except 'LBV' of background f
 
 ----------------------------------------------------------------------------------------------------
 
-## Working with NIfTI files and qsm_hub header
+## Input data format and qsm_hub header
 --------------------------------------------------
 
+`qsm_hub` provides two main options for data input:  
 
-If you prefer working with NIfTI files (as I do), I suggest using [MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) 
-to convert your mGRE data with  
+1. DICOM images    
+2. NIfTI images (.nii and .nii.gz)  
+
+You can find the specific requirements of the input files in the 'standlone description' section.
+
+If you prefer starting with the unprocessed data in NIfTI format , `qsm_hub` expects the input to 
+be 4D (row,col,slice,echo). I suggest using 
+[MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with the 
+following setting checked:  
 'Option' -> 'Save multivolumes series as 4D files'  
 In this way your mGRE data will be stored as 4D FSL NIfTI data that is a valid input of `qsm_hub`. 
-Using MRIConvert, a text file will also be generated alongside with the NIfTI data. 
-If your put this text file in your `qsm_hub` input directory, the actual echo times stated in this text 
-file will also be read to generate a synthetic qsm_hub header.  
 
-`qsm_hub` requires a special header file in MATLAB *.mat* format that stores some information for QSM recon. 
-If your input are DICOM images, this header file will be generated automatically. For NIfTI data, if this
-file is missed, `qsm_hub` will generate a synthetic header based on the information from the NIfTI
-files. However, some information such as 'TE' and 'delta_TE' created in synthetic header might not be correct since the NIfTI header 
-usually doesn't contain this information and some predefined values will be set. The incorrect synthetic header may affect the
-susceptibility range of the QSM value but not the qualitative assessment QSM (basically the QSMs are
-the same but in different (arbitrary) scale).
-
-Alternatively you can create the `qsm_hub` header file in your own way, but please make sure that the
-header filename contains the string 'header' and the file contains the following variables:  
+`qsm_hub` requires a specific MAT-file (.mat) that stores some header information of the input 
+data. The header file contains the following variables (case-sensitive):
 ````
 	'B0'			: magnetic field strength, in Tesla (e.g. B0=3; % 3T)
 	'B0_dir'		: main magnetic field direction, [x,y,z] (e.g. B0_dir=[0,0,1];)
@@ -116,18 +113,28 @@ header filename contains the string 'header' and the file contains the following
 	'matrixSize'	: image matrix size (e.g. matrixSize=size(img);)
 	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2]; % 2 mm isotropic)
 ````  
-If you create the header file this way, I recommend to use SyntheticQSMHubHeader.m to get most of the information 
-from NIfTI header such as 'B0_dir', 'matrixSize' and 'voxelSize', and readTEfromText.m to get the echo time information.  
+If your input is DICOM images, this file will be generated automatically with `qsm_hub`. If your 
+input is NIfTI images, you can use the utility function provided called 'Get qsm_hub header' in the 
+'Utility' tab of the GUI to generate this header file. Once this file is generated, make sure its 
+name contains the string 'header' (e.g. 'qsmhub_header.mat') and put it in the same directory of 
+your `qsm_hub` input data. 
+
+**Tip**
+If you use MRIConvert to convert DICOM images to NIfTI format, a text file will also be generated 
+alongside with the NIfTI data. This text file contains some basic header information including the 
+echo times. When you use the 'Get qsm_hub header' utility function, you can load this text file as 
+the 'TE file' so that the correct echo time information can be extracted and stored in the MAT-file 
+header.
 
 ----------------------------------------------------------------------------------------------------
 
 ## Checking QSM result
 --------------------------------------------------
 
-Every now and again the values of QSM might be inverted. This may be due to different way of how the phase data being read. 
-To check if this is the case you could look into the QSM map. The deep gray matter structure should be appeared as bright (positive) and white
-matter should be dark (negative value). If it appears in the opposite way then you might invert the
-result by multiply the map with -1, i.e.  
+Sometimes the values of QSM might be inverted. This may be due to different way of how the phase 
+data being read. To check if this is the case you could look into the QSM map. The deep gray matter 
+structure should be appeared as bright (positive) and white matter should be dark (negative value). 
+If it appears in the opposite way then you might invert the result by multiply the map with -1, i.e.  
 
 `QSM_corr = -QSM; `
 
@@ -330,11 +337,11 @@ A standard input directory contains the following files:
 		Laplacian unwrapping implementation from STI Suite v3.0  
 		
 	3. [**3D best path**](https://doi.org/10.1364/AO.46.006623)   
-		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)  
+		very robust region growing method yet only works in the DCCN cluster 
+		(recommended if you use this toolbox in the DCCN cluster)  
 		
 	4. **Region growing**  
 		MEDI toolbox implementation, might not work well with DICOM phase data 
-		(using offline recon data works pretty well)
 		
 	5. [**Graphcut**](https://doi.org/10.1109/TMI.2014.2361764)  
 		graph-cut algorithm (not optimised with this toolbox)  
@@ -425,7 +432,7 @@ A standard input directory contains the following files:
 			the string 'phase' (e.g. 'phase.nii.gz')  
   
 - Output:  
-	Directory to store all qsm_hub output (default: /input/dir/output)  
+	Directory to store all qsm_hub output (default: /input/dir/output/)  
   
 - FSL brain extraction (optional):  
 	Simple FSL's BET script, which can roughly extract a brain yet not too accurate.
@@ -448,11 +455,11 @@ A standard input directory contains the following files:
 		Laplacian unwrapping implementation from STI Suite v3.0  
 		
 	3. [**3D best path**](https://doi.org/10.1364/AO.46.006623)   
-		very robust region growing method yet only works in the DCCN cluster (recommended in the cluster)
+		very robust region growing method yet only works in the DCCN cluster 
+		(recommended if you use this toolbox in the DCCN cluster)
 		
 	4. **Region growing**  
-		MEDI toolbox implementation, might not work well with DICOM phase data 
-		(using offline recon data works pretty well)  
+		MEDI toolbox implementation, might not work well with DICOM phase data  
   
 	5. [**Graphcut**](https://doi.org/10.1109/TMI.2014.2361764)  
 		graph-cut algorithm 
@@ -503,8 +510,8 @@ A standard input directory contains the following files:
 ####	Background field removal panel
 --------------------------------------------------
 - Method:
-	1. [**LBV**](https://doi.org/10.1002/nbm.3064 )  
-		Laplacian boundary value approach to removal background field (recommended)  
+	1. [**LBV**](https://doi.org/10.1002/nbm.3064)  
+		Laplacian boundary value approach to removal background field  
 
 	2. [**PDF**](https://doi.org/10.1002/nbm.1670)  
 		Projection onto dipole field  
@@ -516,7 +523,7 @@ A standard input directory contains the following files:
 		Sophisticated harmonic artefact reduction for phase data  
 
 	5. [**VSHARP STI suite**](https://doi.org/10.1016/j.neuroimage.2010.11.088)   
-		STI suite v3.0 variable-kernel SHARP (recommended)  
+		STI suite v3.0 variable-kernel SHARP 
 
 	6. [**VSHARP**](https://doi.org/10.1016/j.neuroimage.2010.11.088)  
 
@@ -573,7 +580,7 @@ A standard input directory contains the following files:
 	4. [**iLSQR**](https://doi.org/10.1016/j.neuroimage.2010.11.088)
 
 	5. [**FANSI**](https://doi.org/10.1002/mrm.27073)  
-		Fast algorithm for nonlinear susceptibility inversion (recommended)
+		Fast algorithm for nonlinear susceptibility inversion
 
 	6. [**Star**](https://doi.org/10.1002/nbm.3383)  
 		STI suite v3.0 Star-QSM (recommended)

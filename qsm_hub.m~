@@ -59,8 +59,8 @@ guiSizeVert = round(screenSize(4)*2/3);
 if guiSizeHori < 950
     guiSizeHori = 950;
 end
-if guiSizeVert < 700
-    guiSizeVert = 700;
+if guiSizeVert < 800
+    guiSizeVert = 800;
 end
 
 % create GUI 
@@ -658,7 +658,7 @@ try
 
         case 'Phase unwrapping'
             % Core of phase unwrapping only 
-            UnwrapPhaseMacroIOWrapper(inputDir,outputetDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+            UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
                 'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect,'GPU',isGPU);
 
         case 'Background field removal'
@@ -737,7 +737,6 @@ end
 
 %% Utility functions
 
-% 1. Get qsm_hub header
 function ButtonOpen_Utility_getHeader_Callback(source,eventdata,field)
 % get input file/directory for getHeader utility function
 global h
@@ -793,8 +792,6 @@ global h
 % Disable the pushbutton to prevent doubel click
 set(source,'Enable','off');
 
-try 
-
 % get DICOM directory (if any)
 dicomDir    = get(h.Utility.getHeader.edit.dicomInput,'String'); 
 % get output directory, assume the same directory as input directory/file
@@ -847,34 +844,28 @@ if isempty(dicomDir)
                 try load(teFullName,'TE');  catch; error('No variable named TE.'); end
             else
                 % if text file the try to read the TEs line by line
-                TE = readTEfromText(teFullName);
-                TE = TE(:);
+                te = readTEfromText(teFullName);
+                te = te(:);
             end
         else
             % read user input array
-            TE = str2num(teUserInput);
-            TE = TE(:);
+            te = str2num(teUserInput);
+            te = te(:);
         end
         % in case TE cannot be found
-        if isempty(TE) || isnan(TE(1))
+        if isempty(te) || isnan(te(1))
             error('Incorrect TE format.');
         end
         
         % specify the input is NIfTI file
-        ExportQMSHubHeaderIOWrapper(niftiFile,outputDir,...
-            b0,b0dir,voxelSize,TE,'nifti');
+        CreateAndSaveQMSHubHeader(niftiFile,outputDir,...
+            b0,b0dir,voxelSize,te,'nifti');
     end
 else
     
     % specify the input is DICOM directory
-    ExportQMSHubHeaderIOWrapper(dicomDir,outputDir,[],[],[],[],'dicom');
+    CreateAndSaveQMSHubHeader(dicomDir,outputDir,[],[],[],[],'dicom');
     
-end
-
-catch ME
-    % re-enable the start button before displaying the error
-    set(source,'Enable','on');
-    error(ME.message);
 end
 
 disp('Done!');
@@ -884,7 +875,6 @@ set(source,'Enable','on');
 
 end
 
-% 2. Get lateral ventricle mask 
 function ButtonOpen_Utility_csfMask_Callback(source,eventdata,field)
 % get input file/directory for getHeader utility function
 global h
@@ -906,7 +896,7 @@ switch field
         if pathDir ~= 0
             set(h.Utility.csfMask.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
             % automatically set default output field
-            set(h.Utility.csfMask.edit.outputDir,     'String',[pathDir filesep 'output']);
+            set(h.Utility.csfMask.edit.outputDir,     'String',pathDir);
         end
         
     case 'mask'
@@ -936,8 +926,6 @@ global h
 
 % Disable the pushbutton to prevent doubel click
 set(source,'Enable','off');
-
-try
 
 % get NIfTI file (if any)
 niftiFile   = get(h.Utility.csfMask.edit.niftiInput, 'String');
@@ -979,13 +967,6 @@ else
     GetVentricleMaskIOWrapper(niftiFile,outputDir,maskFullName,TE);
     
 end
-
-catch ME
-    % re-enable the start button before displaying the error
-    set(source,'Enable','on');
-    error(ME.message);
-end
-    
 
 % Disable the pushbutton to prevent doubel click
 set(source,'Enable','on');
