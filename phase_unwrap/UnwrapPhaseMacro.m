@@ -35,7 +35,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified: 24 May 2018
+% Date last modified: 27 May 2018
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,varargin)
 
@@ -94,9 +94,11 @@ switch method
     case 'Laplacian_stisuite'
         unwrappedField = MRPhaseUnwrap(wrappedField,'voxelsize',voxelSize,'padsize',[12,12,12]);
     case 'RegionGrowing'
+        magn = sqrt(sum(abs(magn).^2,4));
         unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
     case 'Graphcut'
         disp(['Graphcut subsampling factor: ' num2str(subsampling)]);
+        magn = sqrt(sum(abs(magn).^2,4));
         unwrappedField = unwrapping_gc(wrappedField,magn,voxelSize,subsampling);
     case 'BestPath3D'
         try
