@@ -367,14 +367,19 @@ switch lower(QSM_method)
     case 'closedforml2'
     case 'ilsqr'
     case 'stisuiteilsqr'
+        % The order of local field values doesn't affect the result of chi  
+        % in STI suite v3 implementation. Because of the scaling factor,
+        % the local field map is converted to rad
+        localField = localField * 2*pi * delta_TE; 
     case 'fansi'
         % FANSI works better with ppm
         localField = localField/(B0*gyro);
     case 'ssvsharp'
     case 'star'
-        % star work better with radHz
-%         localField = localField*2*pi;
-        localField = localField*2*pi*delta_TE;
+        % Unlike the iLSQR implementation, the order of local field map
+        % values will affect the Star-QSM result. 
+        % Star-QSM expecting local field in rad
+        localField = localField * 2*pi * delta_TE;
     case 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
@@ -419,13 +424,12 @@ switch lower(QSM_method)
     case 'ilsqr'
         chi = chi/(B0*gyro);
     case 'stisuiteilsqr'
-        chi = chi/(B0*gyro);
+        % STI suite v3 implementation already converted the chi map to ppm
     case 'fansi'
     case 'ssvsharp'
         chi = chi/(B0*gyro);
     case 'star'
-%         chi = chi/(2*pi*B0*gyro);
-        chi = chi;
+        % STI suite v3 implementation already converted the chi map to ppm
     case 'medi_l1'
         chi = chi/(2*pi*B0*gyro*delta_TE);
 end

@@ -194,15 +194,31 @@ switch lower(QSM_method)
     case 'closedforml2'
     case 'ilsqr'
     case 'stisuiteilsqr'
+        % The order of local field values doesn't affect the result of chi  
+        % in STI suite v3 implementation, i.e. 
+        % chi = method(localField,...) = method(localField*C,...)/C, where
+        % C is a constant.
+        % Therefore, because of the scaling factor in their implementation,
+        % the local field map is converted to rad
+        localField = localField * 2*pi * delta_TE; 
     case 'fansi'
         % FANSI works better with ppm
         localField = localField/(B0*gyro);
-        
     case 'ssvsharp'
     case 'star'
-        % Star works better with radHz
-        localField = localField*2*pi;
-        
+        % Unlike the iLSQR implementation, the order of local field map
+        % values will affect the Star-QSM result, i.e. 
+        % chi = method(localField,...) ~= method(localField*C,...)/C, where
+        % C is a constant. Lower order of local field magnitude will more 
+        % likely produce chi map with streaking artefact. 
+        % In the STI_Templates.m example, Star-QSM expecting local field in 
+        % the unit of rad. However, value of the field map in rad will 
+        % vary with echo time. Therefore, data acquired with short
+        % delta_TE will be prone to streaking artefact. To mitigate this
+        % potential problem, local field map is converted from Hz to radHz
+        % here and the resulting chi will be normalised by the same factor 
+        % 
+        localField = localField * 2*pi;
     case 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
@@ -247,12 +263,14 @@ switch lower(QSM_method)
     case 'ilsqr'
         chi = chi/(B0*gyro);
     case 'stisuiteilsqr'
-        chi = chi/(B0*gyro);
+        % STI suite v3 implementation already converted the chi map to ppm
     case 'fansi'
     case 'ssvsharp'
         chi = chi/(B0*gyro);
     case 'star'
-        chi = chi/(2*pi*B0*gyro);
+        % STI suite v3 implementation already nomalised the output by B0
+        % and delta_TE
+        chi = chi / (2*pi);
     case 'medi_l1'
         chi = chi/(2*pi*B0*gyro*delta_TE);
 end
