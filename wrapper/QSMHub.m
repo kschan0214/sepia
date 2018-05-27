@@ -368,18 +368,30 @@ switch lower(QSM_method)
     case 'ilsqr'
     case 'stisuiteilsqr'
         % The order of local field values doesn't affect the result of chi  
-        % in STI suite v3 implementation. Because of the scaling factor,
+        % in STI suite v3 implementation, i.e. 
+        % chi = method(localField,...) = method(localField*C,...)/C, where
+        % C is a constant.
+        % Therefore, because of the scaling factor in their implementation,
         % the local field map is converted to rad
         localField = localField * 2*pi * delta_TE; 
     case 'fansi'
-        % FANSI works better with ppm
+        % FANSI default parameters are optimised for ppm
         localField = localField/(B0*gyro);
     case 'ssvsharp'
     case 'star'
         % Unlike the iLSQR implementation, the order of local field map
-        % values will affect the Star-QSM result. 
-        % Star-QSM expecting local field in rad
-        localField = localField * 2*pi * delta_TE;
+        % values will affect the Star-QSM result, i.e. 
+        % chi = method(localField,...) ~= method(localField*C,...)/C, where
+        % C is a constant. Lower order of local field magnitude will more 
+        % likely produce chi map with streaking artefact. 
+        % In the STI_Templates.m example, Star-QSM expecting local field in 
+        % the unit of rad. However, value of the field map in rad will 
+        % vary with echo time. Therefore, data acquired with short
+        % delta_TE will be prone to streaking artefact. To mitigate this
+        % potential problem, local field map is converted from Hz to radHz
+        % here and the resulting chi will be normalised by the same factor 
+        % 
+        localField = localField * 2*pi;
     case 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
@@ -390,7 +402,7 @@ switch lower(QSM_method)
             maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
         end
         
-        % MEDI works better with rad
+        % MEDI input expects local field in rad
         localField = localField*2*pi*delta_TE;
 end
 
@@ -426,12 +438,15 @@ switch lower(QSM_method)
     case 'stisuiteilsqr'
         % STI suite v3 implementation already converted the chi map to ppm
     case 'fansi'
+        % FANSI default parameters are optimised for ppm
     case 'ssvsharp'
         chi = chi/(B0*gyro);
     case 'star'
-        % STI suite v3 implementation already converted the chi map to ppm
+        % STI suite v3 implementation already nomalised the output by B0
+        % and delta_TE
+        chi = chi / (2*pi);
     case 'medi_l1'
-        chi = chi/(2*pi*B0*gyro*delta_TE);
+        % MEDI implementation already normalised the output to ppm
 end
   
 % save results
