@@ -37,11 +37,11 @@
 % k.chan@donders.ru.nl
 % Date created: 31 May, 2017
 % Date modified: 27 February 2018
-% Date modified: 24 May 2018
+% Date modified: 27 May 2018
 %
 function [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
 % Larmor frequency of 1H
-gamma = 42.57747892;
+gyro = 42.57747892;     % (MHz/T)
 
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
@@ -67,52 +67,64 @@ if length(TE)>1
     dt = TE(2)-TE(1);
 end
 
-%% Core
 % find the centre of mass
 pos=round(centerofmass(magn));
 
-%%
-fieldMapEchoTemp=angle(exp(1i*fieldMap(:,:,:,2:end))./exp(1i*fieldMap(:,:,:,1:end-1)));
-for k=1:size(fieldMapEchoTemp,4)
-    tmp = UnwrapPhaseMacro(fieldMapEchoTemp(:,:,:,k),matrixSize,voxelSize,...
-            'method',method,'Magn',magn,'subsampling',subsampling,'mask',mask);
-    tmp2(:,:,:,k)=tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
-end
-fieldMapTemp=cumsum(tmp2,4);
-% fieldMapTemp=gather(fieldMapTemp);
-for k=1:size(fieldMapTemp,4)
-    fieldMapTemp(:,:,:,k)=fieldMapTemp(:,:,:,k)/(TE(k+1)-TE(1));
-end
-% denominator=zeros(matrixSize(1:3));
-% numerator=zeros(matrixSize(1:3));
-fieldMapSD = zeros(size(fieldMapTemp));
+%% Core
+if size(fieldMap,4) > 1
+    % Multi-echo
+    fieldMapEchoTemp=angle(exp(1i*fieldMap(:,:,:,2:end))./exp(1i*fieldMap(:,:,:,1:end-1)));
+    for k=1:size(fieldMapEchoTemp,4)
+        tmp = UnwrapPhaseMacro(fieldMapEchoTemp(:,:,:,k),matrixSize,voxelSize,...
+                'method',method,'Magn',magn,'subsampling',subsampling,'mask',mask);
+        tmp2(:,:,:,k)=tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+    end
+    fieldMapTemp=cumsum(tmp2,4);
+    % fieldMapTemp=gather(fieldMapTemp);
+    for k=1:size(fieldMapTemp,4)
+        fieldMapTemp(:,:,:,k)=fieldMapTemp(:,:,:,k)/(TE(k+1)-TE(1));
+    end
+    % denominator=zeros(matrixSize(1:3));
+    % numerator=zeros(matrixSize(1:3));
+    fieldMapSD = zeros(size(fieldMapTemp));
 
-for k=1:size(fieldMapTemp,4)
-%     weight_k(:,:,:,k) = 1./((sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2))/(abs(TE(k+1)-TE(1)))).^2);
-    fieldMapSD(:,:,:,k) = 1./(TE(k+1)-TE(1)) ...
-        * sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2));
-%     numerator = numerator + fieldMapTemp(:,:,:,k).*weight_k;
-%     denominator = denominator + weight_k;
-%     numerator= numerator + (fieldMapTemp(:,:,:,k)) ...
-%         .*abs((TE(k+1)-TE(1))*magn(:,:,:,k+1)).^2 ...
-%         ./(abs(magn(:,:,:,k+1)).^2+abs(magn(:,:,:,1)).^2);
-%     denominator= denominator + ...
-%         abs((TE(k+1)-TE(1))*magn(:,:,:,k+1)).^2 ...
-%         ./(abs(magn(:,:,:,k+1)).^2+abs(magn(:,:,:,1)).^2);
+    for k=1:size(fieldMapTemp,4)
+    %     weight_k(:,:,:,k) = 1./((sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2))/(abs(TE(k+1)-TE(1)))).^2);
+        fieldMapSD(:,:,:,k) = 1./(TE(k+1)-TE(1)) ...
+            * sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2));
+    %     numerator = numerator + fieldMapTemp(:,:,:,k).*weight_k;
+    %     denominator = denominator + weight_k;
+    %     numerator= numerator + (fieldMapTemp(:,:,:,k)) ...
+    %         .*abs((TE(k+1)-TE(1))*magn(:,:,:,k+1)).^2 ...
+    %         ./(abs(magn(:,:,:,k+1)).^2+abs(magn(:,:,:,1)).^2);
+    %     denominator= denominator + ...
+    %         abs((TE(k+1)-TE(1))*magn(:,:,:,k+1)).^2 ...
+    %         ./(abs(magn(:,:,:,k+1)).^2+abs(magn(:,:,:,1)).^2);
+    end
+    weight = bsxfun(@rdivide,1/(fieldMapSD.^2),sum(1/(fieldMapSD.^2),4));
+    totalField = sum(fieldMapTemp .* weight,4);
+    % totalField = sum(fieldMapTemp .* (1./fieldMapSD.^2),4)./sum(1./fieldMapSD.^2,4);
+    % totalField = numerator./denominator;
+    totalField(isnan(totalField))=0;
+    totalField(isinf(totalField))=0;
+    % standard deviation of weighted mean
+    % totalFieldSD = sqrt(1./sum(1./fieldMapSD.^2,4));
+    totalFieldVariance = sum(weight.^2 .* fieldMapSD.^2,4);
+    totalFieldSD = sqrt(totalFieldVariance);
+    totalFieldSD(isnan(totalFieldSD)) = 0;
+    totalFieldSD(isinf(totalFieldSD)) = 0;
+    totalFieldSD = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
+else
+    % Single echo
+    tmp = UnwrapPhaseMacro(fieldMap,matrixSize,voxelSize,...
+                'method',method,'Magn',magn,'subsampling',subsampling,'mask',mask);
+    tmp = tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+    totalField = tmp/(TE(1));
+    totalFieldSD = 1./magn;
+    totalFieldSD(isnan(totalFieldSD)) = 0;
+    totalFieldSD(isinf(totalFieldSD)) = 0;
+    totalFieldSD = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
 end
-weight = bsxfun(@rdivide,1/(fieldMapSD.^2),sum(1/(fieldMapSD.^2),4));
-totalField = sum(fieldMapTemp .* weight,4);
-% totalField = sum(fieldMapTemp .* (1./fieldMapSD.^2),4)./sum(1./fieldMapSD.^2,4);
-% totalField = numerator./denominator;
-totalField(isnan(totalField))=0;
-totalField(isinf(totalField))=0;
-% standard deviation of weighted mean
-% totalFieldSD = sqrt(1./sum(1./fieldMapSD.^2,4));
-totalFieldVariance = sum(weight.^2 .* fieldMapSD.^2,4);
-totalFieldSD = sqrt(totalFieldVariance);
-totalFieldSD(isnan(totalFieldSD)) = 0;
-totalFieldSD(isinf(totalFieldSD)) = 0;
-totalFieldSD = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
 
 % totalField now in rads^-1, matching tmp2 to the smae unit
 % tmp2 = tmp2/dTE;
@@ -120,7 +132,7 @@ totalFieldSD = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
 disp(['The resulting field map with the following unit: ' unit]);
 switch unit
     case 'ppm'
-        totalField = (totalField/(2*pi))/(fieldStrength*gamma);
+        totalField = (totalField/(2*pi))/(fieldStrength*gyro);
 %         tmp2 = (tmp2/(2*pi))/(fieldStrength*gamma);
     case 'rad'
         totalField = totalField*dt;
