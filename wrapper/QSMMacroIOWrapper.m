@@ -42,7 +42,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 20 May 2018
+% Date last modified: 27 May 2018
 %
 %
 function chi = QSMMacroIOWrapper(inputDir,outputDir,varargin)

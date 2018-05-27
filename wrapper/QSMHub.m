@@ -270,7 +270,7 @@ qsm_hub_AddMethodPath(unwrap);
 if isEddyCorrect
     disp('Correcting eddy current effect on bipolar readout data');
     
-    % BipolarEddyCorrect requries complex-valeud input
+    % BipolarEddyCorrect requries complex-valued input
     imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
     fieldMap = angle(imgCplx);
     magn = abs(imgCplx);
