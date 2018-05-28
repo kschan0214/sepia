@@ -48,7 +48,7 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument using parse_varargin_QSMHub.m
-[isBET,maskFullName,unwrap,subsampling,~,~,~,~,~,~,...
+[isBET,maskFullName,phaseCombMethod,unwrap,subsampling,~,~,~,~,~,~,...
 ~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,exclude_threshold,~,~,~,~,~,~,~,~,isEddyCorrect] = parse_varargin_QSMHub(varargin);
 
 %% Read input
@@ -215,11 +215,25 @@ unit = 'Hz';
 
 % core of phase unwrapping
 try 
-    [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-                            'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
-                            'Subsampling',subsampling,'mask',mask);
+    switch phaseCombMethod
+        % optimum weight method from Robinson et al. NMR Biomed 2017
+        case 'optimum_weights'
+            [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,...
+                                    matrixSize,voxelSize,...
+                                    'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
+                                    'Subsampling',subsampling,'mask',mask);
+                                
+        % nonlinear ffitting method from MEDI toolbox
+        case 'nonlinear_fit'
+            [totalField,fieldmapSD] = estimateTotalField_MEDI(fieldMap,magn,...
+                                    matrixSize,voxelSize,...
+                                    'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
+                                    'Subsampling',subsampling,'mask',mask);
+    end
+    
 catch
-% if the selected method is not working then do Laplacian 
+    % if the above selected method is not working then do Laplacian with
+    % optimum weights
     disp('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
     qsm_hub_AddMethodPath('laplacian');
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
@@ -227,9 +241,22 @@ catch
                         'Subsampling',subsampling,'mask',mask);
 end
                     
-% generate mask based on exclusion threshold
-maskReliable = fieldmapSD < exclude_threshold;
-% create new mask
+% exclude unreliable voxel, based on monoexponential decay model with
+% single freuqnecy shift
+r2s = arlo(TE,magn);
+s0 = magn(:,:,:,1).*exp(r2s*TE(1));
+shat = zeros([matrixSize length(TE)]);
+for kt=1:length(TE)
+    shat(:,:,:,kt) = s0.*exp(TE(kt)*(-r2s+1i*2*pi*totalField));
+end
+shat = bsxfun(@times,shat,conj(shat(:,:,:,1)));
+s = bsxfun(@times,magn.*exp(1i*fieldMap),conj(magn(:,:,:,1).*exp(1i*fieldMap(:,:,:,1))));
+relativeResidual=sum(abs(shat-s).^2,4)./sum(abs(s).^2,4);
+relativeResidual(isnan(relativeResidual)) = exclude_threshold;
+relativeResidual(isinf(relativeResidual)) = exclude_threshold;
+maskReliable = relativeResidual < exclude_threshold;
+
+% maskReliable = (fieldmapSD./norm(fieldmapSD(fieldmapSD~=0))) < exclude_threshold;
 mask = and(mask,maskReliable);
                                         
 disp('Saving unwrapped field map...');

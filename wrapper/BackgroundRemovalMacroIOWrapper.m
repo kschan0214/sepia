@@ -52,7 +52,7 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument using parse_varargin_QSMHub.m
-[~,maskFullName,~,~,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+[~,maskFullName,~,~,~,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,isGPU] = parse_varargin_QSMHub(varargin);
 
 %% Read input

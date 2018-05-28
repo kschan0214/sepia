@@ -56,15 +56,20 @@ if nargin > 0
             addpath(genpath([utilsDir MEDI_version]));
         case 'laplacian'
             addpath([phaseUnwrapDir 'unwrapLaplacian' filesep MEDI_version]);
+            addpath(genpath([utilsDir MEDI_version]));
         case 'laplacian_stisuite'
             addpath([phaseUnwrapDir 'unwrapLaplacian' filesep STISuite_version]);
             addpath(genpath([utilsDir STISuite_version]));
+            addpath(genpath([utilsDir MEDI_version]));
         case 'rg'
             addpath([phaseUnwrapDir 'unwrapRegionGrowing' filesep MEDI_version]);
+            addpath(genpath([utilsDir MEDI_version]));
         case 'gc'    
             addpath(genpath([phaseUnwrapDir 'unwrapGraphcut' filesep MEDI_version]));
+            addpath(genpath([utilsDir MEDI_version]));
         case 'bestpath3d'
             addpath([phaseUnwrapDir 'unwrapBestpath3D']);
+            addpath(genpath([utilsDir MEDI_version]));
         case 'lbv'
             addpath([bkgRemovalDir 'LBV' filesep MEDI_version]);
         case 'pdf'

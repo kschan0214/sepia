@@ -59,14 +59,14 @@ end
 
 %% Core
 
-if numel(TE)>1 && ((TE(2)-TE(1))-(TE(3)-TE(2))>1e-4)
+if numel(TE)>1 && ((TE(2)-TE(1))-(TE(3)-TE(2))>1e-5)
     % Estimate the frequency offset in each of the voxel using a complex
     % fitting (uneven echo spacing)
-    [iFreq_raw, N_std] = Fit_ppm_complex_TE(magn.*exp(1i*fieldMap),TE);
+    [iFreq_raw, N_std] = Fit_ppm_complex_TE(magn.*exp(-1i*fieldMap),TE);
 else
     % Estimate the frequency offset in each of the voxel using a complex
     % fitting (even echo spacing)
-    [iFreq_raw, N_std] = Fit_ppm_complex(magn.*exp(1i*fieldMap));
+    [iFreq_raw, N_std] = Fit_ppm_complex(magn.*exp(-1i*fieldMap));
 end
 
 % Compute magnitude image

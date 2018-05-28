@@ -11,10 +11,10 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 20 May 2018
+% Date last modified: 28 May 2018
 %
 %
-function [isBET,mask,unwrap,subsampling,...
+function [isBET,mask,phaseCombMethod,unwrap,subsampling,...
     BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,...
     QSM_method,QSM_threshold,QSM_lambda,QSM_optimise,QSM_tol,QSM_maxiter,...
     QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
@@ -23,6 +23,7 @@ function [isBET,mask,unwrap,subsampling,...
 
 mask=[];
 isBET=false;
+phaseCombMethod = 'optimum_weights';
 unwrap='Laplacian';subsampling=1;
 BFR='LBV';refine=false;BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
 BFR_padSize=40;BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
@@ -40,6 +41,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'mask')
             mask = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'phase_combine')
+            phaseCombMethod = arg{kvar+1};
         end
         if strcmpi(arg{kvar},'unwrap')
             unwrap = arg{kvar+1};

@@ -501,6 +501,7 @@ maskFullName    = get(h.dataIO.edit.maskdir,'String');
 isBET           = get(h.dataIO.checkbox.brainExtraction,'Value');
 
 % get phase unwrap GUI input
+phaseCombMethod = h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1};
 phaseUnwrap     = h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1};
 isEddyCorrect   = get(h.phaseUnwrap.checkbox.eddyCorrect,'Value');
 if get(h.phaseUnwrap.checkbox.excludeMask,'Value')
@@ -517,6 +518,13 @@ refine          = get(h.bkgRemoval.checkbox.bkgRemoval,'Value');
 QSM_method      = h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1};
 
 % match the phase unwrapping GUI input to QSMHub input format
+switch phaseCombMethod
+    case 'Optimum weights'
+        phaseCombMethod = 'optimum_weights';
+    case 'MEDI nonlinear'
+        phaseCombMethod = 'nonlinear_fit';
+end
+
 switch phaseUnwrap
     case 'Region growing'
         phaseUnwrap = 'rg';
@@ -646,7 +654,8 @@ try
     switch h.StepsPanel.dataIO.Parent.Title
         case 'One-stop QSM processing'
             % core of QSM one-stop processing
-            QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+            QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,...
+                'phase_combine',phaseCombMethod,'unwrap',phaseUnwrap,...
                 'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
                 'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
                 'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
@@ -658,7 +667,8 @@ try
 
         case 'Phase unwrapping'
             % Core of phase unwrapping only 
-            UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,'unwrap',phaseUnwrap,...
+            UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,...
+                'phase_combine',phaseCombMethod,'unwrap',phaseUnwrap,...
                 'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect,'GPU',isGPU);
 
         case 'Background field removal'
@@ -694,7 +704,7 @@ function GenerateLogFile(tab)
 switch tab
     case 'One-stop QSM processing'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'QSMHub(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseUnwrap);
+        fprintf(fid,'QSMHub(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
         fprintf(fid,'''Subsampling'',%i,''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',subsampling,BFR,refine,BFR_tol);
         fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
         fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,...\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
@@ -707,7 +717,7 @@ switch tab
         
     case 'Phase unwrapping'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseUnwrap);
+        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
         fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%i,''eddy'',%i,''GPU'',%i);\n',subsampling,excludeMaskThreshold,isEddyCorrect,isGPU);
         fclose(fid);
     

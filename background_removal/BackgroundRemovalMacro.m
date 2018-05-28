@@ -160,7 +160,7 @@ end
 %% If refine is needed, do it now
 if refine
     disp('Performing polynomial fitting...');
-    [~,RDF,~]=PolyFit(RDF,RDF~=0,5);
+    [~,RDF,~]=PolyFit(RDF,RDF~=0,4);
 end
 
 end
