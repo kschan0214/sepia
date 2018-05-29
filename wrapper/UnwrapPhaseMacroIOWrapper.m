@@ -122,7 +122,9 @@ else
     
     B0 = CF/(gyro*1e6);
 
-    fieldMap = angle(iField);
+    % after testing with a couple of dataset it seems to me that the field
+    % is inverted with DICOM input, so apply conjugate here
+    fieldMap = angle(conj(iField));
     magn = abs(iField);
     
     isMagnLoad = true;

@@ -146,7 +146,7 @@ if ~isempty(inputNiftiList)
             te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
             te_ = te_(:);
             if ~isempty(te_)
-                TE = te_;
+                TE = te_;/project/3015069.01/pilot/qsmhubTestdata/svd/RUNDMCSI_1276_W11/nii_mriconvert
                 if length(TE) > 1
                     delta_TE = TE(2)-TE(1);
                 end
@@ -172,8 +172,10 @@ else
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
     
     B0 = CF/(gyro*1e6);
-
-    fieldMap = angle(iField);
+    
+    % after testing with a couple of dataset it seems to me that the field
+    % is inverted with DICOM input, so apply conjugate here
+    fieldMap = angle(conj(iField));
     magn = abs(iField);
     
     isMagnLoad = true;
