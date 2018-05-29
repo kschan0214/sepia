@@ -270,6 +270,11 @@ save_untouch_nii(nii_totalField,[outputDir filesep prefix 'totalField.nii.gz']);
 save_untouch_nii(nii_fieldmapSD,[outputDir filesep prefix 'fieldMapSD.nii.gz']);
 save_untouch_nii(nii_newMask,[outputDir filesep prefix 'mask_new.nii.gz']);
 
+if relativeResidual ~= 100
+    nii_relativeResidual = make_nii_quick(outputNiftiTemplate,relativeResidual);
+    save_untouch_nii(nii_relativeResidual,[outputDir filesep prefix 'relative_residual.nii.gz']);
+end
+
 disp('Done!');
 
 end
