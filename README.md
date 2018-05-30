@@ -4,52 +4,49 @@
 ## Introduction
 --------------------------------------------------
 
-Welcome to the beta version of **QSM Hub**. **QSM Hub** is a graphical user interface (GUI) to peform 
-quantitative susceptibility mapping (QSM) on multi-echo gradient echo MRI data in MATLAB.
+Welcome to the beta version of **QSM Hub**. **QSM Hub** is a tool providing a graphical user 
+interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
 
-This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), 
-[STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
+This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) 
+(version 2017-11-06), [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
-**QSM Hub** provides two key features:
+**QSM Hub** provides two key features for QSM processing:
 
 1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline
-2. provide user interface to adjust parameters of different algorithms
+2. graphical user interface to easily adjust parameters of different algorithms
 
-Instead of providing processing methods of its own, large amount of efforts were paid to create 
-wrappers/macros to provide interfaces to incorporate different methods.
+The objective of **QSM Hub** is to provide a platform for easy access of different QSM processing 
+method in the field. To achieve this, most of the codes were written for data flow control and 
+algorithm parameter control. Through **QSM Hub** I hope researchers which are not coming from the field 
+would also be able to use QSM for their research. For those more experienced researchers familiar with 
+QSM, I also hope this tool can simplify your workflow. 
 
-**QSM Hub** is a tool to produce QSM (and related) map easily. It is particularly useful for
-testing the best pipeline that suits your the multi-echo GRE (mGRE) data most.
+A Standard QSM data processing piepline usually consists of the following procedures:
 
-Once you find the best setting of your processing pipeline (and more familiar with **QSM Hub**), you
-might use the wrapper functions directly without starting the GUI for batch processing.
-
-Standard QSM data processing usually involves the following procedures:
-
-0. convert DICOM phase values (4096,4095) to wrapped phase values (-pi,pi) (not neccessary)  
+0. convert DICOM phase values (4096,4095) to wrapped phase values (-pi,pi) (may not be neccessary)  
 1. phase unwrapping and total field recovery  
 2. background field removal  
-3. QSM (sometimes people also call it dipole field inversion)  
+3. quantitative susceptibility mapping  
 
 **QSM Hub** provides 4 standalone applications for the above procedures:  
 
 1. **QSMHub (One-stop QSM processing)**  
-	one-stop platform from loading the mGRE data(either NIfTI or DICOM) to generating susceptibility map  
+	one-stop processing platform from loading the GRE data(either NIfTI or DICOM) to generate a susceptibility map  
 2. **Phase unwrapping**  
-	standalone to convert complex-valued mGRE data (DICOM or NIfTI) to unwrapped total field map  
+	standalone that converts complex-valued mGRE data (DICOM or NIfTI) to unwrapped total field map  
 3. **Background field removal**  
-	standalone to remove background field contribution from a total field map to produce a local field map  
+	standalone that removes background field contribution from a total field map to produce a local field map  
 4. **QSM**  
-	standalone to map magnetic susceptibility source from a local field map  
+	standalone that maps magnetic susceptibility sources from a local field map  
 
 This toolbox is still under development, so you may encounter some bugs.
 
-**QSM Hub** is available for educational and research purposes only. Commerical or clinical use is not 
+**QSM Hub** is freely available for educational and research purposes. Commerical or clinical use is not 
 permitted. When you use **QSM Hub** in your research, please cite the related papers of the methods 
-in your processing pipeline. Clicking the hyperlinks of the methods below will redirect you to the 
+in your processing pipeline. Details of each processing method is provided with the hyperlinks in this
+document. Clicking the hyperlinks of the methods below will redirect you to the 
 paper webiste or you can also find the full details in the Referencing section below. 
-Otherwise, you can also check the citation document for more details.
 
 If you have any question or you would like to provide suggestion to improve this toolbox/report 
 bug(s) please feel free to contact me k.chan@donders.ru.nl (Kwok-Shing Chan).
@@ -203,7 +200,7 @@ Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD
 - iLSQR QSM    
 - Star-QSM   
 
-[**FANSI**](https://martinos.org/~berkin/software.html)  
+[**FANSI Toolbox**](https://martinos.org/~berkin/software.html)  
 Carlos Milovix, PhD @ Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
 Berkin Bilgic, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA    
 Bo Zhao, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
