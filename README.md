@@ -244,10 +244,15 @@ Applied Optics 46, 6623–6635 (2007).](https://doi.org/10.1364/AO.46.006623)
 cuts: application in quantitative susceptibility mapping. IEEE Transactions on Medical Imaging 34, 
 531–540 (2015).](https://doi.org/10.1109/TMI.2014.2361764)    
 
-**Echo phase unwrapping and combination**  
+**Echo phase combination** - **Optimum weights**   
 [Robinson, S. D. et al. An illustrated comparison of processing methods for MR phase imaging and QSM: 
 combining array coil signals and phase unwrapping. 
-NMR Biomed 30, e3601 (2017).](https://doi.org/10.1002/nbm.3601)  
+NMR Biomed 30, e3601 (2017).](https://doi.org/10.1002/nbm.3601)   
+
+**Echo phase combination** - **MEDI nonlinear fit**  
+[Liu, T. et al. Nonlinear formulation of the magnetic field to source relationship for robust 
+quantitative susceptibility mapping. 
+Magn Reson Med 69, 467–476 (2012).](https://doi.org/10.1002/mrm.24272)  
 
 
 ### Background field removal  
