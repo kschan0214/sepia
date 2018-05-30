@@ -1,17 +1,17 @@
-# qsm_hub (work in progress)
+# QSM Hub (work in progress)
 ==================================================
 
 ## Introduction
 --------------------------------------------------
 
-Welcome to the beta version of `qsm_hub`. `qsm_hub` is a graphical user interface (GUI) to peform 
+Welcome to the beta version of **QSM Hub**. **QSM Hub** is a graphical user interface (GUI) to peform 
 quantitative susceptibility mapping (QSM) on multi-echo gradient echo MRI data in MATLAB.
 
 This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html) (version 2017-11-06), 
 [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
-`qsm_hub` provides two key features:
+**QSM Hub** provides two key features:
 
 1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline
 2. provide user interface to adjust parameters of different algorithms
@@ -19,10 +19,10 @@ and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 Instead of providing processing methods of its own, large amount of efforts were paid to create 
 wrappers/macros to provide interfaces to incorporate different methods.
 
-`qsm_hub` is a tool to produce QSM (and related) map easily. It is particularly useful for
+**QSM Hub** is a tool to produce QSM (and related) map easily. It is particularly useful for
 testing the best pipeline that suits your the multi-echo GRE (mGRE) data most.
 
-Once you find the best setting of your processing pipeline (and more familiar with `qsm_hub`), you
+Once you find the best setting of your processing pipeline (and more familiar with **QSM Hub**), you
 might use the wrapper functions directly without starting the GUI for batch processing.
 
 Standard QSM data processing usually involves the following procedures:
@@ -32,7 +32,7 @@ Standard QSM data processing usually involves the following procedures:
 2. background field removal  
 3. QSM (sometimes people also call it dipole field inversion)  
 
-`qsm_hub` provides 4 standalone applications for the above procedures:  
+**QSM Hub** provides 4 standalone applications for the above procedures:  
 
 1. **QSMHub (One-stop QSM processing)**  
 	one-stop platform from loading the mGRE data(either NIfTI or DICOM) to generating susceptibility map  
@@ -45,11 +45,10 @@ Standard QSM data processing usually involves the following procedures:
 
 This toolbox is still under development, so you may encounter some bugs.
 
-`qsm_hub` is free for educational and research purposes only. Commerical or clinical use is not 
-permitted. When you use `qsm_hub` in your research, please cite the related papers in your processing 
-pipeline. 
-Clicking the hyperlinks of the methods below will redirect you to the paper webiste or you can also
-find the full details in the Referencing section below. 
+**QSM Hub** is available for educational and research purposes only. Commerical or clinical use is not 
+permitted. When you use **QSM Hub** in your research, please cite the related papers of the methods 
+in your processing pipeline. Clicking the hyperlinks of the methods below will redirect you to the 
+paper webiste or you can also find the full details in the Referencing section below. 
 Otherwise, you can also check the citation document for more details.
 
 If you have any question or you would like to provide suggestion to improve this toolbox/report 
@@ -63,7 +62,7 @@ Kwok
 ## Installation
 --------------------------------------------------
 
-To use `qsm_hub`, just add the directory containing qsm_hub.m into your MATLAB PATH
+To use **QSM Hub**, just add the directory containing qsm_hub.m into your MATLAB PATH
 
 This can be done by:  
 'Set Path' -> 'Add Folder' -> /your/qsm_hub/directory/ -> 'Save'  
@@ -72,14 +71,14 @@ or
   
 with MATLAB's command: `addpath('/your/qsm_hub/directory')`  
 
-Then, you can start by entering `qsm_hub` in the MATLAB's command window.  
+Then, you can start the GUI by entering `qsm_hub` in the MATLAB's command window.  
 
 ----------------------------------------------------------------------------------------------------
 
 ## Compatibility
 --------------------------------------------------
 
-In principle, `qsm_hub` works fine with MATLAB R2016b or earlier. However, most of the methods 
+In principle, **QSM Hub** works fine with MATLAB R2016b or earlier. However, most of the methods 
 should also be working with MATLAB R2017a or later, except 'LBV' of background field removal method.  
 
 ----------------------------------------------------------------------------------------------------
@@ -87,21 +86,21 @@ should also be working with MATLAB R2017a or later, except 'LBV' of background f
 ## Input data format and qsm_hub header
 --------------------------------------------------
 
-`qsm_hub` provides two main options for data input:  
+**QSM Hub** provides two main options for data input:  
 
 1. DICOM images    
 2. NIfTI images (.nii and .nii.gz)  
 
 You can find the specific requirements of the input files in the 'standlone description' section.
 
-If you prefer starting with the unprocessed data in NIfTI format , `qsm_hub` expects the input to 
+If you prefer starting with the unprocessed data in NIfTI format , **QSM Hub** expects the input to 
 be 4D (row,col,slice,echo). I suggest using 
 [MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with the 
 following setting checked:  
 'Option' -> 'Save multivolumes series as 4D files'  
-In this way your mGRE data will be stored as 4D FSL NIfTI data that is a valid input of `qsm_hub`. 
+In this way your mGRE data will be stored as 4D FSL NIfTI data that is a valid input of **QSM Hub**. 
 
-`qsm_hub` requires a specific MAT-file (.mat) that stores some header information of the input 
+**QSM Hub** requires a specific MAT-file (.mat) that stores some header information of the input 
 data. The header file contains the following variables (case-sensitive):
 ````
 	'B0'			: magnetic field strength, in Tesla (e.g. B0=3; % 3T)
@@ -112,11 +111,11 @@ data. The header file contains the following variables (case-sensitive):
 	'matrixSize'	: image matrix size (e.g. matrixSize=size(img);)
 	'voxelSize'		: spatial resolution of the data (e.g. voxelSize=[2,2,2]; % 2 mm isotropic)
 ````  
-If your input is DICOM images, this file will be generated automatically with `qsm_hub`. If your 
+If your input is DICOM images, this file will be generated automatically with **QSM Hub**. If your 
 input is NIfTI images, you can use the utility function provided called 'Get qsm_hub header' in the 
 'Utility' tab of the GUI to generate this header file. Once this file is generated, make sure its 
 name contains the string 'header' (e.g. 'qsmhub_header.mat') and put it in the same directory of 
-your `qsm_hub` input data. 
+your **QSM Hub** input data. 
 
 **Tip**
 If you use MRIConvert to convert DICOM images to NIfTI format, a text file will also be generated 
@@ -146,7 +145,7 @@ or checked the 'Invert phase' option in the GUI.
 
 Some QSM processing algorithms utilise iterative approaches (e.g. `pcg`, `lsqr`, etc.) to obatain a 
 stable resulting map. To ensure convergence, one can be done is to increase the number of 
-iterations but the computation time will also be increasing. `qsm_hub` supports GPU computation in 
+iterations but the computation time will also be increasing. **QSM Hub** supports GPU computation in 
 Matlab. The GUI function will automatically detect the number of GPU devices available in local 
 computer (using `gpuDeviceCount`). If the GPU device is detectable in Matlab, the GUI will provide
 an option for user to choose using the GPU feature or not. Based on some preliminary testing, the 
@@ -181,7 +180,7 @@ If it doesn't work on your system, you can simply disable (unchecked) the GPU op
 ## Acknowledgements
 --------------------------------------------------
 
-The methods and algorithms provided with `qsm_hub` are contributed by:  
+The methods and algorithms provided with **QSM Hub** are contributed by:  
 
 [**MEDI Toolbox**](http://weill.cornell.edu/mri/pages/qsm.html)  
 Weill Cornell MRI lab   
@@ -194,12 +193,13 @@ Weill Cornell MRI lab
 - Laplacian boundary value (LBV) background field removal  
 - Projection onto dipole field (PDF) background field removal  
 - Morphology enabled dipole inversion QSM  
-- lateral ventricle masking  
+- Lateral ventricle masking  
 
 [**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html)  
 Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD  
 - Laplacian phase unwrapping  
 - VSHARP background field removal  
+- iHARPERELLA background field removal
 - iLSQR QSM    
 - Star-QSM   
 
@@ -219,7 +219,7 @@ Chile, Santiago, Chile and the Biomedical Imaging Center at Pontificia Universid
 ## Referencing
 --------------------------------------------------
 
-When you can `qsm_hub` in your research, please cite the method(s) that you used:
+When you can **QSM Hub** in your research, please cite the method(s) that you used:
 
 ### Brain extraction
 ==================================================  
