@@ -11,17 +11,16 @@ This GUI is built based on three toolboxes including [MEDI](http://weill.cornell
 [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) (version 3.0)
 and [FANSI](https://www.martinos.org/~berkin/software.html) (version 2.0).
 
-`qsm_hub` serves with two purposes:
+`qsm_hub` provides two key features:
 
-1. acts as a hub to allow user to choose different QSM (pre)processing methods.
-2. provide interface to allow fast method parameter adjustments
+1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline
+2. provide user interface to adjust parameters of different algorithms
 
-Instead of providing processing methods of its own (indeed some methods are
-implemented by me), large amount of efforts were paid to create wrappers/macros to provide interface
-to incorporate different methods.
+Instead of providing processing methods of its own, large amount of efforts were paid to create 
+wrappers/macros to provide interfaces to incorporate different methods.
 
-`qsm_hub` provides a tool to produce QSM (and related) map easily. It is particularly suitable for
-testing the best pipeline to process the multi-echo GRE (mGRE) data.
+`qsm_hub` is a tool to produce QSM (and related) map easily. It is particularly useful for
+testing the best pipeline that suits your the multi-echo GRE (mGRE) data most.
 
 Once you find the best setting of your processing pipeline (and more familiar with `qsm_hub`), you
 might use the wrapper functions directly without starting the GUI for batch processing.
@@ -44,17 +43,15 @@ Standard QSM data processing usually involves the following procedures:
 4. **QSM**  
 	standalone to map magnetic susceptibility source from a local field map  
 
-Apparently this toolbox is still in development, so you may encounter some bugs.
+This toolbox is still under development, so you may encounter some bugs.
 
 When you use `qsm_hub` in your research, please cite the related papers in your processing pipeline. 
 Clicking the hyperlinks of the methods below will redirect you to the paper webiste or you can also
 find the full reference below. 
 Otherwise, you can also check the citation document for more details.
 
-If you have any question or you would like to report bug(s) please feel free to contact me
-k.chan@donders.ru.nl (Kwok-Shing Chan).
-
-Have fun!  
+If you have any question or you would like to provide suggestion to improve this toolbox/report 
+bug(s) please feel free to contact me k.chan@donders.ru.nl (Kwok-Shing Chan).
 
 Kwok  
 2018-05-07
@@ -181,6 +178,12 @@ If it doesn't work on your system, you can simply disable (unchecked) the GPU op
 --------------------------------------------------
 
 When you can `qsm_hub` in your research, please cite the method(s) that you used:
+
+### Brain extraction
+==================================================
+**FSL bet**
+[Smith, S. M. Fast robust automated brain extraction. Hum. Brain Mapp. 17, 143–155 (2002).
+](https://doi.org/10.1002/hbm.10062)
 
 ### Phase unwrapping  
 ==================================================
