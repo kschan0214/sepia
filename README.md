@@ -45,16 +45,18 @@ Standard QSM data processing usually involves the following procedures:
 
 This toolbox is still under development, so you may encounter some bugs.
 
-When you use `qsm_hub` in your research, please cite the related papers in your processing pipeline. 
+`qsm_hub` is free for educational and research purposes only. Commerical or clinical use is not 
+permitted. When you use `qsm_hub` in your research, please cite the related papers in your processing 
+pipeline. 
 Clicking the hyperlinks of the methods below will redirect you to the paper webiste or you can also
-find the full reference below. 
+find the full details in the Referencing section below. 
 Otherwise, you can also check the citation document for more details.
 
 If you have any question or you would like to provide suggestion to improve this toolbox/report 
 bug(s) please feel free to contact me k.chan@donders.ru.nl (Kwok-Shing Chan).
 
 Kwok  
-2018-05-07
+2018-05-30
 
 ----------------------------------------------------------------------------------------------------
 
