@@ -245,6 +245,8 @@ switch eventdata.NewValue.Title
                 'Input directory contains DICOM (both magnitude and phase files under the same directory) or NIfTI (*phase*.nii* and *magn*.nii*) files');
             % BET is supported with this tab
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
+            % phase invert is supported with this tab
+            set(h.dataIO.checkbox.invertPhase,'Enable','on');
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.QSMHub,'Position',[0.01 0.59 0.95 0.2]);
         % background field
@@ -265,6 +267,8 @@ switch eventdata.NewValue.Title
                 'Input directory contains DICOM (both magnitude and phase files under the same directory) or NIfTI (*phase*.nii* and *magn*.nii*) files');
             % BET is supported with this tab
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
+            % phase invert is supported with this tab
+            set(h.dataIO.checkbox.invertPhase,'Enable','on');
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
         % Start pushbutton
@@ -283,6 +287,8 @@ switch eventdata.NewValue.Title
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
             set(h.dataIO.button.maskdir,            'Enable','on');
+            % phase invert is not supported with this tab
+            set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
         % background field
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
@@ -301,6 +307,8 @@ switch eventdata.NewValue.Title
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
             set(h.dataIO.button.maskdir,            'Enable','on');
+            % phase invert is not supported with this tab
+            set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
@@ -316,6 +324,9 @@ function ButtonOpen_Callback(source,eventdata,field)
 % get directory and display it on GUI
 
 global h
+
+% output base name
+prefix = 'squirrel';
 
 switch field
     case 'mask'
@@ -334,7 +345,7 @@ switch field
             % set input edit field for display
             set(h.dataIO.edit.input,    'String',pathDir);
             % automatically set default output field
-            set(h.dataIO.edit.output,   'String',[pathDir filesep 'output']);
+            set(h.dataIO.edit.output,   'String',[pathDir filesep 'output' filesep prefix]);
         end
         
     case 'output'
@@ -343,7 +354,7 @@ switch field
         pathDir = uigetdir;
 
         if pathDir ~= 0
-            set(h.dataIO.edit.output,'String',pathDir);
+            set(h.dataIO.edit.output,'String',[pathDir filesep prefix]);
         end
 end
 
@@ -495,10 +506,11 @@ QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 isGPU = get(h.checkbox_gpu,'Value');
 
 % get I/O GUI input
-inputDir        = get(h.dataIO.edit.input,'String');
-outputDir       = get(h.dataIO.edit.output,'String');
-maskFullName    = get(h.dataIO.edit.maskdir,'String');
-isBET           = get(h.dataIO.checkbox.brainExtraction,'Value');
+inputDir        = get(h.dataIO.edit.input,                  'String');
+outputBasename  = get(h.dataIO.edit.output,                 'String');
+maskFullName    = get(h.dataIO.edit.maskdir,                'String');
+isBET           = get(h.dataIO.checkbox.brainExtraction,    'Value');
+isInvert        = get(h.dataIO.checkbox.invertPhase,        'Value');
 
 % get phase unwrap GUI input
 phaseCombMethod = h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1};
@@ -521,7 +533,7 @@ QSM_method      = h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1};
 switch phaseCombMethod
     case 'Optimum weights'
         phaseCombMethod = 'optimum_weights';
-    case 'MEDI nonlinear'
+    case 'MEDI nonlinear fit'
         phaseCombMethod = 'nonlinear_fit';
 end
 
@@ -654,7 +666,7 @@ try
     switch h.StepsPanel.dataIO.Parent.Title
         case 'One-stop QSM processing'
             % core of QSM one-stop processing
-            QSMHub(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,...
+            QSMHub(inputDir,outputBasename,'invert',isInvert,'FSLBet',isBET,'mask',maskFullName,...
                 'phase_combine',phaseCombMethod,'unwrap',phaseUnwrap,...
                 'Subsampling',subsampling,'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
                 'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
@@ -667,20 +679,20 @@ try
 
         case 'Phase unwrapping'
             % Core of phase unwrapping only 
-            UnwrapPhaseMacroIOWrapper(inputDir,outputDir,'FSLBet',isBET,'mask',maskFullName,...
+            UnwrapPhaseMacroIOWrapper(inputDir,outputBasename,'invert',isInvert,'FSLBet',isBET,'mask',maskFullName,...
                 'phase_combine',phaseCombMethod,'unwrap',phaseUnwrap,...
                 'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,'eddy',isEddyCorrect,'GPU',isGPU);
 
         case 'Background field removal'
             % core of background field removal only
-            BackgroundRemovalMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
+            BackgroundRemovalMacroIOWrapper(inputDir,outputBasename,'mask',maskFullName,...
                 'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
                 'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
                 'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,'GPU',isGPU);
 
         case 'QSM'
             % core of QSM only
-            QSMMacroIOWrapper(inputDir,outputDir,'mask',maskFullName,...
+            QSMMacroIOWrapper(inputDir,outputBasename,'mask',maskFullName,...
                 'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
                 'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
                 'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,...
@@ -693,6 +705,10 @@ catch ME
     error(ME.message);
 end
 
+% get output directory
+output_index = strfind(outputBasename, filesep);
+outputDir = outputBasename(1:output_index(end));
+
 % generate a log file
 GenerateLogFile(h.StepsPanel.dataIO.Parent.Title);
 
@@ -704,7 +720,7 @@ function GenerateLogFile(tab)
 switch tab
     case 'One-stop QSM processing'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'QSMHub(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
+        fprintf(fid,'QSMHub(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputBasename,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
         fprintf(fid,'''Subsampling'',%i,''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',subsampling,BFR,refine,BFR_tol);
         fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
         fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,...\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
@@ -717,13 +733,13 @@ switch tab
         
     case 'Phase unwrapping'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputDir,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
+        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputBasename,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
         fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%i,''eddy'',%i,''GPU'',%i);\n',subsampling,excludeMaskThreshold,isEddyCorrect,isGPU);
         fclose(fid);
     
     case 'Background field removal'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputDir,maskFullName);
+        fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputBasename,maskFullName);
         fprintf(fid,'''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',BFR,refine,BFR_tol);
         fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
         fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,''GPU'',%i);\n',num2str(BFR_radius),BFR_alpha,BFR_threshold,isGPU);
@@ -731,7 +747,7 @@ switch tab
     
     case 'QSM'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'qsmMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputDir,maskFullName);
+        fprintf(fid,'qsmMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputBasename,maskFullName);
         fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
         fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);

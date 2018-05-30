@@ -11,17 +11,17 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 28 May 2018
+% Date last modified: 30 May 2018
 %
 %
-function [isBET,mask,phaseCombMethod,unwrap,subsampling,...
+function [isInvert,isBET,mask,phaseCombMethod,unwrap,subsampling,...
     BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,...
     QSM_method,QSM_threshold,QSM_lambda,QSM_optimise,QSM_tol,QSM_maxiter,...
     QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
     exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
     QSM_isSMV,QSM_merit,isEddyCorrect,isGPU] = parse_varargin_QSMHub(arg)
 
-mask=[];
+mask=[];isInvert = false;
 isBET=false;
 phaseCombMethod = 'optimum_weights';
 unwrap='Laplacian';subsampling=1;
@@ -36,6 +36,9 @@ QSM_isSMV=false;QSM_merit=false;isEddyCorrect=false; isGPU = false;
 
 if ~isempty(arg)
     for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'invert')
+            isInvert = arg{kvar+1};
+        end
         if strcmpi(arg{kvar},'FSLBet')
             isBET = arg{kvar+1};
         end

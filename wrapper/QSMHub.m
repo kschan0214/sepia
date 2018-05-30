@@ -65,7 +65,7 @@
 % Date last modified: 20 May 2018
 %
 %
-function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
+function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,output,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
@@ -78,13 +78,19 @@ isPhaseLoad = false;
 maskCSF = [];
 
 %% Check output directory exist or not
+output_index = strfind(output, filesep);
+outputDir = output(1:output_index(end));
+if ~isempty(output(output_index(end)+1:end))
+    prefix = [output(output_index(end)+1:end) '_'];
+end
+
 if exist(outputDir,'dir') ~= 7
     % if not then create the directory
     mkdir(outputDir);
 end
 
 %% Parse input argument
-[isBET,maskFullName,phaseCombMethod,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+[isInvert,isBET,maskFullName,phaseCombMethod,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
 exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect,isGPU] = parse_varargin_QSMHub(varargin);
@@ -146,7 +152,7 @@ if ~isempty(inputNiftiList)
             te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
             te_ = te_(:);
             if ~isempty(te_)
-                TE = te_;/project/3015069.01/pilot/qsmhubTestdata/svd/RUNDMCSI_1276_W11/nii_mriconvert
+                TE = te_;
                 if length(TE) > 1
                     delta_TE = TE(2)-TE(1);
                 end
@@ -205,6 +211,12 @@ else
     outputNiftiTemplate.hdr.dime.dim(5) = 1;
     
 end
+
+% in case user want to correct the frequency shift direction
+if isInvert
+    fieldMap = -fieldMap;
+end
+
 % display some header info
 disp('Basic DICOM information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
@@ -231,7 +243,7 @@ end
 if isempty(mask) || isBET
     qsm_hub_AddMethodPath('bet');
     disp('Performing FSL BET...');
-    
+    % deprecated
 %     tempDir = [outputDir filesep 'qsmhub_temp.nii.gz'];
 %     brianDir = [outputDir filesep 'temp_brain.nii.gz'];
 %     

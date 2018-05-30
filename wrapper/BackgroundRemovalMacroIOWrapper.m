@@ -34,7 +34,7 @@
 % Date last modified: 20 May 2018
 %
 %
-function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,outputDir,varargin)
+function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,output,varargin)
 %% add general Path
 qsm_hub_AddMethodPath;
 
@@ -46,13 +46,19 @@ isTotalFieldLoad = false;
 isFieldmapSDLoad = false;
 
 %% Check output directory exist or not
+output_index = strfind(output, filesep);
+outputDir = output(1:output_index(end));
+if ~isempty(output(output_index(end)+1:end))
+    prefix = [output(output_index(end)+1:end) '_'];
+end
+
 if exist(outputDir,'dir') ~= 7
     % if not then create the directory
     mkdir(outputDir);
 end
 
 %% Parse input argument using parse_varargin_QSMHub.m
-[~,maskFullName,~,~,~,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
+[~,~,maskFullName,~,~,~,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
 BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,isGPU] = parse_varargin_QSMHub(varargin);
 
 %% Read input

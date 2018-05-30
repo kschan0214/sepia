@@ -45,7 +45,7 @@
 % Date last modified: 27 May 2018
 %
 %
-function chi = QSMMacroIOWrapper(inputDir,outputDir,varargin)
+function chi = QSMMacroIOWrapper(inputDir,output,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
@@ -60,13 +60,19 @@ maskCSF             = [];
 
 
 %% Check output directory exist or not
+output_index = strfind(output, filesep);
+outputDir = output(1:output_index(end));
+if ~isempty(output(output_index(end)+1:end))
+    prefix = [output(output_index(end)+1:end) '_'];
+end
+
 if exist(outputDir,'dir') ~= 7
     % if not then create the directory
     mkdir(outputDir);
 end
 
 %% Parse input argument
-[~,maskFullName,~,~,~,~,~,~,~,~,~,~,~,~,~,QSM_method,QSM_threshold,QSM_lambda,...
+[~,~,maskFullName,~,~,~,~,~,~,~,~,~,~,~,~,~,QSM_method,QSM_threshold,QSM_lambda,...
 QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
 ~,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,QSM_isSMV,QSM_merit,~,isGPU] = parse_varargin_QSMHub(varargin);
 

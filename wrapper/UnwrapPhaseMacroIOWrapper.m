@@ -30,7 +30,7 @@
 % Date last modified: 18 April 2018
 %
 %
-function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(inputDir,outputDir,varargin)
+function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(inputDir,output,varargin)
 %% add general Path
 qsm_hub_AddMethodPath;
 
@@ -42,13 +42,19 @@ isMagnLoad = false;
 isPhaseLoad = false;
 
 %% Check output directory exist or not
+output_index = strfind(output, filesep);
+outputDir = output(1:output_index(end));
+if ~isempty(output(output_index(end)+1:end))
+    prefix = [output(output_index(end)+1:end) '_'];
+end
+
 if exist(outputDir,'dir') ~= 7
     % if not then create the directory
     mkdir(outputDir);
 end
 
 %% Parse input argument using parse_varargin_QSMHub.m
-[isBET,maskFullName,phaseCombMethod,unwrap,subsampling,~,~,~,~,~,~,...
+[isInvert,isBET,maskFullName,phaseCombMethod,unwrap,subsampling,~,~,~,~,~,~,...
 ~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,exclude_threshold,~,~,~,~,~,~,~,~,isEddyCorrect] = parse_varargin_QSMHub(varargin);
 
 %% Read input
@@ -154,6 +160,11 @@ else
     outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
     % remove the time dimension info
     outputNiftiTemplate.hdr.dime.dim(5) = 1;
+end
+
+% in case user want to correct the frequency shift direction
+if isInvert
+    fieldMap = -fieldMap;
 end
 
 % display some header info
