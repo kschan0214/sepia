@@ -114,7 +114,7 @@ input is NIfTI images, you can use the utility function provided called 'Get qsm
 name contains the string 'header' (e.g. 'qsmhub_header.mat') and put it in the same directory of 
 your **QSM Hub** input data. 
 
-**Tip**
+**Tip**:
 If you use MRIConvert to convert DICOM images to NIfTI format, a text file will also be generated 
 alongside with the NIfTI data. This text file contains some basic header information including the 
 echo times. When you use the 'Get qsm_hub header' utility function, you can load this text file as 
@@ -196,7 +196,7 @@ Weill Cornell MRI lab
 Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD  
 - Laplacian phase unwrapping  
 - VSHARP background field removal  
-- iHARPERELLA background field removal
+- iHARPERELLA background field removal  
 - iLSQR QSM    
 - Star-QSM   
 
@@ -315,6 +315,13 @@ Magn Reson Med 78, 1933–1943 (2017).](https://doi.org/10.1002/mrm.26596)
 [Milovic, C., Bilgic, B., Zhao, B., Acosta-Cabronero, J. & Tejos, C. Fast nonlinear susceptibility 
 inversion with variational regularization. 
 Magn Reson Med 80, 814–821 (2018).](https://doi.org/10.1002/mrm.27073)  
+
+[Bilgic, B. et al. Fast quantitative susceptibility mapping with L1‐regularization and automatic 
+parameter selection. Magn Reson Med 72, 1444–1459 (2014).](https://doi.org/10.1002/mrm.25029)  
+
+[Bilgic, B., Chatnuntawech, I., Langkammer, C. & Setsompop, K. Sparse methods for Quantitative 
+Susceptibility Mapping. in (eds. Papadakis, M., Goyal, V. K. & Van De Ville, D.) 9597, 959711 
+(SPIE, 2015).](https://doi.org/10.1117/12.2188535)
 
 **MEDI**  
 [Liu, T. et al. Morphology enabled dipole inversion (MEDI) from a single-angle acquisition: 
