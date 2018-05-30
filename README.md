@@ -128,12 +128,14 @@ header.
 ## Checking QSM result
 --------------------------------------------------
 
-Sometimes the values of QSM might be inverted. This may be due to different way of how the phase 
+Sometimes the values of QSM might be inverted. This may be due to the way of how the phase 
 data being read. To check if this is the case you could look into the QSM map. The deep gray matter 
-structure should be appeared as bright (positive) and white matter should be dark (negative value). 
+structure should be appeared as bright (positive value) 
 If it appears in the opposite way then you might invert the result by multiply the map with -1, i.e.  
 
 `QSM_corr = -QSM; `
+
+or checked the 'Invert phase' option in the GUI.
 
 ----------------------------------------------------------------------------------------------------
 
@@ -174,14 +176,51 @@ If it doesn't work on your system, you can simply disable (unchecked) the GPU op
 
 ----------------------------------------------------------------------------------------------------
 
+## Acknowledgements
+--------------------------------------------------
+
+The methods and algorithms provided with `qsm_hub` are contributed by:  
+
+[**MEDI Toolbox**](http://weill.cornell.edu/mri/pages/qsm.html)  
+Weill Cornell MRI lab 
+- DICOM reader
+- Matlab interface of using FSL's brain extraction  
+- Combination of echo phase using non-linear fitting  
+- Laplacian phase unwrapping  
+- Region growing phase unwrapping  
+- Graphcut phase unwrapping  
+- Laplacian boundary value (LBV) background field removal  
+- Projection onto dipole field (PDF) background field removal  
+- Morphology enabled dipole inversion QSM
+
+[**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html)
+Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD  
+- Laplacian phase unwrapping  
+- VSHARP background field removal  
+- iLSQR QSM    
+- Star-QSM  
+
+[**FANSI**](https://martinos.org/~berkin/software.html)
+Carlos Milovix, PhD @ Biomedical Imaging Center at Pontificia Universidad Católica de Chile  
+Berkin Bilgic, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
+Bo Zhao, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA  
+Julio Acosta-Cabronero, PhD @ Wellcome Trust Centre for Neuroimaging, Institute of Neurology, 
+University College London, London, UK, and German Center for Neurodegenerative Diseases (DZNE), 
+Magdeburg, Germany  
+Cristian Tejos, PhD @ Department of Electrical Engineering, Pontificia Universidad Catolica de 
+Chile, Santiago, Chile and the Biomedical Imaging Center at Pontificia Universidad Católica de Chile  
+- FANSI QSM (linear/non-linear, TV/TGV)  
+
+----------------------------------------------------------------------------------------------------
+
 ## Referencing
 --------------------------------------------------
 
 When you can `qsm_hub` in your research, please cite the method(s) that you used:
 
 ### Brain extraction
-==================================================
-**FSL bet**
+==================================================  
+**FSL bet**  
 [Smith, S. M. Fast robust automated brain extraction. Hum. Brain Mapp. 17, 143–155 (2002).
 ](https://doi.org/10.1002/hbm.10062)
 
