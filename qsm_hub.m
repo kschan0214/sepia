@@ -448,7 +448,7 @@ switch method
     case 'FANSI'
         set(h.qsm.panel.FANSI,      'Visible','on');
 
-    case 'Star'
+    case 'Star-QSM'
         set(h.qsm.panel.Star,       'Visible','on');
 
     case 'MEDI'
@@ -641,7 +641,7 @@ switch QSM_method
             QSM_constraint  ='tv'; 
         end 
         
-    case 'Star'
+    case 'Star-QSM'
         QSM_method='star';
         try QSM_padsize   = str2double(get(h.qsm.Star.edit.padSize,'String'));        catch; QSM_padsize=4;       end
         QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
