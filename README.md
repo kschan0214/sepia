@@ -182,8 +182,8 @@ If it doesn't work on your system, you can simply disable (unchecked) the GPU op
 The methods and algorithms provided with `qsm_hub` are contributed by:  
 
 [**MEDI Toolbox**](http://weill.cornell.edu/mri/pages/qsm.html)  
-Weill Cornell MRI lab 
-- DICOM reader
+Weill Cornell MRI lab   
+- DICOM reader  
 - Matlab interface of using FSL's brain extraction  
 - Combination of echo phase using non-linear fitting  
 - Laplacian phase unwrapping  
@@ -191,25 +191,26 @@ Weill Cornell MRI lab
 - Graphcut phase unwrapping  
 - Laplacian boundary value (LBV) background field removal  
 - Projection onto dipole field (PDF) background field removal  
-- Morphology enabled dipole inversion QSM
+- Morphology enabled dipole inversion QSM  
+- lateral ventricle masking  
 
-[**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html)
+[**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html)  
 Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD  
 - Laplacian phase unwrapping  
 - VSHARP background field removal  
 - iLSQR QSM    
-- Star-QSM  
+- Star-QSM   
 
-[**FANSI**](https://martinos.org/~berkin/software.html)
-Carlos Milovix, PhD @ Biomedical Imaging Center at Pontificia Universidad Católica de Chile  
-Berkin Bilgic, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
-Bo Zhao, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA  
+[**FANSI**](https://martinos.org/~berkin/software.html)  
+Carlos Milovix, PhD @ Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
+Berkin Bilgic, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA    
+Bo Zhao, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
 Julio Acosta-Cabronero, PhD @ Wellcome Trust Centre for Neuroimaging, Institute of Neurology, 
 University College London, London, UK, and German Center for Neurodegenerative Diseases (DZNE), 
-Magdeburg, Germany  
+Magdeburg, Germany   
 Cristian Tejos, PhD @ Department of Electrical Engineering, Pontificia Universidad Catolica de 
 Chile, Santiago, Chile and the Biomedical Imaging Center at Pontificia Universidad Católica de Chile  
-- FANSI QSM (linear/non-linear, TV/TGV)  
+- FANSI QSM (linear/non-linear, TV/TGV)   
 
 ----------------------------------------------------------------------------------------------------
 
