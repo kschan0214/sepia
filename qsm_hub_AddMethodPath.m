@@ -47,6 +47,7 @@ utilsDir = [currDir filesep 'utils/'];
 addpath(utilsDir);
 addpath([utilsDir 'nifti/NIfTI_20140122/']);
 addpath([utilsDir 'nifti/utils/']);
+addpath([utilsDir 'nifti/quaternions/']);
 addpath([utilsDir 'ReadDICOMMEDI/' MEDI_version]);
 
 % if method is given then add them to PATH
