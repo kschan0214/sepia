@@ -179,7 +179,7 @@ If it doesn't work on your system, you can simply disable (unchecked) the GPU op
 
 The methods and algorithms provided with **QSM Hub** are contributed by:  
 
-[**MEDI Toolbox**](http://weill.cornell.edu/mri/pages/qsm.html)  
+[**MEDI Toolbox**](http://weill.cornell.edu/mri/pages/qsm.html) developed by   
 Weill Cornell MRI lab   
 - DICOM reader  
 - Matlab interface of using FSL's brain extraction  
@@ -192,7 +192,7 @@ Weill Cornell MRI lab
 - Morphology enabled dipole inversion QSM  
 - Lateral ventricle masking  
 
-[**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html)  
+[**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) developed by  
 Hongjiang Wei, PhD - University of California Berkeley, CA, USA  
 Wei Li, PhD, - University Texas Health Science Center at San Antonio Research Imaging Institute, San 
 Antonio, TX, USA  
@@ -203,7 +203,7 @@ Chunlei Liu, PhD - University of California Berkeley, CA, USA
 - iLSQR QSM    
 - Star-QSM   
 
-[**FANSI Toolbox**](https://martinos.org/~berkin/software.html)  
+[**FANSI Toolbox**](https://martinos.org/~berkin/software.html) developed by  
 Carlos Milovix, PhD - Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
 Berkin Bilgic, PhD - Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA    
 Bo Zhao, PhD - Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
