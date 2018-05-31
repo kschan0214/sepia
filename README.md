@@ -193,7 +193,10 @@ Weill Cornell MRI lab
 - Lateral ventricle masking  
 
 [**STI Suite**](https://people.eecs.berkeley.edu/~chunlei.liu/software.html)  
-Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD  
+Hongjiang Wei, PhD - University of California Berkeley, CA, USA  
+Wei Li, PhD, - University Texas Health Science Center at San Antonio Research Imaging Institute, San 
+Antonio, TX, USA  
+Chunlei Liu, PhD - University of California Berkeley, CA, USA    
 - Laplacian phase unwrapping  
 - VSHARP background field removal  
 - iHARPERELLA background field removal  
@@ -201,13 +204,13 @@ Hongjiang Wei, PhD, Wei Li, PhD, Chunlei Liu, PhD
 - Star-QSM   
 
 [**FANSI Toolbox**](https://martinos.org/~berkin/software.html)  
-Carlos Milovix, PhD @ Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
-Berkin Bilgic, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA    
-Bo Zhao, PhD @ Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
-Julio Acosta-Cabronero, PhD @ Wellcome Trust Centre for Neuroimaging, Institute of Neurology, 
+Carlos Milovix, PhD - Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
+Berkin Bilgic, PhD - Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA    
+Bo Zhao, PhD - Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
+Julio Acosta-Cabronero, PhD - Wellcome Trust Centre for Neuroimaging, Institute of Neurology, 
 University College London, London, UK, and German Center for Neurodegenerative Diseases (DZNE), 
 Magdeburg, Germany   
-Cristian Tejos, PhD @ Department of Electrical Engineering, Pontificia Universidad Catolica de 
+Cristian Tejos, PhD - Department of Electrical Engineering, Pontificia Universidad Catolica de 
 Chile, Santiago, Chile and the Biomedical Imaging Center at Pontificia Universidad Católica de Chile  
 - FANSI QSM (including both linear and non-linear solvers, and TV and TGV regularisation options)   
 
