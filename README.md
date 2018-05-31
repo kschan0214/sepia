@@ -209,7 +209,7 @@ University College London, London, UK, and German Center for Neurodegenerative D
 Magdeburg, Germany   
 Cristian Tejos, PhD @ Department of Electrical Engineering, Pontificia Universidad Catolica de 
 Chile, Santiago, Chile and the Biomedical Imaging Center at Pontificia Universidad Católica de Chile  
-- FANSI QSM (linear/non-linear, TV/TGV)   
+- FANSI QSM (including both linear and non-linear solvers, and TV and TGV regularisation options)   
 
 ----------------------------------------------------------------------------------------------------
 
