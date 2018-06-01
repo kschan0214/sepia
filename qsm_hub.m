@@ -64,11 +64,11 @@ if guiSizeVert < 700
 end
 
 % create GUI 
-fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
+h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
     'MenuBar','None','Toolbar','None','Name','QSM hub (beta)','NumberTitle','off');
 
 % create Tabs for GUI
-h.TabGroup          = uitabgroup(fig,'position',[.01 .01 0.99 0.99]);
+h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.99 0.99]);
 h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','One-stop QSM processing');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
@@ -78,47 +78,50 @@ h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 % initialise all tabs
 %% Phase unwrapping tab
 % I/O
-h = qsmhub_handle_panel_dataIO(h.Tabs.phaseUnwrap,fig,h,[0.01 0.8]);
+h = qsmhub_handle_panel_dataIO(h.Tabs.phaseUnwrap,              h,[0.01 0.8]);
 % phase unwrap
-h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.phaseUnwrap,fig,h,[0.01 0.59]);
+h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.phaseUnwrap,         h,[0.01 0.59]);
 
 %% background field removal tab
 % I/O
-h = qsmhub_handle_panel_dataIO(h.Tabs.bkgRemoval,fig,h,[0.01 0.8]);
+h = qsmhub_handle_panel_dataIO(h.Tabs.bkgRemoval,               h,[0.01 0.8]);
 % background field
-h = qsmhub_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,fig,h,[0.01 0.54]);
+h = qsmhub_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,           h,[0.01 0.54]);
 
 %% qsm tab
 % I/O
-h = qsmhub_handle_panel_dataIO(h.Tabs.qsm,fig,h,[0.01 0.8]);
+h = qsmhub_handle_panel_dataIO(h.Tabs.qsm,                      h,[0.01 0.8]);
 % QSM
-h = qsmhub_handle_panel_qsm(h.Tabs.qsm,fig,h,[0.01 0.54]);
+h = qsmhub_handle_panel_qsm(h.Tabs.qsm,                         h,[0.01 0.54]);
 
 %% utility tab
 % get header
-h = qsmhub_handle_panel_utility_get_header(h.Tabs.utility,fig,h,[0.01 0.7]);
+h = qsmhub_handle_panel_utility_get_header(h.Tabs.utility,      h,[0.01 0.7]);
 % get ventricle mask
-h = qsmhub_handle_panel_utility_mask_ventricle(h.Tabs.utility,fig,h,[0.01 0.45]);
+h = qsmhub_handle_panel_utility_mask_ventricle(h.Tabs.utility,  h,[0.01 0.45]);
 
 %% GUI with QSM one-stop station tab
 % I/O
-h = qsmhub_handle_panel_dataIO(h.Tabs.QSMHub,fig,h,[0.01 0.8]);
+h = qsmhub_handle_panel_dataIO(h.Tabs.QSMHub,                   h,[0.01 0.8]);
 % phase unwrap
-h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.QSMHub,fig,h,[0.01 0.59]);
+h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.QSMHub,              h,[0.01 0.59]);
 % background field
-h = qsmhub_handle_panel_bkgRemoval(h.Tabs.QSMHub,fig,h,[0.01 0.33]);
+h = qsmhub_handle_panel_bkgRemoval(h.Tabs.QSMHub,               h,[0.01 0.33]);
 % QSM
-h = qsmhub_handle_panel_qsm(h.Tabs.QSMHub,fig,h,[0.01 0.07]);
+h = qsmhub_handle_panel_qsm(h.Tabs.QSMHub,                      h,[0.01 0.07]);
+
 % Start button
-h.pushbutton_start = uicontrol('Parent',h.Tabs.QSMHub,'Style','pushbutton',...
+h.pushbutton_start = uicontrol('Parent',h.Tabs.QSMHub,...
+    'Style','pushbutton',...
     'String','Start',...
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
-    'backgroundcolor',get(fig,'color'));
+    'backgroundcolor',get(h.fig,'color'));
 % GPU checkbox
-h.checkbox_gpu = uicontrol('Parent',h.Tabs.QSMHub,'Style','checkbox',...
+h.checkbox_gpu = uicontrol('Parent',h.Tabs.QSMHub,...
+    'Style','checkbox',...
     'String','Enable GPU computation',...
     'units','normalized','Position',[0.01 0.01 0.4 0.05],...
-    'backgroundcolor',get(fig,'color'), 'Enable','off',...
+    'backgroundcolor',get(h.fig,'color'), 'Enable','off',...
     'TooltipString',['Enable to use GPU for some of the algorithms in qsm_hub. ' ...
                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
 if gpuDeviceCount > 0
