@@ -27,7 +27,7 @@ addpath(currDir);
 warning('on')
 
 % keep GUI and macro directories
-addpath([currDir filesep 'gui_func/']);
+addpath(genpath([currDir filesep 'gui_func/']));
 addpath([currDir filesep 'wrapper/']);
 
 % here are three basic directories of qsm_hub

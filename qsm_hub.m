@@ -39,7 +39,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 20 May 2018
+% Date last modified: 1 June 2018
 %
 %
 function qsm_hub
@@ -75,7 +75,7 @@ h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
 h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
-% initialise all tabs
+% construct all tabs
 %% Phase unwrapping tab
 % I/O
 h = qsmhub_handle_panel_dataIO(h.Tabs.phaseUnwrap,              h,[0.01 0.8]);
@@ -129,109 +129,12 @@ if gpuDeviceCount > 0
 end
 
 %% Set Callback functions
-h = SetAllCallbacks(h);
-end
+set(h.TabGroup,      	'SelectionChangedFcn', {@SwitchTab_Callback})
+set(h.pushbutton_start,	'Callback',            {@PushbuttonStart_Callback});
 
-%% utils functions
-function h=SetAllCallbacks(h)
-set(h.TabGroup,                             'SelectionChangedFcn',  {@SwitchTab_Callback})
-set(h.dataIO.button.input,                  'Callback',             {@ButtonOpen_Callback,'input'});
-set(h.dataIO.button.output,                 'Callback',             {@ButtonOpen_Callback,'output'});
-set(h.dataIO.checkbox.brainExtraction,      'Callback',             {@CheckboxBrainExtraction_Callback});
-set(h.dataIO.button.maskdir,                'Callback',             {@ButtonOpen_Callback,'mask'});
-set(h.phaseUnwrap.checkbox.excludeMask,     'Callback',             {@CheckboxEditPair_Callback,h.phaseUnwrap.edit.excludeMask,1});
-set(h.phaseUnwrap.edit.excludeMask,         'Callback',             {@EditInputMinMax_Callback,0,0,1});
-set(h.bkgRemoval.popup.bkgRemoval,      	'Callback',             {@PopupBkgRemoval_Callback});
-set(h.bkgRemoval.LBV.edit.depth,            'Callback',             {@EditInputMinMax_Callback,1,-1});
-set(h.bkgRemoval.LBV.edit.peel,             'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.bkgRemoval.LBV.edit.tol,              'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.bkgRemoval.PDF.edit.maxIter,        	'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.bkgRemoval.PDF.edit.tol,              'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.bkgRemoval.PDF.edit.padSize,      	'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.bkgRemoval.RESHARP.edit.lambda,     	'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.bkgRemoval.RESHARP.edit.radius,     	'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.bkgRemoval.SHARP.edit.radius,     	'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.bkgRemoval.SHARP.edit.threshold,    	'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.bkgRemoval.VSHARP.edit.minRadius,   	'Callback',             {@EditVSHARPRadius_Callback});
-set(h.bkgRemoval.VSHARP.edit.maxRadius,   	'Callback',             {@EditVSHARPRadius_Callback});
-set(h.bkgRemoval.VSHARPSTI.edit.smvSize,    'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.bkgRemoval.iHARPERELLA.edit.maxIter,	'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.qsm.popup.qsm,                        'Callback',             {@PopupQSM_Callback});
-set(h.qsm.cfs.checkbox.lambda,              'Callback',             {@CheckboxEditPair_Callback,h.qsm.cfs.edit.lambda,0});
-set(h.qsm.iLSQR.checkbox.lambda,            'Callback',             {@CheckboxEditPair_Callback,h.qsm.iLSQR.edit.lambda,0});
-set(h.qsm.TKD.edit.threshold,               'Callback',             {@EditInputMinMax_Callback,0,0,1});
-set(h.qsm.cfs.edit.lambda,                  'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.Star.edit.padSize,                'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.qsm.iLSQR.edit.lambda,                'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.iLSQR.edit.maxIter,               'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.qsm.iLSQR.edit.tol,                   'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.STIiLSQR.edit.maxIter,            'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.qsm.STIiLSQR.edit.padSize,            'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.qsm.STIiLSQR.edit.threshold,          'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.STIiLSQR.edit.tol1,               'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.STIiLSQR.edit.tol2,               'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.FANSI.edit.lambda,                'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.FANSI.edit.maxIter,               'Callback',             {@EditInputMinMax_Callback,1,0});
-set(h.qsm.FANSI.edit.mu,                    'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.FANSI.edit.mu2,                   'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.FANSI.edit.tol,                   'Callback',             {@EditInputMinMax_Callback,0,0});
-set(h.qsm.MEDI.checkbox.smv,                'Callback',             {@CheckboxEditPair_Callback,h.qsm.MEDI.edit.smv_radius,1});
-set(h.qsm.MEDI.checkbox.lambda_csf,         'Callback',             {@CheckboxEditPair_Callback,h.qsm.MEDI.edit.lambda_csf,1});
-set(h.pushbutton_start,                     'Callback',             {@PushbuttonStart_Callback});
-
-set(h.Utility.getHeader.button.teFile,      'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'te'});
-set(h.Utility.getHeader.button.dicomInput,  'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'dicom'});
-set(h.Utility.getHeader.button.niftiInput,  'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'nitfi'});
-set(h.Utility.getHeader.button.outputDir,   'Callback',             {@ButtonOpen_Utility_getHeader_Callback,'output'});
-set(h.Utility.getHeader.button.run,         'Callback',             {@PushbuttonRun_Utility_getHeader_Callback});
-
-set(h.Utility.csfMask.button.teFile,        'Callback',             {@ButtonOpen_Utility_csfMask_Callback,'te'});
-set(h.Utility.csfMask.button.niftiInput,    'Callback',             {@ButtonOpen_Utility_csfMask_Callback,'nitfi'});
-set(h.Utility.csfMask.button.maskInput,     'Callback',             {@ButtonOpen_Utility_csfMask_Callback,'mask'});
-set(h.Utility.csfMask.button.outputDir,     'Callback',             {@ButtonOpen_Utility_csfMask_Callback,'output'});
-set(h.Utility.csfMask.button.run,           'Callback',             {@PushbuttonRun_Utility_csfMask_Callback});
 end
 
 %% Callback functions
-%% Common callback functions
-function CheckboxEditPair_Callback(source,eventdata,handleToBeDisable,trueValue)
-% enable/disable edit fields via checkbox
-    % compare source value to trueValue
-    % e.g. if an edit field needed to be disable by checking an checkbox
-    % then trueValue of the checkbox is 0
-    if source.Value == trueValue
-        % if source is equal to trueValue then enables target handle
-        set(handleToBeDisable,'Enable','on');
-    else
-        % if source do not equal to trueValue then disables target handle 
-        set(handleToBeDisable,'Enable','off');
-    end
-
-end
-
-function EditInputMinMax_Callback(source,eventdata,isIntegerInput,lb,ub)
-% set the min/max input allowed in edit fields
-
-    % check minimum
-    if str2double(source.String)<lb
-        source.String = num2str(lb);
-    end
-    
-    % if maximum is setted then check maximum
-    if nargin==5
-        if str2double(source.String)>ub
-            source.String = num2str(ub);
-        end
-    end
-    
-    % make sure the input is interger for some fields
-    if isIntegerInput
-        source.String = num2str(round(str2double(source.String)));
-    end
-    
-end
-
-%% Specific callback functions
 function SwitchTab_Callback(source,eventdata)
 % switch parent handle of StepsPanel based on current tab
 
@@ -299,7 +202,7 @@ switch eventdata.NewValue.Title
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.bkgRemoval);
 
-    % qsm tab    7
+    % qsm tab    
     case 'QSM'
         % I/O
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.qsm);
@@ -320,167 +223,6 @@ switch eventdata.NewValue.Title
         set(h.checkbox_gpu,             'Parent',h.Tabs.qsm);
         
 end
-
-end
-
-function ButtonOpen_Callback(source,eventdata,field)
-% get directory and display it on GUI
-
-global h
-
-% output base name
-prefix = 'squirrel';
-
-switch field
-    case 'mask'
-        % only read NIfTI file for mask
-        [maskfileName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select mask file');
-
-        if pathDir ~= 0
-            set(h.dataIO.edit.maskdir,'String',fullfile(pathDir,maskfileName));
-        end
-        
-    case 'input'
-        % get directory for NIfTI or DICOM files
-        pathDir = uigetdir;
-
-        if pathDir ~= 0
-            % set input edit field for display
-            set(h.dataIO.edit.input,    'String',pathDir);
-            % automatically set default output field
-            set(h.dataIO.edit.output,   'String',[pathDir filesep 'output' filesep prefix]);
-        end
-        
-    case 'output'
-        
-        % get directory for output
-        pathDir = uigetdir;
-
-        if pathDir ~= 0
-            set(h.dataIO.edit.output,'String',[pathDir filesep prefix]);
-        end
-end
-
-end
-
-function CheckboxBrainExtraction_Callback(source,eventdata)
-% if BET checkbox is checked then empty mask edit field and disable open
-% pushbutton
-
-global h
-
-if ~h.dataIO.checkbox.brainExtraction.Value
-    set(h.dataIO.button.maskdir,'Enable','on');
-    set(h.dataIO.edit.maskdir,  'Enable','on');
-else
-    set(h.dataIO.button.maskdir,'Enable','off');
-    set(h.dataIO.edit.maskdir,  'Enable','off');
-    set(h.dataIO.edit.maskdir,  'String','');
-end
-
-end
-
-function PopupBkgRemoval_Callback(source,eventdata)
-% display corresponding background field removal method's panel
-
-global h
-
-% get selected background removal method
-method = source.String{source.Value,1} ;
-
-% switch off all panels
-fields = fieldnames(h.bkgRemoval.panel);
-for kf = 1:length(fields)
-    set(h.bkgRemoval.panel.(fields{kf}),    'Visible','off');
-end
-
-% switch on target panel
-switch method
-    case 'LBV'
-        set(h.bkgRemoval.panel.LBV,         'Visible','on');
-        
-    case 'PDF'
-        set(h.bkgRemoval.panel.PDF,         'Visible','on');
-
-    case 'RESHARP'
-        set(h.bkgRemoval.panel.RESHARP,     'Visible','on');
-
-    case 'SHARP'
-        set(h.bkgRemoval.panel.SHARP,       'Visible','on');
-
-    case 'VSHARP'
-        set(h.bkgRemoval.panel.VSHARP,      'Visible','on');
-
-    case 'VSHARP STI suite'
-        set(h.bkgRemoval.panel.VSHARPSTI,   'Visible','on');
-
-    case 'iHARPERELLA'
-        set(h.bkgRemoval.panel.iHARPERELLA, 'Visible','on');
-end
-
-end
-
-function PopupQSM_Callback(source,eventdata)
-% display corresponding QSM method's panel
-
-global h
-
-% get selected QSM method
-method = source.String{source.Value,1} ;
-
-% switch off all panels
-fields = fieldnames(h.qsm.panel);
-for kf = 1:length(fields)
-    set(h.qsm.panel.(fields{kf}),   'Visible','off');
-end
-
-% switch on target panel
-switch method
-    case 'TKD'
-        set(h.qsm.panel.TKD,        'Visible','on');
-
-    case 'Closed-form solution'
-        set(h.qsm.panel.cfs,        'Visible','on');
-
-    case 'STI suite iLSQR'
-        set(h.qsm.panel.STIiLSQR,   'Visible','on');
-
-    case 'iLSQR'
-        set(h.qsm.panel.iLSQR,      'Visible','on');
-
-    case 'FANSI'
-        set(h.qsm.panel.FANSI,      'Visible','on');
-
-    case 'Star-QSM'
-        set(h.qsm.panel.Star,       'Visible','on');
-
-    case 'MEDI'
-        set(h.qsm.panel.MEDI,       'Visible','on');
-end
-
-end
-
-function EditVSHARPRadius_Callback(source,eventdata)
-% constraint the minimum of maximum radius is always larger then the
-% minimum radius
-
-global h
-
-% check minimum of minimum radius input
-if str2double(h.bkgRemoval.VSHARP.edit.minRadius.String)<0
-    h.bkgRemoval.VSHARP.edit.minRadius.String = num2str(0);
-end
-
-% if the minimum radius is not integer then rounds it to interger
-h.bkgRemoval.VSHARP.edit.minRadius.String = num2str(round(str2double(h.bkgRemoval.VSHARP.edit.minRadius.String)));
-
-% ensure maximum radius is always larger then minimum radius
-if str2double(h.bkgRemoval.VSHARP.edit.maxRadius.String) <= str2double(h.bkgRemoval.VSHARP.edit.minRadius.String)
-    h.bkgRemoval.VSHARP.edit.maxRadius.String = num2str(str2double(h.bkgRemoval.VSHARP.edit.minRadius.String) +1);
-end
-
-% if the maximum radius is not integer then rounds it to interger
-h.bkgRemoval.VSHARP.edit.maxRadius.String = num2str(round(str2double(h.bkgRemoval.VSHARP.edit.maxRadius.String)));
 
 end
 
@@ -624,7 +366,7 @@ switch QSM_method
         try QSM_tol         = str2double(get(h.qsm.iLSQR.edit.tol,'String'));           catch; QSM_tol=0.001;       end
         try QSM_maxiter     = str2double(get(h.qsm.iLSQR.edit.maxIter,'String'));       catch; QSM_maxiter=100;     end
         try QSM_lambda      = str2double(get(h.qsm.iLSQR.edit.lambda,'String'));        catch; QSM_lambda=0.13;     end
-        try QSM_optimise    = get(h.qsm.iLSQR.checkbox.lambda,'Value');                     catch; QSM_optimise=false;  end 
+        try QSM_optimise    = get(h.qsm.iLSQR.checkbox.lambda,'Value');                 catch; QSM_optimise=false;  end 
         
     case 'FANSI'
         QSM_method='fansi';
@@ -646,7 +388,7 @@ switch QSM_method
         
     case 'Star-QSM'
         QSM_method='star';
-        try QSM_padsize   = str2double(get(h.qsm.Star.edit.padSize,'String'));        catch; QSM_padsize=4;       end
+        try QSM_padsize   = str2double(get(h.qsm.Star.edit.padSize,'String'));          catch; QSM_padsize=4;       end
         QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
         
     case 'MEDI'
@@ -763,261 +505,3 @@ end
 end
 
 end
-
-%% Utility functions
-
-% 1. Get qsm_hub header
-function ButtonOpen_Utility_getHeader_Callback(source,eventdata,field)
-% get input file/directory for getHeader utility function
-global h
-
-switch field
-    case 'te'
-        % te file can be text file or mat file
-        [tefileName,pathDir] = uigetfile({'*.mat;*.txt'},'Select TE file');
-        
-        % display file directory
-        if pathDir ~= 0
-            set(h.Utility.getHeader.edit.teFile,'String',fullfile(pathDir,tefileName));
-        end
-
-    case 'nitfi'
-        % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select mask file');
-
-        if pathDir ~= 0
-            set(h.Utility.getHeader.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
-            % automatically set default output field
-            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
-        end
-        
-    case 'dicom'
-        % get DICOM directory
-        pathDir = uigetdir;
-
-        if pathDir ~= 0
-            % set input edit field for display
-            set(h.Utility.getHeader.edit.dicomInput,    'String',pathDir);
-            % automatically set default output field
-            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
-        end
-        
-    case 'output'
-        
-        % get directory for output
-        pathDir = uigetdir;
-
-        if pathDir ~= 0
-            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
-        end
-end
-
-end
-
-function PushbuttonRun_Utility_getHeader_Callback(source,eventdata)
-% Callback function to detect and save header functino for qsm_hub
-
-global h
-
-% Disable the pushbutton to prevent doubel click
-set(source,'Enable','off');
-
-try 
-
-% get DICOM directory (if any)
-dicomDir    = get(h.Utility.getHeader.edit.dicomInput,'String'); 
-% get output directory, assume the same directory as input directory/file
-outputDir = get(h.Utility.getHeader.edit.outputDir, 'String');
-
-
-% if no dicom directory detected then get te from user input
-if isempty(dicomDir)
-    
-    % get NIfTI file (if any)
-    niftiFile   = get(h.Utility.getHeader.edit.niftiInput, 'String');
-    
-    if isempty(niftiFile)
-        % This function requires input file/directory
-        error('Please specify a DICOM directory or a NIfTI file.');
-    else
-        
-        % get user input magnetic field strength
-        b0          = str2double(get(h.Utility.getHeader.edit.userB0, 'String'));
-        % get user input magnetic field direction
-        b0dir       = str2num(get(h.Utility.getHeader.edit.userB0dir, 'String'));
-        % get user input voxel size
-        voxelSize   = str2num(get(h.Utility.getHeader.edit.userVoxelSize, 'String'));
-
-        % check validity of input voxel size
-        if length(voxelSize) ~= 3 && ~isempty(voxelSize) && isempty(dicomDir)
-            error(['qsm_hub currently works with 3D data only. ' 
-                   'Please specify the voxel size in all three dimensions']);
-        end
-
-        % check validity of input B0 direction
-        if length(b0dir) ~= 3 && ~isempty(b0dir) && isempty(dicomDir)
-            error('The B0 direction has 3 elements [x,y,z]');
-        end
-
-        % str2double returns NaN if input field is empty, replace it by []
-        if isnan(b0)
-            b0=[];
-        end
-
-        % try to get TE variable in this stage
-        teFullName = get(h.Utility.getHeader.edit.teFile, 'String');
-        teUserInput = get(h.Utility.getHeader.edit.userTE, 'String');
-        if ~isempty(teFullName)
-            % get data type
-            [~,~,ext] = fileparts(teFullName);
-
-            if strcmpi(ext,'.mat')
-                % if mat file then try to load 'TE' directly
-                try load(teFullName,'TE');  catch; error('No variable named TE.'); end
-            else
-                % if text file the try to read the TEs line by line
-                TE = readTEfromText(teFullName);
-                TE = TE(:);
-            end
-        else
-            % read user input array
-            TE = str2num(teUserInput);
-            TE = TE(:);
-        end
-        % in case TE cannot be found
-        if isempty(TE) || isnan(TE(1))
-            error('Incorrect TE format.');
-        end
-        
-        % specify the input is NIfTI file
-        ExportQMSHubHeaderIOWrapper(niftiFile,outputDir,...
-            b0,b0dir,voxelSize,TE,'nifti');
-    end
-else
-    
-    % specify the input is DICOM directory
-    ExportQMSHubHeaderIOWrapper(dicomDir,outputDir,[],[],[],[],'dicom');
-    
-end
-
-catch ME
-    % re-enable the start button before displaying the error
-    set(source,'Enable','on');
-    error(ME.message);
-end
-
-disp('Done!');
-
-% re-enable the pushbutton 
-set(source,'Enable','on');
-
-end
-
-% 2. Get lateral ventricle mask 
-function ButtonOpen_Utility_csfMask_Callback(source,eventdata,field)
-% get input file/directory for getHeader utility function
-global h
-
-switch field
-    case 'te'
-        % te file can be text file or mat file
-        [tefileName,pathDir] = uigetfile({'*.mat;*.txt'},'Select TE file');
-        
-        % display file directory
-        if pathDir ~= 0
-            set(h.Utility.csfMask.edit.teFile,'String',fullfile(pathDir,tefileName));
-        end
-
-    case 'nitfi'
-        % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select NIfTI file');
-
-        if pathDir ~= 0
-            set(h.Utility.csfMask.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
-            % automatically set default output field
-            set(h.Utility.csfMask.edit.outputDir,     'String',[pathDir filesep 'output']);
-        end
-        
-    case 'mask'
-        % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select mask file');
-
-        if pathDir ~= 0
-            set(h.Utility.csfMask.edit.maskInput,    'String',fullfile(pathDir,nitfiName));
-        end
-        
-    case 'output'
-        
-        % get directory for output
-        pathDir = uigetdir;
-
-        if pathDir ~= 0
-            set(h.Utility.csfMask.edit.outputDir,     'String',pathDir);
-        end
-end
-
-end
-
-function PushbuttonRun_Utility_csfMask_Callback(source,event)
-% Callback function to get lateral ventricle mask
-
-global h
-
-% Disable the pushbutton to prevent doubel click
-set(source,'Enable','off');
-
-try
-
-% get NIfTI file (if any)
-niftiFile   = get(h.Utility.csfMask.edit.niftiInput, 'String');
-% get output directory, assume the same directory as input directory/file
-outputDir = get(h.Utility.csfMask.edit.outputDir, 'String');
-% mask file
-maskFullName    = get(h.Utility.csfMask.edit.maskInput,'String');
-
-if isempty(niftiFile)
-    % This function requires input file/directory
-    error('Please specify a NIfTI file.');
-else
-
-    % try to get TE variable in this stage
-    teFullName = get(h.Utility.csfMask.edit.teFile, 'String');
-    teUserInput = get(h.Utility.csfMask.edit.userTE, 'String');
-    if ~isempty(teFullName)
-        % get data type
-        [~,~,ext] = fileparts(teFullName);
-
-        if strcmpi(ext,'.mat')
-            % if mat file then try to load 'TE' directly
-            try load(teFullName,'TE');  catch; error('No variable named TE.'); end
-        else
-            % if text file the try to read the TEs line by line
-            TE = readTEfromText(teFullName);
-            TE = TE(:);
-        end
-    else
-        % read user input array
-        TE = str2num(teUserInput);
-        TE = TE(:);
-    end
-    % in case TE cannot be found
-    if isempty(TE) || isnan(TE(1))
-        error('Incorrect TE format.');
-    end
-    
-    GetVentricleMaskIOWrapper(niftiFile,outputDir,maskFullName,TE);
-    
-end
-
-catch ME
-    % re-enable the start button before displaying the error
-    set(source,'Enable','on');
-    error(ME.message);
-end
-    
-
-% Disable the pushbutton to prevent doubel click
-set(source,'Enable','on');
-
-end
-
