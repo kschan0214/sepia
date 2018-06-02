@@ -264,7 +264,7 @@ isEddyCorrect   = get(h.phaseUnwrap.checkbox.eddyCorrect,'Value');
 if get(h.phaseUnwrap.checkbox.excludeMask,'Value')
     excludeMaskThreshold = str2double(get(h.phaseUnwrap.edit.excludeMask,'String'));
 else
-    excludeMaskThreshold = 100;
+    excludeMaskThreshold = Inf;
 end
 
 % get background field removal GUI input

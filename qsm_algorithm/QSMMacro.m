@@ -80,7 +80,7 @@
 % Date created: 28 June 2017
 % Date last modified: 9 April 2018
 %
-function [chi, lamdaOptimal] = qsmMacro(localField,mask,matrixSize,voxelSize,varargin)
+function [chi, lamdaOptimal] = QSMMacro(localField,mask,matrixSize,voxelSize,varargin)
 lamdaOptimal = [];
 voxelSize = voxelSize(:).';
 

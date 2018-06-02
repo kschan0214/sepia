@@ -62,7 +62,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 20 May 2018
+% Date last modified: 1 June 2018
 %
 %
 function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,output,varargin)
@@ -70,7 +70,7 @@ function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,output,varargin)
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
 %% define variables
-prefix = 'squirrel_';
+prefix = 'squirrel_';   
 gyro = 42.57747892;
 % make sure the input only load once (first one)
 isMagnLoad = false;
@@ -97,49 +97,59 @@ exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF
 
 %% Read input
 disp('Reading data...');
-% look for nifti files first
+% check input directory for nifti files first
 inputNiftiList = dir([inputDir '/*.nii*']);
 if ~isempty(inputNiftiList)
+    
     % look for magnitude and phase files
     for klist = 1:length(inputNiftiList)
+        % check magnitude data
         if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             magn = double(inputMagnNifti.img);
             isMagnLoad = true;
+            disp('Magnitude data is loaded.')
         end
+        
+        % check phase data
         if ContainName(lower(inputNiftiList(klist).name),'phase') && ~isPhaseLoad
             inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldMap = double(inputPhaseNifti.img);
             
             % if input fieldmap is directly converted from nifti converter
-            % then converts the fieldmap in rad and save to output dir
+            % then converts the fieldmap to unit of radian and save to output dir
             if max(fieldMap(:))>1000
+                disp('Converting phase data from DICOM image value to radian unit ...')
                 fieldMap = DICOM2Phase(inputPhaseNifti);
-                nii_fieldMap = make_nii_quick(inputPhaseNifti,fieldMap);
-                nii_fieldMap.hdr.dime.scl_inter = 0;
-                nii_fieldMap.hdr.dime.scl_slope = 1;
-                save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
+                
+                save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
+%                 nii_fieldMap = make_nii_quick(inputPhaseNifti,fieldMap);
+%                 nii_fieldMap.hdr.dime.scl_inter = 0;
+%                 nii_fieldMap.hdr.dime.scl_slope = 1;
+%                 save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
             end
             isPhaseLoad = true;
+            disp('Phase data is loaded.')
         end
     end
     
     % if no files matched the name format then displays error message
     if ~isMagnLoad
-        error('No files loaded. Please make sure the input directory contains files with name *magn*');
+        error('No magnitude data is loaded. Please make sure the input directory contains files with name *magn*');
     end
     % if no files matched the name format then displays error message
     if ~isPhaseLoad
-        error('No files loaded. Please make sure the input directory contains files with name *phase*');
+        error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
     end
     
     % look for header file
     if ~isempty(dir([inputDir '/*header*']))
-        disp('Reading header for qsm_hub...');
-        
         % load header
         headerList = dir([inputDir '/*header*']);
         load([inputDir filesep headerList(1).name]);
+        
+        disp('Header data is loaded.');
+        
     else
         disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
         
@@ -162,20 +172,21 @@ if ~isempty(inputNiftiList)
         % if no header file then save the synthetic header in output dir
         save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
+        
+        disp('The synthetic header is saved in output directory.');
+        
     end
     
     % store the header the NIfTI files, all following results will have
     % the same header
     outputNiftiTemplate = inputMagnNifti;
-    % make sure the class of output datatype is double
-    outputNiftiTemplate.hdr.dime.datatype = 64;
-    % remove the time dimension info
-    outputNiftiTemplate.hdr.dime.dim(5) = 1;
     
 else
     % if no nifti file then check for DICOM files
-%     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
+    
+    % deprecated
+    %     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
     
     B0 = CF/(gyro*1e6);
     
@@ -188,31 +199,31 @@ else
     isPhaseLoad = true;
 
     % save magnitude and phase images as nifti files
-    disp('Saving DICOM data into NIfTI...');
+    disp('Saving DICOM data into NIfTI format...');
     
-    outputNiftiTemplate = make_nii(zeros(size(iField)), voxelSize);
-    % make sure the class of output datatype is double
-    outputNiftiTemplate.hdr.dime.datatype = 64;
+%     outputNiftiTemplate = make_nii(zeros(size(iField)), voxelSize);
+    % make sure the class of output datatype is single
+%     outputNiftiTemplate.hdr.dime.datatype = 16;
     
-    nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
-    nii_magn = make_nii_quick(outputNiftiTemplate,magn);
+    nii_fieldMap    = make_nii(single(fieldMap),    voxelSize,[],16);
+    nii_magn        = make_nii(single(magn),        voxelSize,[],16);
+%     nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
+%     nii_magn = make_nii_quick(outputNiftiTemplate,magn);
     
     % save magnitude and phase data as NIfTI_GZ format
     save_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
     save_nii(nii_magn,[outputDir filesep prefix 'magn.nii.gz']);
     % save important header in .mat format
-    save([outputDir filesep 'qsmhub_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
+    save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
     
     % reload the NIfTI template so that later can use save_untouch_nii for
     % all results
     outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
-    % remove the time dimension info
-    outputNiftiTemplate.hdr.dime.dim(5) = 1;
     
 end
 
-% in case user want to correct the frequency shift direction
+% in case user want to reverse the frequency shift direction
 if isInvert
     fieldMap = -fieldMap;
 end
@@ -224,6 +235,7 @@ disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2))
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
+% make sure the following variables are row vectors
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
 
@@ -233,10 +245,17 @@ maskList = dir([inputDir '/*mask*nii*']);
 if ~isempty(maskFullName)
 % first read mask if file is provided
     mask = load_nii_img_only(maskFullName) > 0;
+    
 elseif ~isempty(maskList) 
 % read mask if input directory contains 'mask'
     inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
 	mask = inputMaskNii.img > 0;
+    
+end
+
+% if no mask is found then display the following message
+if isempty(mask) && ~isBET
+    disp('No mask data is loaded, using FSL BET to obtain brain mask.');
 end
     
 % if BET is checked or no mask is found, run FSL's bet
@@ -270,6 +289,9 @@ if isempty(mask) || isBET
 %     system(['rm ' tempDir]);
 
     mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
+    
+    disp('Saving brain mask...')
+    save_nii_quick(outputNiftiTemplate,mask, [outputDir filesep prefix 'mask.nii.gz']);
 
 end
 
@@ -279,7 +301,7 @@ qsm_hub_AddMethodPath(unwrap);
 
 % Eddy current correction for bipolar readout
 if isEddyCorrect
-    disp('Correcting eddy current effect on bipolar readout data');
+    disp('Correcting eddy current effect on bipolar readout data...');
     
     % BipolarEddyCorrect requries complex-valued input
     imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
@@ -287,17 +309,14 @@ if isEddyCorrect
     magn = abs(imgCplx);
     
     % save the eddy current corrected output
-    nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
-    nii_fieldMap.hdr.dime.dim(5) = size(fieldMap,4);
-    nii_magn = make_nii_quick(outputNiftiTemplate,magn); 
-    nii_magn.hdr.dime.dim(5) = size(magn,4);
-    save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase_EC.nii.gz']);
-    save_untouch_nii(nii_magn,[outputDir filesep prefix 'magn_EC.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_EC.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,magn,        [outputDir filesep prefix 'magn_EC.nii.gz']);
+    
 end
 
 disp('Calculating field map...');
 
-% fix the output of field map in Hz
+% fix the output field map unit in Hz
 unit = 'Hz';
 
 % core of phase unwrapping
@@ -350,17 +369,12 @@ mask = and(mask,maskReliable);
 % save the output                           
 disp('Saving unwrapped field map...');
 
-nii_totalField = make_nii_quick(outputNiftiTemplate,totalField);
-nii_fieldmapSD = make_nii_quick(outputNiftiTemplate,fieldmapSD);
-nii_newMask = make_nii_quick(outputNiftiTemplate,mask);
-                    
-save_untouch_nii(nii_totalField,[outputDir filesep prefix 'totalField.nii.gz']);
-save_untouch_nii(nii_fieldmapSD,[outputDir filesep prefix 'fieldMapSD.nii.gz']);
-save_untouch_nii(nii_newMask,[outputDir filesep prefix 'mask_new.nii.gz']);
+save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'totalField.nii.gz']);
+save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'fieldMapSD.nii.gz']);
 
-if relativeResidual ~= 100
-    nii_relativeResidual = make_nii_quick(outputNiftiTemplate,relativeResidual);
-    save_untouch_nii(nii_relativeResidual,[outputDir filesep prefix 'relative_residual.nii.gz']);
+if relativeResidual ~= Inf
+    save_nii_quick(outputNiftiTemplate,mask,        [outputDir filesep prefix 'mask_reliable.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative_residual.nii.gz']);
 end
 
 %% Background field removal
@@ -390,11 +404,8 @@ maskFinal = localField ~=0;
 % save results
 disp('Saving local field map...');
 
-nii_localField = make_nii_quick(outputNiftiTemplate,localField);
-nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
-                    
-save_untouch_nii(nii_localField,[outputDir filesep prefix 'localField.nii.gz']);
-save_untouch_nii(nii_maskFinal,[outputDir filesep prefix 'mask_final.nii.gz']);
+save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'localField.nii.gz']);
+save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask_qsm.nii.gz']);
             
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weighting
@@ -507,20 +518,18 @@ end
 % save results
 disp('Saving susceptibility map...');
 
-nii_chi = make_nii_quick(outputNiftiTemplate,chi);
-
-save_untouch_nii(nii_chi,[outputDir filesep prefix 'QSM.nii.gz']);
+save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
 
 disp('Done!');
           
 end
 
 % handy function to save result to nifti format
-function nii = make_nii_quick(template,img)
-    nii = template;
-    nii.img = img;
-    nii.hdr.dime.datatype = 64;
-end
+% function nii = make_nii_quick(template,img)
+%     nii = template;
+%     nii.img = img;
+%     nii.hdr.dime.datatype = 64;
+% end
 
 % return boolean value to check if the input name contains certain string
 function bool = ContainName(name,string)

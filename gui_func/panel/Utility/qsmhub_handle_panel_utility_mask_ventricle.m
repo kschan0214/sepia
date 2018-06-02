@@ -17,7 +17,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 25 May 2018
-% Date last modified: 
+% Date last modified: 1 June 2018
 %
 %
 function h = qsmhub_handle_panel_utility_mask_ventricle(hParent,h,position)
@@ -124,7 +124,6 @@ set(h.Utility.csfMask.button.run,           'Callback',             {@Pushbutton
 end
 
 %% Callback functions
-% 2. Get lateral ventricle mask 
 function ButtonOpen_Utility_csfMask_Callback(source,eventdata,h,field)
 % get input file/directory for getHeader utility function
 % global h

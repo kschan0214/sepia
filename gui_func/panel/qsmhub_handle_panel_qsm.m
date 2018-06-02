@@ -40,7 +40,7 @@ h.StepsPanel.qsm = uipanel(hParent,...
         'String',methodName,...
         'units','normalized','position',[0.31 0.85 0.4 0.1]) ; 
     
-%% create control panel
+% create control panel
 
 % define position and size of all method panels
 position_child = [0.01 0.04 0.95 0.75];
@@ -68,7 +68,51 @@ position_child = [0.01 0.04 0.95 0.75];
     
     % in future, add panel of new method here
 
-%% set callback
+% set callback
 set(h.qsm.popup.qsm, 'Callback', {@PopupQSM_Callback,h});
+
+end
+
+%% Callback function
+function PopupQSM_Callback(source,eventdata,h)
+% display corresponding QSM method's panel
+
+% global h
+
+% get selected QSM method
+method = source.String{source.Value,1} ;
+
+% switch off all panels
+fields = fieldnames(h.qsm.panel);
+for kf = 1:length(fields)
+    set(h.qsm.panel.(fields{kf}),   'Visible','off');
+end
+
+% switch on target panel
+switch method
+    case 'TKD'
+        set(h.qsm.panel.TKD,        'Visible','on');
+
+    case 'Closed-form solution'
+        set(h.qsm.panel.cfs,        'Visible','on');
+
+    case 'STI suite iLSQR'
+        set(h.qsm.panel.STIiLSQR,   'Visible','on');
+
+    case 'iLSQR'
+        set(h.qsm.panel.iLSQR,      'Visible','on');
+
+    case 'FANSI'
+        set(h.qsm.panel.FANSI,      'Visible','on');
+
+    case 'Star-QSM'
+        set(h.qsm.panel.Star,       'Visible','on');
+
+    case 'MEDI'
+        set(h.qsm.panel.MEDI,       'Visible','on');
+
+    % in the future, add new method here
+
+end
 
 end
