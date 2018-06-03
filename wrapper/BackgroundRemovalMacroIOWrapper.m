@@ -31,10 +31,10 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 20 May 2018
+% Date last modified: 2 June 2018
 %
 %
-function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,output,varargin)
+function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,output,maskFullName,varargin)
 %% add general Path
 qsm_hub_AddMethodPath;
 
@@ -58,8 +58,13 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument using parse_varargin_QSMHub.m
-[~,~,maskFullName,~,~,~,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
-BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,~,isGPU] = parse_varargin_QSMHub(varargin);
+[~,isGPU,~,~,...
+    ~,~,~,~,...
+    BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,...
+    ~,~,~,~,~,~,...
+    ~,~,~,~,~,~,~,...
+    ~,~,~,~,~,~,...
+    ~,~] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -73,33 +78,43 @@ if ~isempty(inputNiftiList)
             inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             totalField = double(inputTotalFieldNifti.img);
             isTotalFieldLoad = true;
+            
+            disp('Total field map is loaded.')
         end
         
         if ContainName(inputNiftiList(klist).name,'fieldmapsd') && ~isFieldmapSDLoad
             inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
+            
+            disp('Field map SD data is loaded.')
         end
     end
     
     % if no files matched the name format then displays error message
     if ~isTotalFieldLoad
-        error('No files loaded. Please make sure the input directory contains files with name *totalfield*');
+        error('No total field map is loaded. Please make sure the input directory contains files with name *totalfield*');
     end
     
     % look for header file
     if ~isempty(dir([inputDir '/*header*']))
-        disp('Reading header for qsm_hub...');
-        
         % load header
         headerList = dir([inputDir '/*header*']);
         load([inputDir filesep headerList(1).name]);
         
+        disp('Header data is loaded.');
+        
     else
         disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
         
-         % create synthetic header in case no qsm_hub's header is found
+        % create synthetic header in case no qsm_hub's header is found
         [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputTotalFieldNifti);
+        
+        % if no header file then save the synthetic header in output dir
+        save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
+        'TE','B0_dir','B0');
+        
+        disp('The synthetic header is saved in output directory.');
         
     end
     
@@ -111,10 +126,6 @@ if ~isempty(inputNiftiList)
     % store the header the NIfTI files, all following results will have
     % the same header
     outputNiftiTemplate = inputTotalFieldNifti;
-    % make sure the class of output datatype is double
-    outputNiftiTemplate.hdr.dime.datatype = 64;
-    % remove the time dimension info
-    outputNiftiTemplate.hdr.dime.dim(5) = 1;
     
 else
     error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
@@ -141,7 +152,7 @@ elseif ~isempty(maskList)
     
 else
     % display error message if nothing is found
-    error('No mask is found. Pleasee specific your mask file or put it inside the input directory.');
+    error('No mask file is found. Please specify your mask file or put it in the input directory.');
     
 end
 
@@ -172,24 +183,9 @@ maskFinal = localField ~=0;
 % save results
 disp('Saving local field map...');
 
-nii_localField = make_nii_quick(outputNiftiTemplate,localField);
-nii_maskFinal = make_nii_quick(outputNiftiTemplate,maskFinal);
-                    
-save_untouch_nii(nii_localField,[outputDir filesep prefix 'localField.nii.gz']);
-save_untouch_nii(nii_maskFinal,[outputDir filesep prefix 'mask_final.nii.gz']);
+save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'localField.nii.gz']);
+save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask_qsm.nii.gz']);
 
 disp('Done!');
 
-end
-
-% handy function to save result to nifti format
-function nii = make_nii_quick(template,img)
-    nii = template;
-    nii.img = img;
-    nii.hdr.dime.datatype = 64;
-end
-
-% return boolean value to check if the input name contains certain string
-function bool = ContainName(name,string)
-    bool= ~isempty(strfind(lower(name),string));
 end

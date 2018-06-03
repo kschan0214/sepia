@@ -12,7 +12,7 @@
 % Description: correct the inconsistent phase between odd and even echoes
 % due to bipolar greadout
 %
-% Original: EddyCurrentVisualisationCorrection.m from Jose P. marques
+% Original: EddyCurrentVisualisationCorrection.m from Jose P. Marques
 % Modified by Kwok-Shing Chan
 % k.chan@donders.ru.nl
 % Date created: 13 April 2018

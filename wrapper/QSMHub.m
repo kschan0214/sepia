@@ -65,7 +65,7 @@
 % Date last modified: 1 June 2018
 %
 %
-function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,output,varargin)
+function [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,output,maskFullName,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
@@ -77,7 +77,7 @@ isMagnLoad = false;
 isPhaseLoad = false;
 maskCSF = [];
 
-%% Check output directory exist or not
+%% Check if output directory exists 
 output_index = strfind(output, filesep);
 outputDir = output(1:output_index(end));
 if ~isempty(output(output_index(end)+1:end))
@@ -90,10 +90,13 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument
-[isInvert,isBET,maskFullName,phaseCombMethod,unwrap,subsampling,BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,...
-BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,QSM_method,QSM_threshold,QSM_lambda,...
-QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
-exclude_threshold,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,QSM_isSMV,QSM_merit,isEddyCorrect,isGPU] = parse_varargin_QSMHub(varargin);
+[isInvert,isGPU,isBET,isEddyCorrect,...
+    phaseCombMethod,unwrap,subsampling,exclude_threshold,...
+    BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,...
+    QSM_method,QSM_threshold,QSM_lambda,QSM_optimise,QSM_tol,QSM_maxiter,...
+    QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
+    QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
+    QSM_isSMV,QSM_merit] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -122,11 +125,9 @@ if ~isempty(inputNiftiList)
                 disp('Converting phase data from DICOM image value to radian unit ...')
                 fieldMap = DICOM2Phase(inputPhaseNifti);
                 
+                disp('Saving phase images in unit of radian...');
                 save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
-%                 nii_fieldMap = make_nii_quick(inputPhaseNifti,fieldMap);
-%                 nii_fieldMap.hdr.dime.scl_inter = 0;
-%                 nii_fieldMap.hdr.dime.scl_slope = 1;
-%                 save_untouch_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
+                
             end
             isPhaseLoad = true;
             disp('Phase data is loaded.')
@@ -201,18 +202,11 @@ else
     % save magnitude and phase images as nifti files
     disp('Saving DICOM data into NIfTI format...');
     
-%     outputNiftiTemplate = make_nii(zeros(size(iField)), voxelSize);
-    % make sure the class of output datatype is single
-%     outputNiftiTemplate.hdr.dime.datatype = 16;
-    
+    % save magnitude and phase data as NIfTI_GZ format
     nii_fieldMap    = make_nii(single(fieldMap),    voxelSize,[],16);
     nii_magn        = make_nii(single(magn),        voxelSize,[],16);
-%     nii_fieldMap = make_nii_quick(outputNiftiTemplate,fieldMap);
-%     nii_magn = make_nii_quick(outputNiftiTemplate,magn);
-    
-    % save magnitude and phase data as NIfTI_GZ format
-    save_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
-    save_nii(nii_magn,[outputDir filesep prefix 'magn.nii.gz']);
+    save_nii(nii_fieldMap,  [outputDir filesep prefix 'phase.nii.gz']);
+    save_nii(nii_magn,      [outputDir filesep prefix 'magn.nii.gz']);
     % save important header in .mat format
     save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
@@ -323,14 +317,14 @@ unit = 'Hz';
 try 
     switch phaseCombMethod
         % optimum weight method from Robinson et al. NMR Biomed 2017
-        case 'optimum_weights'
+        case 'Optimum weights'
             [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,...
                                     matrixSize,voxelSize,...
                                     'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
                                     'Subsampling',subsampling,'mask',mask);
                                 
         % nonlinear ffitting method from MEDI toolbox
-        case 'nonlinear_fit'
+        case 'MEDI nonlinear fit'
             [totalField,fieldmapSD] = estimateTotalField_MEDI(fieldMap,magn,...
                                     matrixSize,voxelSize,...
                                     'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
@@ -351,16 +345,8 @@ end
 % exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
 r2s = arlo(TE,magn);
-s0 = magn(:,:,:,1).*exp(r2s*TE(1));
-shat = zeros([matrixSize length(TE)]);
-for kt=1:length(TE)
-    shat(:,:,:,kt) = s0.*exp(TE(kt)*(-r2s+1i*2*pi*totalField));
-end
-shat = bsxfun(@times,shat,conj(shat(:,:,:,1)));
-s = bsxfun(@times,magn.*exp(1i*fieldMap),conj(magn(:,:,:,1).*exp(1i*fieldMap(:,:,:,1))));
-relativeResidual=sum(abs(shat-s).^2,4)./sum(abs(s).^2,4);
-relativeResidual(isnan(relativeResidual)) = exclude_threshold;
-relativeResidual(isinf(relativeResidual)) = exclude_threshold;
+relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
+
 maskReliable = relativeResidual < exclude_threshold;
 
 % maskReliable = (fieldmapSD./norm(fieldmapSD(fieldmapSD~=0))) < exclude_threshold;
@@ -522,16 +508,4 @@ save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']
 
 disp('Done!');
           
-end
-
-% handy function to save result to nifti format
-% function nii = make_nii_quick(template,img)
-%     nii = template;
-%     nii.img = img;
-%     nii.hdr.dime.datatype = 64;
-% end
-
-% return boolean value to check if the input name contains certain string
-function bool = ContainName(name,string)
-    bool= ~isempty(strfind(lower(name),string));
 end

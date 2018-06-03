@@ -42,10 +42,10 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 27 May 2018
+% Date last modified: 2 June 2018
 %
 %
-function chi = QSMMacroIOWrapper(inputDir,output,varargin)
+function chi = QSMMacroIOWrapper(inputDir,output,maskFullName,varargin)
 %% add general Path
 qsm_hub_AddMethodPath % qsm_hub_AddPath;
 
@@ -57,7 +57,6 @@ isLotalFieldLoad    = false;
 isFieldmapSDLoad    = false;
 isMagnLoad          = false; 
 maskCSF             = [];
-
 
 %% Check output directory exist or not
 output_index = strfind(output, filesep);
@@ -72,9 +71,13 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Parse input argument
-[~,~,maskFullName,~,~,~,~,~,~,~,~,~,~,~,~,~,QSM_method,QSM_threshold,QSM_lambda,...
-QSM_optimise,QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
-~,QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,QSM_isSMV,QSM_merit,~,isGPU] = parse_varargin_QSMHub(varargin);
+[~,isGPU,~,~,...
+    ~,~,~,~,...
+    ~,~,~,~,~,~,~,~,~,~,...
+    QSM_method,QSM_threshold,QSM_lambda,QSM_optimise,QSM_tol,QSM_maxiter,...
+    QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
+    QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
+    QSM_isSMV,QSM_merit] = parse_varargin_QSMHub(varargin);
 
 %% Read input
 disp('Reading data...');
@@ -90,33 +93,37 @@ if ~isempty(inputNiftiList)
             inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             localField = double(inputLocalFieldNifti.img);
             isLotalFieldLoad = true;
+            disp('Local field map is loaded.')
         end
         
         if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             isMagnLoad = true;
             magn = double(inputMagnNifti.img);
+            disp('Magnitude data is loaded.')
         end
         
         if ContainName(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
             inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
+            disp('Field map SD data is loaded.')
         end
         
     end
     
     % if no files matched the name format then displays error message
     if ~isLotalFieldLoad
-        error('No files loaded. Please make sure the input directory contains files with name *localfield*');
+        error('No local field map is loaded. Please make sure the input directory contains files with name *localfield*');
     end
     
     % look for header file
     if ~isempty(dir([inputDir '/*header*']))
-        headerList = dir([inputDir '/*header*']);
-        
         % load header
+        headerList = dir([inputDir '/*header*']);
         load([inputDir filesep headerList(1).name]);
+        
+        disp('Header data is loaded.');
         
     else
         disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
@@ -124,30 +131,44 @@ if ~isempty(inputNiftiList)
         % create synthetic header in case no qsm_hub's header is found
         [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputLocalFieldNifti);
         
+        % look for text file for TEs information
+        teTextFullName = dir([inputDir filesep '*txt']);
+        if ~isempty(teTextFullName)
+            te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
+            te_ = te_(:);
+            if ~isempty(te_)
+                TE = te_;
+                if length(TE) > 1
+                    delta_TE = TE(2)-TE(1);
+                end
+            end
+        end
+        
+        % if no header file then save the synthetic header in output dir
+        save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
+        'TE','B0_dir','B0');
+        
+        disp('The synthetic header is saved in output directory.');
+        
     end
     
     % if no magnitude found then creates one with all voxels have the same value
     if ~isMagnLoad && strcmpi(QSM_method,'medi_l1')
         error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
     elseif ~isMagnLoad
-        disp('No magnitude data is found.');
+        disp('No magnitude data is loaded.');
         magn = ones(matrixSize);
     end
     
     % if no fieldmapSD found then creates one with all voxels have the same value
     if ~isFieldmapSDLoad
-        disp('No fieldMapSD file is found.');
+        disp('No fieldMapSD file is loaded.');
         fieldmapSD = ones(matrixSize) * 0.01;
     end
     
     % store the header the NIfTI files, all following results will have
     % the same header
     outputNiftiTemplate = inputLocalFieldNifti;
-    % make sure the class of output datatype is double
-    outputNiftiTemplate.hdr.dime.datatype = 64;
-    % remove the time dimension info
-    outputNiftiTemplate.hdr.dime.dim(5) = 1;
-    
     
 else
     error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
@@ -161,8 +182,8 @@ disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
 %% get brain mask
-% look for final mask first
-maskList = dir([inputDir '/*mask_final*']);
+% look for qsm mask first
+maskList = dir([inputDir '/*mask_qsm*']);
 % if no final mask then just look for normal mask
 if isempty(maskList)
     maskList = dir([inputDir '/*mask*']);
@@ -179,7 +200,7 @@ elseif ~isempty(maskList)
     
 else
     % display error message if nothing is found
-    error('No mask is found. Pleasee specific your mask file or put it inside the input directory.');
+    error('No mask file is loaded. Pleasee specific your mask file or put it in the input directory.');
     
 end
 
@@ -293,22 +314,8 @@ end
 % save results
 disp('Saving susceptibility map...');
 
-nii_chi = make_nii_quick(outputNiftiTemplate,chi);
-
-save_untouch_nii(nii_chi,[outputDir filesep prefix 'QSM.nii.gz']);
+save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
 
 disp('Done!');
 
-end
-
-% handy function to save result to nifti format
-function nii = make_nii_quick(template,img)
-    nii = template;
-    nii.img = img;
-    nii.hdr.dime.datatype = 64;
-end
-
-% return boolean value to check if the input name contains certain string
-function bool = ContainName(name,string)
-    bool= ~isempty(strfind(lower(name),string));
 end
