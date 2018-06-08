@@ -20,6 +20,9 @@
 %
 function h = qsmhub_handle_panel_qsm_TKD(hParent,h,position)
 
+%% set default values
+defaultThreshold = 0.15;
+
 %% Parent handle of TKD panel children
 
 h.qsm.panel.TKD = uipanel(hParent,...
@@ -39,11 +42,11 @@ h.qsm.panel.TKD = uipanel(hParent,...
         'tooltip','K-space threshold');
     h.qsm.TKD.edit.threshold = uicontrol('Parent',h.qsm.panel.TKD,...
         'Style','edit',...
-        'String','0.15',...
+        'String',num2str(defaultThreshold),...
         'units','normalized','position',[0.25 0.75 0.2 0.2],...
         'backgroundcolor','white');
 
 %% set callbacks
-set(h.qsm.TKD.edit.threshold, 'Callback', {@EditInputMinMax_Callback,0,0,1});
+set(h.qsm.TKD.edit.threshold, 'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
 
 end

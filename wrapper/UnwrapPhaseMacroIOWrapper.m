@@ -272,10 +272,11 @@ catch
     % if the above selected method is not working then do Laplacian with
     % optimum weights
     disp('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
-    qsm_hub_AddMethodPath('laplacian');
+    unwrap = 'laplacian'; exclude_threshold = Inf;
+    qsm_hub_AddMethodPath(unwrap);
     
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-                            'Unwrap','laplacian','TE',TE,'B0',B0,'unit',unit,...
+                            'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
                             'Subsampling',subsampling,'mask',mask);
 end
                     

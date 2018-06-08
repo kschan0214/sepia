@@ -20,6 +20,9 @@
 %
 function h = qsmhub_handle_panel_bkgRemoval_iHARPERELLA(hParent,h,position)
 
+%% set default values
+defaultMaxiter      = 100;
+
 %% Parent handle of iHARPERELLA panel
 
 h.bkgRemoval.panel.iHARPERELLA = uipanel(hParent,...
@@ -39,11 +42,11 @@ h.bkgRemoval.panel.iHARPERELLA = uipanel(hParent,...
         'tooltip','Maximum iteration allowed');
     h.bkgRemoval.iHARPERELLA.edit.maxIter = uicontrol('Parent',h.bkgRemoval.panel.iHARPERELLA,...
         'Style','edit',...
-        'String','100',...
-        'units','normalized','position',[0.25 0.75 0.2 0.2],...
+        'String',num2str(defaultMaxiter),...
+        'units','normalized','position',[0.25 0.75 0.2 0.2],...lb
         'backgroundcolor','white');
 
 %% set callbacks
-set(h.bkgRemoval.iHARPERELLA.edit.maxIter,	'Callback', {@EditInputMinMax_Callback,1,0});
+set(h.bkgRemoval.iHARPERELLA.edit.maxIter,	'Callback', {@EditInputMinMax_Callback,defaultMaxiter,1,1});
 
 end

@@ -20,6 +20,9 @@
 %
 function h = qsmhub_handle_panel_qsm_CFS(hParent,h,position)
 
+%% set default values
+defaultLambda = 0.13;
+
 %% Parent handle of CFS panel children
 
 h.qsm.panel.cfs = uipanel(hParent,...
@@ -39,7 +42,7 @@ h.qsm.panel.cfs = uipanel(hParent,...
         'backgroundcolor',get(h.fig,'color'),...
         'tooltip','Regularisation parameter to control spatial smoothness of QSM');
     h.qsm.cfs.edit.lambda = uicontrol('Parent',h.qsm.panel.cfs,'Style','edit',...
-        'String','0.13',...
+        'String',num2str(defaultLambda),...
         'units','normalized','position',[0.25 0.75 0.2 0.2],...
         'backgroundcolor','white');
 
@@ -53,7 +56,7 @@ h.qsm.panel.cfs = uipanel(hParent,...
 
 %% set callbacks
 % edit field
-set(h.qsm.cfs.edit.lambda,      'Callback',	{@EditInputMinMax_Callback,0,0});
+set(h.qsm.cfs.edit.lambda,      'Callback',	{@EditInputMinMax_Callback,defaultLambda,0,0});
 % checkbox/edit pair
 set(h.qsm.cfs.checkbox.lambda,	'Callback', {@CheckboxEditPair_Callback,h.qsm.cfs.edit.lambda,0});
 

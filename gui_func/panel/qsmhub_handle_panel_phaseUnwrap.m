@@ -17,10 +17,16 @@
 % k.chan@donders.ru.nl
 % Date created: 16 April 2018
 % Date modified: 18 April 2018
-% Date modified: 1 June 2018
+% Date modified: 8 June 2018
 %
 %
 function h = qsmhub_handle_panel_phaseUnwrap(hParent,h,position)
+
+% set up method name displayed on GUI
+methodUnwrapName = {'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut'};
+
+% set default value
+defaultThreshold = 0.5;
 
 % define maximum level of options and spacing between options
 nlevel = 5;
@@ -53,7 +59,7 @@ h.StepsPanel.phaseUnwrap = uipanel(hParent,'Title','Total field recovery and pha
         'tooltip','Select phase unwrapping algorithm');
     h.phaseUnwrap.popup.phaseUnwrap = uicontrol('Parent',h.StepsPanel.phaseUnwrap ,...
         'Style','popup',...
-        'String',{'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut'},...
+        'String',methodUnwrapName,...
         'units','normalized','position',[0.31 button(nlevel-1) 0.4 height]); 
 
     % eddy current correction for bipolar readout
@@ -68,7 +74,7 @@ h.StepsPanel.phaseUnwrap = uipanel(hParent,'Title','Total field recovery and pha
         'Style','checkbox','String','Exclude unreliable voxels',...
         'units','normalized','position',[0.01 button(nlevel-3) 0.6 height],...
         'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Apply threshold to exclude unreliable voxels based on relative residual of monodecay model with a single frequency shift');
+        'tooltip','Apply threshold to exclude unreliable voxels based on relative residual of monodecay model with a single frequency shift (only available for 3D best path and region growing methods)');
     h.phaseUnwrap.text.excludeMask = uicontrol('Parent',h.StepsPanel.phaseUnwrap ,...
         'Style','text','String','Threshold:',...
         'units','normalized','position',[0.01 button(nlevel-4) 0.3 height],...
@@ -77,13 +83,43 @@ h.StepsPanel.phaseUnwrap = uipanel(hParent,'Title','Total field recovery and pha
         'tooltip','Higher value means accepting greater mismatch between the esimtation and measurement');
     h.phaseUnwrap.edit.excludeMask = uicontrol('Parent',h.StepsPanel.phaseUnwrap ,...
         'Style','edit',...
-        'String','0.5',...
+        'String',num2str(defaultThreshold),...
         'units','normalized','position',[0.31 button(nlevel-4) 0.3 height],...
         'backgroundcolor','white',...
         'Enable','off');
 
 %% set callback functions
 set(h.phaseUnwrap.checkbox.excludeMask,	'Callback', {@CheckboxEditPair_Callback,h.phaseUnwrap.edit.excludeMask,1});
-set(h.phaseUnwrap.edit.excludeMask, 	'Callback', {@EditInputMinMax_Callback,0,0,1});
+set(h.phaseUnwrap.edit.excludeMask, 	'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
+set(h.phaseUnwrap.popup.phaseUnwrap,    'Callback', {@popupPhaseUnwrap_Callback,h});
         
+end
+
+function popupPhaseUnwrap_Callback(source,eventdata,h)
+
+% get selected background removal method
+method = source.String{source.Value,1} ;
+
+% switch on target panel
+switch method
+    case 'Laplacian'
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
+        set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
+        
+    case 'Laplacian STI suite'
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
+        set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
+
+    case '3D best path'
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
+
+    case 'Region growing'
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
+
+    case 'Graphcut'
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
+
+    % in the future, add new method here
+end
+
 end

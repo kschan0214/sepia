@@ -20,6 +20,9 @@
 %
 function h = qsmhub_handle_panel_qsm_Star(hParent,h,position)
 
+%% set default values
+defaultPadSize      = 12;
+
 %% Parent handle of CFS panel children
 
 h.qsm.panel.Star = uipanel(hParent,...
@@ -38,11 +41,11 @@ h.qsm.panel.Star = uipanel(hParent,...
         'backgroundcolor',get(h.fig,'color'));
     h.qsm.Star.edit.padSize = uicontrol('Parent',h.qsm.panel.Star,...
         'Style','edit',...
-        'String','12',...
+        'String',num2str(defaultPadSize),...
         'units','normalized','position',[0.25 0.75 0.2 0.2],...
         'backgroundcolor','white');
 
 %% set callbacks
-set(h.qsm.Star.edit.padSize, 'Callback', {@EditInputMinMax_Callback,1,0});
+set(h.qsm.Star.edit.padSize, 'Callback', {@EditInputMinMax_Callback,defaultPadSize,1,0});
 
 end

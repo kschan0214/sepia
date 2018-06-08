@@ -68,7 +68,7 @@ h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeV
     'MenuBar','None','Toolbar','None','Name','QSM hub (beta)','NumberTitle','off');
 
 % create Tabs for GUI
-h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.99 0.99]);
+h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
 h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','One-stop QSM processing');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
@@ -163,7 +163,7 @@ switch eventdata.NewValue.Title
         set(h.pushbutton_start,         'Parent',h.Tabs.QSMHub);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.QSMHub);
-        set(h.checkbox_gpu,             'Enable', 'on');
+%         set(h.checkbox_gpu,             'Enable', 'on');
         
     % Phase unwrapping tab
     case 'Phase unwrapping'
@@ -182,8 +182,8 @@ switch eventdata.NewValue.Title
         set(h.pushbutton_start,         'Parent',h.Tabs.phaseUnwrap);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.phaseUnwrap);
-        set(h.checkbox_gpu,             'Enable', 'off');
-        set(h.checkbox_gpu,             'Value',0);
+%         set(h.checkbox_gpu,             'Enable', 'off');
+%         set(h.checkbox_gpu,             'Value',0);
         
     % background field removal tab    
     case 'Background field removal'
@@ -204,7 +204,7 @@ switch eventdata.NewValue.Title
         set(h.pushbutton_start,         'Parent',h.Tabs.bkgRemoval);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.bkgRemoval);
-        set(h.checkbox_gpu,             'Enable', 'on');
+%         set(h.checkbox_gpu,             'Enable', 'on');
 
     % qsm tab    
     case 'QSM'
@@ -225,7 +225,7 @@ switch eventdata.NewValue.Title
         set(h.pushbutton_start,         'Parent',h.Tabs.qsm);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.qsm);
-        set(h.checkbox_gpu,             'Enable', 'on');
+%         set(h.checkbox_gpu,             'Enable', 'on');
         
 end
 
@@ -242,9 +242,7 @@ set(source,'Enable','off');
 % initialise all possible parameters
 subsampling=1;
 BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
-% BFR_CGdefault=true;
 BFR_padSize = 40;        
-        
 BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
 QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
@@ -299,41 +297,40 @@ end
 switch BFR
     case 'LBV'
         BFR='lbv';
-        try BFR_tol         = str2double(get(h.bkgRemoval.LBV.edit.tol,'String'));              catch; BFR_tol=1e-4;        end
-        try BFR_depth       = str2double(get(h.bkgRemoval.LBV.edit.depth,'String'));            catch; BFR_depth=4;         end
-        try BFR_peel        = str2double(get(h.bkgRemoval.LBV.edit.peel,'String'));             catch; BFR_peel=4;          end
+        BFR_tol         = str2double(get(h.bkgRemoval.LBV.edit.tol,         'String'));
+        BFR_depth       = str2double(get(h.bkgRemoval.LBV.edit.depth,       'String'));
+        BFR_peel        = str2double(get(h.bkgRemoval.LBV.edit.peel,        'String'));
         
     case 'PDF'
         BFR='pdf';
-        try BFR_tol         = str2double(get(h.bkgRemoval.PDF.edit.tol,'String'));              catch; BFR_tol=1e-2;        end
-        try BFR_iteration   = str2double(get(h.bkgRemoval.PDF.edit.maxIter,'String'));          catch; BFR_iteration=50;    end
-        try BFR_padSize     = str2double(get(h.bkgRemoval.PDF.edit.padSize,'String'));          catch; BFR_iteration=40;    end
-%         try BFR_CGdefault = h.popup_PDF_cgSolver.String{h.popup_PDF_cgSolver.Value,1}; catch; BFR_CGdefault=true; end
+        BFR_tol         = str2double(get(h.bkgRemoval.PDF.edit.tol,         'String'));
+        BFR_iteration   = str2double(get(h.bkgRemoval.PDF.edit.maxIter,     'String'));
+        BFR_padSize     = str2double(get(h.bkgRemoval.PDF.edit.padSize,     'String'));
 
     case 'RESHARP'
         BFR='resharp';
-        try BFR_radius      = str2double(get(h.bkgRemoval.RESHARP.edit.radius,'String'));       catch; BFR_radius=4;        end
-        try BFR_alpha       = str2double(get(h.bkgRemoval.RESHARP.edit.lambda,'String'));       catch; BFR_alpha=0.01;      end
+        BFR_radius      = str2double(get(h.bkgRemoval.RESHARP.edit.radius,  'String'));  
+        BFR_alpha       = str2double(get(h.bkgRemoval.RESHARP.edit.lambda,  'String'));  
         
     case 'SHARP'
         BFR='sharp';
-        try BFR_radius      = str2double(get(h.bkgRemoval.SHARP.edit.radius,'String'));         catch; BFR_radius=4;        end
-        try BFR_threshold   = str2double(get(h.bkgRemoval.SHARP.edit.threshold,'String'));      catch; BFR_threshold=0.03;	end
+        BFR_radius      = str2double(get(h.bkgRemoval.SHARP.edit.radius,    'String'));
+        BFR_threshold   = str2double(get(h.bkgRemoval.SHARP.edit.threshold, 'String')); 
         
     case 'VSHARP'
         BFR='vsharp';
-        try maxRadius       = str2double(get(h.bkgRemoval.VSHARP.edit.maxRadius,'String'));     catch; maxRadius=10;        end
-        try minRadius       = str2double(get(h.bkgRemoval.VSHARP.edit.minRadius,'String'));     catch; minRadius=3;         end
+        maxRadius       = str2double(get(h.bkgRemoval.VSHARP.edit.maxRadius,'String')); 
+        minRadius       = str2double(get(h.bkgRemoval.VSHARP.edit.minRadius,'String')); 
         
-        BFR_radius = maxRadius:-1:minRadius;
+        BFR_radius      = maxRadius:-1:minRadius;
         
     case 'iHARPERELLA'
         BFR='iharperella';
-        try BFR_iteration   = str2double(get(h.bkgRemoval.iHARPERELLA.edit.maxIter,'String'));  catch; BFR_iteration=100;   end 
+        BFR_iteration   = str2double(get(h.bkgRemoval.iHARPERELLA.edit.maxIter,'String')); 
         
     case 'VSHARP STI suite'
         BFR='vsharpsti';
-        try BFR_radius      = str2double(get(h.bkgRemoval.VSHARPSTI.edit.smvSize,'String'));    catch; BFR_radius=12;       end
+        BFR_radius      = str2double(get(h.bkgRemoval.VSHARPSTI.edit.smvSize,'String')); 
         
 end
 
@@ -341,64 +338,56 @@ end
 switch QSM_method
     case 'TKD'
         QSM_method='tkd';
-        try QSM_threshold   = str2double(get(h.qsm.TKD.edit.threshold,'String'));       catch; QSM_threshold=0.15;  end
+        QSM_threshold   = str2double(get(h.qsm.TKD.edit.threshold,'String'));  
         
     case 'Closed-form solution'
         QSM_method='closedforml2';
-        try QSM_lambda      = str2double(get(h.qsm.cfs.edit.lambda,'String'));          catch; QSM_lambda=0.13;     end
-        try QSM_optimise    = get(h.qsm.cfs.checkbox.lambda,'Value');                  	catch; QSM_optimise=false;  end
+        QSM_lambda      = str2double(get(h.qsm.cfs.edit.lambda,'String')); 
+        QSM_optimise    = get(h.qsm.cfs.checkbox.lambda,'Value');  
         
     case 'STI suite iLSQR'
         QSM_method='stisuiteilsqr';
-        try QSM_threshold	= str2double(get(h.qsm.STIiLSQR.edit.threshold,'String'));  catch; QSM_threshold=0.01;  end
-        try QSM_maxiter     = str2double(get(h.qsm.STIiLSQR.edit.maxIter,'String'));	catch; QSM_maxiter=100;     end
-        try QSM_tol1        = str2double(get(h.qsm.STIiLSQR.edit.tol1,'String'));       catch; QSM_tol1=0.01;       end
-        try QSM_tol2        = str2double(get(h.qsm.STIiLSQR.edit.tol2,'String'));       catch; QSM_tol2=0.001;      end
-        try QSM_padsize     = str2double(get(h.qsm.STIiLSQR.edit.padSize,'String'));    catch; QSM_padsize=4;       end
+        QSM_threshold	= str2double(get(h.qsm.STIiLSQR.edit.threshold,'String')); 
+        QSM_maxiter     = str2double(get(h.qsm.STIiLSQR.edit.maxIter,'String'));	
+        QSM_tol1        = str2double(get(h.qsm.STIiLSQR.edit.tol1,'String'));  
+        QSM_tol2        = str2double(get(h.qsm.STIiLSQR.edit.tol2,'String'));  
+        QSM_padsize     = str2double(get(h.qsm.STIiLSQR.edit.padSize,'String'));  
         
         QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
         
     case 'iLSQR'
         QSM_method='ilsqr';
-        try QSM_tol         = str2double(get(h.qsm.iLSQR.edit.tol,'String'));           catch; QSM_tol=0.001;       end
-        try QSM_maxiter     = str2double(get(h.qsm.iLSQR.edit.maxIter,'String'));       catch; QSM_maxiter=100;     end
-        try QSM_lambda      = str2double(get(h.qsm.iLSQR.edit.lambda,'String'));        catch; QSM_lambda=0.13;     end
-        try QSM_optimise    = get(h.qsm.iLSQR.checkbox.lambda,'Value');                 catch; QSM_optimise=false;  end 
+        QSM_tol         = str2double(get(h.qsm.iLSQR.edit.tol,'String'));        
+        QSM_maxiter     = str2double(get(h.qsm.iLSQR.edit.maxIter,'String'));
+        QSM_lambda      = str2double(get(h.qsm.iLSQR.edit.lambda,'String'));  
+        QSM_optimise    = get(h.qsm.iLSQR.checkbox.lambda,'Value'); 
         
     case 'FANSI'
         QSM_method='fansi';
-        try QSM_tol         = str2double(get(h.qsm.FANSI.edit.tol,'String'));           catch; QSM_tol=1;           end
-        try QSM_lambda      = str2double(get(h.qsm.FANSI.edit.lambda,'String'));        catch; QSM_lambda=3e-5;     end
-        try QSM_mu1         = str2double(get(h.qsm.FANSI.edit.mu,'String'));            catch; QSM_mu1=5e-5;        end
-        try QSM_mu2         = str2double(get(h.qsm.FANSI.edit.mu2,'String'));           catch; QSM_mu2=1;           end
-        try QSM_maxiter     = str2double(get(h.qsm.FANSI.edit.maxIter,'String'));       catch; QSM_maxiter=50;      end
-        try 
-            QSM_solver      = h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1}; 
-        catch
-            QSM_solver      ='linear'; 
-        end 
-        try 
-            QSM_constraint  = h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1}; 
-        catch
-            QSM_constraint  ='tv'; 
-        end 
+        QSM_tol         = str2double(get(h.qsm.FANSI.edit.tol,'String'));    
+        QSM_lambda      = str2double(get(h.qsm.FANSI.edit.lambda,'String'));   
+        QSM_mu1         = str2double(get(h.qsm.FANSI.edit.mu,'String'));    
+        QSM_mu2         = str2double(get(h.qsm.FANSI.edit.mu2,'String'));  
+        QSM_maxiter     = str2double(get(h.qsm.FANSI.edit.maxIter,'String'));   
+        QSM_solver      = h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1}; 
+        QSM_constraint  = h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1}; 
         
     case 'Star-QSM'
         QSM_method='star';
-        try QSM_padsize   = str2double(get(h.qsm.Star.edit.padSize,'String'));          catch; QSM_padsize=4;       end
-        QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
+        QSM_padsize     = str2double(get(h.qsm.Star.edit.padSize,'String')); 
+        QSM_padsize     = [QSM_padsize,QSM_padsize,QSM_padsize];
         
     case 'MEDI'
         QSM_method='medi_l1';
-        try QSM_lambda      = str2double(get(h.qsm.MEDI.edit.lambda,'String'));         catch; QSM_lambda=1000;     end 
-        try QSM_wData       = str2double(get(h.qsm.MEDI.edit.weightData,'String'));     catch; QSM_wData=1;         end 
-        try QSM_wGradient   = str2double(get(h.qsm.MEDI.edit.weightGradient,'String')); catch; QSM_wGradient=1;     end 
-        try QSM_zeropad     = str2double(get(h.qsm.MEDI.edit.zeropad,'String'));        catch; QSM_zeropad=0;       end 
-        try QSM_radius      = str2double(get(h.qsm.MEDI.edit.smv_radius,'String'));     catch; QSM_radius=5;        end 
-        try QSM_isSMV       = get(h.qsm.MEDI.checkbox.smv,'Value');                     catch; QSM_isSMV=0;         end 
-        try QSM_merit       = get(h.qsm.MEDI.checkbox.merit,'Value');                   catch; QSM_merit=0;         end 
-        try QSM_isLambdaCSF = get(h.qsm.MEDI.checkbox.lambda_csf,'Value');              catch; QSM_isLambdaCSF=0;   end 
-        try QSM_lambdaCSF   = str2double(get(h.qsm.MEDI.edit.lambda_csf,'String'));     catch; QSM_lambdaCSF=100;   end 
+        QSM_lambda      = str2double(get(h.qsm.MEDI.edit.lambda,'String'));   
+        QSM_wData       = str2double(get(h.qsm.MEDI.edit.weightData,'String'));    
+        QSM_wGradient   = str2double(get(h.qsm.MEDI.edit.weightGradient,'String')); 
+        QSM_zeropad     = str2double(get(h.qsm.MEDI.edit.zeropad,'String'));    
+        QSM_radius      = str2double(get(h.qsm.MEDI.edit.smv_radius,'String'));   
+        QSM_isSMV       = get(h.qsm.MEDI.checkbox.smv,'Value');   
+        QSM_merit       = get(h.qsm.MEDI.checkbox.merit,'Value');     
+        QSM_isLambdaCSF = get(h.qsm.MEDI.checkbox.lambda_csf,'Value');        
+        QSM_lambdaCSF   = str2double(get(h.qsm.MEDI.edit.lambda_csf,'String'));   
         
 end
 
