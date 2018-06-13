@@ -96,9 +96,6 @@ h = qsmhub_handle_panel_qsm(h.Tabs.qsm,                         h,[0.01 0.54]);
 
 %% utility tab
 % get header
-% h = qsmhub_handle_panel_utility_get_header(h.Tabs.utility,      h,[0.01 0.7]);
-% % get ventricle mask
-% h = qsmhub_handle_panel_utility_mask_ventricle(h.Tabs.utility,  h,[0.01 0.45]);
 h = qsmhub_handle_panel_Utility(h.Tabs.utility,                 h,[0.01 0.29]);
 
 %% GUI with QSM one-stop station tab

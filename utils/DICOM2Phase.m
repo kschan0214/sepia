@@ -27,15 +27,15 @@ scaleSlope=niiPhase.hdr.dime.scl_slope;
 scaleIntercept=niiPhase.hdr.dime.scl_inter;
 
 % compute the new maximum value
-newMax = niiPhase.hdr.dime.glmax*2 + scaleIntercept;
+newMax = niiPhase.hdr.dime.glmax*scaleSlope + scaleIntercept;
 % compute the new minimum value
-newMin = niiPhase.hdr.dime.glmin*2 + scaleIntercept;
+newMin = niiPhase.hdr.dime.glmin*scaleSlope + scaleIntercept;
 % +1 for 0
 fullRange = newMax-newMin + 1;
 
 % scale to true value of nifti file
 dicomPhaseRescale = (dicomPhase*scaleSlope) + scaleIntercept ;
 % scale the full range to [-pi,pi)
-phase = (dicomPhaseRescale-scaleIntercept) / fullRange * 2*pi - pi;
+phase = (dicomPhaseRescale-newMin) / fullRange * 2*pi - pi;
 
 end
