@@ -35,7 +35,7 @@ utilityName = {'Get header info','Get lateral ventricle mask'};
 
 % Parent handle of phase unwrapping panel
 h.StepsPanel.Utility = uipanel(hParent,'Title','Utility',...
-    'position',[position(1) position(2) 0.98 0.70]);
+    'position',[position(1) position(2) 0.98 0.60]);
     
 %     % Temporo-spatial unwrapping methods
 %     h.utility.text.utilityMethod = uicontrol('Parent',h.StepsPanel.Utility,...

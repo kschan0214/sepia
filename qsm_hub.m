@@ -95,8 +95,7 @@ h = qsmhub_handle_panel_dataIO(h.Tabs.qsm,                      h,[0.01 0.8]);
 h = qsmhub_handle_panel_qsm(h.Tabs.qsm,                         h,[0.01 0.54]);
 
 %% utility tab
-% get header
-h = qsmhub_handle_panel_Utility(h.Tabs.utility,                 h,[0.01 0.29]);
+h = qsmhub_handle_panel_Utility(h.Tabs.utility,                 h,[0.01 0.39]);
 
 %% GUI with QSM one-stop station tab
 % I/O
