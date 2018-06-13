@@ -216,7 +216,7 @@ Chunlei Liu, PhD - University of California Berkeley, CA, USA
 - Star-QSM   
 
 [**FANSI Toolbox**](https://martinos.org/~berkin/software.html) developed by  
-Carlos Milovix, PhD - Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
+Carlos Milovic, PhD - Biomedical Imaging Center at Pontificia Universidad Católica de Chile   
 Berkin Bilgic, PhD - Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA    
 Bo Zhao, PhD - Martinos Center for Biomedical Imaging, Harvard Medical School, MA, USA   
 Julio Acosta-Cabronero, PhD - Wellcome Trust Centre for Neuroimaging, Institute of Neurology, 
