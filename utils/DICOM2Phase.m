@@ -15,7 +15,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 11 April 2018
-% Date last modified: 19 April 2018
+% Date last modified: 12 June 2018
 %
 %
 function phase = DICOM2Phase(niiPhase)
