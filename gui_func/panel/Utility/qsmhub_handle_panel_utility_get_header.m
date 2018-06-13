@@ -180,11 +180,20 @@ function ButtonOpen_Utility_getHeader_Callback(source,eventdata,h,field)
 switch field
     case 'te'
         % te file can be text file or mat file
-        [tefileName,pathDir] = uigetfile({'*.mat;*.txt'},'Select TE file');
+        [tefileName,pathDir] = uigetfile({'*.txt;*.mat;*.json'},'Select TE file(s)','MultiSelect', 'on');
+        
+        fullname = [];
+        if iscell(tefileName)
+            for kf = 1:length(tefileName)
+                fullname = [fullname, fullfile(pathDir,tefileName{kf}) ';'];
+            end
+        else
+            fullname = fullfile(pathDir,tefileName);
+        end
         
         % display file directory
         if pathDir ~= 0
-            set(h.Utility.panel.getHeader.edit.teFile,'String',fullfile(pathDir,tefileName));
+            set(h.Utility.getHeader.edit.teFile,'String',fullname);
         end
 
     case 'nitfi'
@@ -192,9 +201,9 @@ switch field
         [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select mask file');
 
         if pathDir ~= 0
-            set(h.Utility.panel.getHeader.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
+            set(h.Utility.getHeader.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
             % automatically set default output field
-            set(h.Utility.panel.getHeader.edit.outputDir,     'String',pathDir);
+            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
         end
         
     case 'dicom'
@@ -203,9 +212,9 @@ switch field
 
         if pathDir ~= 0
             % set input edit field for display
-            set(h.Utility.panel.getHeader.edit.dicomInput,    'String',pathDir);
+            set(h.Utility.getHeader.edit.dicomInput,    'String',pathDir);
             % automatically set default output field
-            set(h.Utility.panel.getHeader.edit.outputDir,     'String',pathDir);
+            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
         end
         
     case 'output'
@@ -214,7 +223,7 @@ switch field
         pathDir = uigetdir;
 
         if pathDir ~= 0
-            set(h.Utility.panel.getHeader.edit.outputDir,     'String',pathDir);
+            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
         end
 end
 
@@ -231,16 +240,16 @@ set(source,'Enable','off');
 try 
 
 % get DICOM directory (if any)
-dicomDir    = get(h.Utility.panel.getHeader.edit.dicomInput,'String'); 
+dicomDir    = get(h.Utility.getHeader.edit.dicomInput,'String'); 
 % get output directory, assume the same directory as input directory/file
-outputDir = get(h.Utility.panel.getHeader.edit.outputDir, 'String');
+outputDir = get(h.Utility.getHeader.edit.outputDir, 'String');
 
 
 % if no dicom directory detected then get te from user input
 if isempty(dicomDir)
     
     % get NIfTI file (if any)
-    niftiFile   = get(h.Utility.panel.getHeader.edit.niftiInput, 'String');
+    niftiFile   = get(h.Utility.getHeader.edit.niftiInput, 'String');
     
     if isempty(niftiFile)
         % This function requires input file/directory
@@ -248,11 +257,11 @@ if isempty(dicomDir)
     else
         
         % get user input magnetic field strength
-        b0          = str2double(get(h.Utility.panel.getHeader.edit.userB0, 'String'));
+        b0          = str2double(get(h.Utility.getHeader.edit.userB0, 'String'));
         % get user input magnetic field direction
-        b0dir       = str2num(get(h.Utility.panel.getHeader.edit.userB0dir, 'String'));
+        b0dir       = str2num(get(h.Utility.getHeader.edit.userB0dir, 'String'));
         % get user input voxel size
-        voxelSize   = str2num(get(h.Utility.panel.getHeader.edit.userVoxelSize, 'String'));
+        voxelSize   = str2num(get(h.Utility.getHeader.edit.userVoxelSize, 'String'));
 
         % check validity of input voxel size
         if length(voxelSize) ~= 3 && ~isempty(voxelSize) && isempty(dicomDir)
@@ -271,19 +280,36 @@ if isempty(dicomDir)
         end
 
         % try to get TE variable in this stage
-        teFullName = get(h.Utility.panel.getHeader.edit.teFile, 'String');
-        teUserInput = get(h.Utility.panel.getHeader.edit.userTE, 'String');
+        teFullName = get(h.Utility.getHeader.edit.teFile, 'String');
+        teUserInput = get(h.Utility.getHeader.edit.userTE, 'String');
         if ~isempty(teFullName)
-            % get data type
-            [~,~,ext] = fileparts(teFullName);
+            
+            kInd = strfind(teFullName,';');
+            if kInd ~= 0
+                for kf = 1:length(kInd)
+                    if kf==1
+                        tmpName{kf} = teFullName(1:kInd(kf)-1);
+                    else
+                        tmpName{kf} = teFullName(kInd(kf-1)+1:kInd(kf)-1);
+                    end
+                end
+                teFullName = tmpName;
+                [~,~,ext] = fileparts(teFullName{1});
+            else
+                % get data type
+                [~,~,ext] = fileparts(teFullName);
+            end
 
             if strcmpi(ext,'.mat')
                 % if mat file then try to load 'TE' directly
                 try load(teFullName,'TE');  catch; error('No variable named TE.'); end
-            else
+            elseif strcmpi(ext, '.txt')
                 % if text file the try to read the TEs line by line
                 TE = readTEfromText(teFullName);
                 TE = TE(:);
+            elseif strcmpi(ext, '.json')
+                TE = readTEfromJSON(teFullName);
+                TE = TE(:).';
             end
         else
             % read user input array

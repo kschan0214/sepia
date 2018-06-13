@@ -16,7 +16,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 24 May 2018
-% Date last modified: 25 may 2018
+% Date last modified: 12 June 2018
 %
 %
 function ExportQMSHubHeaderIOWrapper(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
@@ -58,7 +58,11 @@ switch flag
         end
         if ~isempty(TE)
             TE = te_input;
-            delta_TE = TE(2)-TE(1);
+            if length(TE)<2
+                delta_TE = TE;
+            else
+                delta_TE = TE(2)-TE(1);
+            end
         end
         
 end

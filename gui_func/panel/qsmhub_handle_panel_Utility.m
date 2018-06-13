@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_phaseUnwrap(hParent,h,position)
+%% h = qsmhub_handle_panel_Utility(hParent,h,position)
 %
 % Input
 % --------------
@@ -15,9 +15,8 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 16 April 2018
-% Date modified: 18 April 2018
-% Date modified: 8 June 2018
+% Date created: 12 June 2018
+% Date modified:
 %
 %
 function h = qsmhub_handle_panel_Utility(hParent,h,position)
@@ -36,7 +35,7 @@ utilityName = {'Get header info','Get lateral ventricle mask'};
 
 % Parent handle of phase unwrapping panel
 h.StepsPanel.Utility = uipanel(hParent,'Title','Utility',...
-    'position',[position(1) position(2) 0.95 0.70]);
+    'position',[position(1) position(2) 0.98 0.70]);
     
 %     % Temporo-spatial unwrapping methods
 %     h.utility.text.utilityMethod = uicontrol('Parent',h.StepsPanel.Utility,...
@@ -48,11 +47,11 @@ h.StepsPanel.Utility = uipanel(hParent,'Title','Utility',...
     h.utility.popup.utilityMethod = uicontrol('Parent',h.StepsPanel.Utility,...
         'Style','popup',...
         'String',utilityName,...
-        'units','normalized','position',[0.31 0.8 0.5 0.2]); 
+        'units','normalized','position',[0.31 0.85 0.5 0.1]); 
     
     
     % define position and size of all method panels
-position_child = [0.01 0.38 0.98 0.5];
+position_child = [0.01 0.24 0.98 0.6];
 
     % get header
     h = qsmhub_handle_panel_utility_get_header(h.StepsPanel.Utility,...
