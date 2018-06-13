@@ -90,12 +90,25 @@ should also be working with MATLAB R2017a or later, except 'LBV' of background f
 
 You can find the specific requirements of the input files in the 'standlone description' section.
 
+The simplest way to start with **QSM Hub** is to use DICOM images, as they contain all the essential 
+header info such as B0 direction and echo times. However, most of the QSM methods require accurate
+brain mask, from which **QSM Hub** can only provide a limited function of FSL's BET tool to do the 
+job. Alternatively, if you have a brain mask in NIfTI format you can specify the mask in the GUI 
+alongside with your DICOM directory input.   
+
 If you prefer starting with the unprocessed data in NIfTI format , **QSM Hub** expects the input to 
 be 4D (row,col,slice,echo). I suggest using 
 [MRIConvert](https://lcni.uoregon.edu/downloads/mriconvert) to convert your mGRE data with the 
 following setting checked:  
 'Option' -> 'Save multivolumes series as 4D files'  
-In this way your mGRE data will be stored as 4D FSL NIfTI data that is a valid input of **QSM Hub**. 
+In this way your mGRE data will be stored as 4D FSL NIfTI data that is a valid input of **QSM Hub**.  
+
+Althernatively, you can also use [dcm2niix](https://github.com/neurolabusc/dcm2niix) to convert 
+your data. Please make sure the 'merge' option (-m) is set to 'no' for the conversion (i.e. 
+"dcm2niix -m n"). In this way multiple 3D volumes (depends on the number of echoes of your data) 
+together with the TE-specific json files will be created (if you enable the merge option of 
+dcm2niix you will only have one json file containing one TE). You can then merge the echo images 
+into 4D using tools like [fslmerge](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Fslutils).  
 
 **QSM Hub** requires a specific MAT-file (.mat) that stores some header information of the input 
 data. The header file contains the following variables (case-sensitive):
@@ -119,21 +132,20 @@ If you use MRIConvert to convert DICOM images to NIfTI format, a text file will 
 alongside with the NIfTI data. This text file contains some basic header information including the 
 echo times. When you use the 'Get qsm_hub header' utility function, you can load this text file as 
 the 'TE file' so that the correct echo time information can be extracted and stored in the MAT-file 
-header.
+header.  
+(20180613 update) You can now also select multiple json files to extract the echo time information.  
 
 ----------------------------------------------------------------------------------------------------
 
 ## Checking QSM result
 --------------------------------------------------
 
-Sometimes the values of QSM might be inverted. This may be due to the way of how the phase 
-data being read. To check if this is the case you could look into the QSM map. The deep gray matter 
-structure should be appeared as bright (positive value) 
-If it appears in the opposite way then you might invert the result by multiply the map with -1, i.e.  
-
-`QSM_corr = -QSM; `
-
-or checked the 'Invert phase' option in the GUI.
+Sometimes the values of QSM might be inverted (i.e. the positive susceptibility source appears in 
+dark colour and negative susceptibility source appears in bright colour). This may be caused by how 
+the phase data being read. To check if this is the case you could look into the QSM map. The deep 
+gray matter structure should be appeared as bright (positive value) 
+If it appears in the opposite way then you might check the 'Invert phase' option in the GUI to 
+reserve the phase direction.  
 
 ----------------------------------------------------------------------------------------------------
 
