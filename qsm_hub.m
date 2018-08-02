@@ -461,39 +461,54 @@ function GenerateLogFile(tab)
 switch tab
     case 'One-stop QSM processing'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'QSMHub(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputBasename,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
-        fprintf(fid,'''Subsampling'',%i,''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',subsampling,BFR,refine,BFR_tol);
+        fprintf(fid,'QSMHub(''%s'',...\n',inputDir);
+        fprintf(fid,'''%s'',...\n',outputBasename);
+        fprintf(fid,'''%s'',...\n',maskFullName);
+        fprintf(fid,'''invert'',%i,''FSLBet'',%i,''eddy'',%i,''GPU'',%i,...\n',isInvert,isBET,isEddyCorrect,isGPU);
+        fprintf(fid,'''phase_combine'',''%s'',''unwrap'',''%s'',...\n',phaseCombMethod,phaseUnwrap);
+        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%g,...\n',subsampling,excludeMaskThreshold);
+        fprintf(fid,'''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',BFR,refine,BFR_tol);
         fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
         fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,...\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
         fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
-        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',''exclude_threshold'',%i,...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,excludeMaskThreshold);
+        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);
         fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
-        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g,''eddy'',%i,''GPU'',%i);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF,isEddyCorrect,isGPU);
+        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF);
         fclose(fid);
         
     case 'Phase unwrapping'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',''%s'',''FSLBet'',%i,''mask'',''%s'',''phase_combine'',''%s'',''unwrap'',''%s'',...\n',inputDir,outputBasename,isBET,maskFullName,phaseCombMethod,phaseUnwrap);
-        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%i,''eddy'',%i,''GPU'',%i);\n',subsampling,excludeMaskThreshold,isEddyCorrect,isGPU);
+        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',...\n',inputDir);
+        fprintf(fid,'''%s'',...\n',outputBasename);
+        fprintf(fid,'''%s'',...\n',maskFullName);
+        fprintf(fid,'''invert'',%i,''FSLBet'',%i,''eddy'',%i,...\n',isInvert,isBET,isEddyCorrect);
+        fprintf(fid,'''phase_combine'',''%s'',''unwrap'',''%s'',...\n',phaseCombMethod,phaseUnwrap);
+        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%g);\n',subsampling,excludeMaskThreshold);
         fclose(fid);
     
     case 'Background field removal'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputBasename,maskFullName);
+        fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',...\n',inputDir);
+        fprintf(fid,'''%s'',...\n',outputBasename);
+        fprintf(fid,'''%s'',...\n',maskFullName);
+        fprintf(fid,'''GPU'',''%i'',...\n',isGPU);
         fprintf(fid,'''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',BFR,refine,BFR_tol);
         fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
-        fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,''GPU'',%i);\n',num2str(BFR_radius),BFR_alpha,BFR_threshold,isGPU);
+        fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g);\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
         fclose(fid);
     
     case 'QSM'
         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'qsmMacroIOWrapper(''%s'',''%s'',''mask'',''%s'',...\n',inputDir,outputBasename,maskFullName);
+        fprintf(fid,'qsmMacroIOWrapper(''%s'',...\n',inputDir);
+        fprintf(fid,'''%s'',...\n',outputBasename);
+        fprintf(fid,'''%s'',...\n',maskFullName);
+        fprintf(fid,'''GPU'',''%i'',...\n',isGPU);
         fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
         fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
         fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);
         fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
-        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g,''GPU'',%i);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF,isGPU);
+        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF);
         fclose(fid);
 
 end

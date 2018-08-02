@@ -107,11 +107,14 @@ if ~isempty(inputNiftiList)
     % look for magnitude and phase files
     for klist = 1:length(inputNiftiList)
         % check magnitude data
-        if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
+        if ContainName(lower(inputNiftiList(klist).name),'magn') && ~isMagnLoad
             inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-            magn = double(inputMagnNifti.img);
-            isMagnLoad = true;
-            disp('Magnitude data is loaded.')
+            % only load multi-echo magnitude data
+            if size(inputMagnNifti.img,4) > 1
+                magn = double(inputMagnNifti.img);
+                isMagnLoad = true;
+                disp('Magnitude data is loaded.')
+            end
         end
         
         % check phase data
