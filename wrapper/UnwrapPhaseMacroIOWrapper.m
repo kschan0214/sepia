@@ -231,7 +231,7 @@ end
 
 %% total field and phase unwrap
 % add 'unwrap' method PATH
-qsm_hub_AddMethodPath(unwrap);
+% qsm_hub_AddMethodPath(unwrap);
 
 % Eddy current correction for bipolar readout
 if isEddyCorrect

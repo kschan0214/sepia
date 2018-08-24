@@ -296,8 +296,6 @@ if isempty(mask) || isBET
 end
 
 %% total field and Laplacian phase unwrap
-% add 'unwrap' method PATH
-qsm_hub_AddMethodPath(unwrap);
 
 % Eddy current correction for bipolar readout
 if isEddyCorrect
@@ -372,7 +370,6 @@ if relativeResidual ~= Inf
 end
 
 %% Background field removal
-qsm_hub_AddMethodPath(BFR);
 disp('Recovering local field...');
 
 % core of background field removal
@@ -411,7 +408,6 @@ wmap = wmap./max(wmap(maskFinal>0));
 
 
 %% qsm
-qsm_hub_AddMethodPath(QSM_method);
 disp('Computing QSM...');
 
 % some QSM algorithms work better with certain unit of the local field map

@@ -213,7 +213,6 @@ wmap(isnan(wmap)) = 0;
 wmap = wmap./max(wmap(maskFinal>0));
 
 %% qsm
-qsm_hub_AddMethodPath(QSM_method);
 disp('Computing QSM...');
 
 % some QSM algorithms work better with certain unit of the local field map

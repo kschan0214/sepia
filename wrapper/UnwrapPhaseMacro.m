@@ -86,6 +86,9 @@ else
     method = 'Laplacian';
 end
 
+% add path
+qsm_hub_AddMethodPath(method);
+
 disp(['The following unwrapping method is being used: ' method]);
 %% phase unwrapping
 switch method

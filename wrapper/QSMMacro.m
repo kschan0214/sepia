@@ -134,6 +134,9 @@ else
     thre_tkd = 0.15;
 end
 
+% add path
+qsm_hub_AddMethodPath(method);
+
 disp(['The following QSM algorithm will be used: ' method]);
 
 %% qsm algorithm

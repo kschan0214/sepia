@@ -116,6 +116,9 @@ else
     refine = false;
 end
 
+% add path
+qsm_hub_AddMethodPath(method);
+
 disp(['The following method is being used: ' method]);
 
 %% background field removal

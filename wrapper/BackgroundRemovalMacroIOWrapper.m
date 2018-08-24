@@ -157,7 +157,6 @@ else
 end
 
 %% Background field removal
-qsm_hub_AddMethodPath(BFR);
 disp('Recovering local field...');
 
 % core of background field removal

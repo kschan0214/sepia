@@ -61,10 +61,10 @@ if nargin > 0
             addpath(genpath(MEDI_dir));
             addpath(genpath(STISuite_dir));
 
-        case 'rg'
+        case 'regiongrowing'
             addpath(genpath(MEDI_dir));
 
-        case 'gc'    
+        case 'graphcut'    
             addpath(genpath(MEDI_dir));
 
         case 'bestpath3d'
