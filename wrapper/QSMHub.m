@@ -186,6 +186,9 @@ if ~isempty(inputNiftiList)
     outputNiftiTemplate = inputMagnNifti;
     
 else
+    % load DICOM reader path
+    qsm_hub_AddMethodPath('dicom');
+    
     % if no nifti file then check for DICOM files
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
     
@@ -349,7 +352,7 @@ end
 
 % exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
-r2s = arlo(TE,magn);
+r2s = R2star_trapezoidal(magn,TE);
 relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
 
 maskReliable = relativeResidual < exclude_threshold;
