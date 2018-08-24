@@ -13,7 +13,9 @@
 %
 %
 %% Specify the directories of the toolbox here
+fullName = mfilename('fullpath');
+currDir = fileparts(fullName);
 
-MEDI_dir = '/path/to/your/MEDI/toolbox/directory/';
-STISuite_dir = '/path/to/your/STISuite_dir/toolbox/directory/';
-FANSI_dir = '/path/to/your/FANSI_dir/toolbox/directory/';
+MEDI_dir = [currDir filesep 'MEDI_toolbox/MEDI_toolbox_20180625/'];
+STISuite_dir = [currDir filesep 'STI_Suite/STISuite_V3.0/'];
+FANSI_dir = [currDir filesep 'FANSI_toolbox/FANSI-toolbox-d33759b970790cc8754adc9d0398cc3d07546074/'];
