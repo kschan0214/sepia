@@ -10,10 +10,11 @@
 %
 function qsm_hub_AddMethodPath(method)
 % specify the toolbox(es) directory
-MEDI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/MEDI_toolbox/MEDI_toolbox_20180625/';
-STISuite_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/STI_Suite/STISuite_V3.0/';
-FANSI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/FANSI_toolbox/FANSI-toolbox-d33759b970790cc8754adc9d0398cc3d07546074/';
-
+% MEDI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/MEDI_toolbox/MEDI_toolbox_20180625/';
+% STISuite_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/STI_Suite/STISuite_V3.0/';
+% FANSI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/FANSI_toolbox/FANSI-toolbox-d33759b970790cc8754adc9d0398cc3d07546074/';
+SpecifyToolboxesDirectory;
+CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir);
 
 % get the full path of this file
 fullName = mfilename('fullpath');
@@ -122,4 +123,21 @@ if nargin > 0
     end
 end
 
+end
+
+%% check the following paths exist or not
+function CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir)
+
+if exist(MEDI_dir,'dir')~=7
+    error('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
+end
+
+if exist(STISuite_dir,'dir')~=7
+    error('Please specify a correct path for STI Suite in SpecifyToolboxesDirectory.m');
+end
+
+if exist(FANSI_dir,'dir')~=7
+    error('Please specify a correct path for FANSi toolbox in SpecifyToolboxesDirectory.m');
+end
+    
 end
