@@ -1,2 +1,0 @@
-%  Wei Li, PhD, UTHSCSA
-%
