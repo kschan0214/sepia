@@ -31,29 +31,30 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 2 June 2018
+% Date last modified: 26 August 2018
 %
 %
-function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,output,maskFullName,varargin)
+function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,varargin)
 %% add general Path
 qsm_hub_AddMethodPath;
 
 %% define variables
 prefix = 'squirrel_';
 gyro = 42.57747892;
+isInputDir = true;
 % make sure the input only load once (first one)
 isTotalFieldLoad = false;
 isFieldmapSDLoad = false;
 
-%% Check output directory exist or not
+%% Check if output directory exists 
 output_index = strfind(output, filesep);
 outputDir = output(1:output_index(end));
+% get prefix
 if ~isempty(output(output_index(end)+1:end))
     prefix = [output(output_index(end)+1:end) '_'];
 end
-
+% if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
-    % if not then create the directory
     mkdir(outputDir);
 end
 
@@ -68,59 +69,122 @@ end
 
 %% Read input
 disp('Reading data...');
-% look for nifti files 
-inputNiftiList = dir([inputDir '/*.nii*']);
-if ~isempty(inputNiftiList)
-    % look for total field map and fieldmap SD (optional) NIfTI files
-    for klist = 1:length(inputNiftiList)
 
-        if ContainName(inputNiftiList(klist).name,'totalfield') && ~isTotalFieldLoad
-            inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+% Step 1: check input for nifti files first
+if isstruct(input)
+    % Option 1: input are files
+    inputNiftiList = input;
+    isInputDir = false;
+    
+    % take the total field map directory as reference input directory 
+    [inputDir,~,~] = fileparts(inputNiftiList(1).name);
+else
+    % Option 2: input is a directory
+    inputDir = input;
+    inputNiftiList = dir([inputDir '/*.nii*']);
+end
+
+% Step 2: load data
+if ~isempty(inputNiftiList)
+    
+    if ~isInputDir
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+                        %%%%%%%%%% Total field map %%%%%%%%%%
+        if ~isempty(inputNiftiList(1).name)
+            inputTotalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
             totalField = double(inputTotalFieldNifti.img);
             isTotalFieldLoad = true;
             
             disp('Total field map is loaded.')
+        else
+            error('Please specify a 3D total field map.');
         end
         
-        if ContainName(inputNiftiList(klist).name,'fieldmapsd') && ~isFieldmapSDLoad
-            inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                         %%%%%%%%%% Fieldmapsd data %%%%%%%%%%
+        if ~isempty(inputNiftiList(3).name)
+            inputFieldMapSDNifti = load_untouch_nii([inputNiftiList(3).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
             
             disp('Field map SD data is loaded.')
+        else
+            disp('No field map standard deviation data is loaded.');
         end
-    end
-    
-    % if no files matched the name format then displays error message
-    if ~isTotalFieldLoad
-        error('No total field map is loaded. Please make sure the input directory contains files with name *totalfield*');
-    end
-    
-    % look for header file
-    if ~isempty(dir([inputDir '/*header*']))
-        % load header
-        headerList = dir([inputDir '/*header*']);
-        load([inputDir filesep headerList(1).name]);
         
-        disp('Header data is loaded.');
-        
+                        %%%%%%%%%% qsm hub header %%%%%%%%%%
+        if ~isempty(inputNiftiList(4).name)
+            load([inputNiftiList(4).name]);
+            disp('Header data is loaded.');
+        else
+            error('Please specify a qsm_hub header.');
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
-        disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        % create synthetic header in case no qsm_hub's header is found
-        [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputTotalFieldNifti);
+        % loop all NIfTI files in the directory for total field map and fieldmap SD (optional)
+        for klist = 1:length(inputNiftiList)
+
+                        %%%%%%%%%% Total field map %%%%%%%%%%
+            if ContainName(inputNiftiList(klist).name,'totalfield') && ~isTotalFieldLoad
+                inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                totalField = double(inputTotalFieldNifti.img);
+                isTotalFieldLoad = true;
+
+                disp('Total field map is loaded.')
+            end
+
+                         %%%%%%%%%% Fieldmapsd data %%%%%%%%%%
+            if ContainName(inputNiftiList(klist).name,'fieldmapsd') && ~isFieldmapSDLoad
+                inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                fieldmapSD = double(inputFieldMapSDNifti.img);
+                isFieldmapSDLoad = true;
+
+                disp('Field map SD data is loaded.')
+            end
+        end
+
+        % if no files matched the name format then displays error message
+        if ~isTotalFieldLoad
+            error('No total field map is loaded. Please make sure the input directory contains files with name *totalfield*');
+        end
+        if ~isFieldmapSDLoad
+            disp('No field map standard deviation data is loaded.');
+        end
+
+        %%%%%%%%%% qsm hub header file %%%%%%%%%%
+        if ~isempty(dir([inputDir '/*header*']))
+            % load header
+            headerList = dir([inputDir '/*header*']);
+            load([inputDir filesep headerList(1).name]);
+
+            disp('Header data is loaded.');
+
+        else
+            disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+
+            % create synthetic header in case no qsm_hub's header is found
+            [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputTotalFieldNifti);
+
+            % if no header file then save the synthetic header in output dir
+            save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
+            'TE','B0_dir','B0');
+
+            disp('The synthetic header is saved in output directory.');
+
+        end
+
+        % if no fieldmapSD found then creates one with all voxels have the same value
+        if ~isFieldmapSDLoad
+            fieldmapSD = ones(matrixSize) * 0.01;
+        end
         
-        % if no header file then save the synthetic header in output dir
-        save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
-        'TE','B0_dir','B0');
-        
-        disp('The synthetic header is saved in output directory.');
-        
-    end
-    
-    % if no fieldmapSD found then creates one with all voxels have the same value
-    if ~isFieldmapSDLoad
-        fieldmapSD = ones(matrixSize) * 0.01;
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     
     % store the header the NIfTI files, all following results will have
@@ -142,11 +206,11 @@ disp(['Field strength(T) =  ' num2str(B0)]);
 maskList = dir([inputDir '/*mask*']);
 
 if ~isempty(maskFullName)
-% first read mask if file is provided
+    % Option 1: mask file is provided
     mask = load_nii_img_only(maskFullName) > 0;
     
 elseif ~isempty(maskList) 
-% read mask if input directory contains *mask*
+    % Option 2: input directory contains NIfTI file with name '*mask*'
     inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
 	mask = inputMaskNii.img > 0;
     
@@ -157,7 +221,6 @@ else
 end
 
 %% Background field removal
-qsm_hub_AddMethodPath(BFR);
 disp('Recovering local field...');
 
 % core of background field removal

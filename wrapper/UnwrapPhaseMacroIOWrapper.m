@@ -27,16 +27,17 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 2 June 2018
+% Date last modified: 26 August 2018
 %
 %
-function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(inputDir,output,maskFullName,varargin)
+function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,varargin)
 %% add general Path
 qsm_hub_AddMethodPath;
 
 %% define variables
 prefix = 'squirrel_';
 gyro = 42.57747892;
+isInputDir = true;
 % make sure the input only load once (first one)
 isMagnLoad = false;
 isPhaseLoad = false;
@@ -64,81 +65,151 @@ end
 
 %% Read input
 disp('Reading data...');
-% look for nifti files first
-inputNiftiList = dir([inputDir '/*.nii*']);
+
+% Step 1: check input for nifti files first
+if isstruct(input)
+    % Option 1: input are files
+    inputNiftiList = input;
+    isInputDir = false;
+    
+    % take the phase data directory as reference input directory 
+    [inputDir,~,~] = fileparts(inputNiftiList(1).name);
+else
+    % Option 2: input is a directory
+    inputDir = input;
+    inputNiftiList = dir([inputDir '/*.nii*']);
+end
+
+% Step 2: load data
 if ~isempty(inputNiftiList)
-    % look for magnitude and phase files
-    for klist = 1:length(inputNiftiList)
-        % check magnitude data
-        if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
-            inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-            magn = double(inputMagnNifti.img);
-            isMagnLoad = true;
-            disp('Magnitude data is loaded.')
-        end
+    
+    if ~isInputDir
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        % check phase data
-        if ContainName(lower(inputNiftiList(klist).name),'phase') && ~isPhaseLoad
-            inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                        %%%%%%%%%% magnitude data %%%%%%%%%%
+        if ~isempty(inputNiftiList(2).name)
+            inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
+            % make sure the data is multi-echo magnitude data
+            if size(inputMagnNifti.img,4) > 1
+                magn = double(inputMagnNifti.img);
+                isMagnLoad = true;
+                disp('Magnitude data is loaded.');
+            else
+                error('QSM Hub only works with 4D data.');
+            end
+        else
+            error('Please specify a 4D magnitude data.');
+        end
+                         %%%%%%%%%% phase data %%%%%%%%%%
+        if ~isempty(inputNiftiList(1).name)
+            inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
             fieldMap = double(inputPhaseNifti.img);
-            
-            % if input fieldmap is directly converted from nifti converter
-            % then converts the fieldmap to unit of radian and save to output dir
+            % check whether phase data contains DICOM values or wrapped
+            % phase value
             if max(fieldMap(:))>1000
-                disp('Converting phase data from DICOM image value to radian unit ...')
+                disp('Converting phase data from DICOM image value to radian unit...')
                 fieldMap = DICOM2Phase(inputPhaseNifti);
-                
+
                 disp('Saving phase images in unit of radian...');
                 save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
-                
+
             end
             isPhaseLoad = true;
             disp('Phase data is loaded.')
+        else
+            error('Please specify a 4D Phase data.');
         end
-    end
-    
-    % if no files matched the name format then displays error message
-    if ~isMagnLoad
-        error('No magnitude data is loaded. Please make sure the input directory contains files with name *magn*');
-    end
-    % if no files matched the name format then displays error message
-    if ~isPhaseLoad
-        error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
-    end
-    
-    % look for header file
-    if ~isempty(dir([inputDir '/*header*']))
-        % load header
-        headerList = dir([inputDir '/*header*']);
-        load([inputDir filesep headerList(1).name]);
-        
-        disp('Header data is loaded.');
-        
+                        %%%%%%%%%% qsm hub header %%%%%%%%%%
+        if ~isempty(inputNiftiList(4).name)
+            load([inputNiftiList(4).name]);
+            disp('Header data is loaded.');
+        else
+            error('Please specify a qsm_hub header.');
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
-        disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        % create synthetic header in case no qsm_hub's header is found
-        [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputMagnNifti);
-        
-        % look for text file for TEs information
-        teTextFullName = dir([inputDir filesep '*txt']);
-        if ~isempty(teTextFullName)
-            te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
-            te_ = te_(:);
-            if ~isempty(te_)
-                TE = te_;
-                if length(TE) > 1
-                    delta_TE = TE(2)-TE(1);
+        % loop all NIfTI files in the directory for magnitude and phase files
+        for klist = 1:length(inputNiftiList)
+                            %%%%%%%%%% magnitude data %%%%%%%%%%
+            if ContainName(lower(inputNiftiList(klist).name),'magn') && ~isMagnLoad
+                inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                % only load multi-echo magnitude data
+                if size(inputMagnNifti.img,4) > 1
+                    magn = double(inputMagnNifti.img);
+                    isMagnLoad = true;
+                    disp('Magnitude data is loaded.')
                 end
             end
+
+                            %%%%%%%%%% phase data %%%%%%%%%%
+            if ContainName(lower(inputNiftiList(klist).name),'phase') && ~isPhaseLoad
+                inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                fieldMap = double(inputPhaseNifti.img);
+
+                % if input fieldmap is directly converted from nifti converter
+                % then converts the fieldmap to unit of radian and save to output dir
+                if max(fieldMap(:))>1000
+                    disp('Converting phase data from DICOM image value to radian unit ...')
+                    fieldMap = DICOM2Phase(inputPhaseNifti);
+
+                    disp('Saving phase images in unit of radian...');
+                    save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
+
+                end
+                isPhaseLoad = true;
+                disp('Phase data is loaded.')
+            end
         end
-        
-        % if no header file then save the synthetic header in output dir
-        save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
-        'TE','B0_dir','B0');
-        
-        disp('The synthetic header is saved in output directory.');
-        
+
+        % if no files matched the name format then displays error message
+        if ~isMagnLoad
+            error('No magnitude data is loaded. Please make sure the input directory contains NIfTI files with name *magn*');
+        end
+        if ~isPhaseLoad
+            error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
+        end
+
+        %%%%%%%%%% qsm hub header file %%%%%%%%%%
+        if ~isempty(dir([inputDir '/*header*']))
+            % load header
+            headerList = dir([inputDir '/*header*']);
+            load([inputDir filesep headerList(1).name]);
+
+            disp('Header data is loaded.');
+
+        else
+            disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+
+            % create synthetic header in case no qsm_hub's header is found
+            [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputMagnNifti);
+
+            % look for text file for TEs information
+            teTextFullName = dir([inputDir filesep '*txt']);
+            if ~isempty(teTextFullName)
+                te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
+                te_ = te_(:);
+                if ~isempty(te_)
+                    TE = te_;
+                    if length(TE) > 1
+                        delta_TE = TE(2)-TE(1);
+                    end
+                end
+            end
+
+            % if no header file then save the synthetic header in output dir
+            save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
+            'TE','B0_dir','B0');
+
+            disp('The synthetic header is saved in output directory.');
+
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     
     % store the header the NIfTI files, all following results will have
@@ -146,11 +217,20 @@ if ~isempty(inputNiftiList)
     outputNiftiTemplate = inputMagnNifti;
     
 else
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%% Pathway 3: Input is a directory with DICOM %%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    qsm_hub_AddMethodPath('dicom');
+    
     % if no nifti file then check for DICOM files
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
     
+    % deprecated
+    %     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
+    
     B0 = CF/(gyro*1e6);
-
+    
     % after testing with a couple of dataset it seems to me that the field
     % is inverted with DICOM input, so apply conjugate here
     fieldMap = angle(conj(iField));
@@ -160,13 +240,13 @@ else
     isPhaseLoad = true;
 
     % save magnitude and phase images as nifti files
-    disp('Saving DICOM data into NIfTI...');
+    disp('Saving DICOM data into NIfTI format...');
     
     % save magnitude and phase data as NIfTI_GZ format
     nii_fieldMap    = make_nii(single(fieldMap),    voxelSize,[],16);
     nii_magn        = make_nii(single(magn),        voxelSize,[],16);
-    save_nii(nii_fieldMap,[outputDir filesep prefix 'phase.nii.gz']);
-    save_nii(nii_magn,[outputDir filesep prefix 'magn.nii.gz']);
+    save_nii(nii_fieldMap,  [outputDir filesep prefix 'phase.nii.gz']);
+    save_nii(nii_magn,      [outputDir filesep prefix 'magn.nii.gz']);
     % save important header in .mat format
     save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
@@ -175,6 +255,7 @@ else
     % all results
     outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
 % in case user want to correct the frequency shift direction
@@ -195,14 +276,13 @@ voxelSize = voxelSize(:).';
 
 %% get brain mask
 mask = [];
-maskList = dir([inputDir '/*mask*']);
-
+maskList = dir([inputDir '/*mask*nii*']);
 if ~isempty(maskFullName)
-% first read mask if file is provided
+    % Option 1: mask file is provided
     mask = load_nii_img_only(maskFullName) > 0;
     
 elseif ~isempty(maskList) 
-% read mask if input directory has NIfTi file contains *mask* in name
+    % Option 2: input directory contains NIfTI file with name '*mask*'
     inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
 	mask = inputMaskNii.img > 0;
     
@@ -227,10 +307,8 @@ if isempty(mask) || isBET
 end
 
 %% total field and phase unwrap
-% add 'unwrap' method PATH
-qsm_hub_AddMethodPath(unwrap);
 
-% Eddy current correction for bipolar readout
+% Step 0: Eddy current correction for bipolar readout
 if isEddyCorrect
     disp('Correcting eddy current effect on bipolar readout data...');
     
@@ -240,11 +318,12 @@ if isEddyCorrect
     magn = abs(imgCplx);
     
     % save the eddy current corrected output
-    save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_EC.nii.gz']);
-    save_nii_quick(outputNiftiTemplate,magn,        [outputDir filesep prefix 'magn_EC.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,magn,        [outputDir filesep prefix 'magn_eddy-correct.nii.gz']);
     
 end
 
+% Step 1: Phase unwrapping and echo phase combination
 disp('Calculating field map...');
 
 % fix the output of field map in Hz
@@ -282,12 +361,11 @@ end
                     
 % exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
-r2s = arlo(TE,magn);
+r2s = R2star_trapezoidal(magn,TE);
 relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
 
 maskReliable = relativeResidual < exclude_threshold;
 
-% maskReliable = (fieldmapSD./norm(fieldmapSD(fieldmapSD~=0))) < exclude_threshold;
 mask = and(mask,maskReliable);
 
 % save the output                           

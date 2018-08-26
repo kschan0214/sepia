@@ -16,17 +16,31 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 24 May 2018
-% Date last modified: 12 June 2018
+% Date last modified: 26 August 2018
 %
 %
-function ExportQMSHubHeaderIOWrapper(input,outputDir,b0_input,b0dir_input,voxelSize_input,te_input,flag)
+function ExportQMSHubHeaderIOWrapper(input,output,b0_input,b0dir_input,voxelSize_input,te_input,flag)
 gyro = 42.57747892;
 
-%% Check output directory exist or not
+prefix = 'squirrel';
+
+%% Check if output directory exists 
+output_index = strfind(output, filesep);
+outputDir = output(1:output_index(end));
+% get prefix
+if ~isempty(output(output_index(end)+1:end))
+    prefix = [output(output_index(end)+1:end) '_'];
+end
+% if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
-    % if not then create the directory
     mkdir(outputDir);
 end
+
+% %% Check output directory exist or not
+% if exist(outputDir,'dir') ~= 7
+%     % if not then create the directory
+%     mkdir(outputDir);
+% end
 
 %% read header
 switch flag
@@ -68,7 +82,7 @@ switch flag
 end
 
 %% save header
-save([outputDir filesep 'squirrel_header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
+save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
         'TE','B0_dir','B0');
 
 end

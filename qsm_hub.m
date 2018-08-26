@@ -150,6 +150,19 @@ switch eventdata.NewValue.Title
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
             % phase invert is supported with this tab
             set(h.dataIO.checkbox.invertPhase,'Enable','on');
+            % input data 1
+            set(h.dataIO.text.inputData1,'String','or Phase data:');
+%             set(h.dataIO.edit.inputData1,'Enable','off');
+            % input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+            set(h.dataIO.edit.inputData2,'Enable','on');
+            set(h.dataIO.button.inputData2,'Enable','on');
+            % input data 3
+%             set(h.dataIO.text.inputData3,'String','Magn. data:');
+            set(h.dataIO.edit.inputData3,'Enable','off');
+            set(h.dataIO.edit.inputData3,'String',[]);
+            set(h.dataIO.button.inputData3,'Enable','off');
+            
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.QSMHub,'Position',[0.01 0.59 0.95 0.2]);
         % background field
@@ -173,6 +186,17 @@ switch eventdata.NewValue.Title
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
             % phase invert is supported with this tab
             set(h.dataIO.checkbox.invertPhase,'Enable','on');
+            % input data 1
+            set(h.dataIO.text.inputData1,'String','or Phase data:');
+            % input data 2
+%           set(h.dataIO.text.inputData2,'String','Magn. data:');
+            set(h.dataIO.edit.inputData2,'Enable','on');
+            set(h.dataIO.button.inputData2,'Enable','on');
+            % input data 3
+            set(h.dataIO.edit.inputData3,'Enable','off');
+            set(h.dataIO.button.inputData3,'Enable','off');
+            set(h.dataIO.edit.inputData3,'String',[]);
+
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
         % Start pushbutton
@@ -195,6 +219,17 @@ switch eventdata.NewValue.Title
             set(h.dataIO.button.maskdir,            'Enable','on');
             % phase invert is not supported with this tab
             set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+            % input data 1
+            set(h.dataIO.text.inputData1,'String','or Total field:');
+            % input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+            set(h.dataIO.edit.inputData2,'Enable','off');
+            set(h.dataIO.button.inputData2,'Enable','off');
+            set(h.dataIO.edit.inputData2,'String',[]);
+            % input data 3
+            set(h.dataIO.edit.inputData3,'Enable','on');
+            set(h.dataIO.button.inputData3,'Enable','on');
+
         % background field
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
@@ -216,6 +251,17 @@ switch eventdata.NewValue.Title
             set(h.dataIO.button.maskdir,            'Enable','on');
             % phase invert is not supported with this tab
             set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+            % input data 1
+            set(h.dataIO.text.inputData1,'String','or Local field:');
+            % input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+            set(h.dataIO.edit.inputData2,'Enable','on');
+            set(h.dataIO.button.inputData2,'Enable','on');
+            % input data 3
+            set(h.dataIO.edit.inputData3,'Enable','on');
+            set(h.dataIO.button.inputData3,'Enable','on');
+%             % input header
+%             set(h.dataIO.text.inputHeader,'String','Header:');
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
@@ -239,8 +285,7 @@ set(source,'Enable','off');
 % initialise all possible parameters
 subsampling=1;
 BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
-BFR_padSize = 40;        
-BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
+BFR_padSize = 40;BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
 QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
 QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
 QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';QSM_mu2=1;
@@ -251,7 +296,15 @@ QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
 isGPU = get(h.checkbox_gpu,'Value');
 
 % get I/O GUI input
-inputDir        = get(h.dataIO.edit.input,                  'String');
+% option 1: input is a directory
+input           = get(h.dataIO.edit.input,                  'String');
+% option 2: input are NIfTI files
+if isempty(input)
+    input(1).name = get(h.dataIO.edit.inputData1,        'String');
+    input(2).name = get(h.dataIO.edit.inputData2,        'String');
+    input(3).name = get(h.dataIO.edit.inputData3,        'String');
+    input(4).name = get(h.dataIO.edit.inputHeader,       'String');
+end
 outputBasename  = get(h.dataIO.edit.output,                 'String');
 maskFullName    = get(h.dataIO.edit.maskdir,                'String');
 isBET           = get(h.dataIO.checkbox.brainExtraction,    'Value');
@@ -394,7 +447,7 @@ try
     switch h.StepsPanel.dataIO.Parent.Title
         case 'One-stop QSM processing'
             % core of QSM one-stop processing
-            QSMHub( inputDir,...
+            QSMHub( input,...
                     outputBasename,...
                     maskFullName,...
                     'invert',isInvert,'FSLBet',isBET,'eddy',isEddyCorrect,'GPU',isGPU,...
@@ -411,7 +464,7 @@ try
 
         case 'Phase unwrapping'
             % Core of phase unwrapping only 
-            UnwrapPhaseMacroIOWrapper(  inputDir,...
+            UnwrapPhaseMacroIOWrapper(  input,...
                                         outputBasename,...
                                         maskFullName,...
                                         'invert',isInvert,'FSLBet',isBET,'eddy',isEddyCorrect,...
@@ -420,7 +473,7 @@ try
 
         case 'Background field removal'
             % core of background field removal only
-            BackgroundRemovalMacroIOWrapper(inputDir,...
+            BackgroundRemovalMacroIOWrapper(input,...
                                             outputBasename,...
                                             maskFullName,...
                                             'GPU',isGPU,...
@@ -430,7 +483,7 @@ try
 
         case 'QSM'
             % core of QSM only
-            QSMMacroIOWrapper(  inputDir,...
+            QSMMacroIOWrapper(  input,...
                                 outputBasename,...
                                 maskFullName,...
                                 'GPU',isGPU,...
@@ -457,11 +510,29 @@ GenerateLogFile(h.StepsPanel.dataIO.Parent.Title);
 set(source,'Enable','on');
 
 function GenerateLogFile(tab)
+    
+fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
+if isstruct(input)
+    fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
+    fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
+    fprintf(fid,'input(3).name = ''%s'' ;\n',input(3).name);
+    fprintf(fid,'input(4).name = ''%s'' ;\n\n',input(4).name);
+end
 
 switch tab
     case 'One-stop QSM processing'
-        fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'QSMHub(''%s'',...\n',inputDir);
+%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
+%         if isstruct(input)
+%             fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
+%             fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
+%             fprintf(fid,'input(3).name = ''%s'' ;\n',input(3).name);
+%             fprintf(fid,'input(4).name = ''%s'' ;\n',input(4).name);
+%         end
+        if isstruct(input)
+            fprintf(fid,'QSMHub(input,...\n');
+        else
+            fprintf(fid,'QSMHub(''%s'',...\n',input);
+        end
         fprintf(fid,'''%s'',...\n',outputBasename);
         fprintf(fid,'''%s'',...\n',maskFullName);
         fprintf(fid,'''invert'',%i,''FSLBet'',%i,''eddy'',%i,''GPU'',%i,...\n',isInvert,isBET,isEddyCorrect,isGPU);
@@ -478,8 +549,13 @@ switch tab
         fclose(fid);
         
     case 'Phase unwrapping'
-        fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',...\n',inputDir);
+%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
+        if isstruct(input)
+            fprintf(fid,'UnwrapPhaseMacroIOWrapper(input,...\n');
+        else
+            fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',...\n',input);
+        end
+%         fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',...\n',input);
         fprintf(fid,'''%s'',...\n',outputBasename);
         fprintf(fid,'''%s'',...\n',maskFullName);
         fprintf(fid,'''invert'',%i,''FSLBet'',%i,''eddy'',%i,...\n',isInvert,isBET,isEddyCorrect);
@@ -488,8 +564,13 @@ switch tab
         fclose(fid);
     
     case 'Background field removal'
-        fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',...\n',inputDir);
+%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
+        if isstruct(input)
+            fprintf(fid,'BackgroundRemovalMacroIOWrapper(input,...\n');
+        else
+            fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',...\n',input);
+        end
+%         fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',...\n',input);
         fprintf(fid,'''%s'',...\n',outputBasename);
         fprintf(fid,'''%s'',...\n',maskFullName);
         fprintf(fid,'''GPU'',''%i'',...\n',isGPU);
@@ -499,8 +580,13 @@ switch tab
         fclose(fid);
     
     case 'QSM'
-        fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-        fprintf(fid,'qsmMacroIOWrapper(''%s'',...\n',inputDir);
+%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
+        if isstruct(input)
+            fprintf(fid,'qsmMacroIOWrapper(input,...\n');
+        else
+            fprintf(fid,'qsmMacroIOWrapper(''%s'',...\n',input);
+        end
+%         fprintf(fid,'qsmMacroIOWrapper(''%s'',...\n',input);
         fprintf(fid,'''%s'',...\n',outputBasename);
         fprintf(fid,'''%s'',...\n',maskFullName);
         fprintf(fid,'''GPU'',''%i'',...\n',isGPU);

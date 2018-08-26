@@ -42,31 +42,32 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 2 June 2018
+% Date last modified: 26 August 2018
 %
 %
-function chi = QSMMacroIOWrapper(inputDir,output,maskFullName,varargin)
+function chi = QSMMacroIOWrapper(input,output,maskFullName,varargin)
 %% add general Path
-qsm_hub_AddMethodPath % qsm_hub_AddPath;
+qsm_hub_AddMethodPath
 
 %% define variables
 prefix = 'squirrel_';
 gyro = 42.57747892;
+isInputDir = true;
 % make sure the input only load once (first one)
 isLotalFieldLoad    = false;
 isFieldmapSDLoad    = false;
 isMagnLoad          = false; 
 maskCSF             = [];
 
-%% Check output directory exist or not
+%% Check if output directory exists 
 output_index = strfind(output, filesep);
 outputDir = output(1:output_index(end));
+% get prefix
 if ~isempty(output(output_index(end)+1:end))
     prefix = [output(output_index(end)+1:end) '_'];
 end
-
+% if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
-    % if not then create the directory
     mkdir(outputDir);
 end
 
@@ -82,82 +83,156 @@ end
 %% Read input
 disp('Reading data...');
 
-% look for nifti files first
-inputNiftiList = dir([inputDir '/*.nii*']);
+% Step 1: check input for nifti files first
+if isstruct(input)
+    % Option 1: input are files
+    inputNiftiList = input;
+    isInputDir = false;
+    
+    % take the phase data directory as reference input directory 
+    [inputDir,~,~] = fileparts(inputNiftiList(1).name);
+else
+    % Option 2: input is a directory
+    inputDir = input;
+    inputNiftiList = dir([inputDir '/*.nii*']);
+end
+
+% Step 2: load data
 if ~isempty(inputNiftiList)
     
-    % look for magnitude,localField and fieldmapSD files
-    for klist = 1:length(inputNiftiList)
+    if ~isInputDir
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        if ContainName(lower(inputNiftiList(klist).name),'localfield') && ~isLotalFieldLoad
-            inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                        %%%%%%%%%% Local field map %%%%%%%%%% 
+        if ~isempty(inputNiftiList(1).name)
+            inputLocalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
             localField = double(inputLocalFieldNifti.img);
             isLotalFieldLoad = true;
+            
             disp('Local field map is loaded.')
+        else
+            error('Please specify a 3D local field map.');
         end
         
-        if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
-            inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-            isMagnLoad = true;
-            magn = double(inputMagnNifti.img);
-            disp('Magnitude data is loaded.')
+                        %%%%%%%%%% magnitude data %%%%%%%%%%
+        if ~isempty(inputNiftiList(2).name)
+            inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
+            % make sure the data is multi-echo magnitude data
+            if size(inputMagnNifti.img,4) > 1
+                magn = double(inputMagnNifti.img);
+                isMagnLoad = true;
+                disp('Magnitude data is loaded.');
+            else
+                error('QSM Hub only works with 4D data.');
+            end
+        else
+            disp('No magnitude data is loaded.');
+            magn = ones(size(localField));
         end
         
-        if ContainName(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
-            inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                        %%%%%%%%%% Fieldmapsd map %%%%%%%%%%
+        if ~isempty(inputNiftiList(3).name)
+            inputFieldMapSDNifti = load_untouch_nii([inputNiftiList(3).name]);
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
+            
             disp('Field map SD data is loaded.')
+        else
+            disp('No field map standard deviation data is loaded.');
+            fieldmapSD = ones(size(localField)) * 0.01;
         end
         
-    end
-    
-    % if no files matched the name format then displays error message
-    if ~isLotalFieldLoad
-        error('No local field map is loaded. Please make sure the input directory contains files with name *localfield*');
-    end
-    
-    % look for header file
-    if ~isempty(dir([inputDir '/*header*']))
-        % load header
-        headerList = dir([inputDir '/*header*']);
-        load([inputDir filesep headerList(1).name]);
-        
-        disp('Header data is loaded.');
-        
+                        %%%%%%%%%% qsm hub header %%%%%%%%%%
+        if ~isempty(inputNiftiList(4).name)
+            load([inputNiftiList(4).name]);
+            disp('Header data is loaded.');
+        else
+            error('Please specify a qsm_hub header.');
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
-        disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        % create synthetic header in case no qsm_hub's header is found
-        [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputLocalFieldNifti);
-        
-        % look for text file for TEs information
-        teTextFullName = dir([inputDir filesep '*txt']);
-        if ~isempty(teTextFullName)
-            te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
-            te_ = te_(:);
-            if ~isempty(te_)
-                TE = te_;
-                if length(TE) > 1
-                    delta_TE = TE(2)-TE(1);
+        % loop all NIfTI files in the directory for magnitude,localField and fieldmapSD
+        for klist = 1:length(inputNiftiList)
+
+                        %%%%%%%%%% Local field map %%%%%%%%%%
+            if ContainName(lower(inputNiftiList(klist).name),'localfield') && ~isLotalFieldLoad
+                inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                localField = double(inputLocalFieldNifti.img);
+                isLotalFieldLoad = true;
+                disp('Local field map is loaded.')
+            end
+
+                        %%%%%%%%%% magnitude data %%%%%%%%%%
+            if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
+                inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                isMagnLoad = true;
+                magn = double(inputMagnNifti.img);
+                disp('Magnitude data is loaded.')
+            end
+
+                        %%%%%%%%%% Fieldmapsd map %%%%%%%%%%
+            if ContainName(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
+                inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                fieldmapSD = double(inputFieldMapSDNifti.img);
+                isFieldmapSDLoad = true;
+                disp('Field map SD data is loaded.')
+            end
+
+        end
+
+        % if no files matched the name format then displays error message
+        if ~isLotalFieldLoad
+            error('No local field map is loaded. Please make sure the input directory contains files with name *localfield*');
+        end
+
+                    %%%%%%%%%% qsm hub header file %%%%%%%%%%
+        if ~isempty(dir([inputDir '/*header*']))
+            % load header
+            headerList = dir([inputDir '/*header*']);
+            load([inputDir filesep headerList(1).name]);
+
+            disp('Header data is loaded.');
+
+        else
+            disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
+
+            % create synthetic header in case no qsm_hub's header is found
+            [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputLocalFieldNifti);
+
+            % look for text file for TEs information
+            teTextFullName = dir([inputDir filesep '*txt']);
+            if ~isempty(teTextFullName)
+                te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
+                te_ = te_(:);
+                if ~isempty(te_)
+                    TE = te_;
+                    if length(TE) > 1
+                        delta_TE = TE(2)-TE(1);
+                    end
                 end
             end
+
+            % if no header file then save the synthetic header in output dir
+            save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
+            'TE','B0_dir','B0');
+
+            disp('The synthetic header is saved in output directory.');
+
         end
-        
-        % if no header file then save the synthetic header in output dir
-        save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
-        'TE','B0_dir','B0');
-        
-        disp('The synthetic header is saved in output directory.');
-        
-    end
-    
-    % if no magnitude found then creates one with all voxels have the same value
-    if ~isMagnLoad && strcmpi(QSM_method,'medi_l1')
-        error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
-    elseif ~isMagnLoad
-        disp('No magnitude data is loaded.');
-        magn = ones(matrixSize);
+
+        % if no magnitude found then creates one with all voxels have the same value
+        if ~isMagnLoad && strcmpi(QSM_method,'medi_l1')
+            error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
+        elseif ~isMagnLoad
+            disp('No magnitude data is loaded.');
+            magn = ones(matrixSize);
+        end
     end
     
     % if no fieldmapSD found then creates one with all voxels have the same value
@@ -190,11 +265,11 @@ if isempty(maskList)
 end
 
 if ~isempty(maskFullName)
-% first read mask if file is provided
+    % Option 1: mask file is provided
     maskFinal = load_nii_img_only(maskFullName) > 0;
     
 elseif ~isempty(maskList) 
-% read mask if input directory contains *mask*
+    % Option 2: input directory contains NIfTI file with name '*mask*'
     inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
 	maskFinal = inputMaskNii.img > 0;
     
@@ -213,7 +288,6 @@ wmap(isnan(wmap)) = 0;
 wmap = wmap./max(wmap(maskFinal>0));
 
 %% qsm
-qsm_hub_AddMethodPath(QSM_method);
 disp('Computing QSM...');
 
 % some QSM algorithms work better with certain unit of the local field map

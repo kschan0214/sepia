@@ -9,6 +9,7 @@ nii = templateHeader;
 nii.img = single(img);
 nii.hdr.dime.datatype = datatype;
 nii.hdr.dime.dim(5) = size(img,4);
+nii.hdr.dime.dim(1) = ndims(img);
 
 % assume the input image contains the true values
 nii.hdr.dime.scl_inter = 0;
