@@ -59,7 +59,7 @@ Kwok
 ## Installation
 --------------------------------------------------
 
-To use **QSM Hub**, just add the directory containing qsm_hub.m into your MATLAB PATH
+To use **QSM Hub**, add the directory containing qsm_hub.m into your MATLAB PATH
 
 This can be done by:  
 'Set Path' -> 'Add Folder' -> /your/qsm_hub/directory/ -> 'Save'  
@@ -67,6 +67,14 @@ This can be done by:
 or
   
 with MATLAB's command: `addpath('/your/qsm_hub/directory')`  
+
+Then you have to specify the directories of each toolbox in SpecifyToolboxesDirectory.m:
+
+``  
+MEDI_dir = '/path/to/MEDI/toolbox/';
+STISuite_dir = '/path/to/STISuite/toolbox/';
+FANSI_dir = '/path/to/FASI/toolbox/';  
+``
 
 Then, you can start the GUI by entering `qsm_hub` in the MATLAB's command window.  
 
