@@ -3,7 +3,7 @@ function ButtonOpen_Callback(source,eventdata,h,field)
 
 % global h
 
-% output base name
+% default output base name
 prefix = 'squirrel';
 
 switch field
@@ -24,6 +24,12 @@ switch field
             set(h.dataIO.edit.input,    'String',pathDir);
             % automatically set default output field
             set(h.dataIO.edit.output,   'String',[pathDir filesep 'output' filesep prefix]);
+            
+            % set input data fields empty
+            set(h.dataIO.edit.inputData1,    'String',[]);
+            set(h.dataIO.edit.inputData2,    'String',[]);
+            set(h.dataIO.edit.inputData3,    'String',[]);
+            set(h.dataIO.edit.inputHeader,    'String',[]);
         end
         
     case 'output'
@@ -33,6 +39,58 @@ switch field
 
         if pathDir ~= 0
             set(h.dataIO.edit.output,'String',[pathDir filesep prefix]);
+        end
+        
+    case 'inputdata1'
+        % only read NIfTI file for mask
+        [fileName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select a NIfTI file');
+
+        if pathDir ~= 0
+            % set input edit field for display
+            set(h.dataIO.edit.inputData1,    'String',fullfile(pathDir,fileName));
+            % automatically set default output field
+            set(h.dataIO.edit.output,   'String',[pathDir filesep 'output' filesep prefix]);
+            % set input directory field empty
+            set(h.dataIO.edit.input,    'String',[]);
+        end
+        
+    case 'inputdata2'
+        % only read NIfTI file for mask
+        [fileName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select a NIfTI file');
+
+        if pathDir ~= 0
+            % set input edit field for display
+            set(h.dataIO.edit.inputData2,    'String',fullfile(pathDir,fileName));
+            
+            % set input directory field empty
+            set(h.dataIO.edit.input,    'String',[]);
+
+        end
+    
+    case 'inputdata3'
+        % only read NIfTI file for mask
+        [fileName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select a NIfTI file');
+
+        if pathDir ~= 0
+            % set input edit field for display
+            set(h.dataIO.edit.inputData3,    'String',fullfile(pathDir,fileName));
+            
+            % set input directory field empty
+            set(h.dataIO.edit.input,    'String',[]);
+
+        end
+        
+    case 'header'
+        % only read NIfTI file for mask
+        [fileName,pathDir] = uigetfile({'*.mat','QSM hub header file (*.mat)'},'Select a header file');
+
+        if pathDir ~= 0
+            % set input edit field for display
+            set(h.dataIO.edit.inputHeader,    'String',fullfile(pathDir,fileName));
+            
+            % set input directory field empty
+            set(h.dataIO.edit.input,    'String',[]);
+
         end
 end
 

@@ -142,7 +142,7 @@ h.Utility.panel.getHeader = uipanel(hParent,'Title','Get qsm_hub header',...
     
     % output directory
     h.Utility.getHeader.text.outputDir = uicontrol(h.Utility.panel.getHeader,...
-        'Style','text','String','Output dir:',...
+        'Style','text','String','Output basename:',...
         'Units','normalized','Position', [0.01 0.11 0.2 0.1],...
         'HorizontalAlignment','left',...
         'backgroundcolor',get(h.fig,'color'),...
@@ -177,6 +177,8 @@ function ButtonOpen_Utility_getHeader_Callback(source,eventdata,h,field)
 % get input file/directory for getHeader utility function
 % global h
 
+prefix = 'squirrel';
+
 switch field
     case 'te'
         % te file can be text file or mat file
@@ -203,7 +205,7 @@ switch field
         if pathDir ~= 0
             set(h.Utility.getHeader.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
             % automatically set default output field
-            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
+            set(h.Utility.getHeader.edit.outputDir,     'String',[pathDir filesep prefix]);
         end
         
     case 'dicom'
@@ -223,7 +225,7 @@ switch field
         pathDir = uigetdir;
 
         if pathDir ~= 0
-            set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
+            set(h.Utility.getHeader.edit.outputDir,     'String',[pathDir filesep prefix]);
         end
 end
 

@@ -55,6 +55,9 @@ if nargin > 0
             addpath(genpath(MEDI_dir));
 
         % phase unwrap
+        case 'nonlinearfit'
+            addpath(genpath(MEDI_dir));
+            
         case 'laplacian'
             addpath(genpath(MEDI_dir));
 
@@ -87,7 +90,7 @@ if nargin > 0
             addpath([misc_bkgRemoval_dir filesep 'RESHARP']);
             addpath(genpath(MEDI_dir));
 
-        case 'vsharpsti'
+        case 'vsharpstisuite'
             addpath(genpath(STISuite_dir));
 
         case 'vsharp'
@@ -100,7 +103,7 @@ if nargin > 0
         case 'tkd'
             addpath([misc_qsm_dir filesep 'TKD']);
 
-        case 'closedforml2'
+        case 'cfl2'
             addpath([misc_qsm_dir filesep 'closedFormL2']);
 
         case 'ilsqr'
