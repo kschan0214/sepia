@@ -65,11 +65,11 @@ end
 
 % create GUI 
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','QSM hub (beta)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','qsm_hub (beta)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
-h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','One-stop QSM processing');
+h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','QSM Hub');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
@@ -140,7 +140,7 @@ global h
 switch eventdata.NewValue.Title
     
     % QSM one-stop station tab
-    case 'One-stop QSM processing'
+    case 'QSM Hub'
         % I/O
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.QSMHub);
             % This tab supports both DICOM and NIfTI files
@@ -445,7 +445,7 @@ end
 try 
     % get the parent of current panel, this determine which script is about to run
     switch h.StepsPanel.dataIO.Parent.Title
-        case 'One-stop QSM processing'
+        case 'QSM Hub'
             % core of QSM one-stop processing
             QSMHub( input,...
                     outputBasename,...
@@ -520,7 +520,7 @@ if isstruct(input)
 end
 
 switch tab
-    case 'One-stop QSM processing'
+    case 'QSM Hub'
 %         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
 %         if isstruct(input)
 %             fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
