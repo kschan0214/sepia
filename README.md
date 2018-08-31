@@ -1,8 +1,8 @@
 # qsm_hub (work in progress)
-==================================================
+***
 
 ## Introduction
---------------------------------------------------
+***
 
 Welcome to the beta version of **qsm_hub**. **qsm_hub** is a tool providing a graphical user 
 interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
@@ -36,11 +36,10 @@ bug(s) please feel free to contact me k.chan@donders.ru.nl (Kwok-Shing Chan).
 Kwok  
 2018-05-30
 
-----------------------------------------------------------------------------------------------------
 
 ## Update note
---------------------------------------------------
+***
 
 0.6.0
 
-----------------------------------------------------------------------------------------------------
+
