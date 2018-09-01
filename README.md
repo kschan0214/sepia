@@ -15,7 +15,7 @@ The objective of **qsm_hub** is to provide a platform for easy access of differe
 This toolbox is still under development, so you may encounter some bugs.
 
 ## Terms of use
-All the codes and methods developed by me in **qsm_hub** is under MIT license. You can check [the license file]() for more information. For the terms of use of the toolboxes related to this work, their own license applied and please check the corresponding license files of each toolbox for more information. 
+All the codes and methods developed by me in **qsm_hub** is under MIT license. You can check [the license file](https://github.com/kschan0214/qsm_hub/blob/master/LICENSE) for more information. For the terms of use of the toolboxes related to this work, their own license applied and please check the corresponding license file(s) in each toolbox for more information. 
 
 When you use **qsm_hub** in your research, please cite the related papers of the methods in your processing pipeline. 
 
