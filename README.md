@@ -25,8 +25,10 @@ Kwok
 2018-09-01
 
 
-## Update note  
+## Update notes  
 
-0.6.0
+### 0.6.0 (20180901)  
+* updated diretcory structure
+* added options to select individual files  
 
 
