@@ -371,12 +371,12 @@ mask = and(mask,maskReliable);
 % save the output                           
 disp('Saving unwrapped field map...');
 
-save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'totalField.nii.gz']);
-save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'fieldMapSD.nii.gz']);
+save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
+save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'fieldmap-sd.nii.gz']);
 
 if relativeResidual ~= Inf
-    save_nii_quick(outputNiftiTemplate,mask,        [outputDir filesep prefix 'mask_reliable.nii.gz']);
-    save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative_residual.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,mask,        [outputDir filesep prefix 'mask-reliable.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
 
 disp('Done!');

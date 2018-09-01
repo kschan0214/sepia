@@ -131,7 +131,7 @@ if ~isempty(inputNiftiList)
         for klist = 1:length(inputNiftiList)
 
                         %%%%%%%%%% Total field map %%%%%%%%%%
-            if ContainName(inputNiftiList(klist).name,'totalfield') && ~isTotalFieldLoad
+            if ContainName(inputNiftiList(klist).name,'total-field') && ~isTotalFieldLoad
                 inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 totalField = double(inputTotalFieldNifti.img);
                 isTotalFieldLoad = true;
@@ -140,7 +140,7 @@ if ~isempty(inputNiftiList)
             end
 
                          %%%%%%%%%% Fieldmapsd data %%%%%%%%%%
-            if ContainName(inputNiftiList(klist).name,'fieldmapsd') && ~isFieldmapSDLoad
+            if ContainName(inputNiftiList(klist).name,'fieldmap-sd') && ~isFieldmapSDLoad
                 inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 fieldmapSD = double(inputFieldMapSDNifti.img);
                 isFieldmapSDLoad = true;
@@ -246,8 +246,8 @@ maskFinal = localField ~=0;
 % save results
 disp('Saving local field map...');
 
-save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'localField.nii.gz']);
-save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask_qsm.nii.gz']);
+save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'local-field.nii.gz']);
+save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-qsm.nii.gz']);
 
 disp('Done!');
 

@@ -410,12 +410,12 @@ mask = and(mask,maskReliable);
 % save the output                           
 disp('Saving unwrapped field map...');
 
-save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'totalField.nii.gz']);
-save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'fieldMapSD.nii.gz']);
+save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
+save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'fieldmap-sd.nii.gz']);
 
 if relativeResidual ~= Inf
-    save_nii_quick(outputNiftiTemplate,mask,        [outputDir filesep prefix 'mask_reliable.nii.gz']);
-    save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative_residual.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,mask,        [outputDir filesep prefix 'mask-reliable.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
 
 %% Background field removal
@@ -444,8 +444,8 @@ maskFinal = localField ~=0;
 % save results
 disp('Saving local field map...');
 
-save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'localField.nii.gz']);
-save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask_qsm.nii.gz']);
+save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'local-field.nii.gz']);
+save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-qsm.nii.gz']);
             
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weighting

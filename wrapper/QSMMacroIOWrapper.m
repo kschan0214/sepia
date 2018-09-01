@@ -161,7 +161,7 @@ if ~isempty(inputNiftiList)
         for klist = 1:length(inputNiftiList)
 
                         %%%%%%%%%% Local field map %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'localfield') && ~isLotalFieldLoad
+            if ContainName(lower(inputNiftiList(klist).name),'local-field') && ~isLotalFieldLoad
                 inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 localField = double(inputLocalFieldNifti.img);
                 isLotalFieldLoad = true;
@@ -177,7 +177,7 @@ if ~isempty(inputNiftiList)
             end
 
                         %%%%%%%%%% Fieldmapsd map %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'fieldmapsd') && ~isFieldmapSDLoad
+            if ContainName(lower(inputNiftiList(klist).name),'fieldmap-sd') && ~isFieldmapSDLoad
                 inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 fieldmapSD = double(inputFieldMapSDNifti.img);
                 isFieldmapSDLoad = true;
@@ -258,7 +258,7 @@ disp(['Field strength(T) =  ' num2str(B0)]);
 
 %% get brain mask
 % look for qsm mask first
-maskList = dir([inputDir '/*mask_qsm*']);
+maskList = dir([inputDir '/*mask-qsm*']);
 % if no final mask then just look for normal mask
 if isempty(maskList)
     maskList = dir([inputDir '/*mask*']);
