@@ -5,10 +5,9 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 9 October 2016
-% Date last modified:
+% Date last modified: 11 September 2018
 %
 function img = load_nii_img_only(filename)
-load_module_NIfTI;
 a = load_untouch_nii(filename);
 img = a.img;
 end

@@ -42,6 +42,7 @@ fn = mfilename('fullpath');
 unix([pathstr '/JenaUnwrapDONDERS.sh temp.hdr']);
 %     unix('sh  /home/rebelo/Documents/MATLAB/phase_unwrapping/test temp.hdr')
 % unix('sh  /home/mrphys/kwocha/Tools/phase_unwrap/unwrapJena/unwrap temp.hdr')
-unwrappedField = load_nii_img_only('uwtemp.hdr');
+unwrappedFieldnii = load_untouch_nii('uwtemp.hdr');
+unwrappedField = unwrappedFieldnii.img;
 system('rm temp.hdr temp.img uwtemp.img uwtemp.hdr qmtemp.img qmtemp.hdr temp.mat');
 end
