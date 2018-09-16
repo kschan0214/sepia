@@ -158,10 +158,10 @@ switch eventdata.NewValue.Title
             set(h.dataIO.edit.inputData2,'Enable','on');
             set(h.dataIO.button.inputData2,'Enable','on');
             % input data 3
-%             set(h.dataIO.text.inputData3,'String','Magn. data:');
-            set(h.dataIO.edit.inputData3,'Enable','off');
-            set(h.dataIO.edit.inputData3,'String',[]);
-            set(h.dataIO.button.inputData3,'Enable','off');
+            set(h.dataIO.text.inputData3,'String','Weights:');
+            set(h.dataIO.edit.inputData3,'Enable','on');
+%             set(h.dataIO.edit.inputData3,'String',[]);
+            set(h.dataIO.button.inputData3,'Enable','on');
             
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.QSMHub,'Position',[0.01 0.59 0.95 0.2]);
@@ -193,6 +193,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.edit.inputData2,'Enable','on');
             set(h.dataIO.button.inputData2,'Enable','on');
             % input data 3
+            set(h.dataIO.text.inputData3,'String','Weights:');
             set(h.dataIO.edit.inputData3,'Enable','off');
             set(h.dataIO.button.inputData3,'Enable','off');
             set(h.dataIO.edit.inputData3,'String',[]);
@@ -227,6 +228,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.button.inputData2,'Enable','off');
             set(h.dataIO.edit.inputData2,'String',[]);
             % input data 3
+            set(h.dataIO.text.inputData3,'String','Noise SD:');
             set(h.dataIO.edit.inputData3,'Enable','on');
             set(h.dataIO.button.inputData3,'Enable','on');
 
@@ -258,6 +260,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.edit.inputData2,'Enable','on');
             set(h.dataIO.button.inputData2,'Enable','on');
             % input data 3
+            set(h.dataIO.text.inputData3,'String','Weights:');
             set(h.dataIO.edit.inputData3,'Enable','on');
             set(h.dataIO.button.inputData3,'Enable','on');
 %             % input header

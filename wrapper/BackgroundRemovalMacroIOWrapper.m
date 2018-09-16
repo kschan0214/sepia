@@ -109,7 +109,7 @@ if ~isempty(inputNiftiList)
             fieldmapSD = double(inputFieldMapSDNifti.img);
             isFieldmapSDLoad = true;
             
-            disp('Field map SD data is loaded.')
+            disp('Noise SD data is loaded.')
         else
             disp('No field map standard deviation data is loaded.');
         end
@@ -140,12 +140,12 @@ if ~isempty(inputNiftiList)
             end
 
                          %%%%%%%%%% Fieldmapsd data %%%%%%%%%%
-            if ContainName(inputNiftiList(klist).name,'fieldmap-sd') && ~isFieldmapSDLoad
+            if ContainName(inputNiftiList(klist).name,'noise-sd') && ~isFieldmapSDLoad
                 inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 fieldmapSD = double(inputFieldMapSDNifti.img);
                 isFieldmapSDLoad = true;
 
-                disp('Field map SD data is loaded.')
+                disp('Noise SD data is loaded.')
             end
         end
 

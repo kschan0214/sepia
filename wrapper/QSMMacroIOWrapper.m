@@ -55,7 +55,7 @@ gyro = 42.57747892;
 isInputDir = true;
 % make sure the input only load once (first one)
 isLotalFieldLoad    = false;
-isFieldmapSDLoad    = false;
+isWeightLoad        = false;
 isMagnLoad          = false; 
 maskCSF             = [];
 
@@ -132,16 +132,18 @@ if ~isempty(inputNiftiList)
             magn = ones(size(localField));
         end
         
-                        %%%%%%%%%% Fieldmapsd map %%%%%%%%%%
+                        %%%%%%%%%% weights map %%%%%%%%%%
         if ~isempty(inputNiftiList(3).name)
-            inputFieldMapSDNifti = load_untouch_nii([inputNiftiList(3).name]);
-            fieldmapSD = double(inputFieldMapSDNifti.img);
-            isFieldmapSDLoad = true;
-            
-            disp('Field map SD data is loaded.')
+            inputWeightNifti = load_untouch_nii([inputNiftiList(3).name]);
+            weights = double(inputWeightNifti.img);
+            % check whether phase data contains DICOM values or wrapped
+            if size(weights,4) > 1
+                error('Please specify a 3D weight data.');
+            end
+            isWeightLoad = true;
+            disp('Weights data is loaded');
         else
-            disp('No field map standard deviation data is loaded.');
-            fieldmapSD = ones(size(localField)) * 0.01;
+            disp('Default weighting method will be used for QSM.');
         end
         
                         %%%%%%%%%% qsm hub header %%%%%%%%%%
@@ -176,12 +178,12 @@ if ~isempty(inputNiftiList)
                 disp('Magnitude data is loaded.')
             end
 
-                        %%%%%%%%%% Fieldmapsd map %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'fieldmap-sd') && ~isFieldmapSDLoad
-                inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                fieldmapSD = double(inputFieldMapSDNifti.img);
-                isFieldmapSDLoad = true;
-                disp('Field map SD data is loaded.')
+                        %%%%%%%%%% weights map %%%%%%%%%%
+            if ContainName(lower(inputNiftiList(klist).name),'weights') && ~isWeightLoad
+                inputWeightNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                weights = double(inputWeightNifti.img);
+                isWeightLoad = true;
+                disp('Weights data is loaded.')
             end
 
         end
@@ -236,9 +238,10 @@ if ~isempty(inputNiftiList)
     end
     
     % if no fieldmapSD found then creates one with all voxels have the same value
-    if ~isFieldmapSDLoad
-        disp('No fieldMapSD file is loaded.');
-        fieldmapSD = ones(matrixSize) * 0.01;
+    if ~isWeightLoad
+        disp('No weights file is loaded.');
+%         fieldmapSD = ones(matrixSize) * 0.01;
+        weights = ones(matrixSize);
     end
     
     % store the header the NIfTI files, all following results will have
@@ -282,10 +285,11 @@ end
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weighting
 % wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
-wmap = 1./fieldmapSD;
-wmap(isinf(wmap)) = 0;
-wmap(isnan(wmap)) = 0;
-wmap = wmap./max(wmap(maskFinal>0));
+% wmap = 1./fieldmapSD;
+% wmap(isinf(wmap)) = 0;
+% wmap(isnan(wmap)) = 0;
+% wmap = wmap./max(wmap(maskFinal>0));
+weights = weights .* maskFinal;
 
 %% qsm
 disp('Computing QSM...');
@@ -345,7 +349,7 @@ end
 if isGPU
     chi = cuQSMMacro(localField,maskFinal,matrixSize,voxelSize,...
                      'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-                     'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
+                     'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...
                      'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
                      'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
                      'noisestd',fieldmapSD,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
@@ -354,7 +358,7 @@ if isGPU
 else
     chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,...
                    'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-                   'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
+                   'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...
                    'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
                    'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
                    'noisestd',fieldmapSD,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...

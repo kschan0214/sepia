@@ -27,7 +27,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 26 August 2018
+% Date last modified: 16 September 2018
 %
 %
 function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,varargin)
@@ -315,42 +315,35 @@ if isEddyCorrect
     % BipolarEddyCorrect requries complex-valued input
     imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
     fieldMap = angle(imgCplx);
-    magn = abs(imgCplx);
     
     % save the eddy current corrected output
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
-    save_nii_quick(outputNiftiTemplate,magn,        [outputDir filesep prefix 'magn_eddy-correct.nii.gz']);
     
 end
 
 % Step 1: Phase unwrapping and echo phase combination
 disp('Calculating field map...');
 
-% fix the output of field map in Hz
+% fix the output field map unit in Hz
 unit = 'Hz';
 
 % core of phase unwrapping
 try 
-    switch phaseCombMethod
-        % optimum weight method from Robinson et al. NMR Biomed 2017
-        case 'Optimum weights'
-            [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,...
-                                    matrixSize,voxelSize,...
-                                    'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
-                                    'Subsampling',subsampling,'mask',mask);
-                                
-        % nonlinear ffitting method from MEDI toolbox
-        case 'MEDI nonlinear fit'
-            [totalField,fieldmapSD] = estimateTotalField_MEDI(fieldMap,magn,...
-                                    matrixSize,voxelSize,...
-                                    'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
-                                    'Subsampling',subsampling,'mask',mask);
+    [totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,magn,...
+                        matrixSize,voxelSize,...
+                        'method',phaseCombMethod,'Unwrap',unwrap,...
+                        'TE',TE,'B0',B0,'unit',unit,...
+                        'Subsampling',subsampling,'mask',mask);
+                    
+    if ~isempty(fieldmapUnwrapAllEchoes)
+        save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
     end
     
 catch
     % if the above selected method is not working then do Laplacian with
     % optimum weights
     disp('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
+    
     unwrap = 'laplacian'; exclude_threshold = Inf;
     qsm_hub_AddMethodPath(unwrap);
     
@@ -359,23 +352,39 @@ catch
                             'Subsampling',subsampling,'mask',mask);
 end
                     
-% exclude unreliable voxel, based on monoexponential decay model with
+% Step 2: exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
 r2s = R2star_trapezoidal(magn,TE);
 relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
-
 maskReliable = relativeResidual < exclude_threshold;
 
-mask = and(mask,maskReliable);
+% threshold fieldmapSD with the reliable voxel mask
+fieldmapSD = fieldmapSD .* maskReliable;
 
+% 20180815: test with creating weights using relativeResidual
+% weightResidual = 1-(relativeResidual./exclude_threshold);
+% weightResidual(weightResidual>1) = 1;
+% weightResidual(weightResidual<0) = 0;
+
+% deprecated
+% mask = and(mask,maskReliable);
+
+% computing weights
+wmap = 1./fieldmapSD;
+wmap(isinf(wmap)) = 0;
+wmap(isnan(wmap)) = 0;
+wmap = wmap./max(wmap(and(mask>0,maskReliable>0)));
+wmap = wmap .* and(mask>0,maskReliable);
+             
 % save the output                           
 disp('Saving unwrapped field map...');
 
 save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
-save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'fieldmap-sd.nii.gz']);
+save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
+save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
 
 if relativeResidual ~= Inf
-    save_nii_quick(outputNiftiTemplate,mask,        [outputDir filesep prefix 'mask-reliable.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
 
