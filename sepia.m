@@ -212,7 +212,7 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.bkgRemoval);
             % This tab supports only NIfTI files
             set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains the unwrapped total field map NIfTI (*totalField*.nii*) files');
+                'Input directory contains the unwrapped total field map NIfTI (*total-field*.nii*) files');
             % no BET support with this tab
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -245,7 +245,7 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.qsm);
             % This tab supports only NIfTI files
             set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains the local field map NIfTI (*localField*.nii*) files; for some QSM methods additional file(s) may also be needed (e.g. *magn*.nii* and *fieldmapSD*.nii*)');
+                'Input directory contains the local field map NIfTI (*local-field*.nii*) files; for some QSM methods additional file(s) may also be needed (e.g. *magn*.nii* and *weights*.nii*)');
             % no BET support with this tab
             set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
             set(h.dataIO.edit.maskdir,              'Enable','on');
