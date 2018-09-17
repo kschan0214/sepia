@@ -1,6 +1,6 @@
-%% qsm_hub
+%% sepia
 %
-% Description: This is a GUI of qsm_hub, which is a pipeline control tool
+% Description: This is a GUI of sepia, which is a pipeline control tool
 % for standard QSM processing. It supports the following processing steps:
 % (1) phase unwrapping
 % (2) background field removal
@@ -42,11 +42,10 @@
 % Date last modified: 1 June 2018
 %
 %
-function qsm_hub
+function sepia
 clear 
 
-% qsm_hub_AddPath
-qsm_hub_AddMethodPath;
+sepia_addpath;
 
 global h
 
@@ -56,8 +55,8 @@ posLeft = round(screenSize(3)/4);
 posBottom = round(screenSize(4)/6);
 guiSizeHori = round(screenSize(3)/3);
 guiSizeVert = round(screenSize(4)*2/3);
-if guiSizeHori < 950
-    guiSizeHori = 950;
+if guiSizeHori < 1000
+    guiSizeHori = 1000;
 end
 if guiSizeVert < 700
     guiSizeVert = 700;
@@ -65,11 +64,11 @@ end
 
 % create GUI 
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','qsm_hub (beta)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.6.1)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
-h.Tabs.QSMHub       = uitab(h.TabGroup,'Title','QSM Hub');
+h.Tabs.Sepia       = uitab(h.TabGroup,'Title','Sepia');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
@@ -99,27 +98,27 @@ h = qsmhub_handle_panel_Utility(h.Tabs.utility,                 h,[0.01 0.39]);
 
 %% GUI with QSM one-stop station tab
 % I/O
-h = qsmhub_handle_panel_dataIO(h.Tabs.QSMHub,                   h,[0.01 0.8]);
+h = qsmhub_handle_panel_dataIO(h.Tabs.Sepia,                   h,[0.01 0.8]);
 % phase unwrap
-h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.QSMHub,              h,[0.01 0.59]);
+h = qsmhub_handle_panel_phaseUnwrap(h.Tabs.Sepia,              h,[0.01 0.59]);
 % background field
-h = qsmhub_handle_panel_bkgRemoval(h.Tabs.QSMHub,               h,[0.01 0.33]);
+h = qsmhub_handle_panel_bkgRemoval(h.Tabs.Sepia,               h,[0.01 0.33]);
 % QSM
-h = qsmhub_handle_panel_qsm(h.Tabs.QSMHub,                      h,[0.01 0.07]);
+h = qsmhub_handle_panel_qsm(h.Tabs.Sepia,                      h,[0.01 0.07]);
 
 % Start button
-h.pushbutton_start = uicontrol('Parent',h.Tabs.QSMHub,...
+h.pushbutton_start = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','pushbutton',...
     'String','Start',...
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(h.fig,'color'));
 % GPU checkbox
-h.checkbox_gpu = uicontrol('Parent',h.Tabs.QSMHub,...
+h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','checkbox',...
     'String','Enable GPU computation',...
     'units','normalized','Position',[0.01 0.01 0.4 0.05],...
     'backgroundcolor',get(h.fig,'color'), 'Enable','off',...
-    'TooltipString',['Enable to use GPU for some of the algorithms in qsm_hub. ' ...
+    'TooltipString',['Enable to use GPU for some of the algorithms in sepia. ' ...
                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
 if gpuDeviceCount > 0
     set(h.checkbox_gpu, 'Enable', 'on');
@@ -140,9 +139,9 @@ global h
 switch eventdata.NewValue.Title
     
     % QSM one-stop station tab
-    case 'QSM Hub'
+    case 'Sepia'
         % I/O
-        set(h.StepsPanel.dataIO,        'Parent',h.Tabs.QSMHub);
+        set(h.StepsPanel.dataIO,        'Parent',h.Tabs.Sepia);
             % This tab supports both DICOM and NIfTI files
             set(h.dataIO.text.input, 'Tooltip',...
                 'Input directory contains DICOM (both magnitude and phase files under the same directory) or NIfTI (*phase*.nii* and *magn*.nii*) files');
@@ -164,15 +163,15 @@ switch eventdata.NewValue.Title
             set(h.dataIO.button.inputData3,'Enable','on');
             
         % phase unwrap
-        set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.QSMHub,'Position',[0.01 0.59 0.95 0.2]);
+        set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
         % background field
-        set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.QSMHub,'Position',[0.01 0.33 0.95 0.25]);
+        set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.Sepia,'Position',[0.01 0.33 0.95 0.25]);
         % QSM
-        set(h.StepsPanel.qsm,           'Parent',h.Tabs.QSMHub,'Position',[0.01 0.07 0.95 0.25]);
+        set(h.StepsPanel.qsm,           'Parent',h.Tabs.Sepia,'Position',[0.01 0.07 0.95 0.25]);
         % Start pushbutton
-        set(h.pushbutton_start,         'Parent',h.Tabs.QSMHub);
+        set(h.pushbutton_start,         'Parent',h.Tabs.Sepia);
         % GPU checkbox
-        set(h.checkbox_gpu,             'Parent',h.Tabs.QSMHub);
+        set(h.checkbox_gpu,             'Parent',h.Tabs.Sepia);
 %         set(h.checkbox_gpu,             'Enable', 'on');
         
     % Phase unwrapping tab
@@ -448,7 +447,7 @@ end
 try 
     % get the parent of current panel, this determine which script is about to run
     switch h.StepsPanel.dataIO.Parent.Title
-        case 'QSM Hub'
+        case 'Sepia'
             % core of QSM one-stop processing
             QSMHub( input,...
                     outputBasename,...
@@ -514,7 +513,7 @@ set(source,'Enable','on');
 
 function GenerateLogFile(tab)
     
-fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
+fid = fopen([outputDir filesep 'sepia.log'],'w');
 if isstruct(input)
     fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
     fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
@@ -523,14 +522,7 @@ if isstruct(input)
 end
 
 switch tab
-    case 'QSM Hub'
-%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
-%         if isstruct(input)
-%             fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
-%             fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
-%             fprintf(fid,'input(3).name = ''%s'' ;\n',input(3).name);
-%             fprintf(fid,'input(4).name = ''%s'' ;\n',input(4).name);
-%         end
+    case 'Sepia'
         if isstruct(input)
             fprintf(fid,'QSMHub(input,...\n');
         else
@@ -552,7 +544,6 @@ switch tab
         fclose(fid);
         
     case 'Phase unwrapping'
-%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
         if isstruct(input)
             fprintf(fid,'UnwrapPhaseMacroIOWrapper(input,...\n');
         else
@@ -567,7 +558,6 @@ switch tab
         fclose(fid);
     
     case 'Background field removal'
-%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
         if isstruct(input)
             fprintf(fid,'BackgroundRemovalMacroIOWrapper(input,...\n');
         else
@@ -583,7 +573,6 @@ switch tab
         fclose(fid);
     
     case 'QSM'
-%         fid = fopen([outputDir filesep 'qsm_hub.log'],'w');
         if isstruct(input)
             fprintf(fid,'qsmMacroIOWrapper(input,...\n');
         else

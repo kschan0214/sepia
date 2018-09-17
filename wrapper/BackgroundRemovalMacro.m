@@ -117,7 +117,7 @@ else
 end
 
 % add path
-qsm_hub_AddMethodPath(method);
+sepia_addpath(method);
 
 disp(['The following method is being used: ' method]);
 

@@ -4,7 +4,7 @@ function ButtonOpen_Callback(source,eventdata,h,field)
 % global h
 
 % default output base name
-prefix = 'squirrel';
+prefix = 'Sepia';
 
 switch field
     case 'mask'

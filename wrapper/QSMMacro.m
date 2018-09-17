@@ -135,7 +135,7 @@ else
 end
 
 % add path
-qsm_hub_AddMethodPath(method);
+sepia_addpath(method);
 
 disp(['The following QSM algorithm will be used: ' method]);
 

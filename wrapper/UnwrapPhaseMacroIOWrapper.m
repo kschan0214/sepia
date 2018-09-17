@@ -32,7 +32,7 @@
 %
 function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,varargin)
 %% add general Path
-qsm_hub_AddMethodPath;
+sepia_addpath;
 
 %% define variables
 prefix = 'squirrel_';
@@ -221,7 +221,7 @@ else
     %%%%%%%%%%%%% Pathway 3: Input is a directory with DICOM %%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    qsm_hub_AddMethodPath('dicom');
+    sepia_addpath('dicom');
     
     % if no nifti file then check for DICOM files
     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
@@ -295,7 +295,7 @@ end
     
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
-    qsm_hub_AddMethodPath('bet');
+    sepia_addpath('bet');
     disp('Performing FSL BET...');
     
     % this is the BET functino provided with MEDI toolbox
@@ -345,7 +345,7 @@ catch
     disp('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
     
     unwrap = 'laplacian'; exclude_threshold = Inf;
-    qsm_hub_AddMethodPath(unwrap);
+    sepia_addpath(unwrap);
     
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
                             'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...

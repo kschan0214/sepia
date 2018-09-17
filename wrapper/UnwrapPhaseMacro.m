@@ -87,7 +87,7 @@ else
 end
 
 % add path
-qsm_hub_AddMethodPath(method);
+sepia_addpath(method);
 
 disp(['The following unwrapping method is being used: ' method]);
 %% phase unwrapping

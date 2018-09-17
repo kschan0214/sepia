@@ -58,7 +58,7 @@ else
 end
 
 %% Core
-qsm_hub_AddMethodPath('nonlinearfit');
+sepia_addpath('nonlinearfit');
 if numel(TE)>1 && ((TE(2)-TE(1))-(TE(3)-TE(2))>1e-5)
     % Estimate the frequency offset in each of the voxel using a complex
     % fitting (uneven echo spacing)

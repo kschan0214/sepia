@@ -8,7 +8,7 @@
 % Date created: 10 April 2018
 % Date last modified: 24 August 2018
 %
-function qsm_hub_AddMethodPath(method)
+function sepia_addpath(method)
 % specify the toolbox(es) directory
 % MEDI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/MEDI_toolbox/MEDI_toolbox_20180625/';
 % STISuite_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/STI_Suite/STISuite_V3.0/';

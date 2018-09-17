@@ -19,7 +19,7 @@ function GetVentricleMaskIOWrapper(input, outputDir, maskFullName, TE)
 prefix = 'squirrel_';
 
 % add path
-qsm_hub_AddMethodPath('medi_l1');
+sepia_addpath('medi_l1');
 
 disp('Loading data...')
 

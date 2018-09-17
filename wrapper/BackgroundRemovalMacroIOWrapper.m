@@ -36,7 +36,7 @@
 %
 function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,varargin)
 %% add general Path
-qsm_hub_AddMethodPath;
+sepia_addpath;
 
 %% define variables
 prefix = 'squirrel_';
