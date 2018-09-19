@@ -1,4 +1,4 @@
-%% [chi,localField,totalField,fieldmapSD]=QSMHub(inputDir,outputDir,varargin)
+%% [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(inputDir,outputDir,varargin)
 %
 % Input
 % --------------
@@ -65,7 +65,7 @@
 % Date last modified: 26 August 2018
 %
 %
-function [chi,localField,totalField,fieldmapSD]=QSMHub(input,output,maskFullName,varargin)
+function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,varargin)
 %% add general Path
 sepia_addpath
 
@@ -98,7 +98,7 @@ end
     QSM_method,QSM_threshold,QSM_lambda,QSM_optimise,QSM_tol,QSM_maxiter,...
     QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
     QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
-    QSM_isSMV,QSM_merit] = parse_varargin_QSMHub(varargin);
+    QSM_isSMV,QSM_merit] = parse_varargin_sepia(varargin);
 
 %% Read input
 disp('Reading data...');
