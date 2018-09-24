@@ -299,7 +299,7 @@ isGPU = get(h.checkbox_gpu,'Value');
 
 % get I/O GUI input
 % option 1: input is a directory
-input           = get(h.dataIO.edit.input,                  'String');
+input           = get(h.dataIO.edit.input,               'String');
 % option 2: input are NIfTI files
 if isempty(input)
     input(1).name = get(h.dataIO.edit.inputData1,        'String');
