@@ -498,7 +498,8 @@ try
 catch ME
     % re-enable the start button before displaying the error
     set(source,'Enable','on');
-    error(ME.message);
+%     error(ME.message);
+    rethrow(ME);
 end
 
 % get output directory
