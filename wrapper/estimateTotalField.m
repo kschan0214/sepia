@@ -1,18 +1,16 @@
-%% function [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
+%% function [totalField,N_std,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
 %
-% Usage:
+% Example:
 %   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-%                           'Unwrap','Laplacian','unit','ppm');
-%   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-%                           'Unwrap','rg','unit','ppm');
-%   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-%                           'Unwrap','gc','unit','ppm','Subsampling',2);
-%   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-%                           'Unwrap','bestpath3d','unit','ppm','TE',TE,'B0',3,...
+%                           'Method','Optimum weights','Unwrap','bestpath3d',...
+%                           'unit','ppm','TE',TE,'B0',3,...
 %                           'mask',mask);
-%
-% Description: compute the unwrapped total field from complex-valued
-%              multi-echo data
+%   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
+%                           'Method','MEDI nonlinear fit','Unwrap','Laplacian','unit','ppm');
+%   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
+%                           'Method','MEDI nonlinear fit','Unwrap','rg','unit','ppm');
+%   [totalField,N_std] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
+%                           'Method','MEDI nonlinear fit','Unwrap','gc','unit','ppm','Subsampling',2);
 %
 % Input
 % ----------------
@@ -20,16 +18,21 @@
 %   magn                : magnitude of multi-echo images
 %   matrixSize          : images matrix size
 %   voxelSize           : images voxel size
-%   Flags:
+%   Name/Value pairs:
+%       'method'        -   Method of echo phase combination ('Optimum weights','MEDI nonlinear fit')
+%       'Unwarp'        -   phase unwrapping method (Laplacian,rg,gc,bestpath3d)
 %       'TE'            -   Echo times
 %       'B0'            -   Magnetic field strength
 %       'unit'          -   unit of the total field
-%       'Unwarp'        -   phase unwrapping method (Laplacian,rg,gc,bestpath3d)
+%       'mask'          -   mask image
 %
 % Output
 % ----------------
 %   total field         : unwrapped total field
 %   N_std               : noise standard deviation in field map
+%
+% Description: compute the unwrapped total field from complex-valued
+%              multi-echo data
 %
 % This code is modified from the T2starAndFieldCalc.m from Jose P. Marques
 %

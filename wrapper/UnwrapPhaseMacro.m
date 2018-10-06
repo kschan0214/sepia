@@ -106,7 +106,7 @@ switch method
     case 'BestPath3D'
         try
             unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);
-        catch
+        catch ME
             disp('The library cannot be run in this platform, running Laplacian unwrapping instead...');
             unwrappedField = unwrapLaplacian(wrappedField,matrixSize,voxelSize);
         end

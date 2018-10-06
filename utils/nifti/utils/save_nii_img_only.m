@@ -17,6 +17,7 @@ nii = load_untouch_nii(headerfilename);
 nii.img = single(img);
 nii.hdr.dime.datatype = datatype;
 nii.hdr.dime.dim(5) = size(img,4);
+nii.hdr.dime.pixdim(isnan(nii.hdr.dime.pixdim)) = 1;
 if size(img,4) > 1
     nii.hdr.dime.dim(1) = 4;
 end
