@@ -1,6 +1,6 @@
 # Sepia (work in progress)  
 
-![sepia logo](sepia/logo/sepia.png)
+![sepia logo](https://github.com/kschan0214/sepia/blob/master/logo/sepia.png?raw=true)
 
 ## Introduction  
 
