@@ -1,6 +1,6 @@
 # Sepia (work in progress)  
 
-[[logo/sepia.png]]
+![sepia logo](sepia/logo/sepia.png)
 
 ## Introduction  
 
