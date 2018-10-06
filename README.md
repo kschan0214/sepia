@@ -1,5 +1,7 @@
 # Sepia (work in progress)  
 
+[[logo/sepia.png]]
+
 ## Introduction  
 
 Welcome to the beta version of **Sepia**! **Sepia** is a tool providing a graphical user interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
