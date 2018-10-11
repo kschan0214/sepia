@@ -42,7 +42,8 @@ else
         info.dataType = 'single';
         img = single(img);
     end
-    
+    [filepath,filename,~] = fileparts(savefilename);
+    savefilename = [filepath filesep filename];
     info.ImageSize = size(img);
     info.PixelDimensions = info.PixelDimensions(1:ndims(img));
     info.raw.dim(1) = ndims(img);
