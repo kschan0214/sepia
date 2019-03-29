@@ -277,321 +277,221 @@ end
 end
 
 function PushbuttonStart_Callback(source,eventdata)
-% determine which step(s) is going to process
+% core of Sepia GUI is to create a .m script to execute a command-based function
 
 global h
 
-% Disable the pushbutton to prevent doubel click
+% Disable the pushbutton to prevent double clicks
 set(source,'Enable','off');
 
-% initialise all possible parameters
-subsampling=1;
-BFR_tol=1e-4;BFR_depth=4;BFR_peel=2;BFR_iteration=50;
-BFR_padSize = 40;BFR_radius=4;BFR_alpha=0.01;BFR_threshold=0.03;
-QSM_threshold=0.15;QSM_lambda=0.13;QSM_optimise=false;
-QSM_tol=1e-3;QSM_maxiter=50;QSM_tol1=0.01;QSM_tol2=0.001;QSM_padsize=[4,4,4];
-QSM_mu1=5e-5;QSM_solver='linear';QSM_constraint='tv';QSM_mu2=1;
-QSM_radius=5;QSM_zeropad=0;QSM_wData=1;QSM_wGradient=1;QSM_lambdaCSF=100;
-QSM_isSMV=false;QSM_merit=false;QSM_isLambdaCSF=false;
-
-% get GPU enable
-isGPU = get(h.checkbox_gpu,'Value');
+% get the tab name of the standalone
+tab = h.StepsPanel.dataIO.Parent.Title;
 
 % get I/O GUI input
 % option 1: input is a directory
-input           = get(h.dataIO.edit.input,               'String');
+input           = get(h.dataIO.edit.input,          'String');
 % option 2: input are NIfTI files
 if isempty(input)
-    input(1).name = get(h.dataIO.edit.inputData1,        'String');
-    input(2).name = get(h.dataIO.edit.inputData2,        'String');
-    input(3).name = get(h.dataIO.edit.inputData3,        'String');
-    input(4).name = get(h.dataIO.edit.inputHeader,       'String');
+    input(1).name = get(h.dataIO.edit.inputData1, 	'String');
+    input(2).name = get(h.dataIO.edit.inputData2,  	'String');
+    input(3).name = get(h.dataIO.edit.inputData3,  	'String');
+    input(4).name = get(h.dataIO.edit.inputHeader, 	'String');
 end
-outputBasename  = get(h.dataIO.edit.output,                 'String');
-maskFullName    = get(h.dataIO.edit.maskdir,                'String');
-isBET           = get(h.dataIO.checkbox.brainExtraction,    'Value');
-isInvert        = get(h.dataIO.checkbox.invertPhase,        'Value');
-
-% get phase unwrap GUI input
-phaseCombMethod = h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1};
-phaseUnwrap     = h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1};
-isEddyCorrect   = get(h.phaseUnwrap.checkbox.eddyCorrect,'Value');
-if get(h.phaseUnwrap.checkbox.excludeMask,'Value')
-    excludeMaskThreshold = str2double(get(h.phaseUnwrap.edit.excludeMask,'String'));
-else
-    excludeMaskThreshold = Inf;
-end
-
-% get background field removal GUI input
-BFR             = h.bkgRemoval.popup.bkgRemoval.String{h.bkgRemoval.popup.bkgRemoval.Value,1};
-refine          = get(h.bkgRemoval.checkbox.bkgRemoval,'Value');
-
-% get QSM GUI input
-QSM_method      = h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1};
-
-switch phaseUnwrap
-    case 'Region growing'
-        phaseUnwrap = 'rg';
-        
-    case 'Graphcut'
-        phaseUnwrap = 'gc';
-        
-    case 'Laplacian STI suite'
-        phaseUnwrap = 'laplacian_stisuite';
-        
-    case '3D best path'
-        phaseUnwrap = 'bestpath3d';
-        
-end
-
-% match the background field removal GUI input to QSMHub input format
-% get specific backgroud field removal algorithm parameters
-switch BFR
-    case 'LBV'
-        BFR='lbv';
-        BFR_tol         = str2double(get(h.bkgRemoval.LBV.edit.tol,         'String'));
-        BFR_depth       = str2double(get(h.bkgRemoval.LBV.edit.depth,       'String'));
-        BFR_peel        = str2double(get(h.bkgRemoval.LBV.edit.peel,        'String'));
-        
-    case 'PDF'
-        BFR='pdf';
-        BFR_tol         = str2double(get(h.bkgRemoval.PDF.edit.tol,         'String'));
-        BFR_iteration   = str2double(get(h.bkgRemoval.PDF.edit.maxIter,     'String'));
-        BFR_padSize     = str2double(get(h.bkgRemoval.PDF.edit.padSize,     'String'));
-
-    case 'RESHARP'
-        BFR='resharp';
-        BFR_radius      = str2double(get(h.bkgRemoval.RESHARP.edit.radius,  'String'));  
-        BFR_alpha       = str2double(get(h.bkgRemoval.RESHARP.edit.lambda,  'String'));  
-        
-    case 'SHARP'
-        BFR='sharp';
-        BFR_radius      = str2double(get(h.bkgRemoval.SHARP.edit.radius,    'String'));
-        BFR_threshold   = str2double(get(h.bkgRemoval.SHARP.edit.threshold, 'String')); 
-        
-    case 'VSHARP'
-        BFR='vsharp';
-        maxRadius       = str2double(get(h.bkgRemoval.VSHARP.edit.maxRadius,'String')); 
-        minRadius       = str2double(get(h.bkgRemoval.VSHARP.edit.minRadius,'String')); 
-        
-        BFR_radius      = maxRadius:-1:minRadius;
-        
-    case 'iHARPERELLA'
-        BFR='iharperella';
-        BFR_iteration   = str2double(get(h.bkgRemoval.iHARPERELLA.edit.maxIter,'String')); 
-        
-    case 'VSHARP STI suite'
-        BFR='vsharpsti';
-        BFR_radius      = str2double(get(h.bkgRemoval.VSHARPSTI.edit.smvSize,'String')); 
-        
-end
-
-% get QSM algorithm parameters
-switch QSM_method
-    case 'TKD'
-        QSM_method='tkd';
-        QSM_threshold   = str2double(get(h.qsm.TKD.edit.threshold,'String'));  
-        
-    case 'Closed-form solution'
-        QSM_method='closedforml2';
-        QSM_lambda      = str2double(get(h.qsm.cfs.edit.lambda,'String')); 
-        QSM_optimise    = get(h.qsm.cfs.checkbox.lambda,'Value');  
-        
-    case 'STI suite iLSQR'
-        QSM_method='stisuiteilsqr';
-        QSM_threshold	= str2double(get(h.qsm.STIiLSQR.edit.threshold,'String')); 
-        QSM_maxiter     = str2double(get(h.qsm.STIiLSQR.edit.maxIter,'String'));	
-        QSM_tol1        = str2double(get(h.qsm.STIiLSQR.edit.tol1,'String'));  
-        QSM_tol2        = str2double(get(h.qsm.STIiLSQR.edit.tol2,'String'));  
-        QSM_padsize     = str2double(get(h.qsm.STIiLSQR.edit.padSize,'String'));  
-        
-        QSM_padsize = [QSM_padsize,QSM_padsize,QSM_padsize];
-        
-    case 'iLSQR'
-        QSM_method='ilsqr';
-        QSM_tol         = str2double(get(h.qsm.iLSQR.edit.tol,'String'));        
-        QSM_maxiter     = str2double(get(h.qsm.iLSQR.edit.maxIter,'String'));
-        QSM_lambda      = str2double(get(h.qsm.iLSQR.edit.lambda,'String'));  
-        QSM_optimise    = get(h.qsm.iLSQR.checkbox.lambda,'Value'); 
-        
-    case 'FANSI'
-        QSM_method='fansi';
-        QSM_tol         = str2double(get(h.qsm.FANSI.edit.tol,'String'));    
-        QSM_lambda      = str2double(get(h.qsm.FANSI.edit.lambda,'String'));   
-        QSM_mu1         = str2double(get(h.qsm.FANSI.edit.mu,'String'));    
-        QSM_mu2         = str2double(get(h.qsm.FANSI.edit.mu2,'String'));  
-        QSM_maxiter     = str2double(get(h.qsm.FANSI.edit.maxIter,'String'));   
-        QSM_solver      = h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1}; 
-        QSM_constraint  = h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1}; 
-        
-    case 'Star-QSM'
-        QSM_method='star';
-        QSM_padsize     = str2double(get(h.qsm.Star.edit.padSize,'String')); 
-        QSM_padsize     = [QSM_padsize,QSM_padsize,QSM_padsize];
-        
-    case 'MEDI'
-        QSM_method='medi_l1';
-        QSM_lambda      = str2double(get(h.qsm.MEDI.edit.lambda,'String'));   
-        QSM_wData       = str2double(get(h.qsm.MEDI.edit.weightData,'String'));    
-        QSM_wGradient   = str2double(get(h.qsm.MEDI.edit.weightGradient,'String')); 
-        QSM_zeropad     = str2double(get(h.qsm.MEDI.edit.zeropad,'String'));    
-        QSM_radius      = str2double(get(h.qsm.MEDI.edit.smv_radius,'String'));   
-        QSM_isSMV       = get(h.qsm.MEDI.checkbox.smv,'Value');   
-        QSM_merit       = get(h.qsm.MEDI.checkbox.merit,'Value');     
-        QSM_isLambdaCSF = get(h.qsm.MEDI.checkbox.lambda_csf,'Value');        
-        QSM_lambdaCSF   = str2double(get(h.qsm.MEDI.edit.lambda_csf,'String'));   
-        
-end
-
-% run the selected processing step and delay the error (if any)
-try 
-    % get the parent of current panel, this determine which script is about to run
-    switch h.StepsPanel.dataIO.Parent.Title
-        case 'Sepia'
-            % core of QSM one-stop processing
-            SepiaIOWrapper( input,...
-                            outputBasename,...
-                            maskFullName,...
-                            'invert',isInvert,'FSLBet',isBET,'eddy',isEddyCorrect,'GPU',isGPU,...
-                            'phase_combine',phaseCombMethod,'unwrap',phaseUnwrap,...
-                            'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold,...
-                            'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
-                            'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
-                            'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold,...
-                            'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
-                            'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-                            'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                            'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-                            'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
-
-        case 'Phase unwrapping'
-            % Core of phase unwrapping only 
-            UnwrapPhaseMacroIOWrapper(  input,...
-                                        outputBasename,...
-                                        maskFullName,...
-                                        'invert',isInvert,'FSLBet',isBET,'eddy',isEddyCorrect,...
-                                        'phase_combine',phaseCombMethod,'unwrap',phaseUnwrap,...
-                                        'Subsampling',subsampling,'exclude_threshold',excludeMaskThreshold);
-
-        case 'Background field removal'
-            % core of background field removal only
-            BackgroundRemovalMacroIOWrapper(input,...
-                                            outputBasename,...
-                                            maskFullName,...
-                                            'GPU',isGPU,...
-                                            'BFR',BFR,'refine',refine,'BFR_tol',BFR_tol,...
-                                            'depth',BFR_depth,'peel',BFR_peel,'BFR_iteration',BFR_iteration,'BFR_padsize',BFR_padSize,...
-                                            'BFR_radius',BFR_radius,'BFR_alpha',BFR_alpha,'BFR_threshold',BFR_threshold);
-
-        case 'QSM'
-            % core of QSM only
-            QSMMacroIOWrapper(  input,...
-                                outputBasename,...
-                                maskFullName,...
-                                'GPU',isGPU,...
-                                'QSM',QSM_method,'QSM_threshold',QSM_threshold,'QSM_lambda',QSM_lambda,'QSM_optimise',QSM_optimise,...
-                                'QSM_tol',QSM_tol,'QSM_iteration',QSM_maxiter,'QSM_tol1',QSM_tol1,'QSM_tol2',QSM_tol2,...
-                                'QSM_padsize',QSM_padsize,'QSM_mu',QSM_mu1,'QSM_mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                                'QSM_zeropad',QSM_zeropad,'QSM_wData',QSM_wData,'QSM_wGradient',QSM_wGradient,'QSM_radius',QSM_radius,...
-                                'QSM_isSMV',QSM_isSMV,'QSM_merit',QSM_merit,'QSM_isLambdaCSF',QSM_isLambdaCSF,'QSM_lambdaCSF',QSM_lambdaCSF);
-    end
-catch ME
-    % re-enable the start button before displaying the error
-    set(source,'Enable','on');
-%     error(ME.message);
-    rethrow(ME);
-end
+outputBasename  = get(h.dataIO.edit.output,       	'String');
+maskFullName    = get(h.dataIO.edit.maskdir,       	'String');
 
 % get output directory
 output_index = strfind(outputBasename, filesep);
 outputDir = outputBasename(1:output_index(end));
 
-% generate a log file
-GenerateLogFile(h.StepsPanel.dataIO.Parent.Title);
+% create a new m file
+fid = fopen([outputDir filesep 'sepia_log.m'],'w');
 
-% re-enable the pushbutton
-set(source,'Enable','on');
-
-function GenerateLogFile(tab)
-    
-fid = fopen([outputDir filesep 'sepia.log'],'w');
+% input data
 if isstruct(input)
     fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
     fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
     fprintf(fid,'input(3).name = ''%s'' ;\n',input(3).name);
-    fprintf(fid,'input(4).name = ''%s'' ;\n\n',input(4).name);
+    fprintf(fid,'input(4).name = ''%s'' ;\n',input(4).name);
+else
+    fprintf(fid,'input = ''%s'' ;\n',input);
 end
 
-switch tab
-    case 'Sepia'
-        if isstruct(input)
-            fprintf(fid,'SepiaIOWrapper(input,...\n');
-        else
-            fprintf(fid,'SepiaIOWrapper(''%s'',...\n',input);
-        end
-        fprintf(fid,'''%s'',...\n',outputBasename);
-        fprintf(fid,'''%s'',...\n',maskFullName);
-        fprintf(fid,'''invert'',%i,''FSLBet'',%i,''eddy'',%i,''GPU'',%i,...\n',isInvert,isBET,isEddyCorrect,isGPU);
-        fprintf(fid,'''phase_combine'',''%s'',''unwrap'',''%s'',...\n',phaseCombMethod,phaseUnwrap);
-        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%g,...\n',subsampling,excludeMaskThreshold);
-        fprintf(fid,'''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',BFR,refine,BFR_tol);
-        fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
-        fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g,...\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
-        fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
-        fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
-        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);
-        fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
-        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF);
-        fclose(fid);
+% output
+fprintf(fid,'output_basename = ''%s'' ;\n',outputBasename);
+
+% mask
+fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
+
+% general algorithm parameters
+fprintf(fid,'algorParam.general.isBET = %i ;\n'     ,get(h.dataIO.checkbox.brainExtraction, 'Value'));
+fprintf(fid,'algorParam.general.isInvert = %i ;\n'  ,get(h.dataIO.checkbox.invertPhase,     'Value'));
+fprintf(fid,'algorParam.general.isGPU = %i ;\n'     ,get(h.checkbox_gpu,                    'Value'));
+
+% phase unwrap algorithm parameters
+if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
+    fprintf(fid,'%% Phase unwrapping algorithm parameters\n');
+    % echo phase combine method
+    fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,get(h.dataIO.checkbox.brainExtraction, 'Value'));
+    % unwrap method
+    switch h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1}
+        case 'Region growing'
+            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'rg');
+
+        case 'Graphcut'
+            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'gc');
+            fprintf(fid,'algorParam.unwrap.subsampling = %i ;\n'          ,1);
+
+        case 'Laplacian STI suite'
+            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'laplacian_stisuite');
+
+        case '3D best path'
+            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'bestpath3d');
+    end
+    % eddy current correction
+    fprintf(fid,'algorParam.unwrap.isEddyCorrect = %i ;\n'     ,get(h.phaseUnwrap.checkbox.eddyCorrect,'Value'));
+    % exclusion mask threshold
+    if get(h.phaseUnwrap.checkbox.excludeMask,'Value')
+        fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = %g ;\n'     ,str2double(get(h.phaseUnwrap.edit.excludeMask,'String')));
+    else
+        fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = Inf ;\n');
+    end
+end
+    
+% background field removal algorithm parameters
+if strcmpi(tab,'Sepia') || strcmpi(tab,'Background field removal')
+    fprintf(fid,'%% Background field removal algorithm parameters\n');
+    % polyfit
+    fprintf(fid,'algorParam.bfr.refine = %i ;\n'    ,get(h.bkgRemoval.checkbox.bkgRemoval,'Value'));
+    % set parameters for selected method
+    switch h.bkgRemoval.popup.bkgRemoval.String{h.bkgRemoval.popup.bkgRemoval.Value,1}
+        case 'LBV'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,'lbv');
+            fprintf(fid,'algorParam.bfr.tol = %s ;\n'	,(get(h.bkgRemoval.LBV.edit.tol,	'String')));
+            fprintf(fid,'algorParam.bfr.depth = %s ;\n'	,(get(h.bkgRemoval.LBV.edit.depth,  'String')));
+            fprintf(fid,'algorParam.bfr.peel = %s ;\n' 	,(get(h.bkgRemoval.LBV.edit.peel,	'String')));
+
+        case 'PDF'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,'pdf');
+            fprintf(fid,'algorParam.bfr.tol = %s ;\n'       ,(get(h.bkgRemoval.PDF.edit.tol,  	'String')));
+            fprintf(fid,'algorParam.bfr.iteration = %s ;\n'	,(get(h.bkgRemoval.PDF.edit.maxIter,'String')));
+            fprintf(fid,'algorParam.bfr.padSize = %s ;\n' 	,(get(h.bkgRemoval.PDF.edit.padSize,'String')));
+
+        case 'RESHARP'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,'resharp');
+            fprintf(fid,'algorParam.bfr.radius = %s ;\n'	,(get(h.bkgRemoval.RESHARP.edit.radius,  'String')));
+            fprintf(fid,'algorParam.bfr.alpha = %s ;\n' 	,(get(h.bkgRemoval.RESHARP.edit.lambda,  'String')));
+
+        case 'SHARP'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'sharp');
+            fprintf(fid,'algorParam.bfr.radius = %s ;\n'	,(get(h.bkgRemoval.SHARP.edit.radius,    'String')));
+            fprintf(fid,'algorParam.bfr.threshold = %s ;\n'	,(get(h.bkgRemoval.SHARP.edit.threshold, 'String')));
+
+        case 'VSHARP'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'vsharp');
+            fprintf(fid,'algorParam.bfr.radius = [%s:-1:%s] ;\n' ,(get(h.bkgRemoval.VSHARP.edit.maxRadius,'String')),...
+                                                                   get(h.bkgRemoval.VSHARP.edit.minRadius,'String'));
+
+        case 'iHARPERELLA'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'iharperella');
+            fprintf(fid,'algorParam.bfr.iteration = %s ;\n' ,(get(h.bkgRemoval.iHARPERELLA.edit.maxIter,'String')));
+
+        case 'VSHARP STI suite'
+            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'vsharpsti');
+            fprintf(fid,'algorParam.bfr.radius = %s ;\n' ,(get(h.bkgRemoval.VSHARPSTI.edit.smvSize,'String')));
+
+    end
+end
+
+% QSM algorithm parameters
+if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
+    fprintf(fid,'%% QSM algorithm parameters\n');
+    % set parameters for selected method
+    switch h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1}
+        case 'TKD'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'	,'tkd');
+            fprintf(fid,'algorParam.qsm.threshold = %s ;\n'     ,get(h.qsm.TKD.edit.threshold,'String'));
         
-    case 'Phase unwrapping'
-        if isstruct(input)
-            fprintf(fid,'UnwrapPhaseMacroIOWrapper(input,...\n');
-        else
-            fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',...\n',input);
-        end
-%         fprintf(fid,'UnwrapPhaseMacroIOWrapper(''%s'',...\n',input);
-        fprintf(fid,'''%s'',...\n',outputBasename);
-        fprintf(fid,'''%s'',...\n',maskFullName);
-        fprintf(fid,'''invert'',%i,''FSLBet'',%i,''eddy'',%i,...\n',isInvert,isBET,isEddyCorrect);
-        fprintf(fid,'''phase_combine'',''%s'',''unwrap'',''%s'',...\n',phaseCombMethod,phaseUnwrap);
-        fprintf(fid,'''Subsampling'',%i,''exclude_threshold'',%g);\n',subsampling,excludeMaskThreshold);
-        fclose(fid);
-    
-    case 'Background field removal'
-        if isstruct(input)
-            fprintf(fid,'BackgroundRemovalMacroIOWrapper(input,...\n');
-        else
-            fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',...\n',input);
-        end
-%         fprintf(fid,'BackgroundRemovalMacroIOWrapper(''%s'',...\n',input);
-        fprintf(fid,'''%s'',...\n',outputBasename);
-        fprintf(fid,'''%s'',...\n',maskFullName);
-        fprintf(fid,'''GPU'',%i,...\n',isGPU);
-        fprintf(fid,'''BFR'',''%s'',''refine'',%i,''BFR_tol'',%g,...\n',BFR,refine,BFR_tol);
-        fprintf(fid,'''depth'',%i,''peel'',%i,''BFR_iteration'',%i,''BFR_padsize'',%i,...\n',BFR_depth,BFR_peel,BFR_iteration,BFR_padSize);
-        fprintf(fid,'''BFR_radius'',[%s],''BFR_alpha'',%g,''BFR_threshold'',%g);\n',num2str(BFR_radius),BFR_alpha,BFR_threshold);
-        fclose(fid);
-    
-    case 'QSM'
-        if isstruct(input)
-            fprintf(fid,'qsmMacroIOWrapper(input,...\n');
-        else
-            fprintf(fid,'qsmMacroIOWrapper(''%s'',...\n',input);
-        end
-%         fprintf(fid,'qsmMacroIOWrapper(''%s'',...\n',input);
-        fprintf(fid,'''%s'',...\n',outputBasename);
-        fprintf(fid,'''%s'',...\n',maskFullName);
-        fprintf(fid,'''GPU'',%i,...\n',isGPU);
-        fprintf(fid,'''QSM'',''%s'',''QSM_threshold'',%g,''QSM_lambda'',%g,''QSM_optimise'',%i,...\n',QSM_method,QSM_threshold,QSM_lambda,QSM_optimise);
-        fprintf(fid,'''QSM_tol'',%g,''QSM_iteration'',%i,''QSM_tol1'',%g,''QSM_tol2'',%g,...\n',QSM_tol,QSM_maxiter,QSM_tol1,QSM_tol2);
-        fprintf(fid,'''QSM_padsize'',[%s],''QSM_mu'',%g,''QSM_mu2'',%g,''%s'',''%s'',...\n',num2str(QSM_padsize),QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint);
-        fprintf(fid,'''QSM_zeropad'',%i,''QSM_wData'',%g,''QSM_wGradient'',%g,''QSM_radius'',%i,...\n',QSM_zeropad,QSM_wData,QSM_wGradient,QSM_radius);
-        fprintf(fid,'''QSM_isSMV'',%i,''QSM_merit'',%i,''QSM_isLambdaCSF'',%g,''QSM_lambdaCSF'',%g);\n',QSM_isSMV,QSM_merit,QSM_isLambdaCSF,QSM_lambdaCSF);
-        fclose(fid);
+        case 'Closed-form solution'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'closedforml2');
+            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'        ,get(h.qsm.cfs.edit.lambda,     'String'));
+            fprintf(fid,'algorParam.qsm.optimise = %i ;\n'      ,get(h.qsm.cfs.checkbox.lambda, 'Value'));
 
+        case 'STI suite iLSQR'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'stisuiteilsqr');
+            fprintf(fid,'algorParam.qsm.threshold = %s ;\n'         ,get(h.qsm.STIiLSQR.edit.threshold, 'String'));
+            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
+            fprintf(fid,'algorParam.qsm.tol1 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
+            fprintf(fid,'algorParam.qsm.tol2 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.tol1,      'String'));
+            fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.STIiLSQR.edit.padSize,   'String'));
+
+        case 'iLSQR'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'ilsqr');
+            fprintf(fid,'algorParam.qsm.tol = %s ;\n'           ,get(h.qsm.iLSQR.edit.tol,          'String'));
+            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'      	,get(h.qsm.iLSQR.edit.maxIter,      'String'));
+            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'      	,get(h.qsm.iLSQR.edit.lambda,       'String'));
+            fprintf(fid,'algorParam.qsm.optimise = %i ;\n'  	,get(h.qsm.iLSQR.checkbox.lambda,   'Value'));
+
+        case 'FANSI'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'fansi');
+            fprintf(fid,'algorParam.qsm.tol = %s ;\n'           ,get(h.qsm.FANSI.edit.tol,      'String'));
+            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'      	,get(h.qsm.FANSI.edit.maxIter,  'String'));
+            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'      	,get(h.qsm.FANSI.edit.lambda,   'String'));
+            fprintf(fid,'algorParam.qsm.mu1 = %s ;\n'           ,get(h.qsm.FANSI.edit.mu,       'String'));
+            fprintf(fid,'algorParam.qsm.mu2 = %s ;\n'           ,get(h.qsm.FANSI.edit.mu2,      'String'));
+            fprintf(fid,'algorParam.qsm.solver = ''%s'' ;\n'  	,h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1});
+            fprintf(fid,'algorParam.qsm.constraint = ''%s'' ;\n',h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1});
+
+        case 'Star-QSM'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'star');
+            fprintf(fid,'algorParam.qsm.tol = %s ;\n'               ,get(h.qsm.FANSI.edit.tol,      'String'));
+            fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.Star.edit.padSize,   'String'));
+
+        case 'MEDI'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'medi_l1');
+            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'      	,get(h.qsm.MEDI.edit.lambda,        'String'));
+            fprintf(fid,'algorParam.qsm.wData = %s ;\n'        	,get(h.qsm.MEDI.edit.weightData,    'String'));
+            fprintf(fid,'algorParam.qsm.wGradient = %s ;\n'    	,get(h.qsm.MEDI.edit.weightGradient,'String'));
+            fprintf(fid,'algorParam.qsm.zeropad = %s ;\n'      	,get(h.qsm.MEDI.edit.zeropad,       'String'));
+            fprintf(fid,'algorParam.qsm.radius = %s ;\n'      	,get(h.qsm.MEDI.edit.smv_radius,    'String'));
+            fprintf(fid,'algorParam.qsm.isSMV = %i ;\n'         ,get(h.qsm.MEDI.checkbox.smv,       'Value'));
+            fprintf(fid,'algorParam.qsm.merit = %i ;\n'         ,get(h.qsm.MEDI.checkbox.merit,     'Value'));
+            fprintf(fid,'algorParam.qsm.isLambdaCSF = %i ;\n'  	,get(h.qsm.MEDI.checkbox.lambda_csf,'Value'));
+            fprintf(fid,'algorParam.qsm.lambdaCSF = %s ;\n'     ,get(h.qsm.MEDI.edit.lambda_csf,    'String'));  
+
+    end
 end
 
+try
+    switch tab
+        case 'Sepia'
+            fprintf(fid,'SepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            
+        case 'Phase unwrapping'
+            fprintf(fid,'UnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+        
+        case 'Background field removal'
+            fprintf(fid,'BackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+        
+        case 'QSM'
+            fprintf(fid,'qsmMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            
+    end
+    
+    fclose(fid);
+    
+    % run process
+    run([outputDir filesep 'sepia_log.m']);
+    
+    % re-enable the pushbutton
+    set(source,'Enable','on');
+
+catch ME
+    % re-enable the start button before displaying the error
+    set(source,'Enable','on');
+
+    rethrow(ME);
 end
+
 
 end

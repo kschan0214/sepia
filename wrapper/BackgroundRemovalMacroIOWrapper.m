@@ -31,15 +31,16 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 26 August 2018
+% Date modified: 26 August 2018
+% Date modified: 29 March 2019
 %
 %
-function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,varargin)
+function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath;
 
 %% define variables
-prefix = 'squirrel_';
+prefix = 'sepia_';
 gyro = 42.57747892;
 isInputDir = true;
 % make sure the input only load once (first one)
@@ -58,14 +59,19 @@ if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
 
-%% Parse input argument using parse_varargin_QSMHub.m
-[~,isGPU,~,~,...
-    ~,~,~,~,...
-    BFR,refine,BFR_tol,BFR_depth,BFR_peel,BFR_iteration,BFR_padSize,BFR_radius,BFR_alpha,BFR_threshold,...
-    ~,~,~,~,~,~,...
-    ~,~,~,~,~,~,~,...
-    ~,~,~,~,~,~,...
-    ~,~] = parse_varargin_sepia(varargin);
+%% Check and set default algorithm parameters
+algorParam = CheckAndSetDefault(algorParam);
+isGPU           = algorParam.general.isGPU;
+BFR             = algorParam.bfr.method;
+refine          = algorParam.bfr.refine;
+BFR_tol         = algorParam.bfr.tol;
+BFR_depth       = algorParam.bfr.depth;
+BFR_peel        = algorParam.bfr.peel;
+BFR_iteration	= algorParam.bfr.iteration;
+BFR_padSize     = algorParam.bfr.padSize;
+BFR_radius      = algorParam.bfr.radius;
+BFR_alpha       = algorParam.bfr.alpha;
+BFR_threshold   = algorParam.bfr.threshold;
 
 %% Read input
 disp('Reading data...');
@@ -246,9 +252,27 @@ maskFinal = localField ~=0;
 % save results
 disp('Saving local field map...');
 
-save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'local-field.nii.gz']);
+save_nii_quick(outputNiftiTemplate,localField, [outputDir filesep prefix 'local-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-qsm.nii.gz']);
 
 disp('Done!');
+
+end
+
+function algorParam2 = CheckAndSetDefault(algorParam)
+algorParam2 = algorParam;
+try algorParam2.general.isGPU  	= algorParam.general.isGPU;	catch; algorParam2.general.isGPU = false;   end
+% default background field removal method is VSHARP
+try algorParam2.bfr.method      = algorParam.bfr.method;   	catch; algorParam2.bfr.method = 'vsharpsti';end
+try algorParam2.bfr.radius      = algorParam.bfr.radius; 	catch; algorParam2.bfr.radius = 10;         end
+try algorParam2.bfr.refine      = algorParam.bfr.refine;   	catch; algorParam2.bfr.refine = false;      end
+% for the rest, if the parameter does not exist then initiates it with an empty array
+try algorParam2.bfr.tol         = algorParam.bfr.tol;     	catch; algorParam2.bfr.tol = [];            end
+try algorParam2.bfr.depth       = algorParam.bfr.depth;  	catch; algorParam2.bfr.depth = [];          end
+try algorParam2.bfr.peel        = algorParam.bfr.peel;   	catch; algorParam2.bfr.peel = [];           end
+try algorParam2.bfr.iteration   = algorParam.bfr.iteration;	catch; algorParam2.bfr.iteration = [];      end
+try algorParam2.bfr.padSize     = algorParam.bfr.padSize; 	catch; algorParam2.bfr.padSize = [];        end
+try algorParam2.bfr.alpha       = algorParam.bfr.alpha;    	catch; algorParam2.bfr.alpha = [];          end
+try algorParam2.bfr.threshold   = algorParam.bfr.threshold;	catch; algorParam2.bfr.threshold = [];      end
 
 end

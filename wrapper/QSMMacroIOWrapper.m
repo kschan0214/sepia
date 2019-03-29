@@ -42,15 +42,16 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
-% Date last modified: 26 August 2018
+% Date modified: 26 August 2018
+% Date modified: 29 March 2019
 %
 %
-function chi = QSMMacroIOWrapper(input,output,maskFullName,varargin)
+function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath
 
 %% define variables
-prefix = 'squirrel_';
+prefix = 'sepia_';
 gyro = 42.57747892;
 isInputDir = true;
 % make sure the input only load once (first one)
@@ -71,14 +72,30 @@ if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
 
-%% Parse input argument
-[~,isGPU,~,~,...
-    ~,~,~,~,...
-    ~,~,~,~,~,~,~,~,~,~,...
-    QSM_method,QSM_threshold,QSM_lambda,QSM_optimise,QSM_tol,QSM_maxiter,...
-    QSM_tol1,QSM_tol2,QSM_padsize,QSM_mu1,QSM_mu2,QSM_solver,QSM_constraint,...
-    QSM_radius,QSM_zeropad,QSM_wData,QSM_wGradient,QSM_isLambdaCSF,QSM_lambdaCSF,...
-    QSM_isSMV,QSM_merit] = parse_varargin_sepia(varargin);
+%% Check and set default algorithm parameters
+algorParam = CheckAndSetDefault(algorParam);
+isGPU           = algorParam.general.isGPU;
+QSM_method      = algorParam.qsm.method; 
+QSM_threshold   = algorParam.qsm.threshold; 
+QSM_lambda      = algorParam.qsm.lambda; 
+QSM_optimise 	= algorParam.qsm.optimise; 
+QSM_tol         = algorParam.qsm.tol;   
+QSM_maxiter     = algorParam.qsm.maxiter;
+QSM_tol1        = algorParam.qsm.tol1;  
+QSM_tol2        = algorParam.qsm.tol2; 
+QSM_padsize     = algorParam.qsm.padsize;
+QSM_mu1         = algorParam.qsm.mu1; 
+QSM_mu2         = algorParam.qsm.mu2;  
+QSM_solver      = algorParam.qsm.solver;  
+QSM_constraint	= algorParam.qsm.constraint; 
+QSM_radius      = algorParam.qsm.radius;
+QSM_zeropad     = algorParam.qsm.zeropad;   
+QSM_wData       = algorParam.qsm.wData; 
+QSM_wGradient 	= algorParam.qsm.wGradient;
+QSM_isLambdaCSF	= algorParam.qsm.isLambdaCSF;
+QSM_lambdaCSF	= algorParam.qsm.lambdaCSF; 
+QSM_isSMV       = algorParam.qsm.isSMV;
+QSM_merit       = algorParam.qsm.merit;  
 
 %% Read input
 disp('Reading data...');
@@ -395,5 +412,37 @@ disp('Saving susceptibility map...');
 save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
 
 disp('Done!');
+
+end
+
+function algorParam2 = CheckAndSetDefault(algorParam)
+algorParam2 = algorParam;
+
+try algorParam2.general.isGPU  	= algorParam.general.isGPU;     catch; algorParam2.general.isGPU    = false;	end
+
+% default background field removal method is TKD
+try algorParam2.qsm.method      = algorParam.qsm.method;        catch; algorParam2.qsm.method       = 'tkd';	end
+try algorParam2.qsm.threshold   = algorParam.qsm.threshold;     catch; algorParam2.qsm.threshold    = 0.15;     end
+
+% for the rest, if the parameter does not exist then initiates it with an empty array
+try algorParam2.qsm.radius      = algorParam.qsm.radius;        catch; algorParam2.qsm.radius       = [];       end
+try algorParam2.qsm.lambda      = algorParam.qsm.lambda;        catch; algorParam2.qsm.lambda       = [];       end
+try algorParam2.qsm.optimise   	= algorParam.qsm.optimise;     	catch; algorParam2.qsm.tol          = [];       end
+try algorParam2.qsm.maxiter   	= algorParam.qsm.maxiter;       catch; algorParam2.qsm.maxiter      = [];     	end
+try algorParam2.qsm.tol1        = algorParam.qsm.tol1;          catch; algorParam2.qsm.tol1         = [];   	end
+try algorParam2.qsm.tol2        = algorParam.qsm.tol2;          catch; algorParam2.qsm.tol2         = [];      	end
+try algorParam2.qsm.padsize     = algorParam.qsm.padsize;       catch; algorParam2.qsm.padsize      = [];   	end
+try algorParam2.qsm.tol         = algorParam.qsm.tol;           catch; algorParam2.qsm.tol          = [];      	end
+try algorParam2.qsm.mu1         = algorParam.qsm.mu1;           catch; algorParam2.qsm.mu1          = [];      	end
+try algorParam2.qsm.mu2         = algorParam.qsm.mu2;           catch; algorParam2.qsm.mu2          = [];    	end
+try algorParam2.qsm.solver    	= algorParam.qsm.solver;    	catch; algorParam2.qsm.solver       = [];    	end
+try algorParam2.qsm.constraint 	= algorParam.qsm.constraint;   	catch; algorParam2.qsm.constraint   = [];       end
+try algorParam2.qsm.wData       = algorParam.qsm.wData;         catch; algorParam2.qsm.wData        = [];       end
+try algorParam2.qsm.wGradient  	= algorParam.qsm.wGradient;    	catch; algorParam2.qsm.wGradient    = [];       end
+try algorParam2.qsm.zeropad  	= algorParam.qsm.zeropad;    	catch; algorParam2.qsm.zeropad      = [];      	end
+try algorParam2.qsm.isSMV    	= algorParam.qsm.isSMV;         catch; algorParam2.qsm.isSMV        = [];    	end
+try algorParam2.qsm.isLambdaCSF	= algorParam.qsm.isLambdaCSF;	catch; algorParam2.qsm.isLambdaCSF  = [];   	end
+try algorParam2.qsm.lambdaCSF 	= algorParam.qsm.lambdaCSF;    	catch; algorParam2.qsm.lambdaCSF    = [];     	end
+try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = [];      	end
 
 end
