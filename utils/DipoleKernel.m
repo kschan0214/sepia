@@ -20,7 +20,7 @@
 %
 function [dipoleKernel,dKComponents] = DipoleKernel(matrixSize,voxelSize,b0dir)
 
-if isempty(b0dir)
+if nargin<3
     b0dir = [0 0 1];
 end
 
