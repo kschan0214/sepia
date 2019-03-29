@@ -64,7 +64,7 @@ end
 
 % create GUI 
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.6.1)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.7.0)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
@@ -300,9 +300,13 @@ end
 outputBasename  = get(h.dataIO.edit.output,       	'String');
 maskFullName    = get(h.dataIO.edit.maskdir,       	'String');
 
-% get output directory
+% get and create output directory
 output_index = strfind(outputBasename, filesep);
 outputDir = outputBasename(1:output_index(end));
+% if the output directory does not exist then create the directory
+if exist(outputDir,'dir') ~= 7
+    mkdir(outputDir);
+end
 
 % create a new m file
 fid = fopen([outputDir filesep 'sepia_log.m'],'w');
@@ -332,7 +336,7 @@ fprintf(fid,'algorParam.general.isGPU = %i ;\n'     ,get(h.checkbox_gpu,        
 if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
     fprintf(fid,'%% Phase unwrapping algorithm parameters\n');
     % echo phase combine method
-    fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,get(h.dataIO.checkbox.brainExtraction, 'Value'));
+    fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1});
     % unwrap method
     switch h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1}
         case 'Region growing'
@@ -444,7 +448,6 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
 
         case 'Star-QSM'
             fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'star');
-            fprintf(fid,'algorParam.qsm.tol = %s ;\n'               ,get(h.qsm.FANSI.edit.tol,      'String'));
             fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.Star.edit.padSize,   'String'));
 
         case 'MEDI'
@@ -465,16 +468,16 @@ end
 try
     switch tab
         case 'Sepia'
-            fprintf(fid,'SepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            fprintf(fid,'\nSepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
             
         case 'Phase unwrapping'
-            fprintf(fid,'UnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            fprintf(fid,'\nUnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
         
         case 'Background field removal'
-            fprintf(fid,'BackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            fprintf(fid,'\nBackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
         
         case 'QSM'
-            fprintf(fid,'qsmMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            fprintf(fid,'\nqsmMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
             
     end
     
