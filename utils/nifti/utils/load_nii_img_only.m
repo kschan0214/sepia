@@ -8,6 +8,10 @@
 % Date last modified: 11 September 2018
 %
 function img = load_nii_img_only(filename)
-a = load_untouch_nii(filename);
-img = a.img;
+try 
+    a = load_untouch_nii(filename);
+    img = a.img;
+catch
+    img = niftiread(filename);
+end
 end

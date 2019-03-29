@@ -335,7 +335,7 @@ switch lower(QSM_method)
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
             disp('Extracting CSF mask....');
-            
+            sepia_addpath('medi_l1');
             % R2* mapping
             r2s = arlo(TE,magn);
             maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;

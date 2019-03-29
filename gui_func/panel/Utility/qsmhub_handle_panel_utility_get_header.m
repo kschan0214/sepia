@@ -240,7 +240,7 @@ function PushbuttonRun_Utility_getHeader_Callback(source,eventdata,h)
 set(source,'Enable','off');
 
 try 
-
+sepia_addpath('dicom');
 % get DICOM directory (if any)
 dicomDir    = get(h.Utility.getHeader.edit.dicomInput,'String'); 
 % get output directory, assume the same directory as input directory/file
