@@ -41,8 +41,9 @@ misc_phaseUnwrap_dir = [misc_dir filesep 'phase_unwrap/'];
 % these directories contains codes that are not algorithm-specific
 utilsDir = [currDir filesep 'utils/'];
 addpath(utilsDir);
-addpath([utilsDir 'nifti/NIfTI_20140122/']);
-addpath([utilsDir 'nifti/utils/']);
+% addpath([utilsDir 'nifti/NIfTI_20140122/']);
+% addpath([utilsDir 'nifti/utils/']);
+addpath([utilsDir 'nifti/']);
 addpath([utilsDir 'nifti/quaternions/']);
 
 % if method is given then add them to PATH
