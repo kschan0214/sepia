@@ -425,8 +425,8 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
             fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'stisuiteilsqr');
             fprintf(fid,'algorParam.qsm.threshold = %s ;\n'         ,get(h.qsm.STIiLSQR.edit.threshold, 'String'));
             fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
-            fprintf(fid,'algorParam.qsm.tol1 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
-            fprintf(fid,'algorParam.qsm.tol2 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.tol1,      'String'));
+            fprintf(fid,'algorParam.qsm.tol1 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.tol1,   'String'));
+            fprintf(fid,'algorParam.qsm.tol2 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.tol2,      'String'));
             fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.STIiLSQR.edit.padSize,   'String'));
 
         case 'iLSQR'
@@ -477,7 +477,7 @@ try
             fprintf(fid,'\nBackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
         
         case 'QSM'
-            fprintf(fid,'\nqsmMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+            fprintf(fid,'\nQSMMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
             
     end
     
