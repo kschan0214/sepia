@@ -7,13 +7,8 @@
 % Date created: 15 April 2017
 % Date last modified: 
 %
-function [refine,radius] = parse_varargin_VSHARPSTI(arg)
-refine = false;
+function [radius] = parse_varargin_VSHARPSTI(arg)
 for kkvar = 1:length(arg)
-    if strcmpi(arg{kkvar},'refine')
-        refine = arg{kkvar+1};
-        continue
-    end
     if strcmpi(arg{kkvar},'radius')
         radius = arg{kkvar+1};
         continue

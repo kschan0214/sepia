@@ -378,7 +378,9 @@ end
 if strcmpi(tab,'Sepia') || strcmpi(tab,'Background field removal')
     fprintf(fid,'%% Background field removal algorithm parameters\n');
     % polyfit
-    fprintf(fid,'algorParam.bfr.refine = %i ;\n'    ,get(h.bkgRemoval.checkbox.bkgRemoval,'Value'));
+    fprintf(fid,'algorParam.bfr.refine = %i ;\n'        ,get(h.bkgRemoval.checkbox.bkgRemoval,'Value'));
+    % Erode local field
+    fprintf(fid,'algorParam.bfr.erode_radius = %s ;\n'	,get(h.bkgRemoval.edit.imerode,'String'));
     % set parameters for selected method
     switch h.bkgRemoval.popup.bkgRemoval.String{h.bkgRemoval.popup.bkgRemoval.Value,1}
         case 'LBV'

@@ -21,7 +21,7 @@
 %
 function [RDF,mask]=BKGRemovalVSHARP(totalField,mask,matrixSize,varargin)
 % parse argument input
-[radius,~] = parse_varargin_VSHARP(varargin);
+[radius] = parse_varargin_VSHARP(varargin);
 
 % total field in k-space
 kTotalField = fftn(totalField);

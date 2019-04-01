@@ -7,18 +7,13 @@
 % Date created: 8 September 2017
 % Date last modified: 
 %
-function [radius,refine] = parse_varargin_VSHARP(arg)
+function [radius] = parse_varargin_VSHARP(arg)
 radius = 5:-1:1;
-refine = false;
 if ~isempty(arg)
     for kvar = 1:length(arg)
         if strcmpi(arg{kvar},'radius')
             tmp = arg{kvar+1};
             radius = sort(tmp,'descend');
-        end
-        if strcmpi(arg{kvar},'refine')
-            refine = arg{kvar+1};
-            continue
         end
     end
 end

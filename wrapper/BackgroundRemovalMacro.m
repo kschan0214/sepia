@@ -20,7 +20,8 @@
 %       'method'        : background revomal method, 
 %                          'LBV', 'PDF', 'SHARP', 'RESHARP', 'VSHARPSTI, and
 %                          'iHARPERELLA'
-%       'refine'        : refine the RDF by 5th order polynomial fitting
+%       'refine'        : refine the RDF by 4th order polynomial fitting
+%       'erode'         : number of voxels to be erode from edges
 %
 %       LBV
 %       ----------------
@@ -61,11 +62,16 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified: 29 September 2017
+% Date modified: 29 September 2017
+% Date modified: 1 April 2019
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
+
+%% default algorithm parameters
+refine          = false;
+erode_radius    = 0;
 
 %% Parsing argument input flags
 if ~isempty(varargin)
@@ -74,36 +80,42 @@ if ~isempty(varargin)
             switch lower(varargin{kvar+1})
                 case 'lbv'
                     method = 'LBV';
-                    [tol, depth, peel, refine] = parse_varargin_LBV(varargin);
-                    break
+                    [tol, depth, peel] = parse_varargin_LBV(varargin);
+%                     break
                 case 'pdf'
                     method = 'PDF';
 %                     [B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_varargin_PDF(varargin);
-                    [B0_dir, tol, iteration, padSize, N_std, refine] = parse_varargin_PDF(varargin);
+                    [B0_dir, tol, iteration, padSize, N_std] = parse_varargin_PDF(varargin);
                     if isempty(N_std)
                         N_std = ones(matrixSize)*1e-4;
                     end
-                    break
+%                     break
                 case 'sharp'
                     method = 'SHARP';
-                    [radius, threshold, refine] = parse_varargin_SHARP(varargin);
-                    break
+                    [radius, threshold] = parse_varargin_SHARP(varargin);
+%                     break
                 case 'resharp'
                     method = 'RESHARP';
-                    [radius, alpha, refine] = parse_varargin_RESHARP(varargin);
-                    break
+                    [radius, alpha] = parse_varargin_RESHARP(varargin);
+%                     break
                 case 'vsharpsti'
                     method = 'VSHARPSTISuite';
-                    [refine,radius] = parse_varargin_VSHARPSTI(varargin);
-                    break
+                    [radius] = parse_varargin_VSHARPSTI(varargin);
+%                     break
                 case 'iharperella'
                     method = 'iHARPERELLA';
-                    [iteration, refine] = parse_varargin_iHARPERELLA(varargin);
-                    break
+                    [iteration] = parse_varargin_iHARPERELLA(varargin);
+%                     break
                 case 'vsharp'
                     method = 'VSHARP';
-                    [radius, refine] = parse_varargin_VSHARP(varargin);
+                    [radius] = parse_varargin_VSHARP(varargin);
             end
+        end
+        if strcmpi(varargin{kvar},'refine')
+            refine = varargin{kvar+1};
+        end
+        if strcmpi(varargin{kvar},'erode')
+            erode_radius = varargin{kvar+1};
         end
     end
 else
@@ -113,7 +125,6 @@ else
     tol = 1e-4;
     depth = 4;
     peel = 1;
-    refine = false;
 end
 
 % add path
@@ -165,5 +176,22 @@ if refine
     disp('Performing polynomial fitting...');
     [~,RDF,~]=PolyFit(RDF,RDF~=0,4);
 end
+
+% get non-zero mask
+if erode_radius > 0
+    disp(['Eroding ' num2str(erode_radius) ' voxel(s) from edges...']);
+    maskFinal = RDF ~=0;
+    maskFinal = imfill(maskFinal,'holes');
+    maskFinal = imerode(maskFinal,strel('sphere',erode_radius));
+    % also remove the mask on the edges
+    maskFinal(:,:,end-erode_radius:end) = 0;
+    maskFinal(:,:,1:erode_radius)       = 0;
+    maskFinal(:,end-erode_radius:end,:) = 0;
+    maskFinal(:,1:erode_radius,:)       = 0;
+    maskFinal(end-erode_radius:end,:,:) = 0;
+    maskFinal(1:erode_radius,:,:)       = 0;
+    RDF = RDF .* maskFinal;
+end
+
 
 end
