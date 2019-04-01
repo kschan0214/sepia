@@ -49,7 +49,7 @@ switch field
             % set input edit field for display
             set(h.dataIO.edit.inputData1,    'String',fullfile(pathDir,fileName));
             % automatically set default output field
-            set(h.dataIO.edit.output,   'String',[pathDir filesep 'output' filesep prefix]);
+            set(h.dataIO.edit.output,   'String',[pathDir 'output' filesep prefix]);
             % set input directory field empty
             set(h.dataIO.edit.input,    'String',[]);
         end

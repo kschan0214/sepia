@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_phaseUnwrap(hParent,h,position)
+%% h = sepia_handle_panel_phaseUnwrap(hParent,h,position)
 %
 % Input
 % --------------
@@ -20,7 +20,7 @@
 % Date modified: 12 June 2018
 %
 %
-function h = qsmhub_handle_panel_phaseUnwrap(hParent,h,position)
+function h = sepia_handle_panel_phaseUnwrap(hParent,h,position)
 
 % set up method name displayed on GUI
 methodUnwrapName = {'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut'};

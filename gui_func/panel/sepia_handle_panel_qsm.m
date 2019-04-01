@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_qsm(hParent,h,position)
+%% h = sepia_handle_panel_qsm(hParent,h,position)
 %
 % Input
 % --------------
@@ -19,7 +19,7 @@
 % Date last modified: 1 June 2018
 %
 %
-function h = qsmhub_handle_panel_qsm(hParent,h,position)
+function h = sepia_handle_panel_qsm(hParent,h,position)
 % set up method name displayed on GUI
 methodName = {'TKD','Closed-form solution','STI suite iLSQR','iLSQR','FANSI','Star-QSM','MEDI'};
 
@@ -46,25 +46,25 @@ h.StepsPanel.qsm = uipanel(hParent,...
 position_child = [0.01 0.04 0.95 0.75];
 
     % TKD    
-    h = qsmhub_handle_panel_qsm_TKD(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_TKD(h.StepsPanel.qsm,h,position_child);
 
     % Closed-form solution  
-    h = qsmhub_handle_panel_qsm_CFS(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_CFS(h.StepsPanel.qsm,h,position_child);
 
     % iLSQR  
-    h = qsmhub_handle_panel_qsm_iLSQR(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_iLSQR(h.StepsPanel.qsm,h,position_child);
         
     % STI suite iLSQR  
-    h = qsmhub_handle_panel_qsm_STIiLSQR(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_STIiLSQR(h.StepsPanel.qsm,h,position_child);
     
     % FANSI
-    h = qsmhub_handle_panel_qsm_FANSI(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_FANSI(h.StepsPanel.qsm,h,position_child);
         
     % Star-QSM
-    h = qsmhub_handle_panel_qsm_Star(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_Star(h.StepsPanel.qsm,h,position_child);
 
     % MEDI
-    h = qsmhub_handle_panel_qsm_MEDI(h.StepsPanel.qsm,h,position_child);
+    h = sepia_handle_panel_qsm_MEDI(h.StepsPanel.qsm,h,position_child);
     
     % in future, add panel of new method here
 

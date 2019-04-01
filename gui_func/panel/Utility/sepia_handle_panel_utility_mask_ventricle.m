@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_utility_mask_ventricle(hParent,hFig,h,position)
+%% h = sepia_handle_panel_utility_mask_ventricle(hParent,hFig,h,position)
 %
 % Input
 % --------------
@@ -20,7 +20,7 @@
 % Date last modified: 12 June 2018
 %
 %
-function h = qsmhub_handle_panel_utility_mask_ventricle(hParent,h,position)
+function h = sepia_handle_panel_utility_mask_ventricle(hParent,h,position)
 % set Parent of all related controls
 h.Utility.panel.csfMask = uipanel(hParent,'Title','Get ventricle mask',...
     'Position',position,...

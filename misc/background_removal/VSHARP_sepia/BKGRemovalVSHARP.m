@@ -17,7 +17,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 19 July 2017
-% Date last modified: 
+% Date modified: 1 April 2019
 %
 function [RDF,mask]=BKGRemovalVSHARP(totalField,mask,matrixSize,varargin)
 % parse argument input
@@ -61,6 +61,16 @@ for k = 1:length(radius)
 end
 %  largest mask
 mask = Mask_Sharp(:,:,:,end);     
+% also remove the mask on the edges
+mask(:,:,end-radiusCurrent:end) = 0;
+mask(:,:,1:radiusCurrent)       = 0;
+mask(:,end-radiusCurrent:end,:) = 0;
+mask(:,1:radiusCurrent,:)       = 0;
+mask(end-radiusCurrent:end,:,:) = 0;
+mask(1:radiusCurrent,:,:)       = 0;
+
+RDF = RDF .* mask ;
+
 end
 
 %% parse input arguments

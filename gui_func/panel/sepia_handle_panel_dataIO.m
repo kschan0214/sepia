@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_dataIO(hParent,h,position)
+%% h = sepia_handle_panel_dataIO(hParent,h,position)
 %
 % Input
 % --------------
@@ -19,7 +19,7 @@
 % Date last modified: 30 May 2018
 %
 %
-function h = qsmhub_handle_panel_dataIO(hParent,h,position)
+function h = sepia_handle_panel_dataIO(hParent,h,position)
 
 % define maximum level of options and spacing between options
 nlevel = 5;

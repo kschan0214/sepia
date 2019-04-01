@@ -92,7 +92,7 @@ if nargin > 0
             addpath(genpath(STISuite_dir));
 
         case 'vsharp'
-            addpath([misc_bkgRemoval_dir filesep 'VSHARP_qsmhub']);
+            addpath([misc_bkgRemoval_dir filesep 'VSHARP_sepia']);
 
         case 'iharperella'
             addpath(genpath(STISuite_dir));

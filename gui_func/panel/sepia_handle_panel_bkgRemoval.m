@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_bkgRemoval(hParent,h,position)
+%% h = sepia_handle_panel_bkgRemoval(hParent,h,position)
 %
 % Input
 % --------------
@@ -20,7 +20,7 @@
 % Date last modified: 1 June 2018
 %
 %
-function h = qsmhub_handle_panel_bkgRemoval(hParent,h,position)
+function h = sepia_handle_panel_bkgRemoval(hParent,h,position)
 % set up method name displayed on GUI
 methodName = {'LBV','PDF','RESHARP','SHARP','VSHARP STI suite','VSHARP','iHARPERELLA'};
 
@@ -76,31 +76,31 @@ h.StepsPanel.bkgRemoval = uipanel(hParent,...
 position_child = [0.01 0.15 0.95 0.65];
 
     % LBV
-    h = qsmhub_handle_panel_bkgRemoval_LBV(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_LBV(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
         
     % PDF
-    h = qsmhub_handle_panel_bkgRemoval_PDF(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_PDF(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
         
     % SHARP
-    h = qsmhub_handle_panel_bkgRemoval_SHARP(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_SHARP(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
     
     % RESHARP    
-    h = qsmhub_handle_panel_bkgRemoval_RESHARP(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_RESHARP(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
         
     % VSHARPSTI    
-    h = qsmhub_handle_panel_bkgRemoval_VSHARPSTI(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_VSHARPSTI(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
     
     % VSHARP
-    h = qsmhub_handle_panel_bkgRemoval_VSHARP(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_VSHARP(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
 
     % iHARPERELLA    
-    h = qsmhub_handle_panel_bkgRemoval_iHARPERELLA(h.StepsPanel.bkgRemoval,...
+    h = sepia_handle_panel_bkgRemoval_iHARPERELLA(h.StepsPanel.bkgRemoval,...
                                                     h, position_child);
 
     % in future, add panel of new method here

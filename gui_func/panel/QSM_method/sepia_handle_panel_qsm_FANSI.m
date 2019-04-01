@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_qsm_FANSI(hParent,h,position)
+%% h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
 %
 % Input
 % --------------
@@ -18,7 +18,7 @@
 % Date last modified: 
 %
 %
-function h = qsmhub_handle_panel_qsm_FANSI(hParent,h,position)
+function h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
 
 %% set default values
 defaultTol      = 1;

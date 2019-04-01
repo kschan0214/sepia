@@ -1,4 +1,4 @@
-%% h = qsmhub_handle_panel_Utility(hParent,h,position)
+%% h = sepia_handle_panel_Utility(hParent,h,position)
 %
 % Input
 % --------------
@@ -19,7 +19,7 @@
 % Date modified:
 %
 %
-function h = qsmhub_handle_panel_Utility(hParent,h,position)
+function h = sepia_handle_panel_Utility(hParent,h,position)
 
 % set up method name displayed on GUI
 utilityName = {'Get header info','Get lateral ventricle mask'};
@@ -54,10 +54,10 @@ h.StepsPanel.Utility = uipanel(hParent,'Title','Utility',...
 position_child = [0.01 0.24 0.98 0.6];
 
     % get header
-    h = qsmhub_handle_panel_utility_get_header(h.StepsPanel.Utility,...
+    h = sepia_handle_panel_utility_get_header(h.StepsPanel.Utility,...
                                                     h,position_child);
                                                 
-    h = qsmhub_handle_panel_utility_mask_ventricle(h.StepsPanel.Utility,...
+    h = sepia_handle_panel_utility_mask_ventricle(h.StepsPanel.Utility,...
                                                     h,position_child);
 
 
