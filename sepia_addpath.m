@@ -10,9 +10,6 @@
 %
 function sepia_addpath(method)
 % specify the toolbox(es) directory
-% MEDI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/MEDI_toolbox/MEDI_toolbox_20180625/';
-% STISuite_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/STI_Suite/STISuite_V3.0/';
-% FANSI_dir = '/home/mrphys/kwocha/Tools/squirrel/qsm_hub/FANSI_toolbox/FANSI-toolbox-d33759b970790cc8754adc9d0398cc3d07546074/';
 SpecifyToolboxesDirectory;
 CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir);
 
