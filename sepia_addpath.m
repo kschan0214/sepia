@@ -115,6 +115,7 @@ if nargin > 0
             addpath(genpath(STISuite_dir));
 
         case 'fansi'
+            addpath([misc_qsm_dir filesep 'FANSI']);
             addpath(genpath(FANSI_dir));
 
         case 'star'

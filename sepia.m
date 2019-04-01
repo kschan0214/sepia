@@ -309,7 +309,16 @@ if exist(outputDir,'dir') ~= 7
 end
 
 % create a new m file
-fid = fopen([outputDir filesep 'sepia_log.m'],'w');
+logFilename = [outputDir filesep 'sepia_log.m'];
+if exist(logFilename,'file') == 2
+    counter = 1;
+    while exist(logFilename,'file') == 2
+        suffix = ['_' num2str(counter)];
+        logFilename = [outputDir filesep 'sepia_log' suffix '.m'];
+        counter = counter + 1;
+    end
+end
+fid = fopen(logFilename,'w');
 
 % input data
 if isstruct(input)
@@ -339,6 +348,9 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
     fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1});
     % unwrap method
     switch h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1}
+        case 'Laplacian'
+            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'laplacian');
+            
         case 'Region growing'
             fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'rg');
 
@@ -484,7 +496,7 @@ try
     fclose(fid);
     
     % run process
-    run([outputDir filesep 'sepia_log.m']);
+    run(logFilename);
     
     % re-enable the pushbutton
     set(source,'Enable','on');

@@ -36,7 +36,7 @@
 %   Last modified by Tian Liu on 2014.12.15
 %   Last modified by Zhe Liu on 2017.11.06
 
-function [x, cost_reg_history, cost_data_history] = MEDI_L1_4qsmhub(RDF,Mask,matrix_size,voxel_size,varargin)
+function [x, cost_reg_history, cost_data_history] = MEDI_L1_4sepia(RDF,Mask,matrix_size,voxel_size,varargin)
 
 [N_std,iMag,lambda,pad,delta_TE,CF,B0_dir,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] ...
     = parse_varargin_MEDI_L1(varargin);

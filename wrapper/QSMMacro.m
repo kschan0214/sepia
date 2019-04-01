@@ -78,7 +78,8 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 June 2017
-% Date last modified: 9 April 2018
+% Date modified: 9 April 2018
+% Date modified: 1 April 2019
 %
 function [chi, lamdaOptimal] = QSMMacro(localField,mask,matrixSize,voxelSize,varargin)
 lamdaOptimal = [];
@@ -114,7 +115,8 @@ if ~isempty(varargin)
                     break
                 case 'fansi'
                     method = 'FANSI';
-                    [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
+%                     [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
+                    [mu1,mu2,alpha1,wmap,options,b0dir]=parse_varargin_FANSI(varargin);
                 case 'ssvsharp'
                     method = 'SSVSHARP';
                     [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
@@ -144,41 +146,35 @@ switch method
     case 'TKD'
         disp(['TKD threshold = ' thre_tkd]);
         chi = qsmTKD(localField,mask,matrixSize,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
+    
     case 'CFL2'
         [chi, lamdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,...
             'lambda',lambda,'optimise',optimise,'b0dir',b0dir);
+        
     case 'iLSQR'
         chi = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,...
             'lambda',lambda,'tol',tol,'iteration',maxiter,'weight',wmap,...
             'initGuess',initGuess,'optimise',optimise,'b0dir',b0dir);
+        
     case 'STISuiteiLSQR'
         chi = QSM_iLSQR(double(localField),double(mask),'params',algoPara);
+        
     case 'FANSI'
         noise = 0;
-        if strcmpi(solver,'nonlinear')
-            options.nonlinear = true;
-        else
-            options.nonlinear = false;
-        end
-        if strcmpi(solver,'tgv')
-            options.tgv = true;
-        else
-            options.tgv = false;
-        end
-        
-        out = FANSI(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
-        chi = out.x .* mask;
-%         chi = qsmFANSI(localField,mask,matrixSize,voxelSize,...
-%           'tol',tol,'lambda',alpha1,'mu',mu1,'mu2',mu2,'iteration',maxiter,'weight',wmap,...
-%           solver,constraint,'b0dir',b0dir);
+  
+        chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
+        chi = chi .* mask;
+
     case 'SSVSHARP'
         chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...
             'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
             'b0dir',b0dir,'vkernel',Kernel_Sizes);
+        
     case 'Star'
         chi = QSM_star(localField,mask,'TE',te,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
+    
     case 'MEDI_L1'
-        chi = MEDI_L1_4qsmhub(localField,mask,matrixSize,voxelSize,...
+        chi = MEDI_L1_4sepia(localField,mask,matrixSize,voxelSize,...
             'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',isMerit,...
             'smv',isSMV,'radius',radius,'data_weighting',wData,...
             'gradient_weighting',wGrad,'lam_CSF',lam_CSF,...
