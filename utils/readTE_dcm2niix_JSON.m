@@ -16,7 +16,7 @@
 % Date last modified:
 %
 %
-function [TE] = readTEfromJSON(filenames)
+function [TE] = readTE_dcm2niix_JSON(filenames)
 
 if ~iscell(filenames)
     filenames = {filenames};

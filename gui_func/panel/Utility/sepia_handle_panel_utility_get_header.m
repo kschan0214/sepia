@@ -80,6 +80,7 @@ h.Utility.panel.getHeader = uipanel(hParent,'Title','Get qsm_hub header',...
         'tooltip','Magnetic field strength in Tesla (default: 3).');
     h.Utility.getHeader.edit.userB0 = uicontrol('Parent',h.Utility.panel.getHeader,...
         'Style','edit',...
+        'String','3',...
         'units','normalized','position',[0.21 0.55 0.2 0.1],...
         'HorizontalAlignment','left',...
         'backgroundcolor','white');
@@ -177,7 +178,7 @@ function ButtonOpen_Utility_getHeader_Callback(source,eventdata,h,field)
 % get input file/directory for getHeader utility function
 % global h
 
-prefix = 'squirrel';
+prefix = 'sepia';
 
 switch field
     case 'te'
@@ -201,11 +202,21 @@ switch field
     case 'nitfi'
         % read NIfTI file 
         [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select mask file');
-
+        
         if pathDir ~= 0
+            
+            input_nii = load_untouch_nii(fullfile(pathDir,nitfiName));
+            [~,B0_dir,voxelSize,~,~,~,~] = SyntheticQSMHubHeader(input_nii);
+            b0_dir_str = sprintf('[%.4f, %.4f, %.4f]',B0_dir(1),B0_dir(2),B0_dir(3));
+            voxel_size_str = sprintf('[%.4f, %.4f, %.4f]',voxelSize(1),voxelSize(2),voxelSize(3));
+            set(h.Utility.getHeader.edit.userB0dir,     'String',b0_dir_str);
+            set(h.Utility.getHeader.edit.userVoxelSize, 'String',voxel_size_str);
+            
             set(h.Utility.getHeader.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
             % automatically set default output field
-            set(h.Utility.getHeader.edit.outputDir,     'String',[pathDir filesep prefix]);
+            set(h.Utility.getHeader.edit.outputDir,     'String',[pathDir prefix]);
+            % empty DICOM input field
+            set(h.Utility.getHeader.edit.dicomInput,    'String',[]);
         end
         
     case 'dicom'
@@ -217,6 +228,8 @@ switch field
             set(h.Utility.getHeader.edit.dicomInput,    'String',pathDir);
             % automatically set default output field
             set(h.Utility.getHeader.edit.outputDir,     'String',pathDir);
+            % empty NIfTI input field
+            set(h.Utility.getHeader.edit.niftiInput,    'String',[]);
         end
         
     case 'output'
@@ -267,7 +280,7 @@ if isempty(dicomDir)
 
         % check validity of input voxel size
         if length(voxelSize) ~= 3 && ~isempty(voxelSize) && isempty(dicomDir)
-            error(['qsm_hub currently works with 3D data only. ' 
+            error(['Sepia currently works with 3D data only. ' 
                    'Please specify the voxel size in all three dimensions']);
         end
 
@@ -307,12 +320,12 @@ if isempty(dicomDir)
                 try load(teFullName,'TE');  catch; error('No variable named TE.'); end
             elseif strcmpi(ext, '.txt')
                 % if text file the try to read the TEs line by line
-                TE = readTEfromText(teFullName);
-                TE = TE(:);
+                TE = readTE_MRIConvert_Text(teFullName);
             elseif strcmpi(ext, '.json')
-                TE = readTEfromJSON(teFullName);
-                TE = TE(:).';
+                % JSON file(s)
+                TE = readTE_JSON(teFullName);
             end
+            TE = TE(:).';
         else
             % read user input array
             TE = str2num(teUserInput);

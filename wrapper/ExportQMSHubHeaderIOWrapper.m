@@ -22,7 +22,7 @@
 function ExportQMSHubHeaderIOWrapper(input,output,b0_input,b0dir_input,voxelSize_input,te_input,flag)
 gyro = 42.57747892;
 
-prefix = 'squirrel';
+prefix = 'sepia';
 
 %% Check if output directory exists 
 output_index = strfind(output, filesep);

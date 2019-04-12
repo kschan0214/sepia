@@ -16,7 +16,7 @@
 % Date last modified: 25 May 2018
 %
 %
-function [TE,TR,FA,voxelSize] = readTEfromText(filename)
+function [TE,TR,FA,voxelSize] = readTE_MRIConvert_Text(filename)
 % read mode
 fid = fopen(filename,'r');
 % read file line by line

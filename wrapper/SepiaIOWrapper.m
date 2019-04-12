@@ -173,7 +173,7 @@ if ~isempty(inputNiftiList)
                 isMagnLoad = true;
                 disp('Magnitude data is loaded.');
             else
-                error('QSM Hub only works with 4D data.');
+                error('Sepia only works with 4D data.');
             end
         else
             error('Please specify a 4D magnitude data.');
@@ -217,7 +217,7 @@ if ~isempty(inputNiftiList)
             load([inputNiftiList(4).name]);
             disp('Header data is loaded.');
         else
-            error('Please specify a qsm_hub header.');
+            error('Please specify a header required by Sepia.');
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else

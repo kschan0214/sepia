@@ -18,10 +18,16 @@
 % k.chan@donders.ru.nl
 % Date created: 19 July 2017
 % Date modified: 1 April 2019
+% Date modified: 12 April 2019
 %
 function [RDF,mask]=BKGRemovalVSHARP(totalField,mask,matrixSize,varargin)
 % parse argument input
 [radius] = parse_varargin_VSHARP(varargin);
+
+% zero padding
+totalField  = padarray(totalField,[1 1 1],'both');
+mask        = padarray(mask,[1 1 1],'both');
+matrixSize  = size(totalField);
 
 % total field in k-space
 kTotalField = fftn(totalField);
@@ -61,15 +67,11 @@ for k = 1:length(radius)
 end
 %  largest mask
 mask = Mask_Sharp(:,:,:,end);     
-% also remove the mask on the edges
-mask(:,:,end-radiusCurrent:end) = 0;
-mask(:,:,1:radiusCurrent)       = 0;
-mask(:,end-radiusCurrent:end,:) = 0;
-mask(:,1:radiusCurrent,:)       = 0;
-mask(end-radiusCurrent:end,:,:) = 0;
-mask(1:radiusCurrent,:,:)       = 0;
 
 RDF = RDF .* mask ;
+
+RDF = RDF(2:end-1,2:end-1,2:end-1);
+mask = mask(2:end-1,2:end-1,2:end-1);
 
 end
 

@@ -107,8 +107,13 @@ switch method
         try
             unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);
         catch ME
-            disp('The library cannot be run in this platform, running Laplacian unwrapping instead...');
-            unwrappedField = unwrapLaplacian(wrappedField,matrixSize,voxelSize);
+            warning('The library cannot be run in this platform, running region growing unwrapping instead...');
+            [magn] = parse_varargin_RegionGrowing(varargin);
+            if isempty(magn)
+                disp('Running algorithm without magnitude image could be problematic');
+                magn = ones(matrixSize);
+            end
+            unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
         end
 end
 
