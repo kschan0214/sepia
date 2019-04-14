@@ -16,7 +16,7 @@
 %
 %
 function GetVentricleMaskIOWrapper(input, outputDir, maskFullName, TE)
-prefix = 'squirrel_';
+prefix = 'Sepia';
 
 % add path
 sepia_addpath('medi_l1');
@@ -27,7 +27,7 @@ inputNifti = load_untouch_nii(input);
 
 [~,~,voxelSize,~,~,~,~]=SyntheticQSMHubHeader(inputNifti);
 
-magn = abs(inputNifti.img);
+magn = double(abs(inputNifti.img));
 
 % load mask
 if ~isempty(maskFullName)

@@ -64,7 +64,7 @@ end
 
 % create GUI 
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.7.0)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.7.1)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
@@ -72,6 +72,7 @@ h.Tabs.Sepia        = uitab(h.TabGroup,'Title','Sepia');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
+h.Tabs.swismwi      = uitab(h.TabGroup,'Title','SWI/SMWI');
 h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
 % construct all tabs
@@ -92,6 +93,10 @@ h = sepia_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,           h,[0.01 0.54]);
 h = sepia_handle_panel_dataIO(h.Tabs.qsm,                      h,[0.01 0.8]);
 % QSM
 h = sepia_handle_panel_qsm(h.Tabs.qsm,                         h,[0.01 0.54]);
+
+%% SWI/SMWI tab
+h = sepia_handle_panel_swi_dataIO(h.Tabs.swismwi,              h,[0.01 0.8]);
+h = sepia_handle_panel_swi(h.Tabs.swismwi,                     h,[0.01 0.44]);
 
 %% utility tab
 h = sepia_handle_panel_Utility(h.Tabs.utility,                 h,[0.01 0.39]);

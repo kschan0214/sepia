@@ -34,6 +34,8 @@ misc_dir = [currDir filesep 'misc/'];
 misc_qsm_dir = [misc_dir filesep 'qsm_algorithm/'];
 misc_bkgRemoval_dir = [misc_dir filesep 'background_removal/'];
 misc_phaseUnwrap_dir = [misc_dir filesep 'phase_unwrap/'];
+misc_swi_smwi_dir = [misc_dir filesep 'swi_smwi/'];
+addpath(misc_swi_smwi_dir);
 
 % these directories contains codes that are not algorithm-specific
 utilsDir = [currDir filesep 'utils/'];
