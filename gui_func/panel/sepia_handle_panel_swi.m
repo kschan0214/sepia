@@ -104,7 +104,7 @@ set(source,'Enable','off');
 input(1).name = get(h.swi.dataIO.edit.inputData1, 	'String');
 input(2).name = get(h.swi.dataIO.edit.inputData2,  	'String');
 %     input(3).name = get(h.swi.dataIO.edit.inputData3,  	'String');
-input(4).name = get(h.swi.dataIO.edit.inputHeader, 	'String');
+% input(4).name = get(h.swi.dataIO.edit.inputHeader, 	'String');
 
 outputBasename  = get(h.swi.dataIO.edit.output,       	'String');
 % maskFullName    = get(h.swi.dataIO.edit.maskdir,       	'String');

@@ -48,7 +48,7 @@ disp('Reading data...');
 inputNiftiList = input;
     
 if ~isempty(inputNiftiList(1).name)
-    inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
+    inputPhaseNifti = load_nii_4sepia([inputNiftiList(1).name]);
     phase = double(inputPhaseNifti.img);
     % check whether phase data contains DICOM values or wrapped
     % phase value
@@ -66,7 +66,7 @@ else
 end
 
 if ~isempty(inputNiftiList(2).name)
-    inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
+    inputMagnNifti = load_nii_4sepia([inputNiftiList(2).name]);
     magn = double(inputMagnNifti.img);
     disp('Magnitude data is loaded.');
 else
