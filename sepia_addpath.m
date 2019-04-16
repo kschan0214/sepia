@@ -133,15 +133,18 @@ end
 function CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir)
 
 if exist(MEDI_dir,'dir')~=7
-    error('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
+    warning('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
+    warning('All functions related to MEDI toolbox cannot be used.');
 end
 
 if exist(STISuite_dir,'dir')~=7
-    error('Please specify a correct path for STI Suite in SpecifyToolboxesDirectory.m');
+    warning('Please specify a correct path for STI Suite in SpecifyToolboxesDirectory.m');
+    warning('All functions related to STI Suite cannot be used.');
 end
 
 if exist(FANSI_dir,'dir')~=7
-    error('Please specify a correct path for FANSi toolbox in SpecifyToolboxesDirectory.m');
+    warning('Please specify a correct path for FANSI toolbox in SpecifyToolboxesDirectory.m');
+    warning('All functions related to FANSI toolbox cannot be used.');
 end
     
 end

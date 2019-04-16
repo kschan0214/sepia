@@ -125,7 +125,7 @@ set(h.swi.dataIO.button.output,         	'Callback', {@ButtonOpen_swi_Callback,h
 % set(h.swi.dataIO.button.maskdir,          	'Callback', {@ButtonOpen_Callback,h,'mask'});
 set(h.swi.dataIO.button.inputData1,         'Callback', {@ButtonOpen_swi_Callback,h,'inputdata1'});
 set(h.swi.dataIO.button.inputData2,         'Callback', {@ButtonOpen_swi_Callback,h,'inputdata2'});
-set(h.swi.dataIO.button.inputHeader,        'Callback', {@ButtonOpen_swi_Callback,h,'header'});
+% set(h.swi.dataIO.button.inputHeader,        'Callback', {@ButtonOpen_swi_Callback,h,'header'});
     
 end
 
