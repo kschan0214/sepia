@@ -40,7 +40,7 @@ addpath(misc_swi_smwi_dir);
 % these directories contains codes that are not algorithm-specific
 utilsDir = [currDir filesep 'utils/'];
 addpath(utilsDir);
-% addpath([utilsDir 'nifti/NIfTI_20140122/']);
+addpath([utilsDir 'nifti/NIfTI_20140122/']);
 % addpath([utilsDir 'nifti/utils/']);
 addpath([utilsDir 'nifti/']);
 addpath([utilsDir 'nifti/quaternions/']);
@@ -63,7 +63,7 @@ if nargin > 0
 
         case 'laplacian_stisuite'
             addpath(genpath(MEDI_dir));
-            addpath(genpath(STISuite_dir));
+            add_path_STIsuitev3(STISuite_dir);
 
         case 'regiongrowing'
             addpath(genpath(MEDI_dir));
@@ -91,13 +91,13 @@ if nargin > 0
             addpath(genpath(MEDI_dir));
 
         case 'vsharpstisuite'
-            addpath(genpath(STISuite_dir));
+            add_path_STIsuitev3(STISuite_dir);
 
         case 'vsharp'
             addpath([misc_bkgRemoval_dir filesep 'VSHARP_sepia']);
 
         case 'iharperella'
-            addpath(genpath(STISuite_dir));
+            add_path_STIsuitev3(STISuite_dir);
 
         % QSM
         case 'tkd'
@@ -111,14 +111,14 @@ if nargin > 0
             addpath([misc_qsm_dir filesep 'iLSQR_qsmhub']);
 
         case 'stisuiteilsqr'
-            addpath(genpath(STISuite_dir));
+            add_path_STIsuitev3(STISuite_dir);
 
         case 'fansi'
             addpath([misc_qsm_dir filesep 'FANSI']);
             addpath(genpath(FANSI_dir));
 
         case 'star'
-            addpath(genpath(STISuite_dir));
+            add_path_STIsuitev3(STISuite_dir);
 
         case 'medi_l1'
             addpath([misc_qsm_dir filesep 'MEDI_L1']);
