@@ -1,10 +1,10 @@
-# Sepia (work in progress)  
+# Sepia (SuscEptibility mapping PIpeline tool for phAse images)
 
 ![sepia logo](https://github.com/kschan0214/sepia/blob/master/logo/sepia.png?raw=true)
 
 ## Introduction  
 
-Welcome to the beta version of **Sepia**! **Sepia** is a tool providing a graphical user interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
+**Sepia** is a tool providing a graphical user interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
 
 This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html), [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) and [FANSI](https://gitlab.com/cmilovic/FANSI-toolbox).
 
@@ -14,7 +14,7 @@ This GUI is built based on three toolboxes including [MEDI](http://weill.cornell
 
 The objective of **Sepia** is to provide a platform for easy access of different QSM processing methods in the field. To achieve this, most of the codes were written for data flow and algorithm parameter control. Through **Sepia**, I hope researchers who are not expert in QSM would also be able to use QSM for their research. The instruction of this toolbox can be found in the [wiki page](https://github.com/kschan0214/sepia/wiki)
 
-This toolbox is still under development, so you may encounter some bugs.
+Please report to me if you encounter any bug when using the tool.
 
 ## Terms of use
 All the codes and methods developed by me in **Sepia** are under MIT license. You can check [the license file](https://github.com/kschan0214/Sepia/blob/master/LICENSE) for more information. For the terms of use of the toolboxes related to this work, their own license applied and please check the corresponding license file(s) in each toolbox for more information. 
