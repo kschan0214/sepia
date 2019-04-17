@@ -9,9 +9,10 @@
 %
 function img = load_nii_img_only(filename)
 try 
-    a = load_untouch_nii(filename);
-    img = a.img;
+    info = niftiinfo(filename);
+    img = double(niftiread(info))*info.MultiplicativeScaling + info.AdditiveOffset;
 catch
-    img = niftiread(filename);
+    a = load_untouch_nii(filename);
+    img = double(a.img)*a.hdr.dime.scl_slope + a.hdr.dime.scl_inter;
 end
 end
