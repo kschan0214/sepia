@@ -128,7 +128,7 @@ if ~isempty(inputNiftiList)
             load([inputNiftiList(4).name]);
             disp('Header data is loaded.');
         else
-            error('Please specify a qsm_hub header.');
+            error('Please specify a Sepia header.');
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
@@ -186,29 +186,7 @@ if ~isempty(inputNiftiList)
             disp('Header data is loaded.');
 
         else
-            disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
-
-            % create synthetic header in case no qsm_hub's header is found
-            [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputMagnNifti);
-
-            % look for text file for TEs information
-            teTextFullName = dir([inputDir filesep '*txt']);
-            if ~isempty(teTextFullName)
-                te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
-                te_ = te_(:);
-                if ~isempty(te_)
-                    TE = te_;
-                    if length(TE) > 1
-                        delta_TE = TE(2)-TE(1);
-                    end
-                end
-            end
-
-            % if no header file then save the synthetic header in output dir
-            save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
-            'TE','B0_dir','B0');
-
-            disp('The synthetic header is saved in output directory.');
+            error('Please specify a header required by Sepia.');
 
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -218,46 +196,6 @@ if ~isempty(inputNiftiList)
     % the same header
     outputNiftiTemplate = inputMagnNifti;
     
-else
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%% Pathway 3: Input is a directory with DICOM %%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    sepia_addpath('dicom');
-    
-    % if no nifti file then check for DICOM files
-    [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
-    
-    % deprecated
-    %     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
-    
-    B0 = CF/(gyro*1e6);
-    
-    % after testing with a couple of dataset it seems to me that the field
-    % is inverted with DICOM input, so apply conjugate here
-    fieldMap = angle(conj(iField));
-    magn = abs(iField);
-    
-    isMagnLoad = true;
-    isPhaseLoad = true;
-
-    % save magnitude and phase images as nifti files
-    disp('Saving DICOM data into NIfTI format...');
-    
-    % save magnitude and phase data as NIfTI_GZ format
-    nii_fieldMap    = make_nii(single(fieldMap),    voxelSize,[],16);
-    nii_magn        = make_nii(single(magn),        voxelSize,[],16);
-    save_nii(nii_fieldMap,  [outputDir filesep prefix 'phase.nii.gz']);
-    save_nii(nii_magn,      [outputDir filesep prefix 'magn.nii.gz']);
-    % save important header in .mat format
-    save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
-        'TE','B0_dir','B0');
-    
-    % reload the NIfTI template so that later can use save_untouch_nii for
-    % all results
-    outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
 % in case user want to correct the frequency shift direction

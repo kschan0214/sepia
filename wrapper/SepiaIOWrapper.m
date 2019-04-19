@@ -205,11 +205,11 @@ if ~isempty(inputNiftiList)
             weights = double(inputWeightNifti.img);
             % check whether phase data contains DICOM values or wrapped
             if size(weights,4) > 1
-                error('Please specify a 3D weight data.');
+                error('QSM weighting image has to be 3D.');
             end
             isWeightLoad = true;
         else
-            disp('Default weighting method will be used for QSM.');
+            disp('Default QSM weighting method will be used for QSM.');
         end
         
                         %%%%%%%%%% qsm hub header %%%%%%%%%%
@@ -266,7 +266,7 @@ if ~isempty(inputNiftiList)
             error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
         end
 
-                        %%%%%%%%%% qsm hub header file %%%%%%%%%%
+                        %%%%%%%%%% sepia header file %%%%%%%%%%
         if ~isempty(dir([inputDir '/*header*']))
             % load header
             headerList = dir([inputDir '/*header*']);
@@ -275,29 +275,7 @@ if ~isempty(inputNiftiList)
             disp('Header data is loaded.');
 
         else
-            disp('No header for qsm_hub is found. Creating synthetic header based on NIfTI header...');
-
-            % create synthetic header in case no qsm_hub's header is found
-            [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(inputMagnNifti);
-
-            % look for text file for TEs information
-            teTextFullName = dir([inputDir filesep '*txt']);
-            if ~isempty(teTextFullName)
-                te_ = readTEfromText([inputDir filesep teTextFullName(1).name]);
-                te_ = te_(:);
-                if ~isempty(te_)
-                    TE = te_;
-                    if length(TE) > 1
-                        delta_TE = TE(2)-TE(1);
-                    end
-                end
-            end
-
-            % if no header file then save the synthetic header in output dir
-            save([outputDir filesep 'SyntheticQSMhub_header'],'voxelSize','matrixSize','CF','delta_TE',...
-            'TE','B0_dir','B0');
-
-            disp('The synthetic header is saved in output directory.');
+            error('Please specify a header file for Sepia.');
 
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -307,46 +285,6 @@ if ~isempty(inputNiftiList)
     % the same header
     outputNiftiTemplate = inputMagnNifti;
     
-else
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%%%%%%%%%% Pathway 3: Input is a directory with DICOM %%%%%%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    sepia_addpath('dicom');
-    
-    % if no nifti file then check for DICOM files
-    [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(inputDir);
-    
-    % deprecated
-    %     [iField,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_Siemens_DICOM_old(inputDir);
-    
-    B0 = CF/(gyro*1e6);
-    
-    % after testing with a couple of dataset it seems to me that the field
-    % is inverted with DICOM input, so apply conjugate here
-    fieldMap = angle(conj(iField));
-    magn = abs(iField);
-    
-    isMagnLoad = true;
-    isPhaseLoad = true;
-
-    % save magnitude and phase images as nifti files
-    disp('Saving DICOM data into NIfTI format...');
-    
-    % save magnitude and phase data as NIfTI_GZ format
-    nii_fieldMap    = make_nii(single(fieldMap),    voxelSize,[],16);
-    nii_magn        = make_nii(single(magn),        voxelSize,[],16);
-    save_nii(nii_fieldMap,  [outputDir filesep prefix 'phase.nii.gz']);
-    save_nii(nii_magn,      [outputDir filesep prefix 'magn.nii.gz']);
-    % save important header in .mat format
-    save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
-        'TE','B0_dir','B0');
-    
-    % reload the NIfTI template so that later can use save_untouch_nii for
-    % all results
-    outputNiftiTemplate = load_untouch_nii([outputDir filesep prefix 'magn.nii.gz']);
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
 % in case user want to reverse the frequency shift direction
@@ -355,7 +293,7 @@ if isInvert
 end
 
 % display some header info
-disp('Basic DICOM information');
+disp('Basic data information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
 disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
@@ -466,7 +404,7 @@ disp('Saving unwrapped field map...');
 save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
 
-if ~isinf(relativeResidual)
+if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
@@ -516,7 +454,7 @@ else
 end
 % wmap = wmap .* weightResidual;
 wmap = wmap .* double(maskReliable);
-if ~isWeightLoad || exclude_threshold~=Inf
+if ~isWeightLoad || ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
 end
 
