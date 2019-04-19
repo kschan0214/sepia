@@ -41,6 +41,7 @@ function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,var
 
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
+mask = [];
 
 %% Parsing argument input flags
 if ~isempty(varargin)
@@ -49,10 +50,10 @@ if ~isempty(varargin)
             switch lower(varargin{kvar+1})
                 case 'laplacian'
                     method = 'Laplacian';
-                    break
+%                     break
                 case 'laplacian_stisuite'
                     method = 'Laplacian_stisuite';
-                    break
+%                     break
                 case 'rg'
                     method = 'RegionGrowing';
                     [magn] = parse_varargin_RegionGrowing(varargin);
@@ -60,7 +61,7 @@ if ~isempty(varargin)
                         disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
-                    break
+%                     break
                 case 'gc'
                     method = 'Graphcut';
                     [magn, subsampling] = parse_varargin_Graphcut(varargin);
@@ -68,22 +69,30 @@ if ~isempty(varargin)
                         disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
-                    break
+%                     break
                 case 'bestpath3d'
-                    method = 'BestPath3D';
-                    [mask] = parse_varargin_UnwrapPhase_3DBestPath(varargin);
-                    if isempty(mask)
-                        disp('Running algorithm without brain mask could be problematic');
-                        mask = ones(matrixSize);
-                    end
-                    break
+%                     method = 'BestPath3D';
+%                     [mask] = parse_varargin_UnwrapPhase_3DBestPath(varargin);
+%                     if isempty(mask)
+%                         disp('Running algorithm without brain mask could be problematic');
+%                         mask = ones(matrixSize);
+%                     end
+%                     break
             end
+        end
+        if strcmpi(varargin{kvar},'mask')
+            mask = varargin{kvar+1};
         end
     end
 else
     % predefine paramater: if no varargin, use Laplacian
     disp('No method selected. Using default setting.');
     method = 'Laplacian';
+end
+
+if isempty(mask)
+    mask = ones(matrixSize);
+    warning('Running algorithm without brain mask could be problematic');
 end
 
 % add path
@@ -97,11 +106,17 @@ switch method
     case 'Laplacian_stisuite'
         unwrappedField = MRPhaseUnwrap(wrappedField,'voxelsize',voxelSize,'padsize',[12,12,12]);
     case 'RegionGrowing'
-        magn = sqrt(sum(abs(magn).^2,4));
+        if size(magn,4) > 1
+            magn = sqrt(sum(abs(magn).^2,4));
+        end
+        magn = magn .* mask;
         unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
     case 'Graphcut'
         disp(['Graphcut subsampling factor: ' num2str(subsampling)]);
-        magn = sqrt(sum(abs(magn).^2,4));
+        if size(magn,4) > 1
+            magn = sqrt(sum(abs(magn).^2,4));
+        end
+        magn = magn .* mask;
         unwrappedField = unwrapping_gc(wrappedField,magn,voxelSize,subsampling);
     case 'BestPath3D'
         try
