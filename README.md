@@ -30,12 +30,12 @@ Kwok
 ## Update notes  
 
 ### Future release
-* DICOM input will be deprecated such that the only possible input type is NIfTI format
 * Incorporating new version of MEDI toolbox (updated April 9, 2019)
 
 ### 0.7.1 (20190416)
 * Support simple susceptibility weighted imaging (SWI) and susceptibility map weighted imaging (SMWI) as part of the GUI
 * resolved loading/saving NIfTI issue related to 0.7.0 update
+* DICOM input is deprecated: the only possible input is NIfTI data
 
 ### 0.7.0 (20190412)
 * redesigned log file format; the algorithms and parameters being used are much clearer adn neat than before (previous log file cannot work in this version)
