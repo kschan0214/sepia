@@ -71,7 +71,7 @@ if ~isempty(varargin)
                     end
 %                     break
                 case 'bestpath3d'
-%                     method = 'BestPath3D';
+                    method = 'BestPath3D';
 %                     [mask] = parse_varargin_UnwrapPhase_3DBestPath(varargin);
 %                     if isempty(mask)
 %                         disp('Running algorithm without brain mask could be problematic');
