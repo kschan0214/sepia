@@ -85,7 +85,7 @@ switch echoCombine
             % unwrap each echo phase shift
             for k=1:size(fieldMapEchoTemp,4)
                 tmp = UnwrapPhaseMacro(fieldMapEchoTemp(:,:,:,k),matrixSize,voxelSize,...
-                        'method',unwrapMethod,'Magn',magn,'subsampling',subsampling,'mask',mask);
+                        'method',unwrapMethod,'Magn',magn(:,:,:,k+1),'subsampling',subsampling,'mask',mask);
                 tmp2(:,:,:,k)=tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
             end
             % get phase accumulation over all echoes
