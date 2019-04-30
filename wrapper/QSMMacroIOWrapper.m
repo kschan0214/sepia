@@ -188,7 +188,7 @@ if ~isempty(inputNiftiList)
             end
 
                         %%%%%%%%%% magnitude data %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'magn') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
+            if ContainName(lower(inputNiftiList(klist).name),'mag') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
                 inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 isMagnLoad = true;
                 magn = double(inputMagnNifti.img);

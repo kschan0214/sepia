@@ -139,7 +139,7 @@ if ~isempty(inputNiftiList)
         % loop all NIfTI files in the directory for magnitude and phase files
         for klist = 1:length(inputNiftiList)
                             %%%%%%%%%% magnitude data %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'magn') && ~isMagnLoad
+            if ContainName(lower(inputNiftiList(klist).name),'mag') && ~isMagnLoad
                 inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 % only load multi-echo magnitude data
                 if size(inputMagnNifti.img,4) > 1
@@ -150,7 +150,7 @@ if ~isempty(inputNiftiList)
             end
 
                             %%%%%%%%%% phase data %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'phase') && ~isPhaseLoad
+            if ContainName(lower(inputNiftiList(klist).name),'ph') && ~isPhaseLoad
                 inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 fieldMap = double(inputPhaseNifti.img);
 
