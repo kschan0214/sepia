@@ -60,6 +60,11 @@ phase_cplx = exp(1i*phase);
 
 dim = size(phase_cplx);
 
+% for single echo
+if length(dim) < 4
+    dim(4) = 1;
+end
+
 % create a 2D low-pass filtre
 lowpass_filter = hamming(filterSize)*hamming(filterSize)'; 
 
