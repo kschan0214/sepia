@@ -501,6 +501,8 @@ switch lower(QSM_method)
     case 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
+            sepia_addpath('medi_l1');
+            
             disp('Extracting CSF mask....');
             
             % R2* mapping
