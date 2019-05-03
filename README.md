@@ -36,6 +36,9 @@ Kwok
 * Support simple susceptibility weighted imaging (SWI) and susceptibility map weighted imaging (SMWI) as part of the GUI
 * resolved loading/saving NIfTI issue related to 0.7.0 update
 * DICOM input is deprecated: the only possible input is NIfTI data
+* fixed bug when running MEDI with CSF regularisation
+* fixed bug for single echo SWI
+* now support automatic magnitude and phase images detection with name starting "mag" for magnitude image and "ph" for phase image
 
 ### 0.7.0 (20190412)
 * redesigned log file format; the algorithms and parameters being used are much clearer adn neat than before (previous log file cannot work in this version)
