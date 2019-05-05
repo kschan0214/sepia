@@ -155,7 +155,7 @@ switch eventdata.NewValue.Title
             % phase invert is supported with this tab
             set(h.dataIO.checkbox.invertPhase,'Enable','on');
             % input data 1
-            set(h.dataIO.text.inputData1,'String','or Phase data:');
+            set(h.dataIO.text.inputData1,'String','or Phase:');
 %             set(h.dataIO.edit.inputData1,'Enable','off');
             % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
@@ -191,7 +191,7 @@ switch eventdata.NewValue.Title
             % phase invert is supported with this tab
             set(h.dataIO.checkbox.invertPhase,'Enable','on');
             % input data 1
-            set(h.dataIO.text.inputData1,'String','or Phase data:');
+            set(h.dataIO.text.inputData1,'String','or Phase:');
             % input data 2
 %           set(h.dataIO.text.inputData2,'String','Magn. data:');
             set(h.dataIO.edit.inputData2,'Enable','on');
