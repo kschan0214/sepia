@@ -38,7 +38,7 @@ Kwok
 * DICOM input is deprecated: the only possible input is NIfTI data
 * fixed bug when running MEDI with CSF regularisation
 * fixed bug for single echo SWI
-* now support automatic magnitude and phase images detection with name starting "mag" for magnitude image and "ph" for phase image
+* now support automatic magnitude and phase images detection with name containing string "mag" for magnitude image and "ph" for phase image  
 
 ### 0.7.0 (20190412)
 * redesigned log file format; the algorithms and parameters being used are much clearer adn neat than before (previous log file cannot work in this version)
