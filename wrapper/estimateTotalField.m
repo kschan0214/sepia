@@ -154,7 +154,13 @@ switch echoCombine
 
         % Spatial phase unwrapping
         totalField = UnwrapPhaseMacro(iFreq_raw,matrixSize,voxelSize,...
-                        'method',unwrapMethod,'Magn',rss_magn,'subsampling',subsampling,'mask',mask) / dt;
+                        'method',unwrapMethod,'Magn',rss_magn,'subsampling',subsampling,'mask',mask);
+                    
+        % use the centre of mass as reference phase
+        totalField = totalField-round(totalField(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+        
+        % convert rad to radHz
+        totalField = totalField / dt;
 end
 
 disp(['The resulting field map with the following unit: ' unit]);
