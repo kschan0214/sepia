@@ -175,11 +175,6 @@ if ~isempty(inputNiftiList)
         else
             error('Please specify a header required by Sepia.');
         end
-
-        % if no fieldmapSD found then creates one with all voxels have the same value
-        if ~isFieldmapSDLoad
-            fieldmapSD = ones(matrixSize) * 0.01;
-        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
@@ -190,6 +185,11 @@ if ~isempty(inputNiftiList)
     
 else
     error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
+end
+
+% if no fieldmapSD found then creates one with all voxels have the same value
+if ~isFieldmapSDLoad
+    fieldmapSD = ones(matrixSize) * 0.01;
 end
 
 % display some header info
