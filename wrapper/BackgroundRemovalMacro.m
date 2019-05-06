@@ -160,6 +160,8 @@ switch method
         disp(['Radius(voxel) = ' num2str(radius)]);
         disp(['Lambda = ' num2str(alpha)]);
         RDF = RESHARP(totalField, mask, matrixSize, voxelSize, radius, alpha);
+        mask_RDF = SMV(mask, matrixSize, voxelSize, radius)>0.999;
+        RDF = RDF .* mask_RDF;
     case 'VSHARPSTISuite'
         disp(['SMV size (mm): ' num2str(radius)]);
         RDF = V_SHARP(totalField, mask,'voxelsize',double(voxelSize(:))','smvsize',radius);
