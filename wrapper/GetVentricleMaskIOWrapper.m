@@ -51,7 +51,7 @@ outputNiftiTemplate.hdr.dime.dim(5) = 1;
 
 nii_maskCSF = make_nii_quick(outputNiftiTemplate,maskCSF);
 
-save_untouch_nii(nii_maskCSF,[outputDir filesep prefix 'mask_ventricleCSF.nii.gz']);
+save_untouch_nii(nii_maskCSF,[outputDir filesep prefix '_mask_ventricleCSF.nii.gz']);
 
 disp('Done');
 
