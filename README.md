@@ -32,13 +32,14 @@ Kwok
 ### Future release
 * Incorporating new version of MEDI toolbox (updated April 9, 2019)
 
-### 0.7.1 (20190416)
+### 0.7.1 (master)
 * Support simple susceptibility weighted imaging (SWI) and susceptibility map weighted imaging (SMWI) as part of the GUI
 * resolved loading/saving NIfTI issue related to 0.7.0 update
 * DICOM input is deprecated: the only possible input is NIfTI data
 * fixed bug when running MEDI with CSF regularisation
 * fixed bug for single echo SWI
 * now support automatic magnitude and phase images detection with name containing string "mag" for magnitude image and "ph" for phase image  
+* fixed global phase offset with graphcut phase unwrapping
 
 ### 0.7.0 (20190412)
 * redesigned log file format; the algorithms and parameters being used are much clearer adn neat than before (previous log file cannot work in this version)
