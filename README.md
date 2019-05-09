@@ -32,7 +32,7 @@ Kwok
 ### Future release
 * Incorporating new version of MEDI toolbox (updated April 9, 2019)
 
-### 0.7.1 (master)
+### 0.7.1 (20190509)
 * Support simple susceptibility weighted imaging (SWI) and susceptibility map weighted imaging (SMWI) as part of the GUI
 * resolved loading/saving NIfTI issue related to 0.7.0 update
 * DICOM input is deprecated: the only possible input is NIfTI data
