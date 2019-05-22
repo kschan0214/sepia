@@ -89,20 +89,18 @@ if ~isempty(inputNiftiList)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        disp('NIfTI input is being used.');
         
                         %%%%%%%%%% magnitude data %%%%%%%%%%
         if ~isempty(inputNiftiList(2).name)
             inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
             % make sure the data is multi-echo magnitude data
-            if size(inputMagnNifti.img,4) > 1
-                magn = double(inputMagnNifti.img);
-                isMagnLoad = true;
-                disp('Magnitude data is loaded.');
-            else
-                error('QSM Hub only works with 4D data.');
-            end
+            magn = double(inputMagnNifti.img);
+            isMagnLoad = true;
+            disp('Magnitude data is loaded.');
+            
         else
-            error('Please specify a 4D magnitude data.');
+            error('Please specify a single-echo/multi-echo magnitude data.');
         end
                          %%%%%%%%%% phase data %%%%%%%%%%
         if ~isempty(inputNiftiList(1).name)
@@ -121,7 +119,7 @@ if ~isempty(inputNiftiList)
             isPhaseLoad = true;
             disp('Phase data is loaded.')
         else
-            error('Please specify a 4D Phase data.');
+            error('Please specify a single-echo/multi-echo phase data.');
         end
                         %%%%%%%%%% qsm hub header %%%%%%%%%%
         if ~isempty(inputNiftiList(4).name)
@@ -135,6 +133,11 @@ if ~isempty(inputNiftiList)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % validate indput directory files
+        disp('Directory input is being used...');
+        disp('Validating filenames in the directory....');
+        CheckFileName(inputNiftiList);
+        disp('Filenames are valid.');
         
         % loop all NIfTI files in the directory for magnitude and phase files
         for klist = 1:length(inputNiftiList)
@@ -142,11 +145,9 @@ if ~isempty(inputNiftiList)
             if ContainName(lower(inputNiftiList(klist).name),'mag') && ~isMagnLoad
                 inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 % only load multi-echo magnitude data
-                if size(inputMagnNifti.img,4) > 1
-                    magn = double(inputMagnNifti.img);
-                    isMagnLoad = true;
-                    disp('Magnitude data is loaded.')
-                end
+                magn = double(inputMagnNifti.img);
+                isMagnLoad = true;
+                disp('Magnitude data is loaded.')
             end
 
                             %%%%%%%%%% phase data %%%%%%%%%%
@@ -169,15 +170,15 @@ if ~isempty(inputNiftiList)
             end
         end
 
-        % if no files matched the name format then displays error message
-        if ~isMagnLoad
-            error('No magnitude data is loaded. Please make sure the input directory contains NIfTI files with name *magn*');
-        end
-        if ~isPhaseLoad
-            error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
-        end
+%         % if no files matched the name format then displays error message
+%         if ~isMagnLoad
+%             error('No magnitude data is loaded. Please make sure the input directory contains NIfTI files with name *magn*');
+%         end
+%         if ~isPhaseLoad
+%             error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
+%         end
 
-        %%%%%%%%%% qsm hub header file %%%%%%%%%%
+        %%%%%%%%%% sepia header file %%%%%%%%%%
         if ~isempty(dir([inputDir '/*header*']))
             % load header
             headerList = dir([inputDir '/*header*']);
@@ -198,6 +199,9 @@ if ~isempty(inputNiftiList)
     
 end
 
+% validate loaded input
+CheckInputDimension(magn,fieldMap,matrixSize,TE);
+
 % in case user want to correct the frequency shift direction
 if isInvert
     fieldMap = -fieldMap;
@@ -209,6 +213,11 @@ disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2
 disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
+if length(TE) == 1
+    disp('Single echo data');
+else
+    disp('Multi-echo data');
+end
 
 % make sure the following variables are row vectors
 matrixSize = matrixSize(:).';
@@ -282,7 +291,7 @@ try
 catch
     % if the above selected method is not working then do Laplacian with
     % optimum weights
-    disp('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
+    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
     
     unwrap = 'laplacian'; exclude_threshold = Inf;
     sepia_addpath(unwrap);
@@ -294,9 +303,15 @@ end
                     
 % Step 2: exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
-r2s = R2star_trapezoidal(magn,TE);
-relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
-maskReliable = relativeResidual < exclude_threshold;
+if length(TE) > 1
+    % multi-echo data
+    r2s = R2star_trapezoidal(magn,TE);
+    relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
+    maskReliable = relativeResidual < exclude_threshold;
+else
+    % single-echo
+    maskReliable = ones(size(totalField));
+end
 
 % threshold fieldmapSD with the reliable voxel mask
 fieldmapSD = fieldmapSD .* maskReliable;
@@ -323,7 +338,7 @@ save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
 save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
 
-if relativeResidual ~= Inf
+if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
@@ -332,6 +347,7 @@ disp('Done!');
 
 end
 
+%% check and set all algorithm parameters
 function algorParam2 = CheckAndSetDefault(algorParam)
 algorParam2 = algorParam;
 
@@ -345,5 +361,64 @@ try algorParam2.unwrap.isEddyCorrect        = algorParam.unwrap.isEddyCorrect;  
 try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThreshold;	catch; algorParam2.unwrap.excludeMaskThreshold	= Inf;                  end
 % for the rest, if the parameter does not exist then initiates it with an empty array
 try algorParam2.unwrap.subsampling          = algorParam.unwrap.subsampling;            catch; algorParam2.unwrap.subsampling           = [];                   end
+
+end
+
+%% Validate filenames with directory input
+function CheckFileName(inputNiftiList)
+% no. of files with particular name that has been read
+numMagFile      = 0;
+numPhaseFile    = 0;
+    % go through all files in the directory
+    for klist = 1:length(inputNiftiList)
+        if ContainName(lower(inputNiftiList(klist).name),'mag')
+            numMagFile = numMagFile + 1;
+        end
+        if ContainName(lower(inputNiftiList(klist).name),'ph')
+            numPhaseFile = numPhaseFile + 1;
+        end
+    end
+    
+    % bring the error message if multiple files with the same string are
+    % detected
+    if numMagFile > 1
+        error('Multiple files with name containing string ''mag'' are detected. Please make sure only the magnitude data contains ''mag''');
+    end
+    if numPhaseFile > 1
+        error('Multiple files with name containing string ''ph'' are detected. Please make sure only the phase data contains ''ph''');
+    end
+    
+    % bring the error message if no file is detected
+    if numMagFile == 0
+        error('No file with name containing string ''mag'' is detected. Please make sure the input directory contains a magnitude data');
+    end
+    if numPhaseFile == 0
+        error('No file with name containing string ''ph'' is detected. Please make sure the input directory contains a phase data');
+    end
+
+end
+
+%% Validate input data consistence
+function CheckInputDimension(magn,phase,matrixSize,TE)
+% check spatial dimension
+for ndim = 1:3
+    if size(magn,ndim) ~= matrixSize(ndim)
+        error(['The ' num2str(ndim) 'st/nd/rd dimension of the magnitude data does not match with the header information']);
+    end
+    if size(phase,ndim) ~= matrixSize(ndim)
+        error(['The ' num2str(ndim) 'st/nd/rd dimension of the phase data does not match with the header information']);
+    end
+end
+
+% check echo time
+if size(magn,4) ~= length(TE)
+    error('The no. of echo in the magnitude data does not match with the header infomation');
+end
+if size(phase,4) ~= length(TE)
+    error('The no. of echo in the phase data does not match with the header infomation');
+end
+if size(phase,4) ~= size(magn,4)
+    error('The no. of echo in the magnitude data does not match with that of the phase data');
+end
 
 end
