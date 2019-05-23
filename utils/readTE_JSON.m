@@ -23,7 +23,7 @@ if ~iscell(filenames)
 end
 
 if exist('jsondecode','builtin') == 5
-    isJSONDecode = false;
+    isJSONDecode = true;
     json_header = jsondecode(fileread(filenames{1}));
     conversion_software = json_header.ConversionSoftware;
 else

@@ -51,7 +51,7 @@ h.StepsPanel.Utility = uipanel(hParent,'Title','Utility',...
     
     
     % define position and size of all method panels
-position_child = [0.01 0.24 0.98 0.6];
+position_child = [0.01 0.05 0.98 0.75];
 
     % get header
     h = sepia_handle_panel_utility_get_header(h.StepsPanel.Utility,...
