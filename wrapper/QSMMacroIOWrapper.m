@@ -136,14 +136,9 @@ if ~isempty(inputNiftiList)
                         %%%%%%%%%% magnitude data %%%%%%%%%%
         if ~isempty(inputNiftiList(2).name)
             inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-            % make sure the data is multi-echo magnitude data
-            if size(inputMagnNifti.img,4) > 1
-                magn = double(inputMagnNifti.img);
-                isMagnLoad = true;
-                disp('Magnitude data is loaded.');
-            else
-                error('QSM Hub only works with 4D data.');
-            end
+            magn = double(inputMagnNifti.img);
+            isMagnLoad = true;
+            disp('Magnitude data is loaded.');
         else
             disp('No magnitude data is loaded.');
             magn = ones(size(localField));

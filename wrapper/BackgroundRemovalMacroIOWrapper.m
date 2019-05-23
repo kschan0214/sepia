@@ -121,7 +121,7 @@ if ~isempty(inputNiftiList)
             disp('No field map standard deviation data is loaded.');
         end
         
-                        %%%%%%%%%% qsm hub header %%%%%%%%%%
+                        %%%%%%%%%% sepia header %%%%%%%%%%
         if ~isempty(inputNiftiList(4).name)
             load([inputNiftiList(4).name]);
             disp('Header data is loaded.');

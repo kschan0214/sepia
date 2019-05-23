@@ -183,7 +183,7 @@ if ~isempty(inputNiftiList)
             fieldMap = double(inputPhaseNifti.img);
             % check whether phase data contains DICOM values or wrapped
             % phase value
-            if max(fieldMap(:))>4 || min(fieldMap(:))<-4
+            if max(fieldMap(:))>1000
                 disp('Converting phase data from DICOM image value to radian unit...')
                 fieldMap = DICOM2Phase(inputPhaseNifti);
 
@@ -510,9 +510,7 @@ switch lower(QSM_method)
         
         if length(TE) == 1 && QSM_isLambdaCSF
             QSM_isLambdaCSF = false;
-            warning('Single echo data cannot use CSF regularisation.');
-            warning('No CSF regularisation will be used');
-        end
+            disp('Single echo data cannot u');
             
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad

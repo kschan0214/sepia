@@ -102,25 +102,9 @@ disp(['The following unwrapping method is being used: ' method]);
 %% phase unwrapping
 switch method
     case 'Laplacian'
-        % check odd matrix dimension
-        wrappedField = DataValidation(wrappedField,'pre');
-        matrixSize_new = size(wrappedField);
-        
-        % Laplacian unwrapping
-        unwrappedField = unwrapLaplacian(wrappedField,matrixSize_new,voxelSize);
-        
-        % remove zero-padding if any 
-        unwrappedField = DataValidation(unwrappedField,'post',matrixSize);
-        
+        unwrappedField = unwrapLaplacian(wrappedField,matrixSize,voxelSize);
     case 'Laplacian_stisuite'
-        % check odd matrix dimension
-        wrappedField = DataValidation(wrappedField,'pre');
-        
         unwrappedField = MRPhaseUnwrap(wrappedField,'voxelsize',voxelSize,'padsize',[12,12,12]);
-        
-        % remove zero-padding if any 
-        unwrappedField = DataValidation(unwrappedField,'post',matrixSize);
-        
     case 'RegionGrowing'
         if size(magn,4) > 1
             magn = sqrt(sum(abs(magn).^2,4));
@@ -150,7 +134,7 @@ end
 
 end
 
-%% make sure the size of the input matrix is an even number
+% make sure the size of the input matrix is an even number
 function output = DataValidation(input,mode,matrixSize_o)
 matrixSize = size(input);
 

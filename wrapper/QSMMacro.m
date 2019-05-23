@@ -171,8 +171,14 @@ switch method
             'b0dir',b0dir,'vkernel',Kernel_Sizes);
         
     case 'Star'
+        % check odd matrix dimension
+        localField = DataValidation(localField,'pre');
+        mask       = DataValidation(mask,'pre');
+        
         chi = QSM_star(localField,mask,'TE',te,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
-    
+        % remove zero-padding, if any 
+        chi = DataValidation(chi,'post',matrixSize);
+        
     case 'MEDI_L1'
         chi = MEDI_L1_4sepia(localField,mask,matrixSize,voxelSize,...
             'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',isMerit,...
@@ -181,4 +187,28 @@ switch method
             'noisestd',N_std,'magnitude',magn,'Mask_CSF',Mask_CSF);
 end
 
+end
+
+%% make sure the size of the input matrix is an even number
+function output = DataValidation(input,mode,matrixSize_o)
+matrixSize = size(input);
+
+% determine if a dimension needs to be zeropadded
+padsize     = zeros(size(matrixSize));
+for kd = 1:length(matrixSize)
+    if mod(matrixSize(kd),2) == 1
+        padsize(kd) = 1;
+    end
+end
+
+switch mode
+    case 'pre'
+        % zero padding if the dimension of the matrix is an odd number
+        output = padarray(input, padsize, 0,'post');
+        
+    case 'post'
+        % remove zero padding 
+        output = input(1:matrixSize_o(1),1:matrixSize_o(2),1:matrixSize_o(3));
+        
+end
 end

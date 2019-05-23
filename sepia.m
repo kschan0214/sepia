@@ -185,7 +185,7 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.dataIO,        'Parent',h.Tabs.phaseUnwrap);
             % This tab supports both DICOM and NIfTI files
             set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains NIfTI (*phase*.nii* and *magn*.nii*) files');
+                'Input directory contains NIfTI (*ph*.nii* and *mag*.nii*) files');
             % BET is supported with this tab
             set(h.dataIO.checkbox.brainExtraction,'Enable','on');
             % phase invert is supported with this tab

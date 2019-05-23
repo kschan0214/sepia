@@ -343,7 +343,7 @@ if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
 
-disp('Done!');
+disp('Processing pipeline is completed!');
 
 end
 
