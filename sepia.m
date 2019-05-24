@@ -325,6 +325,10 @@ if exist(logFilename,'file') == 2
 end
 fid = fopen(logFilename,'w');
 
+% general path
+fprintf(fid,'%% add general Path\n');
+fprintf(fid,'sepia_addpath\n\n');
+
 % input data
 if isstruct(input)
     fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);

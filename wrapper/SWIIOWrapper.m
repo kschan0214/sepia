@@ -96,13 +96,13 @@ save_nii_quick(outputNiftiTemplate,swi_phase, [outputDir filesep prefix 'swi-pha
 if isPositive
     save_nii_quick(outputNiftiTemplate,pSWI, [outputDir filesep prefix 'swi-positive.nii.gz']);
     if ismIP
-        save_nii_quick(outputNiftiTemplate,pswi_mIP, [outputDir filesep prefix 'swi-mIP-positive.nii.gz']);
+        save_nii_quick(outputNiftiTemplate,pswi_mIP, [outputDir filesep prefix 'minIP-positive.nii.gz']);
     end
 end
 if isNegative
     save_nii_quick(outputNiftiTemplate,nSWI, [outputDir filesep prefix 'swi-negative.nii.gz']);
     if ismIP
-        save_nii_quick(outputNiftiTemplate,nswi_mIP, [outputDir filesep prefix 'swi-mIP-negative.nii.gz']);
+        save_nii_quick(outputNiftiTemplate,nswi_mIP, [outputDir filesep prefix 'minIP-negative.nii.gz']);
     end
 end
 
