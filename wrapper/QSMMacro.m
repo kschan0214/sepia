@@ -136,79 +136,100 @@ else
     thre_tkd = 0.15;
 end
 
-% add path
-sepia_addpath(method);
+% convert data to single type to reduce memory usage
+localField	= single(localField);
+mask       	= single(mask);
+voxelSize   = single(voxelSize);
+if exist('wmap','var')
+    wmap = single(wmap);
+end
+if exist('magn','var')
+    magn = single(magn);
+end
+if exist('N_std','var')
+    N_std = single(N_std);
+end
+if exist('initGuess','var')
+    initGuess   = single(initGuess);
+end
 
 disp(['The following QSM algorithm will be used: ' method]);
 
 %% qsm algorithm
+% add path
+sepia_addpath(method);
+
+% zero padding for odd number dimension
+localField  = zeropad_odd_dimension(localField,'pre');
+mask        = zeropad_odd_dimension(mask,'pre');
+if exist('wmap','var')
+    wmap   = zeropad_odd_dimension(wmap,'pre');
+end
+if exist('magn','var')
+    magn   = zeropad_odd_dimension(magn,'pre');
+end
+if exist('N_std','var')
+    N_std   = zeropad_odd_dimension(N_std,'pre');
+end
+if exist('initGuess','var')
+    initGuess   = zeropad_odd_dimension(initGuess,'pre');
+end
+if exist('Mask_CSF','var')
+    Mask_CSF   = zeropad_odd_dimension(Mask_CSF,'pre');
+end
+matrixSize_new = size(localField);
+matrixSize_new = single(matrixSize_new);
+
 switch method
     case 'TKD'
+        
         disp(['TKD threshold = ' thre_tkd]);
-        chi = qsmTKD(localField,mask,matrixSize,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
+        chi = qsmTKD(localField,mask,matrixSize_new,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
     
     case 'CFL2'
-        [chi, lamdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize,voxelSize,...
+        
+        [chi, lamdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize_new,voxelSize,...
             'lambda',lambda,'optimise',optimise,'b0dir',b0dir);
         
     case 'iLSQR'
-        chi = qsmIterativeLSQR(localField,mask,matrixSize,voxelSize,...
+        
+        chi = qsmIterativeLSQR(localField,mask,matrixSize_new,voxelSize,...
             'lambda',lambda,'tol',tol,'iteration',maxiter,'weight',wmap,...
             'initGuess',initGuess,'optimise',optimise,'b0dir',b0dir);
         
     case 'STISuiteiLSQR'
-        chi = QSM_iLSQR(double(localField),double(mask),'params',algoPara);
+        % double precision is requried for this function
+        localField  = double(localField);
+        mask        = double(mask);
+        chi = QSM_iLSQR(localField,mask,'params',algoPara);
         
     case 'FANSI'
         noise = 0;
-  
+        
         chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
         chi = chi .* mask;
 
     case 'SSVSHARP'
-        chi = qsmSingleStepVSHARP(localField,mask,matrixSize,voxelSize,...
+        chi = qsmSingleStepVSHARP(localField,mask,matrixSize_new,voxelSize,...
             'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
             'b0dir',b0dir,'vkernel',Kernel_Sizes);
         
     case 'Star'
-        % check odd matrix dimension
-        localField = DataValidation(localField,'pre');
-        mask       = DataValidation(mask,'pre');
         
         chi = QSM_star(localField,mask,'TE',te,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
-        % remove zero-padding, if any 
-        chi = DataValidation(chi,'post',matrixSize);
         
     case 'MEDI_L1'
-        chi = MEDI_L1_4sepia(localField,mask,matrixSize,voxelSize,...
+        chi = MEDI_L1_4sepia(localField,mask,matrixSize_new,voxelSize,...
             'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',isMerit,...
             'smv',isSMV,'radius',radius,'data_weighting',wData,...
             'gradient_weighting',wGrad,'lam_CSF',lam_CSF,...
             'noisestd',N_std,'magnitude',magn,'Mask_CSF',Mask_CSF);
 end
 
+% remove zero padding 
+chi = zeropad_odd_dimension(chi,'post',matrixSize);
+% ensure the output is single to reduce memory usage
+chi = single(chi);
+
 end
 
-%% make sure the size of the input matrix is an even number
-function output = DataValidation(input,mode,matrixSize_o)
-matrixSize = size(input);
-
-% determine if a dimension needs to be zeropadded
-padsize     = zeros(size(matrixSize));
-for kd = 1:length(matrixSize)
-    if mod(matrixSize(kd),2) == 1
-        padsize(kd) = 1;
-    end
-end
-
-switch mode
-    case 'pre'
-        % zero padding if the dimension of the matrix is an odd number
-        output = padarray(input, padsize, 0,'post');
-        
-    case 'post'
-        % remove zero padding 
-        output = input(1:matrixSize_o(1),1:matrixSize_o(2),1:matrixSize_o(3));
-        
-end
-end

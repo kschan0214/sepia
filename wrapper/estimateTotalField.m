@@ -41,6 +41,7 @@
 % Date created: 31 May, 2017
 % Date modified: 27 February 2018
 % Date modified: 16 September 2018
+% Date modified: 24 may 2019
 %
 function [totalField,N_std,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,varargin)
 % Larmor frequency of 1H
@@ -72,6 +73,11 @@ if length(TE)>1
     dt = TE(2)-TE(1);
 end
 
+% use single precision to reduce memory usage
+fieldMap	= single(fieldMap);
+magn        = single(magn);
+mask       	= single(mask);
+
 % find the centre of mass
 pos=round(centerofmass(magn));
 
@@ -82,6 +88,7 @@ switch echoCombine
         %%%%%%%%%%%%%%%%%%%%%%%% Multi-echo %%%%%%%%%%%%%%%%%%%%%%%%
             % compute wrapped phase shift between successive echoes
             fieldMapEchoTemp=angle(exp(1i*fieldMap(:,:,:,2:end))./exp(1i*fieldMap(:,:,:,1:end-1)));
+            tmp2 = zeros(size(fieldMapEchoTemp),'single');
             % unwrap each echo phase shift
             for k=1:size(fieldMapEchoTemp,4)
                 tmp = UnwrapPhaseMacro(fieldMapEchoTemp(:,:,:,k),matrixSize,voxelSize,...
@@ -92,13 +99,13 @@ switch echoCombine
             phaseShiftUnwrapAllEchoes=cumsum(tmp2,4);    
 
             % compute unwrapped phase shift between successive echoes
-            fieldMapUnwrap = zeros(size(phaseShiftUnwrapAllEchoes));
+            fieldMapUnwrap = zeros(size(phaseShiftUnwrapAllEchoes),'single');
             for k=1:size(phaseShiftUnwrapAllEchoes,4)
                 fieldMapUnwrap(:,:,:,k)=phaseShiftUnwrapAllEchoes(:,:,:,k)/(TE(k+1)-TE(1));
             end
 
             % Robinson et al. 2017 NMR Biomed Appendix A2
-            fieldMapSD = zeros(size(phaseShiftUnwrapAllEchoes));
+            fieldMapSD = zeros(size(phaseShiftUnwrapAllEchoes),'single');
             for k=1:size(phaseShiftUnwrapAllEchoes,4)
                 fieldMapSD(:,:,:,k) = 1./(TE(k+1)-TE(1)) ...
                     * sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2));
@@ -178,6 +185,10 @@ switch unit
     otherwise
         disp(['Input unit is invalid. radHz is used instead.']);
 end
+
+% use single to reduce memory usage
+totalField  = single(totalField);
+N_std       = single(real(N_std));
 
 end
 

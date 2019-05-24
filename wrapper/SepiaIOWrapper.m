@@ -56,7 +56,7 @@
 % chi                   : quantitative susceptibility map (in ppm)
 %
 % Description: This is a wrapper of estimateTotalField.m which has the following objeectives:
-%               (1) matches the input format of qsm_hub.m
+%               (1) matches the input format of sepia.m
 %               (2) save the results in NIfTI format
 %
 % Kwok-shing Chan @ DCCN
@@ -300,6 +300,10 @@ disp(['Number of echoes = ' num2str(length(TE))]);
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
 
+% convert data to single type to reduce memory usage
+magn        = single(magn);
+fieldMap    = single(fieldMap);
+
 %% get brain mask
 mask = [];
 maskList = dir([inputDir '/*mask*nii*']);
@@ -334,6 +338,9 @@ if isempty(mask) || isBET
 
 end
 
+% convert data to single type to reduce memory usage
+mask = single(mask);
+
 %% total field and phase unwrap
 
 % Step 0: Eddy current correction for bipolar readout
@@ -346,7 +353,10 @@ if isEddyCorrect
     
     % save the eddy current corrected output
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
+    clear imgCplx
     
+    % convert data to single type to reduce memory usage
+    fieldMap = single(fieldMap);
 end
 
 % Step 1: Phase unwrapping and echo phase combination
@@ -388,9 +398,10 @@ if length(TE) > 1
     r2s = R2star_trapezoidal(magn,TE);
     relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
     maskReliable = relativeResidual < exclude_threshold;
+    clear r2s
 else
     % single-echo
-    maskReliable = ones(size(totalField));
+    maskReliable = ones(size(totalField),'single');
 end
 
 % threshold fieldmapSD with the reliable voxel mask
@@ -416,7 +427,6 @@ if ~isinf(exclude_threshold)
     clear relativeResidual
 end
 fprintf('done!\n');
-
 
 %% Background field removal
 disp('Step 2: Recovering local field...');
@@ -461,10 +471,11 @@ else
     wmap = wmap .* maskFinal;
 end
 % wmap = wmap .* weightResidual;
-wmap = wmap .* double(maskReliable);
+wmap = wmap .* single(maskReliable);
 if ~isWeightLoad || ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
 end
+
 
 %% qsm
 disp('Step 3: Computing QSM...');

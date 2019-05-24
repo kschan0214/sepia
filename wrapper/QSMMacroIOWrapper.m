@@ -248,6 +248,11 @@ disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2))
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
+% convert data to single type to reduce memory usage
+magn        = single(magn);
+localField 	= single(localField);
+weights 	= single(weights);
+
 %% get brain mask
 % look for qsm mask first
 maskList = dir([inputDir '/*mask-qsm*']);
@@ -278,7 +283,7 @@ end
 % wmap(isinf(wmap)) = 0;
 % wmap(isnan(wmap)) = 0;
 % wmap = wmap./max(wmap(maskFinal>0));
-weights = weights .* maskFinal;
+weights = weights .* single(maskFinal);
 
 %% qsm
 disp('Computing QSM...');

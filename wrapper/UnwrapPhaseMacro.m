@@ -35,7 +35,8 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2017
-% Date last modified: 27 May 2018
+% Date modified: 27 May 2018
+% Date modified: 24 May 2019
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,varargin)
 
@@ -49,35 +50,35 @@ if ~isempty(varargin)
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
                 case 'laplacian'
+                    
                     method = 'Laplacian';
-%                     break
+
                 case 'laplacian_stisuite'
+                    
                     method = 'Laplacian_stisuite';
-%                     break
+
                 case 'rg'
+                    
                     method = 'RegionGrowing';
                     [magn] = parse_varargin_RegionGrowing(varargin);
                     if isempty(magn)
                         disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
-%                     break
+
                 case 'gc'
+                    
                     method = 'Graphcut';
                     [magn, subsampling] = parse_varargin_Graphcut(varargin);
                     if isempty(magn)
                         disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
-%                     break
+
                 case 'bestpath3d'
+                    
                     method = 'BestPath3D';
-%                     [mask] = parse_varargin_UnwrapPhase_3DBestPath(varargin);
-%                     if isempty(mask)
-%                         disp('Running algorithm without brain mask could be problematic');
-%                         mask = ones(matrixSize);
-%                     end
-%                     break
+
             end
         end
         if strcmpi(varargin{kvar},'mask')
@@ -90,36 +91,39 @@ else
     method = 'Laplacian';
 end
 
+% give a warning if no mask is provided
 if isempty(mask)
     mask = ones(matrixSize);
     warning('Running algorithm without brain mask could be problematic');
 end
 
-% add path
-sepia_addpath(method);
+% use single precision to reduce memory usage
+wrappedField = single(wrappedField);
+mask         = single(mask);
+if exist('magn','var')
+    magn = single(magn);
+end
 
 disp(['The following unwrapping method is being used: ' method]);
 %% phase unwrapping
+% add method path
+sepia_addpath(method);
+
+% Laplacian based method required prior zero padding for odd number dimension
+if strcmpi(method,'Laplacian') || strcmpi(method,'Laplacian_stisuite')
+    wrappedField = zeropad_odd_dimension(wrappedField,'pre');
+    matrixSize_new = size(wrappedField);
+end
+
 switch method
     case 'Laplacian'
-        % check odd matrix dimension
-        wrappedField = DataValidation(wrappedField,'pre');
-        matrixSize_new = size(wrappedField);
         
         % Laplacian unwrapping
         unwrappedField = unwrapLaplacian(wrappedField,matrixSize_new,voxelSize);
         
-        % remove zero-padding if any 
-        unwrappedField = DataValidation(unwrappedField,'post',matrixSize);
-        
     case 'Laplacian_stisuite'
-        % check odd matrix dimension
-        wrappedField = DataValidation(wrappedField,'pre');
-        
+
         unwrappedField = MRPhaseUnwrap(wrappedField,'voxelsize',voxelSize,'padsize',[12,12,12]);
-        
-        % remove zero-padding if any 
-        unwrappedField = DataValidation(unwrappedField,'post',matrixSize);
         
     case 'RegionGrowing'
         if size(magn,4) > 1
@@ -142,34 +146,18 @@ switch method
             [magn] = parse_varargin_RegionGrowing(varargin);
             if isempty(magn)
                 disp('Running algorithm without magnitude image could be problematic');
-                magn = ones(matrixSize);
+                magn = ones(matrixSize,'single');
             end
             unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
         end
 end
 
+% remove zero padding with Laplacian based method result
+if strcmpi(method,'Laplacian') || strcmpi(method,'Laplacian_stisuite')
+    unwrappedField = zeropad_odd_dimension(unwrappedField,'post',matrixSize);
 end
 
-%% make sure the size of the input matrix is an even number
-function output = DataValidation(input,mode,matrixSize_o)
-matrixSize = size(input);
+% ensure the output is single to reduce memory usage
+unwrappedField = single(unwrappedField);
 
-% determine if a dimension needs to be zeropadded
-padsize     = zeros(size(matrixSize));
-for kd = 1:length(matrixSize)
-    if mod(matrixSize(kd),2) == 1
-        padsize(kd) = 1;
-    end
-end
-
-switch mode
-    case 'pre'
-        % zero padding if the dimension of the matrix is an odd number
-        output = padarray(input, padsize, 0,'post');
-        
-    case 'post'
-        % remove zero padding 
-        output = input(1:matrixSize_o(1),1:matrixSize_o(2),1:matrixSize_o(3));
-        
-end
 end

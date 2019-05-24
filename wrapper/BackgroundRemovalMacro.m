@@ -64,6 +64,7 @@
 % Date created: 28 June 2017
 % Date modified: 29 September 2017
 % Date modified: 1 April 2019
+% Date modified: 24 May 2019
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
 matrixSize = matrixSize(:).';
@@ -127,12 +128,28 @@ else
     peel = 1;
 end
 
-% add path
-sepia_addpath(method);
+% use single precision to reduce memory usage
+totalField  = single(totalField);
+mask       	= single(mask);
+if exist('N_std','var')
+    N_std = single(N_std);
+end
 
 disp(['The following method is being used: ' method]);
 
 %% background field removal
+% add path
+sepia_addpath(method);
+
+% zero padding for odd number dimension
+totalField  = zeropad_odd_dimension(totalField,'pre');
+mask        = zeropad_odd_dimension(mask,'pre');
+if exist('N_std','var')
+    N_std   = zeropad_odd_dimension(N_std,'pre');
+end
+matrixSize_new = size(totalField);
+
+
 disp('The following parameters are being used...');
 
 switch method
@@ -140,7 +157,7 @@ switch method
         disp(['Tolerance = ' num2str(tol)]);
         disp(['Depth = ' num2str(depth)]);
         disp(['Peel = ' num2str(peel)]);
-        RDF = LBV(totalField,mask,matrixSize,voxelSize,tol,depth,peel);
+        RDF = LBV(totalField,mask,matrixSize_new,voxelSize,tol,depth,peel);
         deleteme = dir('mask*.bin');
         delete(deleteme(1).name);
 %         system(['rm ' deleteme.folder filesep deleteme.name]);
@@ -150,27 +167,27 @@ switch method
 %         disp(['CGsolver = ' num2str(CGdefault)]);
 %         RDF = PDF(totalField,mask,matrixSize,voxelSize,'b0dir',B0_dir,...
 %             'tol', tol,'iteration', iteration,'CGsolver', CGdefault,'noisestd',N_std);
-        RDF = PDF(totalField,N_std,mask,matrixSize,voxelSize,B0_dir,tol,...
+        RDF = PDF(totalField,N_std,mask,matrixSize_new,voxelSize,B0_dir,tol,...
             iteration,'imagespace',padSize);
     case 'SHARP'
         disp(['Radius(voxel) = ' num2str(radius)]);
         disp(['Threshold = ' num2str(threshold)]);
-        RDF = SHARP(totalField, mask, matrixSize, voxelSize, radius,threshold);
+        RDF = SHARP(totalField, mask, matrixSize_new, voxelSize, radius,threshold);
     case 'RESHARP'
         disp(['Radius(voxel) = ' num2str(radius)]);
         disp(['Lambda = ' num2str(alpha)]);
-        RDF = RESHARP(totalField, mask, matrixSize, voxelSize, radius, alpha);
-        mask_RDF = SMV(mask, matrixSize, voxelSize, radius)>0.999;
+        RDF = RESHARP(totalField, mask, matrixSize_new, voxelSize, radius, alpha);
+        mask_RDF = SMV(mask, matrixSize_new, voxelSize, radius)>0.999;
         RDF = RDF .* mask_RDF;
     case 'VSHARPSTISuite'
         disp(['SMV size (mm): ' num2str(radius)]);
-        RDF = V_SHARP(totalField, mask,'voxelsize',double(voxelSize(:))','smvsize',radius);
+        RDF = V_SHARP(totalField, mask,'voxelsize',single(voxelSize(:))','smvsize',radius);
     case 'iHARPERELLA'
         disp(['Maximum iterations = ' num2str(iteration)]);
         RDF = iHARPERELLA(totalField, mask,'voxelsize',voxelSize,'niter',iteration);
     case 'VSHARP'
         disp(['Radius range(voxel) = ' num2str(radius)]);
-        [RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize,'radius',radius);
+        [RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize_new,'radius',radius);
 end
 
 %% If refine is needed, do it now
@@ -192,8 +209,13 @@ if erode_radius > 0
     maskFinal(:,1:erode_radius,:)       = 0;
     maskFinal(end-erode_radius:end,:,:) = 0;
     maskFinal(1:erode_radius,:,:)       = 0;
-    RDF = RDF .* maskFinal;
+    RDF = RDF .* single(maskFinal);
 end
+
+% remove zero padding 
+RDF = zeropad_odd_dimension(RDF,'post',matrixSize);
+% ensure the output is single to reduce memory usage
+RDF = single(RDF);
 
 
 end

@@ -12,10 +12,6 @@ function chi = FANSI_4sepia(phase,magn,spatial_res,alpha,mu,noise,options,B0_dir
 
 params = [];
 
-% Sepia check the size of the input
-matrixSize_o = size(phase);
-phase   = DataValidation(phase,'pre');
-magn    = DataValidation(magn,'pre');
 % additional parameters for sepia
 params.maxOuterIter = options.maxOuterIter;
 params.tol_update   = options.tol_update;
@@ -86,30 +82,6 @@ else
 end
 
 % Sepia check the size of the output
-chi   = DataValidation(out.x,'post',matrixSize_o);
+chi   = out.x;
 
-end
-
-% make sure the size of the input matrix is an even number
-function output = DataValidation(input,mode,matrixSize_o)
-matrixSize = size(input);
-
-% determine if a dimension needs to be zeropadded
-padsize     = zeros(size(matrixSize));
-for kd = 1:length(matrixSize)
-    if mod(matrixSize(kd),2) == 1
-        padsize(kd) = 1;
-    end
-end
-
-switch mode
-    case 'pre'
-        % zero padding if the dimension of the matrix is an odd number
-        output = padarray(input, padsize, 0,'post');
-        
-    case 'post'
-        % remove zero padding 
-        output = input(1:matrixSize_o(1),1:matrixSize_o(2),1:matrixSize_o(3));
-        
-end
 end
