@@ -6,11 +6,11 @@ dim=size(Data3D);
 %% for volume fitting
 
 
-    Indices = cast(find(Mask(:,:,:)),'like',Data3D);
+    Indices = find(Mask(:,:,:));
     [x1,y1,z1]=ind2sub(size(Data3D(:,:,:)),Indices);
-    x1 = cast(x1,'like',Data3D);
-    y1 = cast(y1,'like',Data3D);
-    z1 = cast(z1,'like',Data3D);
+%     x1 = cast(x1,'like',Data3D);
+%     y1 = cast(y1,'like',Data3D);
+%     z1 = cast(z1,'like',Data3D);
     R=Data3D(Indices);
     %%%%%%%%%%this kind of works... but it would be better to make it 3D
     model(1:length(Indices),1) = zeros(length(Indices),1, 'like', Data3D);
