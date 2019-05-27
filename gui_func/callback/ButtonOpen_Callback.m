@@ -38,7 +38,7 @@ switch field
         pathDir = uigetdir;
 
         if pathDir ~= 0
-            set(h.dataIO.edit.output,'String',[pathDir prefix]);
+            set(h.dataIO.edit.output,'String',[pathDir filesep prefix]);
         end
         
     case 'inputdata1'
