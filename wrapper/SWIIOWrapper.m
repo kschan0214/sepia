@@ -49,10 +49,13 @@ inputNiftiList = input;
     
 if ~isempty(inputNiftiList(1).name)
     inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
-    phase = double(inputPhaseNifti.img);
+    % load true value from NIfTI
+    phase = load_nii_img_only([inputNiftiList(1).name]);
+%     phase = double(inputPhaseNifti.img)*inputPhaseNifti.hdr.dime.scl_slope + inputPhaseNifti.hdr.dime.scl_inter;
+%     phase = double(inputPhaseNifti.img);
     % check whether phase data contains DICOM values or wrapped
     % phase value
-    if max(phase(:))>1000
+    if max(phase(:))>4 || min(phase(:))<-4
         disp('Converting phase data from DICOM image value to radian unit...')
         phase = DICOM2Phase(inputPhaseNifti);
 
@@ -67,7 +70,9 @@ end
 
 if ~isempty(inputNiftiList(2).name)
     inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-    magn = double(inputMagnNifti.img);
+    % load true value from NIfTI
+    magn = load_nii_img_only([inputNiftiList(2).name]);
+%     magn = double(inputMagnNifti.img);
     disp('Magnitude data is loaded.');
 else
     error('Please specify a magnitude data.');

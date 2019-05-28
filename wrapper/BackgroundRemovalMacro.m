@@ -194,14 +194,17 @@ end
 
 %% If refine is needed, do it now
 if refine
-    disp('Performing polynomial fitting...');
-    RDF = single(RDF);
+    fprintf('Performing polynomial fitting...');
+    % PolyFit required data to be double type
+    RDF = double(RDF);
     [~,RDF,~]=PolyFit(RDF,RDF~=0,4);
+    RDF = single(RDF);
+    fprintf('Done!\n')
 end
 
 % get non-zero mask
 if erode_radius > 0
-    disp(['Eroding ' num2str(erode_radius) ' voxel(s) from edges...']);
+    fprintf(['Eroding ' num2str(erode_radius) ' voxel(s) from edges...']);
     maskFinal = RDF ~=0;
     maskFinal = imfill(maskFinal,'holes');
     maskFinal = imerode(maskFinal,strel('sphere',erode_radius));
@@ -213,6 +216,7 @@ if erode_radius > 0
     maskFinal(end-erode_radius:end,:,:) = 0;
     maskFinal(1:erode_radius,:,:)       = 0;
     RDF = RDF .* single(maskFinal);
+    fprintf('Done!\n')
 end
 
 % remove zero padding 

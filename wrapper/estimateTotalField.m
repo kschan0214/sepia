@@ -171,7 +171,7 @@ switch echoCombine
 end
 
 disp(['The resulting field map with the following unit: ' unit]);
-switch unit
+switch lower(unit)
     case 'ppm'
         totalField = (totalField/(2*pi))/(fieldStrength*gyro);
 %         tmp2 = (tmp2/(2*pi))/(fieldStrength*gamma);
@@ -228,7 +228,7 @@ for kkvar = 1:length(arg)
         continue
     end
     if  strcmpi(arg{kkvar},'unit')
-        unit = lower(arg{kkvar+1});
+        unit = arg{kkvar+1};
         continue
     end
     if  strcmpi(arg{kkvar},'Unwrap')

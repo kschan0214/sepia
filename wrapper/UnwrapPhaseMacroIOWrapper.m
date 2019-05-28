@@ -134,10 +134,10 @@ if ~isempty(inputNiftiList)
         %%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % validate indput directory files
-        disp('Directory input is being used...');
-        disp('Validating filenames in the directory....');
+        disp('Directory input is being used.');
+        fprintf('Validating filenames in the directory....');
         CheckFileName(inputNiftiList);
-        disp('Filenames are valid.');
+        fprintf('Filenames are valid.\n');
         
         % loop all NIfTI files in the directory for magnitude and phase files
         for klist = 1:length(inputNiftiList)
@@ -161,8 +161,9 @@ if ~isempty(inputNiftiList)
                     disp('Converting phase data from DICOM image value to radian unit ...')
                     fieldMap = DICOM2Phase(inputPhaseNifti);
 
-                    disp('Saving phase images in unit of radian...');
+                    fprintf('Saving phase images in unit of radian...');
                     save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
+                    fprintf('Done!\n');
 
                 end
                 isPhaseLoad = true;
@@ -223,6 +224,13 @@ end
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
 
+% convert data to single type to reduce memory usage
+magn        = single(magn);
+fieldMap    = single(fieldMap);
+TE          = single(TE);
+matrixSize  = single(matrixSize);
+voxelSize   = single(voxelSize);
+
 %% get brain mask
 mask = [];
 maskList = dir([inputDir '/*mask*nii*']);
@@ -245,15 +253,20 @@ end
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
     sepia_addpath('bet');
-    disp('Performing FSL BET...');
     
+    fprintf('Performing FSL BET...');
     % this is the BET functino provided with MEDI toolbox
     mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
+    fprintf('done!\n');
     
-    disp('Saving brain mask...')
+    fprintf('Saving brain mask...')
     save_nii_quick(outputNiftiTemplate,mask, [outputDir filesep prefix 'mask.nii.gz']);
+    fprintf('done!\n');
 
 end
+
+% convert data to single type to reduce memory usage
+mask = single(mask);
 
 %% total field and phase unwrap
 
@@ -265,8 +278,10 @@ if isEddyCorrect
     imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
     fieldMap = angle(imgCplx);
     
+    fprintf('Saving eddy current corrected phase data...');
     % save the eddy current corrected output
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
+    fprintf('Done!\n');
     
 end
 
@@ -285,15 +300,23 @@ try
                         'Subsampling',subsampling,'mask',mask);
                     
     if ~isempty(fieldmapUnwrapAllEchoes)
+        % save the output                           
+        fprintf('Saving unwrapped echo phase...');
         save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
+        clear fieldmapUnwrapAllEchoes
+        fprintf('Done!\n');
     end
     
 catch
     % if the above selected method is not working then do Laplacian with
     % optimum weights
-    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
+    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping.')
+    if ~isinf(exclude_threshold)
+        warning('Unreliable voxels will not be excluded due to switching of the algorithm.')
+        exclude_threshold = Inf;
+    end
     
-    unwrap = 'laplacian'; exclude_threshold = Inf;
+    unwrap = 'laplacian'; 
     sepia_addpath(unwrap);
     
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
@@ -303,14 +326,15 @@ end
                     
 % Step 2: exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
-if length(TE) > 1
+fprintf('Computing weighting map...');
+if length(TE) > 1 && ~isinf(exclude_threshold)
     % multi-echo data
     r2s = R2star_trapezoidal(magn,TE);
     relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
     maskReliable = relativeResidual < exclude_threshold;
 else
-    % single-echo
-    maskReliable = ones(size(totalField));
+    % single-echo & no threshold
+    maskReliable = ones(size(totalField),'single');
 end
 
 % threshold fieldmapSD with the reliable voxel mask
@@ -330,9 +354,10 @@ wmap(isinf(wmap)) = 0;
 wmap(isnan(wmap)) = 0;
 wmap = wmap./max(wmap(and(mask>0,maskReliable>0)));
 wmap = wmap .* and(mask>0,maskReliable);
+fprintf('Done!\n');
              
 % save the output                           
-disp('Saving unwrapped field map...');
+fprintf('Saving unwrapped field map...');
 
 save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
@@ -342,6 +367,7 @@ if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
 end
+fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
 
@@ -364,11 +390,12 @@ try algorParam2.unwrap.subsampling          = algorParam.unwrap.subsampling;    
 
 end
 
-%% Validate filenames with directory input
+%% Validate nifti filenames with directory input
 function CheckFileName(inputNiftiList)
 % no. of files with particular name that has been read
 numMagFile      = 0;
 numPhaseFile    = 0;
+
     % go through all files in the directory
     for klist = 1:length(inputNiftiList)
         if ContainName(lower(inputNiftiList(klist).name),'mag')
@@ -382,10 +409,10 @@ numPhaseFile    = 0;
     % bring the error message if multiple files with the same string are
     % detected
     if numMagFile > 1
-        error('Multiple files with name containing string ''mag'' are detected. Please make sure only the magnitude data contains ''mag''');
+        error('Multiple files with name containing string ''mag'' are detected. Please make sure only the magnitude data contains string ''mag''');
     end
     if numPhaseFile > 1
-        error('Multiple files with name containing string ''ph'' are detected. Please make sure only the phase data contains ''ph''');
+        error('Multiple files with name containing string ''ph'' are detected. Please make sure only the phase data contains string ''ph''');
     end
     
     % bring the error message if no file is detected

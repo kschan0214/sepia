@@ -168,9 +168,9 @@ if ~isempty(inputNiftiList)
                         %%%%%%%%%% magnitude data %%%%%%%%%%
         if ~isempty(inputNiftiList(2).name)
             inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-            % make sure the data is multi-echo magnitude data
-            % TODO - single echo data input
-            magn = double(inputMagnNifti.img);
+            % load true value from NIfTI
+            magn = load_nii_img_only([inputNiftiList(2).name]);
+%             magn = double(inputMagnNifti.img);
             isMagnLoad = true;
             disp('Magnitude data is loaded.');
         else
@@ -180,7 +180,9 @@ if ~isempty(inputNiftiList)
                          %%%%%%%%%% phase data %%%%%%%%%%
         if ~isempty(inputNiftiList(1).name)
             inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
-            fieldMap = double(inputPhaseNifti.img);
+            % load true value from NIfTI
+            fieldMap = load_nii_img_only([inputNiftiList(1).name]);
+%             fieldMap = double(inputPhaseNifti.img);
             % check whether phase data contains DICOM values or wrapped
             % phase value
             if max(fieldMap(:))>4 || min(fieldMap(:))<-4
@@ -199,8 +201,10 @@ if ~isempty(inputNiftiList)
 
                          %%%%%%%%%% Weights data %%%%%%%%%%
         if ~isempty(inputNiftiList(3).name)
-            inputWeightNifti = load_untouch_nii([inputNiftiList(3).name]);
-            weights = double(inputWeightNifti.img);
+%             inputWeightNifti = load_untouch_nii([inputNiftiList(3).name]);
+            % load true value from NIfTI
+            weights = load_nii_img_only([inputNiftiList(3).name]);
+%             weights = double(inputWeightNifti.img);
             % check whether phase data contains DICOM values or wrapped
             if size(weights,4) > 1
                 error('QSM weighting image has to be 3D.');
@@ -215,7 +219,7 @@ if ~isempty(inputNiftiList)
             load([inputNiftiList(4).name]);
             disp('Header data is loaded.');
         else
-            error('Please specify a header required by Sepia.');
+            error('Please specify a header required by SEPIA.');
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
@@ -234,7 +238,9 @@ if ~isempty(inputNiftiList)
                             %%%%%%%%%% magnitude data %%%%%%%%%%
             if ContainName(lower(inputNiftiList(klist).name),'mag') && ~isMagnLoad
                 inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                magn = double(inputMagnNifti.img);
+                % load true value from NIfTI
+                magn = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
+%                 magn = double(inputMagnNifti.img);
                 isMagnLoad = true;
                 disp('Magnitude data is loaded.');
             end
@@ -242,7 +248,9 @@ if ~isempty(inputNiftiList)
                             %%%%%%%%%% phase data %%%%%%%%%%
             if ContainName(lower(inputNiftiList(klist).name),'ph') && ~isPhaseLoad
                 inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                fieldMap = double(inputPhaseNifti.img);
+                % load true value from NIfTI
+                fieldMap = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
+%                 fieldMap = double(inputPhaseNifti.img);
 
                 % if input fieldmap is directly converted from nifti converter
                 % then converts the fieldmap to unit of radian and save to output dir
@@ -250,8 +258,9 @@ if ~isempty(inputNiftiList)
                     disp('Converting phase data from DICOM image value to radian unit ...')
                     fieldMap = DICOM2Phase(inputPhaseNifti);
 
-                    disp('Saving phase images in unit of radian...');
+                    fprintf('Saving phase images in unit of radian...');
                     save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
+                    fprintf('Done!\n');
 
                 end
                 isPhaseLoad = true;
@@ -303,6 +312,9 @@ voxelSize = voxelSize(:).';
 % convert data to single type to reduce memory usage
 magn        = single(magn);
 fieldMap    = single(fieldMap);
+TE          = single(TE);
+matrixSize  = single(matrixSize);
+voxelSize   = single(voxelSize);
 
 %% get brain mask
 mask = [];
@@ -352,7 +364,9 @@ if isEddyCorrect
     fieldMap = angle(imgCplx);
     
     % save the eddy current corrected output
+    fprintf('Saving eddy current corrected phase data...');
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
+    fprintf('Done!\n');
     clear imgCplx
     
     % convert data to single type to reduce memory usage
@@ -374,16 +388,22 @@ try
                         'Subsampling',subsampling,'mask',mask);
                     
     if ~isempty(fieldmapUnwrapAllEchoes)
+        fprintf('Saving unwrapped echo phase...');
         save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
         clear fieldmapUnwrapAllEchoes
+        fprintf('Done!\n');
     end
     
 catch
     % if the above selected method is not working then do Laplacian with
     % optimum weights
-    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping...')
+    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping.')
+    if ~isinf(exclude_threshold)
+        warning('Unreliable voxels will not be excluded due to switching of the algorithm.')
+        exclude_threshold = Inf;
+    end
     
-    unwrap = 'laplacian'; exclude_threshold = Inf;
+    unwrap = 'laplacian'; 
     sepia_addpath(unwrap);
     
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
@@ -393,19 +413,21 @@ end
 
 % Step 2: exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
-if length(TE) > 1
+fprintf('Computing weighting map...');
+if length(TE) > 1 && ~isinf(exclude_threshold)
     % multi-echo data
     r2s = R2star_trapezoidal(magn,TE);
     relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
     maskReliable = relativeResidual < exclude_threshold;
     clear r2s
 else
-    % single-echo
+    % single-echo & no threshold
     maskReliable = ones(size(totalField),'single');
 end
 
 % threshold fieldmapSD with the reliable voxel mask
 fieldmapSD = fieldmapSD .* maskReliable;
+fprintf('Done!\n');
 
 % 20180815: test with creating weights using relativeResidual
 % weightResidual = 1-(relativeResidual./exclude_threshold);
@@ -496,6 +518,22 @@ switch lower(QSM_method)
         localField = localField * 2*pi * delta_TE; 
         
     case 'fansi'
+        % if both data are loaded
+        if isWeightLoad && isMagnLoad
+            disp('Both weighting map and magnitude images are loaded.');
+            disp('Only the weighing map will be used.');
+        end
+        % if only magnitude images are loaded
+        if ~isWeightLoad && isMagnLoad
+            disp('The normalised RMS magnitude image will be used as the weighting map.');
+            magn = sqrt(mean(magn.^2,4));
+            wmap = magn/max(magn(:)) * single(mask); 
+        end
+        % if nothing is loaded
+        if ~isWeightLoad && ~isMagnLoad
+            warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+        end
+        
         % FANSI default parameters are optimised for ppm
         localField = localField/(B0*gyro);
         
@@ -651,11 +689,12 @@ try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorPara
 
 end
 
-%% Validate filenames with directory input
+%% Validate nifti filenames with directory input
 function CheckFileName(inputNiftiList)
 % no. of files with particular name that has been read
 numMagFile      = 0;
 numPhaseFile    = 0;
+
     % go through all files in the directory
     for klist = 1:length(inputNiftiList)
         if ContainName(lower(inputNiftiList(klist).name),'mag')
@@ -669,10 +708,10 @@ numPhaseFile    = 0;
     % bring the error message if multiple files with the same string are
     % detected
     if numMagFile > 1
-        error('Multiple files with name containing string ''mag'' are detected. Please make sure only the magnitude data contains ''mag''');
+        error('Multiple files with name containing string ''mag'' are detected. Please make sure only the magnitude data contains string ''mag''');
     end
     if numPhaseFile > 1
-        error('Multiple files with name containing string ''ph'' are detected. Please make sure only the phase data contains ''ph''');
+        error('Multiple files with name containing string ''ph'' are detected. Please make sure only the phase data contains string ''ph''');
     end
     
     % bring the error message if no file is detected

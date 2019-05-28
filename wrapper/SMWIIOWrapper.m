@@ -48,7 +48,9 @@ inputNiftiList = input;
     
 if ~isempty(inputNiftiList(1).name)
     inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
-    qsm = double(inputPhaseNifti.img);
+    % load true value from nifti
+    qsm = load_nii_img_only([inputNiftiList(1).name]);
+%     qsm = double(inputPhaseNifti.img);
     
     if size(qsm,4) >1
         error('QSM map should be 3D. Please check your input.');
@@ -61,7 +63,9 @@ end
 
 if ~isempty(inputNiftiList(2).name)
     inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-    magn = double(inputMagnNifti.img);
+    % load tru value from nifti
+    magn = load_nii_img_only([inputNiftiList(2).name]);
+%     magn = double(inputMagnNifti.img);
     disp('Magnitude data is loaded.');
 else
     error('Please specify a magnitude data.');

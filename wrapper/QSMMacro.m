@@ -137,20 +137,20 @@ else
 end
 
 % convert data to single type to reduce memory usage
-localField	= single(localField);
-mask       	= single(mask);
-voxelSize   = single(voxelSize);
+localField	= double(localField);
+mask       	= double(mask);
+voxelSize   = double(voxelSize);
 if exist('wmap','var')
-    wmap = single(wmap);
+    wmap = double(wmap);
 end
 if exist('magn','var')
-    magn = single(magn);
+    magn = double(magn);
 end
 if exist('N_std','var')
-    N_std = single(N_std);
+    N_std = double(N_std);
 end
 if exist('initGuess','var')
-    initGuess   = single(initGuess);
+    initGuess   = double(initGuess);
 end
 
 disp(['The following QSM algorithm will be used: ' method]);
@@ -183,7 +183,6 @@ matrixSize_new = single(matrixSize_new);
 switch method
     case 'TKD'
         
-        disp(['TKD threshold = ' thre_tkd]);
         chi = qsmTKD(localField,mask,matrixSize_new,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
     
     case 'CFL2'

@@ -412,7 +412,7 @@ catch ME
     error(ME.message);
 end
 
-disp('Sepia header is saved!');
+disp('SEPIA header is saved!');
 
 % re-enable the pushbutton 
 set(source,'Enable','on');

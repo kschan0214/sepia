@@ -121,11 +121,14 @@ if ~isempty(inputNiftiList)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        disp('NIfTI input is being used.');
         
                         %%%%%%%%%% Local field map %%%%%%%%%% 
         if ~isempty(inputNiftiList(1).name)
             inputLocalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
-            localField = double(inputLocalFieldNifti.img);
+            % load true value from NIfTI
+            localField = load_nii_img_only([inputNiftiList(1).name]);
+%             localField = double(inputLocalFieldNifti.img);
             isLotalFieldLoad = true;
             
             disp('Local field map is loaded.')
@@ -135,8 +138,10 @@ if ~isempty(inputNiftiList)
         
                         %%%%%%%%%% magnitude data %%%%%%%%%%
         if ~isempty(inputNiftiList(2).name)
-            inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-            magn = double(inputMagnNifti.img);
+%             inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
+            % load true value from NIfTI
+            magn = load_nii_img_only([inputNiftiList(2).name]);
+%             magn = double(inputMagnNifti.img);
             isMagnLoad = true;
             disp('Magnitude data is loaded.');
         else
@@ -146,8 +151,10 @@ if ~isempty(inputNiftiList)
         
                         %%%%%%%%%% weights map %%%%%%%%%%
         if ~isempty(inputNiftiList(3).name)
-            inputWeightNifti = load_untouch_nii([inputNiftiList(3).name]);
-            weights = double(inputWeightNifti.img);
+%             inputWeightNifti = load_untouch_nii([inputNiftiList(3).name]);
+            % load true value from NIfTI
+            weights = load_nii_img_only([inputNiftiList(3).name]);
+%             weights = double(inputWeightNifti.img);
             % check whether phase data contains DICOM values or wrapped
             if size(weights,4) > 1
                 error('Please specify a 3D weight data.');
@@ -163,13 +170,18 @@ if ~isempty(inputNiftiList)
             load([inputNiftiList(4).name]);
             disp('Header data is loaded.');
         else
-            error('Please specify a Sepia header.');
+            error('Please specify a header required by SEPIA.');
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % validate indput directory files
+        disp('Directory input is being used.');
+        fprintf('Validating filenames in the directory....');
+        CheckFileName(inputNiftiList);
+        fprintf('Filenames are valid.\n');
         
         % loop all NIfTI files in the directory for magnitude,localField and fieldmapSD
         for klist = 1:length(inputNiftiList)
@@ -177,23 +189,29 @@ if ~isempty(inputNiftiList)
                         %%%%%%%%%% Local field map %%%%%%%%%%
             if ContainName(lower(inputNiftiList(klist).name),'local-field') && ~isLotalFieldLoad
                 inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                localField = double(inputLocalFieldNifti.img);
+                % load true value from NIfTI
+                localField = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
+%                 localField = double(inputLocalFieldNifti.img);
                 isLotalFieldLoad = true;
                 disp('Local field map is loaded.')
             end
 
                         %%%%%%%%%% magnitude data %%%%%%%%%%
             if ContainName(lower(inputNiftiList(klist).name),'mag') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
-                inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+%                 inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                % load true value from NIfTI
+                magn = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
                 isMagnLoad = true;
-                magn = double(inputMagnNifti.img);
+%                 magn = double(inputMagnNifti.img);
                 disp('Magnitude data is loaded.')
             end
 
                         %%%%%%%%%% weights map %%%%%%%%%%
             if ContainName(lower(inputNiftiList(klist).name),'weights') && ~isWeightLoad
-                inputWeightNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                weights = double(inputWeightNifti.img);
+%                 inputWeightNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
+                % load true value from NIfTI
+                weights = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
+%                 weights = double(inputWeightNifti.img);
                 isWeightLoad = true;
                 disp('Weights data is loaded.')
             end
@@ -252,6 +270,9 @@ disp(['Field strength(T) =  ' num2str(B0)]);
 magn        = single(magn);
 localField 	= single(localField);
 weights 	= single(weights);
+TE          = single(TE);
+matrixSize  = single(matrixSize);
+voxelSize   = single(voxelSize);
 
 %% get brain mask
 % look for qsm mask first
@@ -304,6 +325,22 @@ switch lower(QSM_method)
         localField = localField * 2*pi * delta_TE; 
         
     case 'fansi'
+        % if both data are loaded
+        if isWeightLoad && isMagnLoad
+            disp('Both weighting map and magnitude images are loaded.');
+            disp('Only the weighing map will be used.');
+        end
+        % if only magnitude images are loaded
+        if ~isWeightLoad && isMagnLoad
+            disp('The normalised RMS magnitude image will be used as the weighting map.');
+            magn = sqrt(mean(magn.^2,4));
+            weights = magn/max(magn(:)) * single(mask); 
+        end
+        % if nothing is loaded
+        if ~isWeightLoad && ~isMagnLoad
+            warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+        end
+            
         % FANSI default parameters are optimised for ppm
         localField = localField/(B0*gyro);
         
@@ -384,14 +421,17 @@ switch lower(QSM_method)
 end
 
 % save results
-disp('Saving susceptibility map...');
+fprintf('Saving susceptibility map...');
 
 save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
 
-disp('Done!');
+fprintf('Done!\n');
+
+disp('Processing pipeline is completed!');
 
 end
 
+%% check and set all algorithm parameters
 function algorParam2 = CheckAndSetDefault(algorParam)
 algorParam2 = algorParam;
 
@@ -421,5 +461,30 @@ try algorParam2.qsm.isSMV    	= algorParam.qsm.isSMV;         catch; algorParam2
 try algorParam2.qsm.isLambdaCSF	= algorParam.qsm.isLambdaCSF;	catch; algorParam2.qsm.isLambdaCSF  = [];   	end
 try algorParam2.qsm.lambdaCSF 	= algorParam.qsm.lambdaCSF;    	catch; algorParam2.qsm.lambdaCSF    = [];     	end
 try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = [];      	end
+
+end
+
+%% Validate nifti filenames with directory input
+function CheckFileName(inputNiftiList)
+% no. of files with particular name that has been read
+numLocalFieldFile      = 0;
+
+    % go through all files in the directory
+    for klist = 1:length(inputNiftiList)
+        if ContainName(lower(inputNiftiList(klist).name),'local-field')
+            numLocalFieldFile = numLocalFieldFile + 1;
+        end
+    end
+    
+    % bring the error message if multiple files with the same string are
+    % detected
+    if numLocalFieldFile > 1
+        error('Multiple files with name containing string ''local-field'' are detected. Please make sure only the magnitude data contains string ''local-field''');
+    end
+    
+    % bring the error message if no file is detected
+    if numLocalFieldFile == 0
+        error('No file with name containing string ''local-field'' is detected. Please make sure the input directory contains a local field data');
+    end
 
 end
