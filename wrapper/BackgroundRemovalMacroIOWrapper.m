@@ -213,13 +213,6 @@ disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2))
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
-% convert data to single type to reduce memory usage
-totalField = single(totalField);
-fieldmapSD = single(fieldmapSD);
-TE          = single(TE);
-matrixSize  = single(matrixSize);
-voxelSize   = single(voxelSize);
-
 %% get brain mask
 maskList = dir([inputDir '/*mask*']);
 
@@ -237,9 +230,6 @@ else
     error('No mask file is found. Please specify your mask file or put it in the input directory.');
     
 end
-
-% convert data to single type to reduce memory usage
-mask = single(mask);
 
 %% Background field removal
 disp('Recovering local field...');

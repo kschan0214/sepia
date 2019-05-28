@@ -266,14 +266,6 @@ disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2))
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
 
-% convert data to single type to reduce memory usage
-magn        = single(magn);
-localField 	= single(localField);
-weights 	= single(weights);
-TE          = single(TE);
-matrixSize  = single(matrixSize);
-voxelSize   = single(voxelSize);
-
 %% get brain mask
 % look for qsm mask first
 maskList = dir([inputDir '/*mask-qsm*']);
@@ -299,11 +291,6 @@ end
 
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weighting
-% wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));    
-% wmap = 1./fieldmapSD;
-% wmap(isinf(wmap)) = 0;
-% wmap(isnan(wmap)) = 0;
-% wmap = wmap./max(wmap(maskFinal>0));
 weights = weights .* single(maskFinal);
 
 %% qsm
@@ -334,7 +321,7 @@ switch lower(QSM_method)
         if ~isWeightLoad && isMagnLoad
             disp('The normalised RMS magnitude image will be used as the weighting map.');
             magn = sqrt(mean(magn.^2,4));
-            weights = magn/max(magn(:)) * single(mask); 
+            weights = single(magn./max(magn(:))) .* single(maskFinal); 
         end
         % if nothing is loaded
         if ~isWeightLoad && ~isMagnLoad

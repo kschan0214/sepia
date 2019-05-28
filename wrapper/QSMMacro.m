@@ -137,20 +137,21 @@ else
 end
 
 % convert data to single type to reduce memory usage
-localField	= double(localField);
-mask       	= double(mask);
-voxelSize   = double(voxelSize);
+localField	= single(localField);
+mask       	= single(mask);
+voxelSize   = single(voxelSize);
+matrixSize  = single(matrixSize);
 if exist('wmap','var')
-    wmap = double(wmap);
+    wmap = single(wmap);
 end
 if exist('magn','var')
-    magn = double(magn);
+    magn = single(magn);
 end
 if exist('N_std','var')
-    N_std = double(N_std);
+    N_std = single(N_std);
 end
 if exist('initGuess','var')
-    initGuess   = double(initGuess);
+    initGuess   = single(initGuess);
 end
 
 disp(['The following QSM algorithm will be used: ' method]);

@@ -132,6 +132,8 @@ end
 totalField  = single(totalField);
 mask       	= single(mask);
 voxelSize   = single(voxelSize);
+TE          = single(TE);
+matrixSize  = single(matrixSize);
 if exist('N_std','var')
     N_std = single(N_std);
 end
