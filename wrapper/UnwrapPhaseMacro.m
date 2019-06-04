@@ -97,11 +97,14 @@ if isempty(mask)
     warning('Running algorithm without brain mask could be problematic');
 end
 
-% use single precision to reduce memory usage
-wrappedField = single(wrappedField);
-mask         = single(mask);
+% use same data type (20190529: single-precision can affect the result of
+% some methods)
+wrappedField = double(wrappedField);
+mask         = double(mask);
+matrixSize   = double(matrixSize);
+voxelSize    = double(voxelSize);
 if exist('magn','var')
-    magn = single(magn);
+    magn = double(magn);
 end
 
 disp(['The following unwrapping method is being used: ' method]);
@@ -141,12 +144,13 @@ switch method
     case 'BestPath3D'
         try
             unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);
+            
         catch ME
             warning('The library cannot be run in this platform, running region growing unwrapping instead...');
             [magn] = parse_varargin_RegionGrowing(varargin);
             if isempty(magn)
                 disp('Running algorithm without magnitude image could be problematic');
-                magn = ones(matrixSize,'single');
+                magn = ones(matrixSize,'like',matrixSize);
             end
             unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
         end
@@ -157,7 +161,6 @@ if strcmpi(method,'Laplacian') || strcmpi(method,'Laplacian_stisuite')
     unwrappedField = zeropad_odd_dimension(unwrappedField,'post',matrixSize);
 end
 
-% ensure the output is single to reduce memory usage
-unwrappedField = single(unwrappedField);
+unwrappedField = double(unwrappedField);
 
 end

@@ -136,22 +136,22 @@ else
     thre_tkd = 0.15;
 end
 
-% convert data to single type to reduce memory usage
-localField	= single(localField);
-mask       	= single(mask);
-voxelSize   = single(voxelSize);
-matrixSize  = single(matrixSize);
+% make sure all variables are double
+localField	= double(localField);
+mask       	= double(mask);
+voxelSize   = double(voxelSize);
+matrixSize  = double(matrixSize);
 if exist('wmap','var')
-    wmap = single(wmap);
+    wmap = double(wmap);
 end
 if exist('magn','var')
-    magn = single(magn);
+    magn = double(magn);
 end
 if exist('N_std','var')
-    N_std = single(N_std);
+    N_std = double(N_std);
 end
 if exist('initGuess','var')
-    initGuess   = single(initGuess);
+    initGuess   = double(initGuess);
 end
 
 disp(['The following QSM algorithm will be used: ' method]);
@@ -179,7 +179,6 @@ if exist('Mask_CSF','var')
     Mask_CSF   = zeropad_odd_dimension(Mask_CSF,'pre');
 end
 matrixSize_new = size(localField);
-matrixSize_new = single(matrixSize_new);
 
 switch method
     case 'TKD'
@@ -228,8 +227,8 @@ end
 
 % remove zero padding 
 chi = zeropad_odd_dimension(chi,'post',matrixSize);
-% ensure the output is single to reduce memory usage
-chi = single(chi);
+% ensure the output is double
+chi = double(chi);
 
 end
 

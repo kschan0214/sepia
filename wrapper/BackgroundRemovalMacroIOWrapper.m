@@ -201,6 +201,9 @@ else
     error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
 end
 
+% make sure the L2 norm of B0 direction = 1
+B0_dir = B0_dir ./ norm(B0_dir);
+
 % if no fieldmapSD found then creates one with all voxels have the same value
 if ~isFieldmapSDLoad
     fieldmapSD = ones(matrixSize) * 0.01;
@@ -230,6 +233,13 @@ else
     error('No mask file is found. Please specify your mask file or put it in the input directory.');
     
 end
+
+% make sure all variables are double
+totalField  = double(totalField);
+mask       	= double(mask);
+voxelSize   = double(voxelSize);
+matrixSize  = double(matrixSize);
+fieldmapSD  = double(fieldmapSD);
 
 %% Background field removal
 disp('Recovering local field...');

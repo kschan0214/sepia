@@ -318,6 +318,9 @@ function PushbuttonRun_Utility_getHeader_Callback(source,eventdata,h)
 % Disable the pushbutton to prevent doubel click
 set(source,'Enable','off');
 
+% Display message
+disp('Saving header file...');
+
 try 
 sepia_addpath('dicom');
 

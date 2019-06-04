@@ -64,7 +64,7 @@ end
 
 % create GUI 
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.7.2 pre-release)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','Sepia GUI (v0.7.2)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);

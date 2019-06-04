@@ -87,7 +87,7 @@ meanEddycurrent2(isnan(meanEddycurrent2))=0;
 
 % [FIT3D,~,~]=PolyFit(meanEddycurrent2,abs(sum(bipolarCplxME,4)),1);
 % [FIT3D,~,~]=PolyFit(meanEddycurrent2,sum(abs(bipolarCplxME),4),1);
-[FIT3D,~,~]=PolyFit(meanEddycurrent2,mask,1);
+[FIT3D,~,~]=PolyFit(double(meanEddycurrent2),mask,1);
 
 
 bipolarCorr = zeros(dims);

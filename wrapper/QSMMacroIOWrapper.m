@@ -240,7 +240,7 @@ if ~isempty(inputNiftiList)
             error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
         elseif ~isMagnLoad
             disp('No magnitude data is loaded.');
-            magn = ones(matrixSize);
+            magn = ones(matrixSize,'like',matrixSize);
         end
     end
     
@@ -258,6 +258,9 @@ if ~isempty(inputNiftiList)
 else
     error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
 end
+
+% make sure the L2 norm of B0 direction = 1
+B0_dir = B0_dir ./ norm(B0_dir);
 
 % display some header info
 disp('Basic DICOM information');
@@ -289,9 +292,21 @@ else
     
 end
 
+% make sure all variables are double
+localField	= double(localField);
+maskFinal   = double(maskFinal);
+voxelSize   = double(voxelSize);
+matrixSize  = double(matrixSize);
+if exist('wmap','var')
+    weights = double(weights);
+end
+if exist('magn','var')
+    magn = double(magn);
+end
+
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weighting
-weights = weights .* single(maskFinal);
+weights = weights .* maskFinal;
 
 %% qsm
 disp('Computing QSM...');
@@ -321,7 +336,7 @@ switch lower(QSM_method)
         if ~isWeightLoad && isMagnLoad
             disp('The normalised RMS magnitude image will be used as the weighting map.');
             magn = sqrt(mean(magn.^2,4));
-            weights = single(magn./max(magn(:))) .* single(maskFinal); 
+            weights = (magn./max(magn(:))) .* (maskFinal); 
         end
         % if nothing is loaded
         if ~isWeightLoad && ~isMagnLoad
@@ -357,6 +372,7 @@ switch lower(QSM_method)
             % R2* mapping
             r2s = arlo(TE,magn);
             maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
+            magn = sqrt(sum(magn.^2,4));
         end
         
         % MEDI input expects local field in rad
@@ -370,7 +386,7 @@ if isGPU
                      'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...
                      'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
                      'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                     'noisestd',weights,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
+                     'noisestd',weights,'magnitude',magn,'data_weighting',QSM_wData,...
                      'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                      'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
 else
@@ -379,7 +395,7 @@ else
                    'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...
                    'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
                    'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                   'noisestd',weights,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
+                   'noisestd',weights,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
 end

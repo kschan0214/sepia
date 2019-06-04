@@ -38,10 +38,11 @@ Kwok
 ### Future release
 * Incorporating new version of MEDI toolbox (updated April 9, 2019)
 
-### 0.7.2 (master)  
+### 0.7.2 (20190604)  
 * Support single-echo dataset (beta)
-* If possible, use single-precision variables in QSM processing to reduce memory usage
 * Bug fix with odd-number matrix dimension by zero-padding
+* Offload unuse variables to reduce memory usage
+* Bug fix for reading NIfTI when the rescale slope and intercept are not 1 and 0
 
 ### 0.7.1 (20190509)
 * Support simple susceptibility weighted imaging (SWI) and susceptibility map weighted imaging (SMWI) as part of the GUI

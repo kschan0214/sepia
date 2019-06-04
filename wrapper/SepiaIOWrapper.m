@@ -297,6 +297,9 @@ if isInvert
     fieldMap = -fieldMap;
 end
 
+% make sure the L2 norm of B0 direction = 1
+B0_dir = B0_dir ./ norm(B0_dir);
+
 % display some header info
 disp('Basic data information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
@@ -309,12 +312,12 @@ disp(['Number of echoes = ' num2str(length(TE))]);
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
 
-% convert data to single type to reduce memory usage
-magn        = single(magn);
-fieldMap    = single(fieldMap);
-TE          = single(TE);
-matrixSize  = single(matrixSize);
-voxelSize   = single(voxelSize);
+% ensure variables are double
+magn        = double(magn);
+fieldMap    = double(fieldMap);
+TE          = double(TE);
+matrixSize  = double(matrixSize);
+voxelSize   = double(voxelSize);
 
 %% get brain mask
 mask = [];
@@ -350,8 +353,8 @@ if isempty(mask) || isBET
 
 end
 
-% convert data to single type to reduce memory usage
-mask = single(mask);
+% double data type
+mask = double(mask);
 
 %% total field and phase unwrap
 
@@ -370,7 +373,7 @@ if isEddyCorrect
     clear imgCplx
     
     % convert data to single type to reduce memory usage
-    fieldMap = single(fieldMap);
+    fieldMap = double(fieldMap);
 end
 
 % Step 1: Phase unwrapping and echo phase combination
@@ -422,7 +425,7 @@ if length(TE) > 1 && ~isinf(exclude_threshold)
     clear r2s
 else
     % single-echo & no threshold
-    maskReliable = ones(size(totalField),'single');
+    maskReliable = ones(size(totalField),'like',totalField);
 end
 
 % threshold fieldmapSD with the reliable voxel mask
@@ -450,6 +453,9 @@ if ~isinf(exclude_threshold)
 end
 fprintf('done!\n');
 
+% clear variable that no longer be needed
+clear fieldMap
+
 %% Background field removal
 disp('Step 2: Recovering local field...');
 
@@ -471,7 +477,7 @@ else
 end
   
 % generate new mask based on backgroudn field removal result
-maskFinal = localField ~=0;
+maskFinal = double(localField ~=0);
   
 % save results
 fprintf('Saving local field map...');
@@ -493,11 +499,13 @@ else
     wmap = wmap .* maskFinal;
 end
 % wmap = wmap .* weightResidual;
-wmap = wmap .* single(maskReliable);
+wmap = wmap .* double(maskReliable);
 if ~isWeightLoad || ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
 end
 
+% clear variables that no longer be needed
+clear maskReliable totalField mask
 
 %% qsm
 disp('Step 3: Computing QSM...');
@@ -527,7 +535,7 @@ switch lower(QSM_method)
         if ~isWeightLoad && isMagnLoad
             disp('The normalised RMS magnitude image will be used as the weighting map.');
             magn = sqrt(mean(magn.^2,4));
-            wmap = magn/max(magn(:)) * single(mask); 
+            wmap = magn/max(magn(:)) * (maskFinal); 
         end
         % if nothing is loaded
         if ~isWeightLoad && ~isMagnLoad
@@ -573,6 +581,7 @@ switch lower(QSM_method)
             maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
             
             fprintf('done!');
+            magn = sqrt(sum(magn.^2,4));
         end
         
         % MEDI input expects local field in rad
@@ -586,7 +595,7 @@ if isGPU
                      'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
                      'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
                      'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                     'noisestd',fieldmapSD,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
+                     'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
                      'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                      'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
 else
@@ -595,7 +604,7 @@ else
                    'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
                    'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
                    'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                   'noisestd',fieldmapSD,'magnitude',sqrt(sum(magn.^2,4)),'data_weighting',QSM_wData,...
+                   'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
 end

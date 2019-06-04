@@ -121,7 +121,7 @@ if ~isempty(inputNiftiList)
         else
             error('Please specify a single-echo/multi-echo phase data.');
         end
-                        %%%%%%%%%% qsm hub header %%%%%%%%%%
+                        %%%%%%%%%% sepia header %%%%%%%%%%
         if ~isempty(inputNiftiList(4).name)
             load([inputNiftiList(4).name]);
             disp('Header data is loaded.');
@@ -208,28 +208,20 @@ if isInvert
     fieldMap = -fieldMap;
 end
 
+% make sure the L2 norm of B0 direction = 1
+B0_dir = B0_dir ./ norm(B0_dir);
+
 % display some header info
 disp('Basic DICOM information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
 disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
 disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T) =  ' num2str(B0)]);
-if length(TE) == 1
-    disp('Single echo data');
-else
-    disp('Multi-echo data');
-end
+disp(['Number of echoes = ' num2str(length(TE))]);
 
 % make sure the following variables are row vectors
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
-
-% convert data to single type to reduce memory usage
-magn        = single(magn);
-fieldMap    = single(fieldMap);
-TE          = single(TE);
-matrixSize  = single(matrixSize);
-voxelSize   = single(voxelSize);
 
 %% get brain mask
 mask = [];
@@ -265,8 +257,14 @@ if isempty(mask) || isBET
 
 end
 
-% convert data to single type to reduce memory usage
-mask = single(mask);
+% ensure all variable are double
+fieldMap     = double(fieldMap);
+mask         = double(mask);
+matrixSize   = double(matrixSize);
+voxelSize    = double(voxelSize);
+if exist('magn','var')
+    magn = double(magn);
+end
 
 %% total field and phase unwrap
 
@@ -282,7 +280,7 @@ if isEddyCorrect
     % save the eddy current corrected output
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
     fprintf('Done!\n');
-    
+    clear imgCplx
 end
 
 % Step 1: Phase unwrapping and echo phase combination
@@ -334,7 +332,7 @@ if length(TE) > 1 && ~isinf(exclude_threshold)
     maskReliable = relativeResidual < exclude_threshold;
 else
     % single-echo & no threshold
-    maskReliable = ones(size(totalField),'single');
+    maskReliable = ones(size(totalField),'like',fieldmapSD);
 end
 
 % threshold fieldmapSD with the reliable voxel mask

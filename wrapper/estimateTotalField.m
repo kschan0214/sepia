@@ -73,10 +73,12 @@ if length(TE)>1
     dt = TE(2)-TE(1);
 end
 
-% use single precision to reduce memory usage
-fieldMap	= single(fieldMap);
-magn        = single(magn);
-mask       	= single(mask);
+% ensure all variables have the same data type
+fieldMap	= double(fieldMap);
+magn        = double(magn);
+mask       	= double(mask);
+matrixSize  = double(matrixSize);
+voxelSize   = double(voxelSize);
 
 % find the centre of mass
 pos=round(centerofmass(magn));
@@ -88,7 +90,7 @@ switch echoCombine
         %%%%%%%%%%%%%%%%%%%%%%%% Multi-echo %%%%%%%%%%%%%%%%%%%%%%%%
             % compute wrapped phase shift between successive echoes
             fieldMapEchoTemp=angle(exp(1i*fieldMap(:,:,:,2:end))./exp(1i*fieldMap(:,:,:,1:end-1)));
-            tmp2 = zeros(size(fieldMapEchoTemp),'single');
+            tmp2 = zeros(size(fieldMapEchoTemp),'like',fieldMap);
             % unwrap each echo phase shift
             for k=1:size(fieldMapEchoTemp,4)
                 tmp = UnwrapPhaseMacro(fieldMapEchoTemp(:,:,:,k),matrixSize,voxelSize,...
@@ -99,13 +101,13 @@ switch echoCombine
             phaseShiftUnwrapAllEchoes=cumsum(tmp2,4);    
 
             % compute unwrapped phase shift between successive echoes
-            fieldMapUnwrap = zeros(size(phaseShiftUnwrapAllEchoes),'single');
+            fieldMapUnwrap = zeros(size(phaseShiftUnwrapAllEchoes),'like',fieldMap);
             for k=1:size(phaseShiftUnwrapAllEchoes,4)
                 fieldMapUnwrap(:,:,:,k)=phaseShiftUnwrapAllEchoes(:,:,:,k)/(TE(k+1)-TE(1));
             end
 
             % Robinson et al. 2017 NMR Biomed Appendix A2
-            fieldMapSD = zeros(size(phaseShiftUnwrapAllEchoes),'single');
+            fieldMapSD = zeros(size(phaseShiftUnwrapAllEchoes),'like',fieldMap);
             for k=1:size(phaseShiftUnwrapAllEchoes,4)
                 fieldMapSD(:,:,:,k) = 1./(TE(k+1)-TE(1)) ...
                     * sqrt((magn(:,:,:,1).^2+magn(:,:,:,k+1).^2)./((magn(:,:,:,1).*magn(:,:,:,k+1)).^2));
@@ -186,9 +188,7 @@ switch lower(unit)
         disp(['Input unit is invalid. radHz is used instead.']);
 end
 
-% use single to reduce memory usage
-totalField  = single(totalField);
-N_std       = single(real(N_std));
+N_std = real(N_std);
 
 end
 

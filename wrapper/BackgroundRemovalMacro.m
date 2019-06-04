@@ -128,13 +128,13 @@ else
     peel = 1;
 end
 
-% use single precision to reduce memory usage
-totalField  = single(totalField);
-mask       	= single(mask);
-voxelSize   = single(voxelSize);
-matrixSize  = single(matrixSize);
+% make sure all variables are double
+totalField  = double(totalField);
+mask       	= double(mask);
+voxelSize   = double(voxelSize);
+matrixSize  = double(matrixSize);
 if exist('N_std','var')
-    N_std = single(N_std);
+    N_std = double(N_std);
 end
 
 disp(['The following method is being used: ' method]);
@@ -150,7 +150,6 @@ if exist('N_std','var')
     N_std   = zeropad_odd_dimension(N_std,'pre');
 end
 matrixSize_new = size(totalField);
-matrixSize_new = single(matrixSize_new);
 
 
 disp('The following parameters are being used...');
@@ -184,7 +183,7 @@ switch method
         RDF = RDF .* mask_RDF;
     case 'VSHARPSTISuite'
         disp(['SMV size (mm): ' num2str(radius)]);
-        RDF = V_SHARP(totalField, mask,'voxelsize',single(voxelSize(:))','smvsize',radius);
+        RDF = V_SHARP(totalField, mask,'voxelsize',voxelSize(:)','smvsize',radius);
     case 'iHARPERELLA'
         disp(['Maximum iterations = ' num2str(iteration)]);
         RDF = iHARPERELLA(totalField, mask,'voxelsize',voxelSize,'niter',iteration);
@@ -199,7 +198,6 @@ if refine
     % PolyFit required data to be double type
     RDF = double(RDF);
     [~,RDF,~]=PolyFit(RDF,RDF~=0,4);
-    RDF = single(RDF);
     fprintf('Done!\n')
 end
 
@@ -216,14 +214,12 @@ if erode_radius > 0
     maskFinal(:,1:erode_radius,:)       = 0;
     maskFinal(end-erode_radius:end,:,:) = 0;
     maskFinal(1:erode_radius,:,:)       = 0;
-    RDF = RDF .* single(maskFinal);
+    RDF = RDF .* double(maskFinal);
     fprintf('Done!\n')
 end
 
 % remove zero padding 
-RDF = zeropad_odd_dimension(RDF,'post',matrixSize);
-% ensure the output is single to reduce memory usage
-RDF = single(RDF);
+RDF = double(zeropad_odd_dimension(RDF,'post',matrixSize));
 
 
 end
