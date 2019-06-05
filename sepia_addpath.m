@@ -6,12 +6,13 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 10 April 2018
-% Date last modified: 24 August 2018
+% Date modified: 24 August 2018
+% Date modified: 5 June 2019
 %
 function sepia_addpath(method)
 % specify the toolbox(es) directory
 SpecifyToolboxesDirectory;
-CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir);
+CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir,SEGUE_dir);
 
 % get the full path of this file
 fullName = mfilename('fullpath');
@@ -74,6 +75,9 @@ if nargin > 0
         case 'bestpath3d'
             addpath(genpath(MEDI_dir));
             addpath([misc_phaseUnwrap_dir filesep 'unwrapBestpath3D/']);
+            
+        case 'segue'
+            addpath(genpath(SEGUE_dir));
 
         % background field removal
         case 'lbv'
@@ -130,7 +134,7 @@ end
 end
 
 %% check the following paths exist or not
-function CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir)
+function CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir,SEGUE_dir)
 
 if exist(MEDI_dir,'dir')~=7
     warning('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
@@ -145,6 +149,11 @@ end
 if exist(FANSI_dir,'dir')~=7
     warning('Please specify a correct path for FANSI toolbox in SpecifyToolboxesDirectory.m');
     warning('All functions related to FANSI toolbox cannot be used.');
+end
+
+if exist(SEGUE_dir,'dir')~=7
+    warning('Please specify a correct path for SEGUE in SpecifyToolboxesDirectory.m');
+    warning('All functions related to SEGUE cannot be used.');
 end
     
 end

@@ -78,6 +78,10 @@ if ~isempty(varargin)
                 case 'bestpath3d'
                     
                     method = 'BestPath3D';
+                    
+                case 'segue'
+                    
+                    method = 'SEGUE';
 
             end
         end
@@ -146,7 +150,25 @@ switch method
             unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);
             
         catch ME
+            sepia_addpath('RegionGrowing');
+            
             warning('The library cannot be run in this platform, running region growing unwrapping instead...');
+            [magn] = parse_varargin_RegionGrowing(varargin);
+            if isempty(magn)
+                disp('Running algorithm without magnitude image could be problematic');
+                magn = ones(matrixSize,'like',matrixSize);
+            end
+            unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
+        end
+    case 'SEGUE'
+        try 
+            Inputs.Mask     = mask;
+            Inputs.Phase    = wrappedField;
+            unwrappedField  = SEGUE(Inputs);
+        catch ME
+            sepia_addpath('RegionGrowing');
+            
+            warning('Problem suing function. Running MEDI region growing unwrapping instead...');
             [magn] = parse_varargin_RegionGrowing(varargin);
             if isempty(magn)
                 disp('Running algorithm without magnitude image could be problematic');

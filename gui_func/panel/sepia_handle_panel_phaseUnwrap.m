@@ -23,7 +23,7 @@
 function h = sepia_handle_panel_phaseUnwrap(hParent,h,position)
 
 % set up method name displayed on GUI
-methodUnwrapName = {'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut'};
+methodUnwrapName = {'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut','SEGUE'};
 methodEchoCombineName = {'Optimum weights','MEDI nonlinear fit'};
 
 % set default value
@@ -120,7 +120,10 @@ switch method
 
     case 'Graphcut'
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
-
+        
+    case 'SEGUE'
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
+    
     % in the future, add new method here
 end
 

@@ -16,7 +16,7 @@
 % Modified by Kwok-Shing Chan
 % k.chan@donders.ru.nl
 % Date created: 13 April 2018
-% Date last modified:
+% Date last modified: 5 June 2019
 %
 %
 function bipolarCorr = BipolarEddyCorrect(bipolarCplxME,mask,unwrap)
@@ -51,13 +51,20 @@ PhaseDiffOdds(isnan(PhaseDiffOdds))=0;
 
 %% a more robust eddy current estimation has to do unwrapping
 te=1:dims(4);
-Even=cat(4,mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4),mean(abs(bipolarCplxME(:,:,:,4:2:end)),4).*exp(i*PhaseDiffEvens)) ;
-Odd=cat(4,mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4),mean(abs(bipolarCplxME(:,:,:,3:2:end)),4).*exp(i*PhaseDiffOdds)) ;
 
-[fieldMapEven,~] = estimateTotalField(double(angle(Even)),double(abs(Even)),dims(1:3),[1 1 1],...
-                        'Unwrap',unwrap,'TE',te(2:2:4),'unit','radHz');
-[fieldMapOdd,~] = estimateTotalField(double(angle(Odd)),double(abs(Odd)),dims(1:3),[1 1 1],...
-                        'Unwrap',unwrap,'TE',te(1:2:3),'unit','radHz');
+[fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4)),dims(1:3),[1 1 1],...
+                        'Unwrap',unwrap,'TE',te(4)-te(2),'unit','radHz','mask',mask);
+[fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4)),dims(1:3),[1 1 1],...
+                        'Unwrap',unwrap,'TE',te(3)-te(1),'unit','radHz','mask',mask);
+
+
+% Even=cat(4,mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4),mean(abs(bipolarCplxME(:,:,:,4:2:end)),4).*exp(i*PhaseDiffEvens)) ;
+% Odd=cat(4,mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4),mean(abs(bipolarCplxME(:,:,:,3:2:end)),4).*exp(i*PhaseDiffOdds)) ;
+% 
+% [fieldMapEven,~] = estimateTotalField(double(angle(Even)),double(abs(Even)),dims(1:3),[1 1 1],...
+%                         'Unwrap',unwrap,'TE',te(2:2:4),'unit','radHz','mask',mask);
+% [fieldMapOdd,~] = estimateTotalField(double(angle(Odd)),double(abs(Odd)),dims(1:3),[1 1 1],...
+%                         'Unwrap',unwrap,'TE',te(1:2:3),'unit','radHz','mask',mask);
 
 % [fieldMapEven, ~, ~, ConfidenceEven]=T2starAndFieldCalc(abs(Even),angle(Even),te(2:2:4));
 % [fieldMapOdd, ~, ~, ConfidenceOdd]=T2starAndFieldCalc(abs(Odd),angle(Odd),te(1:2:3));
@@ -66,10 +73,13 @@ Odd=cat(4,mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4),mean(abs(bipolarCplxME(:,:
 
 
 % the last echo to be taken into account has to be even
-OddEven=cat(4,mean(abs(bipolarCplxME(:,:,:,1:2:to)),4),mean(abs(bipolarCplxME(:,:,:,2:2:to)),4).*exp(i*PhaseDiffEvensMinusOdds)) ;
+[fieldMapOddEven,~] = estimateTotalField(double(PhaseDiffEvensMinusOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4)),dims(1:3),[1 1 1],...
+                        'Unwrap',unwrap,'TE',te(1:2),'unit','radHz','mask',mask);
 
-[fieldMapOddEven,~] = estimateTotalField(double(angle(OddEven)),double(abs(OddEven)),dims(1:3),[1 1 1],...
-                        'Unwrap',unwrap,'TE',te(1:2),'unit','radHz');
+% OddEven=cat(4,mean(abs(bipolarCplxME(:,:,:,1:2:to)),4),mean(abs(bipolarCplxME(:,:,:,2:2:to)),4).*exp(i*PhaseDiffEvensMinusOdds)) ;
+% 
+% [fieldMapOddEven,~] = estimateTotalField(double(angle(OddEven)),double(abs(OddEven)),dims(1:3),[1 1 1],...
+%                         'Unwrap',unwrap,'TE',te(1:2),'unit','radHz','mask',mask);
 % [fieldMapOddEven, ~, ~, ConfidenceOdd]=T2starAndFieldCalc(abs(OddEven),angle(OddEven),te(1:2));
 
 meanEddycurrent2 = fieldMapOddEven-0.5*(fieldMapOdd+fieldMapEven);

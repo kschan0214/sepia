@@ -372,6 +372,9 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
 
         case '3D best path'
             fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'bestpath3d');
+            
+        case 'SEGUE'
+            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'segue');
     end
     % eddy current correction
     fprintf(fid,'algorParam.unwrap.isEddyCorrect = %i ;\n'     ,get(h.phaseUnwrap.checkbox.eddyCorrect,'Value'));
