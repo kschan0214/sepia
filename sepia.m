@@ -446,6 +446,12 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
             fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'closedforml2');
             fprintf(fid,'algorParam.qsm.lambda = %s ;\n'        ,get(h.qsm.cfs.edit.lambda,     'String'));
             fprintf(fid,'algorParam.qsm.optimise = %i ;\n'      ,get(h.qsm.cfs.checkbox.lambda, 'Value'));
+            
+        case 'NDI'
+            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'ndi');
+            fprintf(fid,'algorParam.qsm.tol = %s ;\n'           ,get(h.qsm.NDI.edit.tol,          'String'));
+            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'      	,get(h.qsm.NDI.edit.maxIter,      'String'));
+            fprintf(fid,'algorParam.qsm.stepSize = %s ;\n'    	,get(h.qsm.NDI.edit.stepSize,       'String'));
 
         case 'STI suite iLSQR'
             fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'stisuiteilsqr');

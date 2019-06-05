@@ -80,6 +80,7 @@
 % Date created: 28 June 2017
 % Date modified: 9 April 2018
 % Date modified: 1 April 2019
+% Date modified: 5 June 2019
 %
 function [chi, lamdaOptimal] = QSMMacro(localField,mask,matrixSize,voxelSize,varargin)
 lamdaOptimal = [];
@@ -126,6 +127,10 @@ if ~isempty(varargin)
                 case 'medi_l1'
                     method = 'MEDI_L1';
                     [N_std,magn,lambda,pad,te,CF,b0dir,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
+                    
+                case 'ndi'
+                    method = 'NDI';
+                    [tol,stepSize,maxiter,wmap,b0dir] = parse_varargin_NDI(varargin);
             end
         end
     end
@@ -223,6 +228,11 @@ switch method
             'smv',isSMV,'radius',radius,'data_weighting',wData,...
             'gradient_weighting',wGrad,'lam_CSF',lam_CSF,...
             'noisestd',N_std,'magnitude',magn,'Mask_CSF',Mask_CSF);
+        
+    case 'NDI'
+        
+        chi = NDI(localField,mask,voxelSize,'b0dir',b0dir,'weight',wmap,...
+                  'iteration',maxiter,'stepsize',stepSize,'tol',tol);
 end
 
 % remove zero padding 

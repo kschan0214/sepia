@@ -16,12 +16,13 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 16 April 2018
-% Date last modified: 1 June 2018
+% Date modified: 1 June 2018
+% Date modified: 5 Juen 2019
 %
 %
 function h = sepia_handle_panel_qsm(hParent,h,position)
 % set up method name displayed on GUI
-methodName = {'TKD','Closed-form solution','STI suite iLSQR','iLSQR','FANSI','Star-QSM','MEDI'};
+methodName = {'TKD','Closed-form solution','NDI','STI suite iLSQR','iLSQR','FANSI','Star-QSM','MEDI'};
 
 % Set parent of qsm panel
 h.StepsPanel.qsm = uipanel(hParent,...
@@ -65,6 +66,9 @@ position_child = [0.01 0.04 0.95 0.75];
 
     % MEDI
     h = sepia_handle_panel_qsm_MEDI(h.StepsPanel.qsm,h,position_child);
+    
+    % NDI
+    h = sepia_handle_panel_qsm_NDI(h.StepsPanel.qsm,h,position_child);
     
     % in future, add panel of new method here
 
@@ -110,6 +114,9 @@ switch method
 
     case 'MEDI'
         set(h.qsm.panel.MEDI,       'Visible','on');
+        
+    case 'NDI'
+        set(h.qsm.panel.NDI,        'Visible','on');
 
     % in the future, add new method here
 

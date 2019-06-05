@@ -138,6 +138,7 @@ QSM_isLambdaCSF     = algorParam.qsm.isLambdaCSF;
 QSM_lambdaCSF       = algorParam.qsm.lambdaCSF; 
 QSM_isSMV           = algorParam.qsm.isSMV;
 QSM_merit           = algorParam.qsm.merit;  
+QSM_stepSize        = algorParam.qsm.stepSize;  
 
 %% Read input
 disp('Reading data...');
@@ -571,6 +572,11 @@ switch lower(QSM_method)
         
         % MEDI input expects local field in rad
         localField = localField*2*pi*delta_TE;
+        
+    case 'ndi'
+        % NDI default parameters are relative so okay for ppm
+        localField = localField/(B0*gyro);
+        
 end
 
 % core of QSM
@@ -591,7 +597,8 @@ else
                    'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
                    'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-                   'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
+                   'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
+                   'stepsize',QSM_stepSize);
 end
 
 % convert the susceptibility map into ppm
@@ -615,6 +622,9 @@ switch lower(QSM_method)
         chi = chi * delta_TE;
     case 'medi_l1'
         % MEDI implementation already normalised the output to ppm
+        
+    case 'ndi'
+        % NDI already converted to ppm
 end
   
 % save results

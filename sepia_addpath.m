@@ -109,6 +109,9 @@ if nargin > 0
 
         case 'cfl2'
             addpath([misc_qsm_dir filesep 'closedFormL2']);
+            
+        case 'ndi'
+            addpath([misc_qsm_dir filesep 'NDI']);
 
         case 'ilsqr'
             addpath([misc_qsm_dir filesep 'closedFormL2']);

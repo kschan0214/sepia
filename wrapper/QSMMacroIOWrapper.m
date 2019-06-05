@@ -44,6 +44,7 @@
 % Date created: 17 April 2018
 % Date modified: 26 August 2018
 % Date modified: 29 March 2019
+% Date modified: 5 June 2019
 %
 %
 function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
@@ -96,6 +97,7 @@ QSM_isLambdaCSF	= algorParam.qsm.isLambdaCSF;
 QSM_lambdaCSF	= algorParam.qsm.lambdaCSF; 
 QSM_isSMV       = algorParam.qsm.isSMV;
 QSM_merit       = algorParam.qsm.merit;  
+QSM_stepSize   	= algorParam.qsm.stepSize;  
 
 %% Read input
 disp('Reading data...');
@@ -377,6 +379,26 @@ switch lower(QSM_method)
         
         % MEDI input expects local field in rad
         localField = localField*2*pi*delta_TE;
+        
+    case 'ndi'
+        % if both data are loaded
+        if isWeightLoad && isMagnLoad
+            disp('Both weighting map and magnitude images are loaded.');
+            disp('Only the weighing map will be used.');
+        end
+        % if only magnitude images are loaded
+        if ~isWeightLoad && isMagnLoad
+            disp('The normalised RMS magnitude image will be used as the weighting map.');
+            magn = sqrt(mean(magn.^2,4));
+            weights = (magn./max(magn(:))) .* (maskFinal); 
+        end
+        % if nothing is loaded
+        if ~isWeightLoad && ~isMagnLoad
+            warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+        end
+        % NDI default parameters are relative so okay for ppm
+        localField = localField/(B0*gyro);
+        
 end
 
 % core of QSM
@@ -397,7 +419,8 @@ else
                    'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
                    'noisestd',weights,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-                   'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
+                   'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
+                   'stepsize',QSM_stepSize);
 end
 
 % convert the susceptibility map into ppm
@@ -421,6 +444,8 @@ switch lower(QSM_method)
         chi = chi * delta_TE;
     case 'medi_l1'
         % MEDI implementation already normalised the output to ppm
+    case 'ndi'
+        % NDI is converted for ppm
 end
 
 % save results
@@ -464,6 +489,7 @@ try algorParam2.qsm.isSMV    	= algorParam.qsm.isSMV;         catch; algorParam2
 try algorParam2.qsm.isLambdaCSF	= algorParam.qsm.isLambdaCSF;	catch; algorParam2.qsm.isLambdaCSF  = [];   	end
 try algorParam2.qsm.lambdaCSF 	= algorParam.qsm.lambdaCSF;    	catch; algorParam2.qsm.lambdaCSF    = [];     	end
 try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = [];      	end
+try algorParam2.qsm.stepSize 	= algorParam.qsm.stepSize;   	catch; algorParam2.qsm.stepSize    	= [];      	end
 
 end
 
