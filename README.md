@@ -38,8 +38,12 @@ Kwok
 ### Future release
 * Incorporating new version of MEDI toolbox (updated April 9, 2019)
 
+### 0.7.3 (master)
+* Support [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox) for QSM
+* Support [SEGUE](https://xip.uclb.com/i/software/SEGUE.html) as external library
+
 ### 0.7.2 (20190604)  
-* Support single-echo dataset (beta)
+* Support single-echo dataset
 * Bug fix with odd-number matrix dimension by zero-padding
 * Offload unuse variables to reduce memory usage
 * Bug fix for reading NIfTI when the rescale slope and intercept are not 1 and 0
