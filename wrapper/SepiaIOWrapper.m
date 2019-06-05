@@ -535,7 +535,7 @@ switch lower(QSM_method)
         if ~isWeightLoad && isMagnLoad
             disp('The normalised RMS magnitude image will be used as the weighting map.');
             magn = sqrt(mean(magn.^2,4));
-            wmap = magn/max(magn(:)) * (maskFinal); 
+            wmap = magn/max(magn(:)) .* (maskFinal); 
         end
         % if nothing is loaded
         if ~isWeightLoad && ~isMagnLoad
