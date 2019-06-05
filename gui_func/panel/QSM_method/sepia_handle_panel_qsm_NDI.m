@@ -27,7 +27,7 @@ height = (1-(nlevel+1)*spacing)/nlevel;
 bottom = (height+spacing:height+spacing:(height+spacing)*nlevel) - height;
 
 %% set default values
-defaultTol      = 0.5;
+defaultTol      = 1;
 defaultMaxIter  = 200;
 defaultStepSize = 1;
 

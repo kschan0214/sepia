@@ -9,7 +9,7 @@
 %
 function [tolerance,stepSize,iteration,weight,b0dir] = parse_varargin_NDI(arg)
 % predefine parameters
-tolerance = 0.5;
+tolerance = 1;
 stepSize = 1;
 iteration = 200;
 b0dir=[0,0,1];

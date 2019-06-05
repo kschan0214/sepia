@@ -75,11 +75,14 @@ for t = 1:iteration
 
     update_grad = rmse(grad_prev(mask==1), grad_f(mask==1));
     
-    if mod(t,5) == 0 || t == iteration
+    if mod(t,5) == 0 || t == iteration || t == 1
         disp(['iter: ', num2str(t), '   grad update:', num2str(update_grad)])
     end
 
     if update_grad < tolerance
+        if mod(t,5) ~= 0 || t ~= iteration || t ~= 1
+            disp(['iter: ', num2str(t), '   grad update:', num2str(update_grad)])
+        end
         break
     end
 
