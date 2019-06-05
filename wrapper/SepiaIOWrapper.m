@@ -526,21 +526,6 @@ switch lower(QSM_method)
         localField = localField * 2*pi * delta_TE; 
         
     case 'fansi'
-        % if both data are loaded
-        if isWeightLoad && isMagnLoad
-            disp('Both weighting map and magnitude images are loaded.');
-            disp('Only the weighing map will be used.');
-        end
-        % if only magnitude images are loaded
-        if ~isWeightLoad && isMagnLoad
-            disp('The normalised RMS magnitude image will be used as the weighting map.');
-            magn = sqrt(mean(magn.^2,4));
-            wmap = magn/max(magn(:)) .* (maskFinal); 
-        end
-        % if nothing is loaded
-        if ~isWeightLoad && ~isMagnLoad
-            warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
-        end
         
         % FANSI default parameters are optimised for ppm
         localField = localField/(B0*gyro);
