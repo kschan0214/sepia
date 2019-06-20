@@ -195,7 +195,7 @@ function TE = readEchoTime(teFullName)
             try load(teFullName,'TE');  catch; error('No variable named ''TE''.'); end
         case '.txt'
             % if text file the try to read the TEs line by line
-            TE = readTE_MRIConvert_Text(teFullName);
+            TE = readTE_MRIConvert_Text(teFullName{1});
         case '.json'
             % JSON file(s)
             TE = readTE_JSON(teFullName);
