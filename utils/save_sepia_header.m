@@ -192,7 +192,7 @@ function TE = readEchoTime(teFullName)
     switch lower(ext)
         case '.mat'
             % if mat file then try to load 'TE' directly
-            try load(teFullName,'TE');  catch; error('No variable named ''TE''.'); end
+            try load(teFullName{1},'TE');  catch; error('No variable named ''TE''.'); end
         case '.txt'
             % if text file the try to read the TEs line by line
             TE = readTE_MRIConvert_Text(teFullName{1});
