@@ -5,28 +5,20 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 September 2017
-% Date last modified: 27 Feb 2020
+% Date last modified: 27 Feb 2020 (v0.8.0)
 %
-% function [te,padSize,b0,b0dir] = parse_varargin_Star(arg)
 function [padSize] = parse_varargin_Star(arg)
-% predefine parameters
-% te      = 40; % ms
-% b0dir   = [0,0,1];
 
+% predefine parameters
+padSize = [12,12,12];
+
+% use user defined input if any
 if ~isempty(arg)
     for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'b0dir')
-%             b0dir = arg{kvar+1};
-%         end
-%         if strcmpi(arg{kvar},'TE')
-%             te = double(arg{kvar+1}) * 1e3;
-%         end
-%         if strcmpi(arg{kvar},'B0')
-%             b0 = double(arg{kvar+1});
-%         end
         if strcmpi(arg{kvar},'padsize')
         	padSize = double(arg{kvar+1});
         end
     end
 end
+
 end

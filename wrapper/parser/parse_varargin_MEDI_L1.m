@@ -2,9 +2,9 @@
 %   Created by Tian Liu on 2011.03.16
 %   Modified by Tian Liu and Shuai Wang on 2011.03.15
 %   Last modified by Tian Liu on 2013.07.24
+% Date last modified: 27 Feb 2020 (v0.8.0, KC)
 
 function [N_std,iMag,lam,pad,delta_TE,CF,B0_dir,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(arg)
-% function [N_std,iMag,lam,pad,CF,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(arg)
 gyro = 42.57747892;
 
 B0_dir = [0,0,1];

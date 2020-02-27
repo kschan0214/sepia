@@ -6,17 +6,20 @@
 % k.chan@donders.ru.nl
 % Date created: 6 September 2017
 % Date last modified: 26 September 2017
+% Date last modified: 27 Feb 2020 (v0.8.0)
 %
 function [lambda,tol,maxiter,wmap,initGuess,optimise,b0dir] = parse_varargin_iLSQR(arg)
-% function [lambda,tol,maxiter,wmap,initGuess,optimise] = parse_varargin_iLSQR(arg)
-lambda = 1e-1;
-tol = 1e-3;
-maxiter = 50;
-wmap = [];
-initGuess = [];
-optimise = false;
-b0dir = [0,0,1];
 
+% predefine parameters
+lambda      = 1e-1;
+tol         = 1e-3;
+maxiter     = 50;
+wmap        = [];
+initGuess   = [];
+optimise    = false;
+b0dir       = [0,0,1];
+
+% use user defined input if any
 if ~isempty(arg)
     for kvar = 1:length(arg)
         if strcmpi(arg{kvar},'lambda')
@@ -42,4 +45,5 @@ if ~isempty(arg)
         end
     end
 end
+
 end

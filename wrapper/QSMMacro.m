@@ -21,6 +21,18 @@
 %       chi = qsmMacro(totalField,mask,matrixSize,voxelSize,...
 %               'method','Star','b0dir',[0,0,1],'TE',1,'B0',3,'padsize',[4,4,4]);
 %
+% Input
+% --------------
+% localField    : Local (tissue) field map, in Hz
+% mask          : brain (signal) mask
+% matrixSize    : matrix size of the 3D data
+% voxelSize     : spatial resolution of the data, in mm
+%
+% Output
+% --------------
+% chi           : Magnetic susceptibility map, in ppm
+% lamdaOptimal  : optimal regularisation parameter (optional)
+%
 % Description: Wrapper for QSM inversion problem (default using TKD)
 %   Flags:
 %       'method'        : QSM method, 
@@ -99,19 +111,16 @@ if ~isempty(varargin)
             switch lower(varargin{kvar+1})
                 case 'tkd'
                     method = 'TKD';
-%                     [thre_tkd,b0dir] = parse_varargin_TKD(varargin);
                     [thre_tkd, ~] = parse_varargin_TKD(varargin);
                     break
                     
                 case 'closedforml2'
                     method = 'CFL2';
-%                     [lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
                     [lambda,optimise,~] = parse_varargin_CFL2norm(varargin);
                     break
                     
                 case 'ilsqr'
                     method = 'iLSQR';
-%                     [lambda, tol, maxiter, wmap, initGuess, optimise,b0dir] = parse_varargin_iLSQR(varargin);
                     [lambda, tol, maxiter, wmap, initGuess, optimise, ~] = parse_varargin_iLSQR(varargin);
                     if isempty(wmap)
                         wmap = ones(matrixSize);
@@ -133,27 +142,22 @@ if ~isempty(varargin)
                 case 'fansi'
                     method = 'FANSI';
 %                     [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
-%                     [mu1,mu2,alpha1,wmap,options,b0dir]=parse_varargin_FANSI(varargin);
                     [mu1,mu2,alpha1,wmap,options,~]=parse_varargin_FANSI(varargin);
                     
                 case 'ssvsharp'
                     method = 'SSVSHARP';
-%                     [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
                     [lambda,magn,tol,maxiter,Kernel_Sizes,~]=parse_varargin_SSQSM(varargin);
                     
                 case 'star'
                     method = 'Star';
-%                     [te,padSize,b0,b0dir] = parse_varargin_Star(varargin);
                     [padSize] = parse_varargin_Star(varargin);
                     
                 case 'medi_l1'
                     method = 'MEDI_L1';
-%                     [N_std,magn,lambda,pad,te,CF,b0dir,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
                     [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
                     
                 case 'ndi'
                     method = 'NDI';
-%                     [tol,stepSize,maxiter,wmap,b0dir] = parse_varargin_NDI(varargin);
                     [tol,stepSize,maxiter,wmap,~] = parse_varargin_NDI(varargin);
                     
             end
@@ -170,8 +174,11 @@ disp(['The following QSM algorithm will be used: ' method]);
 
 %% zero padding for odd number dimension
 
+% essential input
 localField  = double(zeropad_odd_dimension(localField,'pre'));
 mask        = double(zeropad_odd_dimension(mask,'pre'));
+
+% additional input
 if exist('wmap','var')
     wmap   = double(zeropad_odd_dimension(wmap,'pre'));
 end
@@ -228,7 +235,7 @@ switch method
         % C is a constant.
         % Therefore, because of the scaling factor in their implementation,
         % the local field map is converted to rad
-        localField = localField * 2*pi * algoPara.TE; 
+        localField = localField * 2*pi * (algoPara.TE*1e-3); 
         
         % double precision is requried for this function
 %         localField  = double(localField);

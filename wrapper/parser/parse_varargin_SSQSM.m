@@ -6,19 +6,22 @@
 % k.chan@donders.ru.nl
 % Date created: 6 September 2017
 % Date last modified: 26 September 2017
+% Date last modified: 27 Feb 2020 (v0.8.0)
 %
-% function [lambda,magn,tol,maxiter,Kernel_Sizes]=parse_varargin_SSQSM(arg)
 function [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(arg)
 % function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
+
+% predefine parameters
 % B0 = 3;
 % TE = 1;             %second
-lambda = 2.9e-2;
-magn = [];
-maxiter = 30;
-tol = 1e-2;
-Kernel_Sizes = 11:-2:3;
-b0dir=[0,0,1];
+lambda          = 2.9e-2;
+magn            = [];
+maxiter         = 30;
+tol             = 1e-2;
+Kernel_Sizes    = 11:-2:3;
+b0dir           = [0,0,1];
 
+% use user defined input if any
 if ~isempty(arg)
     for kvar = 1:length(arg)
 %         if strcmpi(arg{kvar},'fieldStrength')

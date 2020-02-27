@@ -5,13 +5,15 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 September 2017
-% Date last modified: 
+% Date last modified: 27 Feb 2020 (v0.8.0)
 %
 function [thre_tkd,b0dir] = parse_varargin_TKD(arg)
-% function [thre_tkd] = parse_varargin_TKD(arg)
+
 % predefine parameters
-thre_tkd = 0.15;
-% b0dir=[0,0,1];
+thre_tkd    = 0.15;
+b0dir       = [0,0,1];
+
+% use user defined input if any
 if ~isempty(arg)
     for kvar = 1:length(arg)
         if strcmpi(arg{kvar},'threshold')
@@ -22,4 +24,5 @@ if ~isempty(arg)
         end
     end
 end
+
 end
