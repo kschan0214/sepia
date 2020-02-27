@@ -8,6 +8,7 @@
 % Date last modified: 26 September 2017
 %
 function [lambda,optimise,b0dir] = parse_varargin_CFL2norm(arg)
+% function [lambda,optimise] = parse_varargin_CFL2norm(arg)
 lambda = 1e-1;
 optimise = false;
 b0dir = [0,0,1];

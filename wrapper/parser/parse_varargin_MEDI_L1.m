@@ -4,6 +4,7 @@
 %   Last modified by Tian Liu on 2013.07.24
 
 function [N_std,iMag,lam,pad,delta_TE,CF,B0_dir,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(arg)
+% function [N_std,iMag,lam,pad,CF,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(arg)
 gyro = 42.57747892;
 
 B0_dir = [0,0,1];
@@ -29,6 +30,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'magnitude')
             iMag=arg{kvar+1};
+            if size(iMag,4) > 1
+                iMag = sqrt(sum(abs(iMag).^2,4));
+            end
         end
         if strcmpi(arg{kvar},'lambda')
             lam=arg{kvar+1};

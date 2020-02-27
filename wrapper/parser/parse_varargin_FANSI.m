@@ -10,6 +10,7 @@
 %
 % function [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(arg)
 function [mu1,mu2,alpha1,wmap,options,b0dir]=parse_varargin_FANSI(arg)
+% function [mu1,mu2,alpha1,wmap,options]=parse_varargin_FANSI(arg)
 alpha1 = 3e-5;
 mu1 = 5e-5;
 mu2 = 1;

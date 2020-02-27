@@ -8,6 +8,7 @@
 % Date last modified: 
 %
 function [tolerance,stepSize,iteration,weight,b0dir] = parse_varargin_NDI(arg)
+% function [tolerance,stepSize,iteration,weight] = parse_varargin_NDI(arg)
 % predefine parameters
 tolerance = 1;
 stepSize = 1;

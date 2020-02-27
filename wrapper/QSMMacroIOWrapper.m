@@ -320,13 +320,13 @@ switch lower(QSM_method)
     case 'ilsqr'
         
     case 'stisuiteilsqr'
-        % The order of local field values doesn't affect the result of chi  
-        % in STI suite v3 implementation, i.e. 
-        % chi = method(localField,...) = method(localField*C,...)/C, where
-        % C is a constant.
-        % Therefore, because of the scaling factor in their implementation,
-        % the local field map is converted to rad
-        localField = localField * 2*pi * delta_TE; 
+%         % The order of local field values doesn't affect the result of chi  
+%         % in STI suite v3 implementation, i.e. 
+%         % chi = method(localField,...) = method(localField*C,...)/C, where
+%         % C is a constant.
+%         % Therefore, because of the scaling factor in their implementation,
+%         % the local field map is converted to rad
+%         localField = localField * 2*pi * delta_TE; 
         
     case 'fansi'
         % if both data are loaded
@@ -345,27 +345,27 @@ switch lower(QSM_method)
             warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
         end
             
-        % FANSI default parameters are optimised for ppm
-        localField = localField/(B0*gyro);
+%         % FANSI default parameters are optimised for ppm
+%         localField = localField/(B0*gyro);
         
     case 'ssvsharp'
         % not support yet
         
     case 'star'
-        % Unlike the iLSQR implementation, the order of local field map
-        % values will affect the Star-QSM result, i.e. 
-        % chi = method(localField,...) ~= method(localField*C,...)/C, where
-        % C is a constant. Lower order of local field magnitude will more 
-        % likely produce chi map with streaking artefact. 
-        % In the STI_Templates.m example, Star-QSM expecting local field in 
-        % the unit of rad. However, value of the field map in rad will 
-        % vary with echo time. Therefore, data acquired with short
-        % delta_TE will be prone to streaking artefact. To mitigate this
-        % potential problem, local field map is converted from Hz to radHz
-        % here and the resulting chi will be normalised by the same factor 
-        % 
-        localField = localField * 2*pi;
-        
+%         % Unlike the iLSQR implementation, the order of local field map
+%         % values will affect the Star-QSM result, i.e. 
+%         % chi = method(localField,...) ~= method(localField*C,...)/C, where
+%         % C is a constant. Lower order of local field magnitude will more 
+%         % likely produce chi map with streaking artefact. 
+%         % In the STI_Templates.m example, Star-QSM expecting local field in 
+%         % the unit of rad. However, value of the field map in rad will 
+%         % vary with echo time. Therefore, data acquired with short
+%         % delta_TE will be prone to streaking artefact. To mitigate this
+%         % potential problem, local field map is converted from Hz to radHz
+%         % here and the resulting chi will be normalised by the same factor 
+%         % 
+%         localField = localField * 2*pi;
+%         
     case 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
@@ -377,8 +377,8 @@ switch lower(QSM_method)
             magn = sqrt(sum(magn.^2,4));
         end
         
-        % MEDI input expects local field in rad
-        localField = localField*2*pi*delta_TE;
+%         % MEDI input expects local field in rad
+%         localField = localField*2*pi*delta_TE;
         
     case 'ndi'
         % if both data are loaded
@@ -396,8 +396,8 @@ switch lower(QSM_method)
         if ~isWeightLoad && ~isMagnLoad
             warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
         end
-        % NDI default parameters are relative so okay for ppm
-        localField = localField/(B0*gyro);
+%         % NDI default parameters are relative so okay for ppm
+%         localField = localField/(B0*gyro);
         
 end
 
@@ -423,30 +423,30 @@ else
                    'stepsize',QSM_stepSize);
 end
 
-% convert the susceptibility map into ppm
-switch lower(QSM_method)
-    case 'tkd'
-        chi = chi/(B0*gyro);
-    case 'closedforml2'
-        chi = chi/(B0*gyro);
-    case 'ilsqr'
-        chi = chi/(B0*gyro);
-    case 'stisuiteilsqr'
-        % STI suite v3 implementation already converted the chi map to ppm
-    case 'fansi'
-        % FANSI default parameters are optimised for ppm
-    case 'ssvsharp'
-        chi = chi/(B0*gyro);
-    case 'star'
-        % STI suite v3 implementation already nomalised the output by B0
-        % and delta_TE, since the input is radHz here, we have to
-        % multiply the reuslt by delta_TE here
-        chi = chi * delta_TE;
-    case 'medi_l1'
-        % MEDI implementation already normalised the output to ppm
-    case 'ndi'
-        % NDI is converted for ppm
-end
+% % convert the susceptibility map into ppm
+% switch lower(QSM_method)
+%     case 'tkd'
+%         chi = chi/(B0*gyro);
+%     case 'closedforml2'
+%         chi = chi/(B0*gyro);
+%     case 'ilsqr'
+%         chi = chi/(B0*gyro);
+%     case 'stisuiteilsqr'
+%         % STI suite v3 implementation already converted the chi map to ppm
+%     case 'fansi'
+%         % FANSI default parameters are optimised for ppm
+%     case 'ssvsharp'
+%         chi = chi/(B0*gyro);
+%     case 'star'
+%         % STI suite v3 implementation already nomalised the output by B0
+%         % and delta_TE, since the input is radHz here, we have to
+%         % multiply the reuslt by delta_TE here
+%         chi = chi * delta_TE;
+%     case 'medi_l1'
+%         % MEDI implementation already normalised the output to ppm
+%     case 'ndi'
+%         % NDI is converted for ppm
+% end
 
 % save results
 fprintf('Saving susceptibility map...');

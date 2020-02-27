@@ -8,6 +8,7 @@
 % Date last modified: 26 September 2017
 %
 function [lambda,tol,maxiter,wmap,initGuess,optimise,b0dir] = parse_varargin_iLSQR(arg)
+% function [lambda,tol,maxiter,wmap,initGuess,optimise] = parse_varargin_iLSQR(arg)
 lambda = 1e-1;
 tol = 1e-3;
 maxiter = 50;

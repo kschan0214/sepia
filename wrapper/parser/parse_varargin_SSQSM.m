@@ -7,6 +7,7 @@
 % Date created: 6 September 2017
 % Date last modified: 26 September 2017
 %
+% function [lambda,magn,tol,maxiter,Kernel_Sizes]=parse_varargin_SSQSM(arg)
 function [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(arg)
 % function [B0,TE,lambda,magn,tol,maxiter,Kernel_Sizes]=parse_vararginSSQSM(arg)
 % B0 = 3;

@@ -81,27 +81,38 @@
 % Date modified: 9 April 2018
 % Date modified: 1 April 2019
 % Date modified: 5 June 2019
+% Date modified: 27 Feb 2020 (v0.8.0)
 %
 function [chi, lamdaOptimal] = QSMMacro(localField,mask,matrixSize,voxelSize,varargin)
-lamdaOptimal = [];
-voxelSize = voxelSize(:).';
+
+gyro = 42.57747892;
+
+lamdaOptimal    = [];
+voxelSize       = double(voxelSize(:).');
+matrixSize      = double(matrixSize(:).');
 
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)
+        [b0,b0dir,te] = parse_varargin_QSMmacro(varargin);
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
                 case 'tkd'
                     method = 'TKD';
-                    [thre_tkd,b0dir] = parse_varargin_TKD(varargin);
+%                     [thre_tkd,b0dir] = parse_varargin_TKD(varargin);
+                    [thre_tkd, ~] = parse_varargin_TKD(varargin);
                     break
+                    
                 case 'closedforml2'
                     method = 'CFL2';
-                    [lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
+%                     [lambda,optimise,b0dir] = parse_varargin_CFL2norm(varargin);
+                    [lambda,optimise,~] = parse_varargin_CFL2norm(varargin);
                     break
+                    
                 case 'ilsqr'
                     method = 'iLSQR';
-                    [lambda, tol, maxiter, wmap, initGuess, optimise,b0dir] = parse_varargin_iLSQR(varargin);
+%                     [lambda, tol, maxiter, wmap, initGuess, optimise,b0dir] = parse_varargin_iLSQR(varargin);
+                    [lambda, tol, maxiter, wmap, initGuess, optimise, ~] = parse_varargin_iLSQR(varargin);
                     if isempty(wmap)
                         wmap = ones(matrixSize);
                     end
@@ -109,28 +120,42 @@ if ~isempty(varargin)
                         initGuess = zeros(matrixSize);
                     end
                     break
+                    
                 case 'stisuiteilsqr'
                     method = 'STISuiteiLSQR';
                     algoPara = parse_varargin_STISuiteiLSQRv3(varargin);
-                    algoPara.voxelsize= double(voxelSize(:).');
+                    algoPara.H          = b0dir(:).';
+                    algoPara.TE         = te*1e3;
+                    algoPara.B0         = b0;
+                    algoPara.voxelsize  = double(voxelSize(:).');
                     break
+                    
                 case 'fansi'
                     method = 'FANSI';
 %                     [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
-                    [mu1,mu2,alpha1,wmap,options,b0dir]=parse_varargin_FANSI(varargin);
+%                     [mu1,mu2,alpha1,wmap,options,b0dir]=parse_varargin_FANSI(varargin);
+                    [mu1,mu2,alpha1,wmap,options,~]=parse_varargin_FANSI(varargin);
+                    
                 case 'ssvsharp'
                     method = 'SSVSHARP';
-                    [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
+%                     [lambda,magn,tol,maxiter,Kernel_Sizes,b0dir]=parse_varargin_SSQSM(varargin);
+                    [lambda,magn,tol,maxiter,Kernel_Sizes,~]=parse_varargin_SSQSM(varargin);
+                    
                 case 'star'
                     method = 'Star';
-                    [te,padSize,b0,b0dir] = parse_varargin_Star(varargin);
+%                     [te,padSize,b0,b0dir] = parse_varargin_Star(varargin);
+                    [padSize] = parse_varargin_Star(varargin);
+                    
                 case 'medi_l1'
                     method = 'MEDI_L1';
-                    [N_std,magn,lambda,pad,te,CF,b0dir,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
+%                     [N_std,magn,lambda,pad,te,CF,b0dir,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
+                    [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
                     
                 case 'ndi'
                     method = 'NDI';
-                    [tol,stepSize,maxiter,wmap,b0dir] = parse_varargin_NDI(varargin);
+%                     [tol,stepSize,maxiter,wmap,b0dir] = parse_varargin_NDI(varargin);
+                    [tol,stepSize,maxiter,wmap,~] = parse_varargin_NDI(varargin);
+                    
             end
         end
     end
@@ -141,59 +166,51 @@ else
     thre_tkd = 0.15;
 end
 
-% make sure all variables are double
-localField	= double(localField);
-mask       	= double(mask);
-voxelSize   = double(voxelSize);
-matrixSize  = double(matrixSize);
-if exist('wmap','var')
-    wmap = double(wmap);
-end
-if exist('magn','var')
-    magn = double(magn);
-end
-if exist('N_std','var')
-    N_std = double(N_std);
-end
-if exist('initGuess','var')
-    initGuess   = double(initGuess);
-end
-
 disp(['The following QSM algorithm will be used: ' method]);
 
-%% qsm algorithm
-% add path
-sepia_addpath(method);
+%% zero padding for odd number dimension
 
-% zero padding for odd number dimension
-localField  = zeropad_odd_dimension(localField,'pre');
-mask        = zeropad_odd_dimension(mask,'pre');
+localField  = double(zeropad_odd_dimension(localField,'pre'));
+mask        = double(zeropad_odd_dimension(mask,'pre'));
 if exist('wmap','var')
-    wmap   = zeropad_odd_dimension(wmap,'pre');
+    wmap   = double(zeropad_odd_dimension(wmap,'pre'));
 end
 if exist('magn','var')
-    magn   = zeropad_odd_dimension(magn,'pre');
+    magn   = double(zeropad_odd_dimension(magn,'pre'));
 end
 if exist('N_std','var')
-    N_std   = zeropad_odd_dimension(N_std,'pre');
+    N_std   = double(zeropad_odd_dimension(N_std,'pre'));
 end
 if exist('initGuess','var')
-    initGuess   = zeropad_odd_dimension(initGuess,'pre');
+    initGuess   = double(zeropad_odd_dimension(initGuess,'pre'));
 end
 if exist('Mask_CSF','var')
-    Mask_CSF   = zeropad_odd_dimension(Mask_CSF,'pre');
+    Mask_CSF   = double(zeropad_odd_dimension(Mask_CSF,'pre'));
 end
 matrixSize_new = size(localField);
 
+%% QSM algorithm
+
+% add path
+sepia_addpath(method);
+
+% General steps as follow:
+% 1. input unit converted for optimal performance (if neccessary)
+% 2. main QSM algorithm
+% 3. convert output unit to ppm
 switch method
     case 'TKD'
         
         chi = qsmTKD(localField,mask,matrixSize_new,voxelSize,'threshold',thre_tkd,'b0dir',b0dir);
+        
+        chi = chi/(b0*gyro);
     
     case 'CFL2'
         
         [chi, lamdaOptimal] = qsmClosedFormL2(localField,mask,matrixSize_new,voxelSize,...
             'lambda',lambda,'optimise',optimise,'b0dir',b0dir);
+        
+        chi = chi/(b0*gyro);
         
     case 'iLSQR'
         
@@ -201,28 +218,66 @@ switch method
             'lambda',lambda,'tol',tol,'iteration',maxiter,'weight',wmap,...
             'initGuess',initGuess,'optimise',optimise,'b0dir',b0dir);
         
+        chi = chi/(b0*gyro);
+        
     case 'STISuiteiLSQR'
+        
+        % The order of local field values doesn't affect the result of chi  
+        % in STI suite v3 implementation, i.e. 
+        % chi = method(localField,...) = method(localField*C,...)/C, where
+        % C is a constant.
+        % Therefore, because of the scaling factor in their implementation,
+        % the local field map is converted to rad
+        localField = localField * 2*pi * algoPara.TE; 
+        
         % double precision is requried for this function
-        localField  = double(localField);
-        mask        = double(mask);
+%         localField  = double(localField);
+%         mask        = double(mask);
         chi = QSM_iLSQR(localField,mask,'params',algoPara);
         
     case 'FANSI'
+        
+        % FANSI default parameters are optimised for ppm
+        localField = localField/(b0*gyro);
+        
         noise = 0;
         
         chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
         chi = chi .* mask;
 
     case 'SSVSHARP'
+        
         chi = qsmSingleStepVSHARP(localField,mask,matrixSize_new,voxelSize,...
             'tol',tol,'lambda',lambda,'iteration',maxiter,'magnitude',magn,...
             'b0dir',b0dir,'vkernel',Kernel_Sizes);
         
+        chi = chi/(b0*gyro);
+        
     case 'Star'
         
-        chi = QSM_star(localField,mask,'TE',te,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
+        % Unlike the iLSQR implementation, the order of local field map
+        % values will affect the Star-QSM result, i.e. 
+        % chi = method(localField,...) ~= method(localField*C,...)/C, where
+        % C is a constant. Lower order of local field magnitude will more 
+        % likely produce chi map with streaking artefact. 
+        % In the STI_Templates.m example, Star-QSM expecting local field in 
+        % the unit of rad. However, value of the field map in rad will 
+        % vary with echo time. Therefore, data acquired with short
+        % TE will be prone to streaking artefact. To mitigate this
+        % potential problem, local field map is converted from Hz to radHz
+        % here and the resulting chi will be normalised by the same factor 
+        % 
+        localField = localField * 2*pi;
+        
+        chi = QSM_star(localField,mask,'TE',te*1e3,'B0',b0,'H',b0dir,'padsize',padSize,'voxelsize',voxelSize);
+        
+        chi = chi * te;
         
     case 'MEDI_L1'
+        
+        % MEDI input expects local field in rad
+        localField = localField*2*pi*te;
+        
         chi = MEDI_L1_4sepia(localField,mask,matrixSize_new,voxelSize,...
             'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',isMerit,...
             'smv',isSMV,'radius',radius,'data_weighting',wData,...
@@ -231,14 +286,15 @@ switch method
         
     case 'NDI'
         
+        % NDI default parameters are relative so okay for ppm
+        localField = localField/(b0*gyro);
+        
         chi = NDI(localField,mask,voxelSize,'b0dir',b0dir,'weight',wmap,...
                   'iteration',maxiter,'stepsize',stepSize,'tol',tol);
 end
 
 % remove zero padding 
-chi = zeropad_odd_dimension(chi,'post',matrixSize);
-% ensure the output is double
-chi = double(chi);
+chi = double(zeropad_odd_dimension(chi,'post',matrixSize));
 
 end
 
