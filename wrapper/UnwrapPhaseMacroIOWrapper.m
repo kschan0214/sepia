@@ -64,6 +64,7 @@ phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
 unwrap              = algorParam.unwrap.unwrapMethod;
 subsampling         = algorParam.unwrap.subsampling;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
+isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
 
 %% Read input
 disp('Reading data...');
@@ -214,10 +215,10 @@ B0_dir = B0_dir ./ norm(B0_dir);
 % display some header info
 disp('Basic DICOM information');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
-disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
-disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
-disp(['Field strength(T) =  ' num2str(B0)]);
-disp(['Number of echoes = ' num2str(length(TE))]);
+disp(['matrix size(x,y,z)     =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
+disp(['B0 direction(x,y,z)    =  ' num2str(B0_dir(:)')]);
+disp(['Field strength(T)      =  ' num2str(B0)]);
+disp(['Number of echoes       = ' num2str(length(TE))]);
 
 % make sure the following variables are row vectors
 matrixSize = matrixSize(:).';
@@ -297,7 +298,7 @@ try
                         'TE',TE,'B0',B0,'unit',unit,...
                         'Subsampling',subsampling,'mask',mask);
                     
-    if ~isempty(fieldmapUnwrapAllEchoes)
+    if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
         % save the output                           
         fprintf('Saving unwrapped echo phase...');
         save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
@@ -385,6 +386,7 @@ try algorParam2.unwrap.isEddyCorrect        = algorParam.unwrap.isEddyCorrect;  
 try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThreshold;	catch; algorParam2.unwrap.excludeMaskThreshold	= Inf;                  end
 % for the rest, if the parameter does not exist then initiates it with an empty array
 try algorParam2.unwrap.subsampling          = algorParam.unwrap.subsampling;            catch; algorParam2.unwrap.subsampling           = [];                   end
+try algorParam2.unwrap.isSaveUnwrappedEcho	= algorParam.unwrap.isSaveUnwrappedEcho;	catch; algorParam2.unwrap.isSaveUnwrappedEcho	= 0;                    end
 
 end
 

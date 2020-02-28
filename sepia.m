@@ -52,9 +52,9 @@ sepia_addpath;
 global h
 
 % set GUI window size
-screenSize = get(0,'ScreenSize');
-posLeft = round(screenSize(3)/4);
-posBottom = round(screenSize(4)/6);
+screenSize  = get(0,'ScreenSize');
+posLeft     = round(screenSize(3)/4);
+posBottom   = round(screenSize(4)/6);
 guiSizeHori = round(screenSize(3)/3);
 guiSizeVert = round(screenSize(4)*2/3);
 if guiSizeHori < 1000
@@ -119,6 +119,14 @@ h.pushbutton_start = uicontrol('Parent',h.Tabs.Sepia,...
     'String','Start',...
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(h.fig,'color'));
+
+% Start button
+h.pushbutton_loadConfig = uicontrol('Parent',h.Tabs.Sepia,...
+    'Style','pushbutton',...
+    'String','Load config',...
+    'units','normalized','Position',[0.74 0.01 0.1 0.05],...
+    'backgroundcolor',get(h.fig,'color'));
+
 % GPU checkbox
 h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','checkbox',...
@@ -132,8 +140,9 @@ if gpuDeviceCount > 0
 end
 
 %% Set Callback functions
-set(h.TabGroup,      	'SelectionChangedFcn', {@SwitchTab_Callback})
-set(h.pushbutton_start,	'Callback',            {@PushbuttonStart_Callback});
+set(h.TabGroup,                 'SelectionChangedFcn', {@SwitchTab_Callback})
+set(h.pushbutton_start,         'Callback',            {@PushbuttonStart_Callback});
+set(h.pushbutton_loadConfig,    'Callback',            {@PushbuttonLoadConfig_Callback});
 
 end
 
@@ -263,12 +272,12 @@ switch eventdata.NewValue.Title
             set(h.dataIO.text.inputData1,'String','or Local field:');
             % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
-            set(h.dataIO.edit.inputData2,'Enable','on');
-            set(h.dataIO.button.inputData2,'Enable','on');
+            set(h.dataIO.edit.inputData2,   'Enable','on');
+            set(h.dataIO.button.inputData2, 'Enable','on');
             % input data 3
-            set(h.dataIO.text.inputData3,'String','Weights:');
-            set(h.dataIO.edit.inputData3,'Enable','on');
-            set(h.dataIO.button.inputData3,'Enable','on');
+            set(h.dataIO.text.inputData3,   'String','Weights:');
+            set(h.dataIO.edit.inputData3,   'Enable','on');
+            set(h.dataIO.button.inputData3, 'Enable','on');
 %             % input header
 %             set(h.dataIO.text.inputHeader,'String','Header:');
         % QSM
@@ -386,6 +395,8 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
     else
         fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = Inf ;\n');
     end
+    % save unwrapped echo phase
+    fprintf(fid,'algorParam.unwrap.isSaveUnwrappedEcho = %i ;\n'     ,get(h.phaseUnwrap.checkbox.saveEchoPhase,'Value'));
 end
     
 % background field removal algorithm parameters
@@ -557,7 +568,7 @@ catch ME
     end
     fid = fopen(errorMessageFilename,'w');
     fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
-    fprintf(fid,'The message was:\n');
+    fprintf(fid,'The message was:\n\n');
     msgString = getReport(ME,'extended','hyperlinks','off');
     fprintf(fid,'%s',msgString);
     fclose(fid);
@@ -566,6 +577,21 @@ catch ME
     rethrow(ME);
     
 end
+
+
+end
+
+function PushbuttonLoadConfig_Callback(source,eventdata)
+
+global h
+
+% only read m file
+[config_filename,pathDir] = uigetfile({'*.m'},'Select a SEPIA config file');
+
+fid = fopen(fullfile(pathDir,config_filename),'r');
+
+%% I/O
+% Input
 
 
 end

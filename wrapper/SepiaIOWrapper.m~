@@ -105,7 +105,7 @@ phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
 unwrap              = algorParam.unwrap.unwrapMethod;
 subsampling         = algorParam.unwrap.subsampling;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
-isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
+isSaveUnwrappedEcho = 
 % background field removal algorithm parameters
 BFR                 = algorParam.bfr.method;
 refine              = algorParam.bfr.refine;
@@ -393,7 +393,7 @@ try
                         'TE',TE,'B0',B0,'unit',unit,...
                         'Subsampling',subsampling,'mask',mask);
                     
-    if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
+    if ~isempty(fieldmapUnwrapAllEchoes)
         fprintf('Saving unwrapped echo phase...');
         save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
         clear fieldmapUnwrapAllEchoes

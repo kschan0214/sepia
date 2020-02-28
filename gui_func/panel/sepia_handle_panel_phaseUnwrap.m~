@@ -90,19 +90,16 @@ h.StepsPanel.phaseUnwrap = uipanel(hParent,'Title','Total field recovery and pha
         'Style','checkbox','String','Save unwrapped echo phase',...
         'units','normalized','position',[0.01 button(nlevel-4) 0.3 height],...
         'backgroundcolor',get(h.fig,'color'),...
-        'Enable','on',...
-        'tooltip','If total field is computed using optimal weighted combination with multi echo data, it is possible to save the unwrapped phase for each echo.');
+        'Enable','off',...
+        'tooltip','');
 
 %% set callback functions
 set(h.phaseUnwrap.checkbox.excludeMask,	'Callback', {@CheckboxEditPair_Callback,h.phaseUnwrap.edit.excludeMask,1});
 set(h.phaseUnwrap.edit.excludeMask, 	'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
 set(h.phaseUnwrap.popup.phaseUnwrap,    'Callback', {@popupPhaseUnwrap_Callback,h});
-set(h.phaseUnwrap.popup.phaseCombMethod,'Callback', {@popupPhaseCombine_Callback,h});
         
 end
 
-%% Callback functions
-% Phase unwrapping method
 function popupPhaseUnwrap_Callback(source,eventdata,h)
 
 % get selected background removal method
@@ -131,24 +128,6 @@ switch method
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
     
     % in the future, add new method here
-end
-
-end
-
-% echo phase combination method
-function popupPhaseCombine_Callback(source,eventdata,h)
-
-% get selected background removal method
-method = source.String{source.Value,1} ;
-
-% switch on target panel
-switch method
-    case 'Optimum weights'
-        set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'on', 'Value', 0);
-        
-    case 'MEDI nonlinear fit'
-        set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'off', 'Value', 0);
-    
 end
 
 end
