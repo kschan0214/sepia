@@ -173,7 +173,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.edit.inputData2,'Enable','on');
             set(h.dataIO.button.inputData2,'Enable','on');
             % input data 3
-            set(h.dataIO.text.inputData3,'String','    Weights:');
+            set(h.dataIO.text.inputData3,'String','Weights:');
             set(h.dataIO.edit.inputData3,'Enable','on');
 %             set(h.dataIO.edit.inputData3,'String',[]);
             set(h.dataIO.button.inputData3,'Enable','on');
@@ -208,7 +208,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.edit.inputData2,'Enable','on');
             set(h.dataIO.button.inputData2,'Enable','on');
             % input data 3
-            set(h.dataIO.text.inputData3,'String','    Weights:');
+            set(h.dataIO.text.inputData3,'String','Weights:');
             set(h.dataIO.edit.inputData3,'Enable','off');
             set(h.dataIO.button.inputData3,'Enable','off');
             set(h.dataIO.edit.inputData3,'String',[]);
@@ -243,7 +243,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.button.inputData2,'Enable','off');
             set(h.dataIO.edit.inputData2,'String',[]);
             % input data 3
-            set(h.dataIO.text.inputData3,'String','    Noise SD:');
+            set(h.dataIO.text.inputData3,'String','Noise SD:');
             set(h.dataIO.edit.inputData3,'Enable','on');
             set(h.dataIO.button.inputData3,'Enable','on');
 
@@ -275,7 +275,7 @@ switch eventdata.NewValue.Title
             set(h.dataIO.edit.inputData2,   'Enable','on');
             set(h.dataIO.button.inputData2, 'Enable','on');
             % input data 3
-            set(h.dataIO.text.inputData3,   'String','    Weights:');
+            set(h.dataIO.text.inputData3,   'String','Weights:');
             set(h.dataIO.edit.inputData3,   'Enable','on');
             set(h.dataIO.button.inputData3, 'Enable','on');
 %             % input header
@@ -395,8 +395,6 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
     else
         fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = Inf ;\n');
     end
-    % save unwrapped echo phase
-    fprintf(fid,'algorParam.unwrap.isSaveUnwrappedEcho = %i ;\n'     ,get(h.phaseUnwrap.checkbox.saveEchoPhase,'Value'));
 end
     
 % background field removal algorithm parameters

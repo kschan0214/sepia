@@ -56,7 +56,7 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Check and set default algorithm parameters
-algorParam = CheckAndSetDefault(algorParam);
+algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 isInvert            = algorParam.general.isInvert;
 isBET               = algorParam.general.isBET ;
 isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
@@ -369,24 +369,6 @@ end
 fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
-
-end
-
-%% check and set all algorithm parameters
-function algorParam2 = CheckAndSetDefault(algorParam)
-algorParam2 = algorParam;
-
-try algorParam2.general.isInvert            = algorParam.general.isInvert;              catch; algorParam2.general.isInvert             = false;                end
-try algorParam2.general.isBET               = algorParam.general.isBET;                 catch; algorParam2.general.isBET                = false;                end
-% default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
-try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = 'MEDI nonlinear fit';	end
-% default phase unwrapping method is Laplacian
-try algorParam2.unwrap.unwrapMethod         = algorParam.unwrap.unwrapMethod;           catch; algorParam2.unwrap.unwrapMethod          = 'Laplacian';          end
-try algorParam2.unwrap.isEddyCorrect        = algorParam.unwrap.isEddyCorrect;          catch; algorParam2.unwrap.isEddyCorrect         = 0;                    end
-try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThreshold;	catch; algorParam2.unwrap.excludeMaskThreshold	= Inf;                  end
-% for the rest, if the parameter does not exist then initiates it with an empty array
-try algorParam2.unwrap.subsampling          = algorParam.unwrap.subsampling;            catch; algorParam2.unwrap.subsampling           = [];                   end
-try algorParam2.unwrap.isSaveUnwrappedEcho	= algorParam.unwrap.isSaveUnwrappedEcho;	catch; algorParam2.unwrap.isSaveUnwrappedEcho	= 0;                    end
 
 end
 

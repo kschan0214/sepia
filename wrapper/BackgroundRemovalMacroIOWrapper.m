@@ -60,7 +60,7 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Check and set default algorithm parameters
-algorParam = CheckAndSetDefault(algorParam);
+algorParam      = check_and_set_SEPIA_algorithm_default(algorParam);
 isGPU           = algorParam.general.isGPU;
 BFR             = algorParam.bfr.method;
 refine          = algorParam.bfr.refine;
@@ -272,26 +272,6 @@ save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-q
 fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
-
-end
-
-%% check and set all algorithm parameters
-function algorParam2 = CheckAndSetDefault(algorParam)
-algorParam2 = algorParam;
-try algorParam2.general.isGPU  	= algorParam.general.isGPU;	catch; algorParam2.general.isGPU = false;   end
-% default background field removal method is VSHARP
-try algorParam2.bfr.method      = algorParam.bfr.method;   	catch; algorParam2.bfr.method = 'vsharpsti';end
-try algorParam2.bfr.radius      = algorParam.bfr.radius; 	catch; algorParam2.bfr.radius = 10;         end
-try algorParam2.bfr.refine      = algorParam.bfr.refine;   	catch; algorParam2.bfr.refine = false;      end
-try algorParam2.bfr.erode_radius= algorParam.bfr.erode_radius;	catch; algorParam2.bfr.erode_radius = 1;    end
-% for the rest, if the parameter does not exist then initiates it with an empty array
-try algorParam2.bfr.tol         = algorParam.bfr.tol;     	catch; algorParam2.bfr.tol = [];            end
-try algorParam2.bfr.depth       = algorParam.bfr.depth;  	catch; algorParam2.bfr.depth = [];          end
-try algorParam2.bfr.peel        = algorParam.bfr.peel;   	catch; algorParam2.bfr.peel = [];           end
-try algorParam2.bfr.iteration   = algorParam.bfr.iteration;	catch; algorParam2.bfr.iteration = [];      end
-try algorParam2.bfr.padSize     = algorParam.bfr.padSize; 	catch; algorParam2.bfr.padSize = [];        end
-try algorParam2.bfr.alpha       = algorParam.bfr.alpha;    	catch; algorParam2.bfr.alpha = [];          end
-try algorParam2.bfr.threshold   = algorParam.bfr.threshold;	catch; algorParam2.bfr.threshold = [];      end
 
 end
 
