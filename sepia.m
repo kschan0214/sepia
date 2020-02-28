@@ -45,6 +45,8 @@
 function sepia
 clear 
 
+diary off
+
 sepia_addpath;
 
 global h
@@ -314,16 +316,16 @@ if exist(outputDir,'dir') ~= 7
 end
 
 % create a new m file
-logFilename = [outputDir filesep 'sepia_log.m'];
-if exist(logFilename,'file') == 2
+configFilename = [outputDir filesep 'sepia_config.m'];
+if exist(configFilename,'file') == 2
     counter = 1;
-    while exist(logFilename,'file') == 2
+    while exist(configFilename,'file') == 2
         suffix = ['_' num2str(counter)];
-        logFilename = [outputDir filesep 'sepia_log' suffix '.m'];
+        configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
         counter = counter + 1;
     end
 end
-fid = fopen(logFilename,'w');
+fid = fopen(configFilename,'w');
 
 % general path
 fprintf(fid,'%% add general Path\n');
@@ -346,9 +348,9 @@ fprintf(fid,'output_basename = ''%s'' ;\n',outputBasename);
 fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
 
 % general algorithm parameters
-fprintf(fid,'algorParam.general.isBET = %i ;\n'     ,get(h.dataIO.checkbox.brainExtraction, 'Value'));
-fprintf(fid,'algorParam.general.isInvert = %i ;\n'  ,get(h.dataIO.checkbox.invertPhase,     'Value'));
-fprintf(fid,'algorParam.general.isGPU = %i ;\n'     ,get(h.checkbox_gpu,                    'Value'));
+fprintf(fid,'algorParam.general.isBET       = %i ;\n'	,get(h.dataIO.checkbox.brainExtraction, 'Value'));
+fprintf(fid,'algorParam.general.isInvert    = %i ;\n'   ,get(h.dataIO.checkbox.invertPhase,     'Value'));
+fprintf(fid,'algorParam.general.isGPU       = %i ;\n'  	,get(h.checkbox_gpu,                    'Value'));
 
 % phase unwrap algorithm parameters
 if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
@@ -439,60 +441,60 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
     % set parameters for selected method
     switch h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1}
         case 'TKD'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'	,'tkd');
-            fprintf(fid,'algorParam.qsm.threshold = %s ;\n'     ,get(h.qsm.TKD.edit.threshold,'String'));
+            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n'	,'tkd');
+            fprintf(fid,'algorParam.qsm.threshold   = %s ;\n'       ,get(h.qsm.TKD.edit.threshold,'String'));
         
         case 'Closed-form solution'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'closedforml2');
-            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'        ,get(h.qsm.cfs.edit.lambda,     'String'));
-            fprintf(fid,'algorParam.qsm.optimise = %i ;\n'      ,get(h.qsm.cfs.checkbox.lambda, 'Value'));
+            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n'	,'closedforml2');
+            fprintf(fid,'algorParam.qsm.lambda      = %s ;\n'    	,get(h.qsm.cfs.edit.lambda,     'String'));
+            fprintf(fid,'algorParam.qsm.optimise	= %i ;\n'       ,get(h.qsm.cfs.checkbox.lambda, 'Value'));
             
         case 'NDI'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'ndi');
-            fprintf(fid,'algorParam.qsm.tol = %s ;\n'           ,get(h.qsm.NDI.edit.tol,          'String'));
-            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'      	,get(h.qsm.NDI.edit.maxIter,      'String'));
-            fprintf(fid,'algorParam.qsm.stepSize = %s ;\n'    	,get(h.qsm.NDI.edit.stepSize,       'String'));
+            fprintf(fid,'algorParam.qsm.method   = ''%s'' ;\n'      ,'ndi');
+            fprintf(fid,'algorParam.qsm.tol      = %s ;\n'          ,get(h.qsm.NDI.edit.tol,          'String'));
+            fprintf(fid,'algorParam.qsm.maxiter  = %s ;\n'      	,get(h.qsm.NDI.edit.maxIter,      'String'));
+            fprintf(fid,'algorParam.qsm.stepSize = %s ;\n'          ,get(h.qsm.NDI.edit.stepSize,       'String'));
 
         case 'STI suite iLSQR'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'stisuiteilsqr');
-            fprintf(fid,'algorParam.qsm.threshold = %s ;\n'         ,get(h.qsm.STIiLSQR.edit.threshold, 'String'));
-            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
-            fprintf(fid,'algorParam.qsm.tol1 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.tol1,   'String'));
-            fprintf(fid,'algorParam.qsm.tol2 = %s ;\n'              ,get(h.qsm.STIiLSQR.edit.tol2,      'String'));
-            fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.STIiLSQR.edit.padSize,   'String'));
+            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n'       ,'stisuiteilsqr');
+            fprintf(fid,'algorParam.qsm.threshold   = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.threshold, 'String'));
+            fprintf(fid,'algorParam.qsm.maxiter     = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
+            fprintf(fid,'algorParam.qsm.tol1        = %s ;\n'         	,get(h.qsm.STIiLSQR.edit.tol1,   'String'));
+            fprintf(fid,'algorParam.qsm.tol2        = %s ;\n'          	,get(h.qsm.STIiLSQR.edit.tol2,      'String'));
+            fprintf(fid,'algorParam.qsm.padsize     = ones(1,3)*%s ;\n'	,get(h.qsm.STIiLSQR.edit.padSize,   'String'));
 
         case 'iLSQR'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'ilsqr');
-            fprintf(fid,'algorParam.qsm.tol = %s ;\n'           ,get(h.qsm.iLSQR.edit.tol,          'String'));
-            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'      	,get(h.qsm.iLSQR.edit.maxIter,      'String'));
-            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'      	,get(h.qsm.iLSQR.edit.lambda,       'String'));
-            fprintf(fid,'algorParam.qsm.optimise = %i ;\n'  	,get(h.qsm.iLSQR.checkbox.lambda,   'Value'));
+            fprintf(fid,'algorParam.qsm.method   = ''%s'' ;\n'      ,'ilsqr');
+            fprintf(fid,'algorParam.qsm.tol      = %s ;\n'          ,get(h.qsm.iLSQR.edit.tol,          'String'));
+            fprintf(fid,'algorParam.qsm.maxiter  = %s ;\n'      	,get(h.qsm.iLSQR.edit.maxIter,      'String'));
+            fprintf(fid,'algorParam.qsm.lambda   = %s ;\n'      	,get(h.qsm.iLSQR.edit.lambda,       'String'));
+            fprintf(fid,'algorParam.qsm.optimise = %i ;\n'          ,get(h.qsm.iLSQR.checkbox.lambda,   'Value'));
 
         case 'FANSI'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'fansi');
-            fprintf(fid,'algorParam.qsm.tol = %s ;\n'           ,get(h.qsm.FANSI.edit.tol,      'String'));
-            fprintf(fid,'algorParam.qsm.maxiter = %s ;\n'      	,get(h.qsm.FANSI.edit.maxIter,  'String'));
-            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'      	,get(h.qsm.FANSI.edit.lambda,   'String'));
-            fprintf(fid,'algorParam.qsm.mu1 = %s ;\n'           ,get(h.qsm.FANSI.edit.mu,       'String'));
-            fprintf(fid,'algorParam.qsm.mu2 = %s ;\n'           ,get(h.qsm.FANSI.edit.mu2,      'String'));
-            fprintf(fid,'algorParam.qsm.solver = ''%s'' ;\n'  	,h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1});
-            fprintf(fid,'algorParam.qsm.constraint = ''%s'' ;\n',h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1});
+            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n' 	,'fansi');
+            fprintf(fid,'algorParam.qsm.tol         = %s ;\n'    	,get(h.qsm.FANSI.edit.tol,      'String'));
+            fprintf(fid,'algorParam.qsm.maxiter     = %s ;\n'      	,get(h.qsm.FANSI.edit.maxIter,  'String'));
+            fprintf(fid,'algorParam.qsm.lambda      = %s ;\n'      	,get(h.qsm.FANSI.edit.lambda,   'String'));
+            fprintf(fid,'algorParam.qsm.mu1         = %s ;\n'    	,get(h.qsm.FANSI.edit.mu,       'String'));
+            fprintf(fid,'algorParam.qsm.mu2         = %s ;\n'     	,get(h.qsm.FANSI.edit.mu2,      'String'));
+            fprintf(fid,'algorParam.qsm.solver      = ''%s'' ;\n'  	,h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1});
+            fprintf(fid,'algorParam.qsm.constraint  = ''%s'' ;\n'   ,h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1});
 
         case 'Star-QSM'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'star');
+            fprintf(fid,'algorParam.qsm.method  = ''%s'' ;\n'       ,'star');
             fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.Star.edit.padSize,   'String'));
 
         case 'MEDI'
-            fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'    ,'medi_l1');
-            fprintf(fid,'algorParam.qsm.lambda = %s ;\n'      	,get(h.qsm.MEDI.edit.lambda,        'String'));
-            fprintf(fid,'algorParam.qsm.wData = %s ;\n'        	,get(h.qsm.MEDI.edit.weightData,    'String'));
-            fprintf(fid,'algorParam.qsm.wGradient = %s ;\n'    	,get(h.qsm.MEDI.edit.weightGradient,'String'));
-            fprintf(fid,'algorParam.qsm.zeropad = %s ;\n'      	,get(h.qsm.MEDI.edit.zeropad,       'String'));
-            fprintf(fid,'algorParam.qsm.radius = %s ;\n'      	,get(h.qsm.MEDI.edit.smv_radius,    'String'));
-            fprintf(fid,'algorParam.qsm.isSMV = %i ;\n'         ,get(h.qsm.MEDI.checkbox.smv,       'Value'));
-            fprintf(fid,'algorParam.qsm.merit = %i ;\n'         ,get(h.qsm.MEDI.checkbox.merit,     'Value'));
-            fprintf(fid,'algorParam.qsm.isLambdaCSF = %i ;\n'  	,get(h.qsm.MEDI.checkbox.lambda_csf,'Value'));
-            fprintf(fid,'algorParam.qsm.lambdaCSF = %s ;\n'     ,get(h.qsm.MEDI.edit.lambda_csf,    'String'));  
+            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n' 	,'medi_l1');
+            fprintf(fid,'algorParam.qsm.lambda      = %s ;\n'      	,get(h.qsm.MEDI.edit.lambda,        'String'));
+            fprintf(fid,'algorParam.qsm.wData       = %s ;\n'     	,get(h.qsm.MEDI.edit.weightData,    'String'));
+            fprintf(fid,'algorParam.qsm.wGradient   = %s ;\n'    	,get(h.qsm.MEDI.edit.weightGradient,'String'));
+            fprintf(fid,'algorParam.qsm.zeropad     = %s ;\n'      	,get(h.qsm.MEDI.edit.zeropad,       'String'));
+            fprintf(fid,'algorParam.qsm.radius      = %s ;\n'      	,get(h.qsm.MEDI.edit.smv_radius,    'String'));
+            fprintf(fid,'algorParam.qsm.isSMV       = %i ;\n'   	,get(h.qsm.MEDI.checkbox.smv,       'Value'));
+            fprintf(fid,'algorParam.qsm.merit       = %i ;\n'   	,get(h.qsm.MEDI.checkbox.merit,     'Value'));
+            fprintf(fid,'algorParam.qsm.isLambdaCSF = %i ;\n'       ,get(h.qsm.MEDI.checkbox.lambda_csf,'Value'));
+            fprintf(fid,'algorParam.qsm.lambdaCSF   = %s ;\n'       ,get(h.qsm.MEDI.edit.lambda_csf,    'String'));  
 
     end
 end
@@ -515,8 +517,22 @@ try
     
     fclose(fid);
     
+    % log command window display to a text file
+    logFilename = [outputDir filesep 'run_sepia.log'];
+    if exist(logFilename,'file') == 2
+        counter = 1;
+        while exist(logFilename,'file') == 2
+            suffix = ['_' num2str(counter)];
+            logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
+            counter = counter + 1;
+        end
+    end
+    diary(logFilename)
+    
     % run process
-    run(logFilename);
+    run(configFilename);
+    
+    diary off
     
     % re-enable the pushbutton
     set(source,'Enable','on');
@@ -524,8 +540,31 @@ try
 catch ME
     % re-enable the start button before displaying the error
     set(source,'Enable','on');
-
+    
+    % close log file
+    disp('There was an error! Please check the command window/error message file for more information.');
+    diary off
+    
+    % open a new text file for error message
+    errorMessageFilename = [outputDir filesep 'run_sepia.error'];
+    if exist(errorMessageFilename,'file') == 2
+        counter = 1;
+        while exist(errorMessageFilename,'file') == 2
+            suffix = ['_' num2str(counter)];
+            errorMessageFilename = [outputDir filesep 'run_sepia' suffix '.error'];
+            counter = counter + 1;
+        end
+    end
+    fid = fopen(errorMessageFilename,'w');
+    fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
+    fprintf(fid,'The message was:\n');
+    msgString = getReport(ME,'extended','hyperlinks','off');
+    fprintf(fid,'%s',msgString);
+    fclose(fid);
+    
+    % rethrow the error message to command window
     rethrow(ME);
+    
 end
 
 
