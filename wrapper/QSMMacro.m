@@ -154,7 +154,7 @@ if ~isempty(varargin)
                     
                 case 'medi_l1'
                     method = 'MEDI_L1';
-                    [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(varargin);
+                    [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF,tmp_output_dir] = parse_varargin_MEDI_L1(varargin);
                     
                 case 'ndi'
                     method = 'NDI';
@@ -192,7 +192,7 @@ if exist('initGuess','var')
     initGuess   = double(zeropad_odd_dimension(initGuess,'pre'));
 end
 if exist('Mask_CSF','var')
-    Mask_CSF   = double(zeropad_odd_dimension(Mask_CSF,'pre'));
+    Mask_CSF   = zeropad_odd_dimension(Mask_CSF,'pre') > 0;
 end
 matrixSize_new = size(localField);
 
@@ -285,11 +285,41 @@ switch method
         % MEDI input expects local field in rad
         localField = localField*2*pi*te;
         
-        chi = MEDI_L1_4sepia(localField,mask,matrixSize_new,voxelSize,...
-            'lambda',lambda,'pad',pad,'TE',te,'CF',CF,'b0dir',b0dir,'merit',isMerit,...
-            'smv',isSMV,'radius',radius,'data_weighting',wData,...
-            'gradient_weighting',wGrad,'lam_CSF',lam_CSF,...
-            'noisestd',N_std,'magnitude',magn,'Mask_CSF',Mask_CSF);
+        tmp_filename = [tmp_output_dir 'tmp_RDF.mat'];
+        % matching naming convension for MEDI_L1
+        RDF         = localField;
+        iFreq       = [];
+        iMag        = magn;
+        Mask        = mask;
+        matrix_size = matrixSize_new;
+        voxel_size  = voxelSize;
+        delta_TE    = te;
+        B0_dir      = b0dir;
+        save(tmp_filename,'iFreq','RDF','N_std','iMag','Mask','matrix_size','voxel_size','delta_TE','CF','B0_dir','Mask_CSF');
+        
+        if exist(fullfile('.','results'),'dir')
+            isResultDirMEDIExist = true;
+        else
+            isResultDirMEDIExist = false;
+        end
+        
+        if isSMV
+            chi = MEDI_L1('filename',tmp_filename,'lambda',lambda,'data_weighting',wData,'gradient_weighting',wGrad,...
+                      'merit',isMerit,'smv',radius,'zeropad',pad,'lambda_CSF',lam_CSF);
+        else
+            chi = MEDI_L1('filename',tmp_filename,'lambda',lambda,'data_weighting',wData,'gradient_weighting',wGrad,...
+                      'merit',isMerit,'zeropad',pad,'lambda_CSF',lam_CSF);
+        end
+        
+        % clean up MEDI output and temp files 
+        delete(tmp_filename);
+        if isResultDirMEDIExist
+            fileno=getnextfileno(['results' filesep],'x','.mat') - 1;
+            resultsfile=strcat(['results' filesep 'x'],sprintf('%08u',fileno), '.mat');
+            delete(resultsfile)
+        else
+            rmdir(fullfile(pwd,'results'),'s');
+        end
         
     case 'NDI'
         

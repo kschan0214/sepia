@@ -4,15 +4,15 @@
 %   Last modified by Tian Liu on 2013.07.24
 % Date last modified: 27 Feb 2020 (v0.8.0, KC)
 
-function [N_std,iMag,lam,pad,delta_TE,CF,B0_dir,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF] = parse_varargin_MEDI_L1(arg)
+function [N_std,iMag,lam,pad,delta_TE,CF,B0_dir,merit,smv,radius,data_weighting,gradient_weighting,Debug_Mode,lam_CSF,Mask_CSF,tmp_output_dir] = parse_varargin_MEDI_L1(arg)
 gyro = 42.57747892;
 
-B0_dir = [0,0,1];
-CF = gyro*1e6*3;    %3T
-merit = 0;
-smv = 0;
-lam = 1000;
-radius = 5;
+B0_dir  = [0,0,1];
+CF      = gyro*1e6*3;    %3T
+merit   = 0;
+smv     = 0;
+lam     = 1000;
+radius  = 5;
 data_weighting = 1;
 gradient_weighting = 1;
 pad = 0;
@@ -22,6 +22,7 @@ lam_CSF = 100;
 Mask_CSF = [];
 N_std = [];
 iMag = [];
+tmp_output_dir = [pwd filesep];
 
 if ~isempty(arg)
     for kvar = 1:length(arg)
@@ -74,6 +75,9 @@ if ~isempty(arg)
         if strcmpi(arg{kvar},'CF')
             CF = arg{kvar+1};
         end 
+        if strcmpi(arg{kvar},'tmp_output_dir')
+            tmp_output_dir = arg{kvar+1};
+        end
     end
 end
 end
