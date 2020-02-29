@@ -24,7 +24,7 @@ function h = sepia_handle_panel_phaseUnwrap(hParent,h,position)
 
 % set up method name displayed on GUI
 methodUnwrapName = {'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut','SEGUE'};
-methodEchoCombineName = {'Optimum weights','MEDI nonlinear fit'};
+methodEchoCombineName = {'Optimum weights','MEDI nonlinear fit','MEDI nonlinear fit (Bipolar)'};
 
 % set default value
 defaultThreshold = 0.5;
@@ -145,9 +145,15 @@ method = source.String{source.Value,1} ;
 switch method
     case 'Optimum weights'
         set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'on', 'Value', 0);
+        set(h.phaseUnwrap.checkbox.eddyCorrect,     'Enable', 'on');
         
     case 'MEDI nonlinear fit'
         set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'off', 'Value', 0);
+        set(h.phaseUnwrap.checkbox.eddyCorrect,     'Enable', 'on');
+        
+    case 'MEDI nonlinear fit (Bipolar)'
+        set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'off', 'Value', 0);
+        set(h.phaseUnwrap.checkbox.eddyCorrect,     'Enable', 'off', 'Value', 0);
     
 end
 

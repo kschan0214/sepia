@@ -170,6 +170,26 @@ switch echoCombine
         
         % convert rad to radHz
         totalField = totalField / dt;
+        
+    case 'MEDI nonlinear fit (Bipolar)'
+        sepia_addpath('nonlinearfit');
+        % Estimate the frequency offset in each of the voxel using a complex
+        % fitting (even echo spacing)
+        [iFreq_raw, N_std] = Fit_ppm_complex_bipolar(magn.*exp(-1i*fieldMap));
+
+        % Compute magnitude image
+        rss_magn = sqrt(sum(abs(magn).^2,4));
+
+        % Spatial phase unwrapping
+        totalField = UnwrapPhaseMacro(iFreq_raw,matrixSize,voxelSize,...
+                        'method',unwrapMethod,'Magn',rss_magn,'subsampling',subsampling,'mask',mask);
+                    
+        % use the centre of mass as reference phase
+        totalField = totalField-round(totalField(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+        
+        % convert rad to radHz
+        totalField = totalField / dt;
+        
 end
 
 disp(['The resulting field map with the following unit: ' unit]);
