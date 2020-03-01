@@ -107,6 +107,7 @@ phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
 unwrap              = algorParam.unwrap.unwrapMethod;
 subsampling         = algorParam.unwrap.subsampling;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
+exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
 % background field removal algorithm parameters
 BFR                 = algorParam.bfr.method;
@@ -436,8 +437,17 @@ else
     maskReliable = ones(size(totalField),'like',totalField);
 end
 
-% threshold fieldmapSD with the reliable voxel mask
-fieldmapSD = fieldmapSD .* maskReliable;
+
+switch exclude_method
+    % threshold fieldmapSD with the reliable voxel mask
+    case 'Weighting map'
+        fieldmapSD = fieldmapSD .* maskReliable;
+    % threshold brain mask with the reliable voxel mask
+    case 'Brain mask'
+        mask = mask .* maskReliable;
+        save_nii_quick(outputNiftiTemplate,mask,  [outputDir filesep prefix 'mask-local_field.nii.gz']);
+        
+end
 fprintf('Done!\n');
 
 % 20180815: test with creating weights using relativeResidual

@@ -35,6 +35,7 @@ try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThres
 % for the rest, if the parameter does not exist then initiates it with an empty array
 try algorParam2.unwrap.subsampling          = algorParam.unwrap.subsampling;            catch; algorParam2.unwrap.subsampling           = [];                   end
 try algorParam2.unwrap.isSaveUnwrappedEcho	= algorParam.unwrap.isSaveUnwrappedEcho;	catch; algorParam2.unwrap.isSaveUnwrappedEcho	= 0;                    end
+try algorParam2.unwrap.excludeMethod        = algorParam.unwrap.excludeMethod;          catch; algorParam2.unwrap.excludeMethod         = 'Weighting map';      end
 
 % default background field removal method is VSHARP
 try algorParam2.bfr.method      = algorParam.bfr.method;        catch; algorParam2.bfr.method = 'vsharpsti';end

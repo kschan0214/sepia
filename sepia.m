@@ -396,6 +396,7 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
     % exclusion mask threshold
     if get(h.phaseUnwrap.checkbox.excludeMask,'Value')
         fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = %g ;\n'     ,str2double(get(h.phaseUnwrap.edit.excludeMask,'String')));
+        fprintf(fid,'algorParam.unwrap.excludeMethod        = ''%s'' ;\n' ,h.phaseUnwrap.popup.excludeMethod.String{h.phaseUnwrap.popup.excludeMethod.Value,1});
     else
         fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = Inf ;\n');
     end

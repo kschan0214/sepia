@@ -66,6 +66,7 @@ phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
 unwrap              = algorParam.unwrap.unwrapMethod;
 subsampling         = algorParam.unwrap.subsampling;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
+exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
 
 %% Read input
@@ -338,8 +339,15 @@ else
     maskReliable = ones(size(totalField),'like',fieldmapSD);
 end
 
-% threshold fieldmapSD with the reliable voxel mask
-fieldmapSD = fieldmapSD .* maskReliable;
+switch exclude_method
+    % threshold fieldmapSD with the reliable voxel mask
+    case 'Weighting map'
+        fieldmapSD = fieldmapSD .* maskReliable;
+    % threshold brain mask with the reliable voxel mask
+    case 'Brain mask'
+        mask = mask .* maskReliable;
+        
+end
 
 % 20180815: test with creating weights using relativeResidual
 % weightResidual = 1-(relativeResidual./exclude_threshold);
