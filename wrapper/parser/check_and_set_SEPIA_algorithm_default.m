@@ -21,8 +21,10 @@ function algorParam2 = check_and_set_SEPIA_algorithm_default(algorParam)
 algorParam2 = algorParam;
 
 try algorParam2.general.isInvert   	= algorParam.general.isInvert; 	catch; algorParam2.general.isInvert	= false;	end
-try algorParam2.general.isBET   	= algorParam.general.isBET; 	catch; algorParam2.general.isBET   	= false;	end
 try algorParam2.general.isGPU       = algorParam.general.isGPU;     catch; algorParam2.general.isGPU    = false;    end
+try algorParam2.general.isBET   	= algorParam.general.isBET; 	catch; algorParam2.general.isBET   	= false;	end
+try algorParam2.general.fractional_threshold   	= algorParam.general.fractional_threshold; 	catch; algorParam2.general.fractional_threshold   	= 0.5;	end
+try algorParam2.general.gradient_threshold   	= algorParam.general.gradient_threshold; 	catch; algorParam2.general.gradient_threshold   	= 0;	end
 
 % default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
 try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = 'MEDI nonlinear fit';	end
@@ -72,5 +74,6 @@ try algorParam2.qsm.isLambdaCSF	= algorParam.qsm.isLambdaCSF;	catch; algorParam2
 try algorParam2.qsm.lambdaCSF 	= algorParam.qsm.lambdaCSF;    	catch; algorParam2.qsm.lambdaCSF    = [];     	end
 try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = [];      	end
 try algorParam2.qsm.stepSize   	= algorParam.qsm.stepSize;    	catch; algorParam2.qsm.stepSize    	= [];      	end
+try algorParam2.qsm.percentage  = algorParam.qsm.percentage;    catch; algorParam2.qsm.percentage   = [];      	end
 
 end

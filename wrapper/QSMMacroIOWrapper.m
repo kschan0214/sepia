@@ -99,6 +99,7 @@ QSM_lambdaCSF	= algorParam.qsm.lambdaCSF;
 QSM_isSMV       = algorParam.qsm.isSMV;
 QSM_merit       = algorParam.qsm.merit;  
 QSM_stepSize   	= algorParam.qsm.stepSize;  
+QSM_percentage  = algorParam.qsm.percentage;  
 
 %% Read input
 disp('Reading data...');
@@ -389,7 +390,7 @@ else
                    'noisestd',weights,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
-                   'stepsize',QSM_stepSize,'tmp_output_dir',outputDir);
+                   'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir);
 end
 
 % save results

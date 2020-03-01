@@ -97,8 +97,10 @@ end
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 % generl algorithm parameters
 isInvert            = algorParam.general.isInvert;
-isBET               = algorParam.general.isBET ;
 isGPU               = algorParam.general.isGPU;
+isBET               = algorParam.general.isBET;
+fractional_threshold = algorParam.general.fractional_threshold;
+gradient_threshold   = algorParam.general.gradient_threshold;
 % phase unwrap algorithm parameters
 isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
@@ -141,6 +143,7 @@ QSM_lambdaCSF       = algorParam.qsm.lambdaCSF;
 QSM_isSMV           = algorParam.qsm.isSMV;
 QSM_merit           = algorParam.qsm.merit;  
 QSM_stepSize        = algorParam.qsm.stepSize;  
+QSM_percentage      = algorParam.qsm.percentage;  
 
 %% Read input
 disp('Reading data...');
@@ -349,7 +352,7 @@ if isempty(mask) || isBET
     
     fprintf('Performing FSL BET...');
     % Here uses MEDI toolboxes MEX implementation
-    mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
+    mask = BET(magn(:,:,:,1),matrixSize,voxelSize,fractional_threshold,gradient_threshold);
     fprintf('done!\n');
     
     fprintf('Saving brain mask...')
@@ -574,7 +577,7 @@ else
                    'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
-                   'stepsize',QSM_stepSize);
+                   'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir);
 end
   
 % save results

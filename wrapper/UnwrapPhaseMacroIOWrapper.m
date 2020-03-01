@@ -59,6 +59,8 @@ end
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 isInvert            = algorParam.general.isInvert;
 isBET               = algorParam.general.isBET ;
+fractional_threshold= algorParam.general.fractional_threshold;
+gradient_threshold  = algorParam.general.gradient_threshold;
 isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
 unwrap              = algorParam.unwrap.unwrapMethod;
@@ -248,8 +250,8 @@ if isempty(mask) || isBET
     sepia_addpath('bet');
     
     fprintf('Performing FSL BET...');
-    % this is the BET functino provided with MEDI toolbox
-    mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
+    % this is the BET function provided with MEDI toolbox
+    mask = BET(magn(:,:,:,1),matrixSize,voxelSize,fractional_threshold,gradient_threshold);
     fprintf('done!\n');
     
     fprintf('Saving brain mask...')

@@ -154,7 +154,7 @@ if ~isempty(varargin)
                     
                 case 'medi_l1'
                     method = 'MEDI_L1';
-                    [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF,tmp_output_dir] = parse_varargin_MEDI_L1(varargin);
+                    [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF,tmp_output_dir,percentage] = parse_varargin_MEDI_L1(varargin);
                     
                 case 'ndi'
                     method = 'NDI';
@@ -305,7 +305,7 @@ switch method
         
         if isSMV
             chi = MEDI_L1('filename',tmp_filename,'lambda',lambda,'data_weighting',wData,'gradient_weighting',wGrad,...
-                      'merit',isMerit,'smv',radius,'zeropad',pad,'lambda_CSF',lam_CSF);
+                      'merit',isMerit,'smv',radius,'zeropad',pad,'lambda_CSF',lam_CSF,'percentage',percentage);
         else
             chi = MEDI_L1('filename',tmp_filename,'lambda',lambda,'data_weighting',wData,'gradient_weighting',wGrad,...
                       'merit',isMerit,'zeropad',pad,'lambda_CSF',lam_CSF);

@@ -358,6 +358,10 @@ fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
 
 % general algorithm parameters
 fprintf(fid,'algorParam.general.isBET       = %i ;\n'	,get(h.dataIO.checkbox.brainExtraction, 'Value'));
+if get(h.dataIO.checkbox.brainExtraction, 'Value')
+    fprintf(fid,'algorParam.general.fractional_threshold = %s ;\n'	,get(h.dataIO.edit.fractionalThres, 'String'));
+    fprintf(fid,'algorParam.general.gradient_threshold   = %s ;\n'	,get(h.dataIO.edit.gradientThres,  	'String'));
+end
 fprintf(fid,'algorParam.general.isInvert    = %i ;\n'   ,get(h.dataIO.checkbox.invertPhase,     'Value'));
 fprintf(fid,'algorParam.general.isGPU       = %i ;\n'  	,get(h.checkbox_gpu,                    'Value'));
 
@@ -506,6 +510,7 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
             fprintf(fid,'algorParam.qsm.merit       = %i ;\n'   	,get(h.qsm.MEDI.checkbox.merit,     'Value'));
             fprintf(fid,'algorParam.qsm.isLambdaCSF = %i ;\n'       ,get(h.qsm.MEDI.checkbox.lambda_csf,'Value'));
             fprintf(fid,'algorParam.qsm.lambdaCSF   = %s ;\n'       ,get(h.qsm.MEDI.edit.lambda_csf,    'String'));  
+            fprintf(fid,'algorParam.qsm.percentage  = %s ;\n'       ,get(h.qsm.MEDI.edit.percentage,    'String')); 
 
     end
 end
