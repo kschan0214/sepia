@@ -142,7 +142,7 @@ if ~isempty(varargin)
                 case 'fansi'
                     method = 'FANSI';
 %                     [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
-                    [mu1,mu2,alpha1,wmap,options,~]=parse_varargin_FANSI(varargin);
+                    [mu1,alpha1,wmap,options,~]=parse_varargin_FANSI(varargin);
                     
                 case 'ssvsharp'
                     method = 'SSVSHARP';

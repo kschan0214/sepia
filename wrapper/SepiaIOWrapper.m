@@ -135,6 +135,10 @@ QSM_mu1             = algorParam.qsm.mu1;
 QSM_mu2             = algorParam.qsm.mu2;  
 QSM_solver          = algorParam.qsm.solver;  
 QSM_constraint      = algorParam.qsm.constraint; 
+QSM_gradient_mode   = algorParam.qsm.gradient_mode;
+QSM_isWeakHarmonic	= algorParam.qsm.isWeakHarmonic;
+QSM_beta            = algorParam.qsm.beta;
+QSM_muh             = algorParam.qsm.muh;
 QSM_radius          = algorParam.qsm.radius;
 QSM_zeropad         = algorParam.qsm.zeropad;   
 QSM_wData           = algorParam.qsm.wData; 
@@ -587,7 +591,9 @@ else
                    'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
-                   'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir);
+                   'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir,...
+                   'gradient_mode',QSM_gradient_mode,'isWeakHarmonic',QSM_isWeakHarmonic,'beta',QSM_beta,'muh',QSM_muh);
+               
 end
   
 % save results

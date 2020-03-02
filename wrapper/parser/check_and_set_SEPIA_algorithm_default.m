@@ -67,6 +67,10 @@ try algorParam2.qsm.mu1         = algorParam.qsm.mu1;           catch; algorPara
 try algorParam2.qsm.mu2         = algorParam.qsm.mu2;           catch; algorParam2.qsm.mu2          = [];    	end
 try algorParam2.qsm.solver    	= algorParam.qsm.solver;    	catch; algorParam2.qsm.solver       = [];    	end
 try algorParam2.qsm.constraint 	= algorParam.qsm.constraint;   	catch; algorParam2.qsm.constraint   = [];       end
+try algorParam2.qsm.gradient_mode	= algorParam.qsm.gradient_mode;	catch; algorParam2.qsm.gradient_mode    = [];      	end
+try algorParam2.qsm.isWeakHarmonic  = algorParam.qsm.isWeakHarmonic;catch; algorParam2.qsm.isWeakHarmonic	= [];      	end
+try algorParam2.qsm.beta            = algorParam.qsm.beta;          catch; algorParam2.qsm.beta             = [];      	end
+try algorParam2.qsm.muh             = algorParam.qsm.muh;           catch; algorParam2.qsm.muh              = [];      	end
 try algorParam2.qsm.wData       = algorParam.qsm.wData;         catch; algorParam2.qsm.wData        = [];       end
 try algorParam2.qsm.wGradient  	= algorParam.qsm.wGradient;    	catch; algorParam2.qsm.wGradient    = [];       end
 try algorParam2.qsm.zeropad  	= algorParam.qsm.zeropad;    	catch; algorParam2.qsm.zeropad      = [];      	end

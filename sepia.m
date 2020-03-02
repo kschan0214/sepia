@@ -40,7 +40,7 @@
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
 % Date last modified: 1 June 2018
-%
+% Date last modified: 2 March 2020 (v0.8.0)
 %
 function sepia
 clear 
@@ -132,7 +132,7 @@ h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','checkbox',...
     'String','Enable GPU computation',...
     'units','normalized','Position',[0.01 0.01 0.4 0.05],...
-    'backgroundcolor',get(h.fig,'color'), 'Enable','off',...
+    'backgroundcolor',get(h.fig,'color'), 'Enable','off','Visible','off',...
     'TooltipString',['Enable to use GPU for some of the algorithms in sepia. ' ...
                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
 if gpuDeviceCount > 0
@@ -340,6 +340,7 @@ fid = fopen(configFilename,'w');
 fprintf(fid,'%% add general Path\n');
 fprintf(fid,'sepia_addpath\n\n');
 
+fprintf(fid,'%% Input/Output filenames\n');
 % input data
 if isstruct(input)
     fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
@@ -357,6 +358,7 @@ fprintf(fid,'output_basename = ''%s'' ;\n',outputBasename);
 fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
 
 % general algorithm parameters
+fprintf(fid,'%% General algorithm parameters\n');
 fprintf(fid,'algorParam.general.isBET       = %i ;\n'	,get(h.dataIO.checkbox.brainExtraction, 'Value'));
 if get(h.dataIO.checkbox.brainExtraction, 'Value')
     fprintf(fid,'algorParam.general.fractional_threshold = %s ;\n'	,get(h.dataIO.edit.fractionalThres, 'String'));
@@ -487,14 +489,21 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
             fprintf(fid,'algorParam.qsm.optimise = %i ;\n'          ,get(h.qsm.iLSQR.checkbox.lambda,   'Value'));
 
         case 'FANSI'
-            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n' 	,'fansi');
-            fprintf(fid,'algorParam.qsm.tol         = %s ;\n'    	,get(h.qsm.FANSI.edit.tol,      'String'));
-            fprintf(fid,'algorParam.qsm.maxiter     = %s ;\n'      	,get(h.qsm.FANSI.edit.maxIter,  'String'));
-            fprintf(fid,'algorParam.qsm.lambda      = %s ;\n'      	,get(h.qsm.FANSI.edit.lambda,   'String'));
-            fprintf(fid,'algorParam.qsm.mu1         = %s ;\n'    	,get(h.qsm.FANSI.edit.mu,       'String'));
-            fprintf(fid,'algorParam.qsm.mu2         = %s ;\n'     	,get(h.qsm.FANSI.edit.mu2,      'String'));
-            fprintf(fid,'algorParam.qsm.solver      = ''%s'' ;\n'  	,h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1});
-            fprintf(fid,'algorParam.qsm.constraint  = ''%s'' ;\n'   ,h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1});
+            fprintf(fid,'algorParam.qsm.method          = ''%s'' ;\n' 	,'fansi');
+            fprintf(fid,'algorParam.qsm.tol             = %s ;\n'    	,get(h.qsm.FANSI.edit.tol,      'String'));
+            fprintf(fid,'algorParam.qsm.maxiter         = %s ;\n'      	,get(h.qsm.FANSI.edit.maxIter,  'String'));
+            fprintf(fid,'algorParam.qsm.lambda          = %s ;\n'      	,get(h.qsm.FANSI.edit.lambda,   'String'));
+            fprintf(fid,'algorParam.qsm.mu1             = %s ;\n'    	,get(h.qsm.FANSI.edit.mu,       'String'));
+            fprintf(fid,'algorParam.qsm.mu2             = %s ;\n'     	,get(h.qsm.FANSI.edit.mu2,      'String'));
+            fprintf(fid,'algorParam.qsm.solver          = ''%s'' ;\n'  	,h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1});
+            fprintf(fid,'algorParam.qsm.constraint      = ''%s'' ;\n'   ,h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1});
+            fprintf(fid,'algorParam.qsm.gradient_mode	= ''%s'' ;\n'   ,h.qsm.FANSI.popup.gradientMode.String{h.qsm.FANSI.popup.gradientMode.Value,1});
+            fprintf(fid,'algorParam.qsm.isWeakHarmonic  = %i ;\n'    	,get(h.qsm.FANSI.checkbox.isWeakHarmonic,'Value'));
+            
+            if get(h.qsm.FANSI.checkbox.isWeakHarmonic,'Value')
+                fprintf(fid,'algorParam.qsm.beta    = %s ;\n'    	,get(h.qsm.FANSI.edit.beta,'String'));
+                fprintf(fid,'algorParam.qsm.muh     = %s ;\n'    	,get(h.qsm.FANSI.edit.muh,'String'));
+            end
 
         case 'Star-QSM'
             fprintf(fid,'algorParam.qsm.method  = ''%s'' ;\n'       ,'star');
@@ -599,5 +608,6 @@ fid = fopen(fullfile(pathDir,config_filename),'r');
 %% I/O
 % Input
 
+fclose(fid)
 
 end
