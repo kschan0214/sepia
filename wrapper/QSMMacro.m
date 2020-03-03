@@ -106,7 +106,7 @@ matrixSize      = double(matrixSize(:).');
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)
-        [b0,b0dir,te] = parse_varargin_QSMmacro(varargin);
+        [b0,b0dir,te,mask_ref] = parse_varargin_QSMmacro(varargin);
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
                 case 'tkd'
@@ -332,6 +332,13 @@ end
 
 % remove zero padding 
 chi = double(zeropad_odd_dimension(chi,'post',matrixSize));
+
+% referencing
+if ~(strcmpi(method,'MEDI_L1') && isempty(Mask_CSF)) % MEDI+0 needs no referencing
+    if ~isempty(mask_ref)
+        chi = chi - mean(chi(mask_ref>0));
+    end
+end
 
 end
 

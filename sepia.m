@@ -523,6 +523,7 @@ if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
             fprintf(fid,'algorParam.qsm.percentage  = %s ;\n'       ,get(h.qsm.MEDI.edit.percentage,    'String')); 
 
     end
+    fprintf(fid,'algorParam.qsm.reference_tissue = ''%s'' ;\n'   ,h.qsm.popup.tissue.String{h.qsm.popup.tissue.Value,1});
 end
 
 try

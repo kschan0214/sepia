@@ -18,11 +18,20 @@
 % Date created: 16 April 2018
 % Date modified: 1 June 2018
 % Date modified: 5 Juen 2019
+% Date modified: 3 March 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_qsm(hParent,h,position)
 % set up method name displayed on GUI
 methodName = {'TKD','Closed-form solution','NDI','STI suite iLSQR','iLSQR','FANSI','Star-QSM','MEDI'};
+tissueName = {'None','Brain mask','CSF'};
+
+%% layout of the panel
+% define maximum level of options and spacing between options
+ncol    = 2; % 2 columns in the panel
+rspacing = 0.01;
+width   = (1-(ncol+1)*rspacing)/ncol;
+left    = (rspacing:width+rspacing:(width+rspacing)*ncol);
 
 % Set parent of qsm panel
 h.StepsPanel.qsm = uipanel(hParent,...
@@ -30,18 +39,31 @@ h.StepsPanel.qsm = uipanel(hParent,...
     'position',[position(1) position(2) 0.95 0.25]);
 
 %% design of this panel
-
+    
+    height = 0.1;
+    subwidth(1) = 0.5;
+    subwidth(2) = 1-subwidth(1);
     % text|popup pair: select method
     h.qsm.text.qsm = uicontrol('Parent',h.StepsPanel.qsm,'Style','text','String','Method:',...
-        'units','normalized','position',[0.01 0.85 0.15 0.1],...
+        'units','normalized','position',[left(1) 0.85 width*subwidth(1) height],...
         'HorizontalAlignment','left',...
         'backgroundcolor',get(h.fig,'color'),...
         'tooltip','Select QSM algorithm');
     h.qsm.popup.qsm = uicontrol('Parent',h.StepsPanel.qsm,'Style','popup',...
         'String',methodName,...
-        'units','normalized','position',[0.31 0.85 0.4 0.1]) ; 
+        'units','normalized','position',[left(1)+width*subwidth(1) 0.85 width*subwidth(2) height]) ; 
     
-% create control panel
+    % text|popup pair: select reference tissue
+    h.qsm.text.tissue = uicontrol('Parent',h.StepsPanel.qsm,'Style','text','String','Reference tissue:',...
+        'units','normalized','position',[left(2) 0.85 width*subwidth(1) height],...
+        'HorizontalAlignment','left',...
+        'backgroundcolor',get(h.fig,'color'),...
+        'tooltip','Region used to normalised the magnetic susceptibility map');
+    h.qsm.popup.tissue = uicontrol('Parent',h.StepsPanel.qsm,'Style','popup',...
+        'String',tissueName,...
+        'units','normalized','position',[left(2)+width*subwidth(1) 0.85 width*subwidth(2) height]) ; 
+    
+%% create control panel
 
 % define position and size of all method panels
 position_child = [0.01 0.04 0.95 0.75];

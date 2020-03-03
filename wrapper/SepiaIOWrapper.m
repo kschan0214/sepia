@@ -149,6 +149,7 @@ QSM_isSMV           = algorParam.qsm.isSMV;
 QSM_merit           = algorParam.qsm.merit;  
 QSM_stepSize        = algorParam.qsm.stepSize;  
 QSM_percentage      = algorParam.qsm.percentage;  
+reference_tissue   	= algorParam.qsm.reference_tissue;  
 
 %% Read input
 disp('Reading data...');
@@ -532,6 +533,26 @@ clear maskReliable totalField mask
 %% QSM
 disp('Step 3: Computing QSM...');
 
+% reference tissue
+switch reference_tissue
+    case 'None'
+        mask_ref = [];
+        
+    case 'Brain mask'
+        mask_ref = maskFinal;
+        
+    case 'CSF'
+        if isempty(magn) || size(magn,4) == 1
+            warning('Please specify a multi-echo magnitude data if you want to use CSF as reference.');
+            warning('No normalisation will be done on the susceptibility map in this instance.');
+            mask_ref = [];
+        else
+            sepia_addpath('medi_l1');
+            r2s         = arlo(TE,magn);
+            mask_ref    = extract_CSF(r2s,maskFinal,voxelSize)>0;
+        end
+end
+
 % prepare all essential data for individual algorithm
 switch lower(QSM_method)
     case 'closedforml2'
@@ -592,7 +613,8 @@ else
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
                    'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir,...
-                   'gradient_mode',QSM_gradient_mode,'isWeakHarmonic',QSM_isWeakHarmonic,'beta',QSM_beta,'muh',QSM_muh);
+                   'gradient_mode',QSM_gradient_mode,'isWeakHarmonic',QSM_isWeakHarmonic,'beta',QSM_beta,'muh',QSM_muh,...
+                   'reference_mask',mask_ref);
                
 end
   

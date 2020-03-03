@@ -80,5 +80,6 @@ try algorParam2.qsm.lambdaCSF 	= algorParam.qsm.lambdaCSF;    	catch; algorParam
 try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = [];      	end
 try algorParam2.qsm.stepSize   	= algorParam.qsm.stepSize;    	catch; algorParam2.qsm.stepSize    	= [];      	end
 try algorParam2.qsm.percentage  = algorParam.qsm.percentage;    catch; algorParam2.qsm.percentage   = [];      	end
+try algorParam2.qsm.reference_tissue  = algorParam.qsm.reference_tissue;    catch; algorParam2.qsm.reference_tissue   = 'None';      	end
 
 end

@@ -20,10 +20,10 @@ Debug_Mode          = 'NoDebug';
 percentage          = 90;
 
 % CSF regularization
-lam_CSF = 100;
-Mask_CSF = [];
-N_std = [];
-iMag = [];
+lam_CSF     = 100;
+Mask_CSF    = [];
+N_std       = [];
+iMag        = [];
 tmp_output_dir = [pwd filesep];
 
 if ~isempty(arg)

@@ -94,16 +94,17 @@ QSM_gradient_mode   = algorParam.qsm.gradient_mode;
 QSM_isWeakHarmonic	= algorParam.qsm.isWeakHarmonic;
 QSM_beta            = algorParam.qsm.beta;
 QSM_muh             = algorParam.qsm.muh;
-QSM_radius      = algorParam.qsm.radius;
-QSM_zeropad     = algorParam.qsm.zeropad;   
-QSM_wData       = algorParam.qsm.wData; 
-QSM_wGradient 	= algorParam.qsm.wGradient;
-QSM_isLambdaCSF	= algorParam.qsm.isLambdaCSF;
-QSM_lambdaCSF	= algorParam.qsm.lambdaCSF; 
-QSM_isSMV       = algorParam.qsm.isSMV;
-QSM_merit       = algorParam.qsm.merit;  
-QSM_stepSize   	= algorParam.qsm.stepSize;  
-QSM_percentage  = algorParam.qsm.percentage;  
+QSM_radius          = algorParam.qsm.radius;
+QSM_zeropad         = algorParam.qsm.zeropad;   
+QSM_wData           = algorParam.qsm.wData; 
+QSM_wGradient       = algorParam.qsm.wGradient;
+QSM_isLambdaCSF     = algorParam.qsm.isLambdaCSF;
+QSM_lambdaCSF       = algorParam.qsm.lambdaCSF; 
+QSM_isSMV           = algorParam.qsm.isSMV;
+QSM_merit           = algorParam.qsm.merit;  
+QSM_stepSize        = algorParam.qsm.stepSize;  
+QSM_percentage      = algorParam.qsm.percentage;  
+reference_tissue   	= algorParam.qsm.reference_tissue;  
 
 %% Read input
 disp('Reading data...');
@@ -312,6 +313,27 @@ if exist('magn','var'); magn = double(magn);        end
 % for weighting map: higher SNR -> higher weighting
 weights = weights .* maskFinal;
 
+% reference tissue
+switch reference_tissue
+    case 'None'
+        mask_ref = [];
+        
+    case 'Brain mask'
+        mask_ref = maskFinal;
+        
+    case 'CSF'
+        if isempty(magn) || size(magn,4) == 1
+            warning('Please specify a multi-echo magnitude data if you want to use CSF as reference.');
+            warning('No normalisation will be done on the susceptibility map in this instance.');
+            mask_ref = [];
+        else
+            sepia_addpath('medi_l1');
+            r2s         = arlo(TE,magn);
+            mask_ref    = extract_CSF(r2s,maskFinal,voxelSize)>0;
+        end
+end
+        
+
 %% qsm
 disp('Computing QSM...');
 
@@ -332,8 +354,8 @@ switch lower(QSM_method)
         % if only magnitude images are loaded
         if ~isWeightLoad && isMagnLoad
             disp('The normalised RMS magnitude image will be used as the weighting map.');
-            magn = sqrt(mean(magn.^2,4));
-            weights = (magn./max(magn(:))) .* (maskFinal); 
+            tmp = sqrt(mean(magn.^2,4));
+            weights = (tmp./max(tmp(:))) .* (maskFinal); 
         end
         % if nothing is loaded
         if ~isWeightLoad && ~isMagnLoad
@@ -351,9 +373,9 @@ switch lower(QSM_method)
             disp('Extracting CSF mask....');
             sepia_addpath('medi_l1');
             % R2* mapping
-            r2s = arlo(TE,magn);
+            r2s     = arlo(TE,magn);
             maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
-            magn = sqrt(sum(magn.^2,4));
+%             magn    = sqrt(sum(magn.^2,4));
         end
         
     case 'ndi'
@@ -365,8 +387,8 @@ switch lower(QSM_method)
         % if only magnitude images are loaded
         if ~isWeightLoad && isMagnLoad
             disp('The normalised RMS magnitude image will be used as the weighting map.');
-            magn = sqrt(mean(magn.^2,4));
-            weights = (magn./max(magn(:))) .* (maskFinal); 
+            tmp = sqrt(mean(magn.^2,4));
+            weights = (tmp./max(tmp(:))) .* (maskFinal); 
         end
         % if nothing is loaded
         if ~isWeightLoad && ~isMagnLoad
@@ -395,7 +417,8 @@ else
                    'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                    'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
                    'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir,...
-                   'gradient_mode',QSM_gradient_mode,'isWeakHarmonic',QSM_isWeakHarmonic,'beta',QSM_beta,'muh',QSM_muh);
+                   'gradient_mode',QSM_gradient_mode,'isWeakHarmonic',QSM_isWeakHarmonic,'beta',QSM_beta,'muh',QSM_muh,...
+                   'reference_mask',mask_ref);
 end
 
 % save results
