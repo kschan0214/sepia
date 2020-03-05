@@ -10,7 +10,7 @@ This GUI is built to access the following toolboxes:
 [MEDI](http://weill.cornell.edu/mri/pages/qsm.html), 
 [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
 [FANSI](https://gitlab.com/cmilovic/FANSI-toolbox),  
-[SEGUE](https://xip.uclb.com/i/software/SEGUE.html, and 
+[SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
 [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox).
 
 SEPIA provides two key features for QSM processing:  
@@ -53,6 +53,8 @@ If you have any question or you would like to provide suggestion to improve this
 * New option to use [weak harmonic regularisation](https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.27483) with FANSI
 * Support [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox) as external library
 * Support [SEGUE](https://xip.uclb.com/i/software/SEGUE.html) as external library
+
+**Please upload the MEDI toolbox (Jan 15, 2020) and FANSI toolbox (commit dc68c306) to the lastest version for the best performance.**
 
 ### 0.7.2 (20190604)  
 * Support single-echo dataset
