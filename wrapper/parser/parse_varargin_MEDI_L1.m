@@ -17,7 +17,7 @@ data_weighting      = 1;
 gradient_weighting  = 1;
 pad                 = 0;
 Debug_Mode          = 'NoDebug';
-percentage          = 90;
+percentage          = 0.9;
 
 % CSF regularization
 lam_CSF     = 100;
@@ -85,4 +85,5 @@ if ~isempty(arg)
         end
     end
 end
+
 end

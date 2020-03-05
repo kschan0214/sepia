@@ -120,7 +120,7 @@ h.pushbutton_start = uicontrol('Parent',h.Tabs.Sepia,...
     'units','normalized','Position',[0.85 0.01 0.1 0.05],...
     'backgroundcolor',get(h.fig,'color'));
 
-% Start button
+% load config button
 h.pushbutton_loadConfig = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','pushbutton',...
     'String','Load config',...
@@ -186,6 +186,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.Sepia,'Position',[0.01 0.07 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.Sepia);
+        % load config pushbutton
+        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.Sepia);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.Sepia);
 %         set(h.checkbox_gpu,             'Enable', 'on');
@@ -217,6 +219,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.phaseUnwrap);
+        % load config pushbutton
+        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.phaseUnwrap);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.phaseUnwrap);
 %         set(h.checkbox_gpu,             'Enable', 'off');
@@ -251,6 +255,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.bkgRemoval);
+        % load config pushbutton
+        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.bkgRemoval);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.bkgRemoval);
 %         set(h.checkbox_gpu,             'Enable', 'on');
@@ -284,6 +290,8 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         % Start pushbutton
         set(h.pushbutton_start,         'Parent',h.Tabs.qsm);
+        % load config pushbutton
+        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.qsm);
         % GPU checkbox
         set(h.checkbox_gpu,             'Parent',h.Tabs.qsm);
 %         set(h.checkbox_gpu,             'Enable', 'on');
@@ -604,11 +612,8 @@ global h
 % only read m file
 [config_filename,pathDir] = uigetfile({'*.m'},'Select a SEPIA config file');
 
-fid = fopen(fullfile(pathDir,config_filename),'r');
-
-%% I/O
-% Input
-
-fclose(fid)
+if exist(fullfile(pathDir,config_filename),'file')
+    set_config_Callback(fullfile(pathDir,config_filename),h);
+end
 
 end
