@@ -18,13 +18,25 @@
 % Date created: 16 April 2018
 % Date modified: 1 June 2018
 % Date modified: 5 Juen 2019
-% Date modified: 3 March 2020 (v0.8.0)
+% Date modified: 6 March 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_qsm(hParent,h,position)
 % set up method name displayed on GUI
-methodName = {'TKD','Closed-form solution','NDI','STI suite iLSQR','iLSQR','FANSI','Star-QSM','MEDI'};
-tissueName = {'None','Brain mask','CSF'};
+sepia_universal_variables;
+
+% function that create the method specific panel
+% order must match the order in variable 'methodQSMName'
+function_QSM_method_panel = {'sepia_handle_panel_qsm_TKD',...
+                             'sepia_handle_panel_qsm_CFS',...
+                             'sepia_handle_panel_qsm_NDI',...
+                             'sepia_handle_panel_qsm_STIiLSQR',...
+                             'sepia_handle_panel_qsm_iLSQR',...
+                             'sepia_handle_panel_qsm_FANSI',...
+                             'sepia_handle_panel_qsm_Star',...
+                             'sepia_handle_panel_qsm_MEDI',...
+                             };
+                             % in future, add panel of new method here
 
 %% layout of the panel
 % define maximum level of options and spacing between options
@@ -51,7 +63,7 @@ h.StepsPanel.qsm = uipanel(hParent,...
         'backgroundcolor',get(h.fig,'color'),...
         'tooltip','Select QSM algorithm');
     h.qsm.popup.qsm = uicontrol('Parent',h.StepsPanel.qsm,'Style','popup',...
-        'String',methodName,...
+        'String',methodQSMName,...
         'units','normalized','position',[left(1)+width*subwidth(1) 0.85 width*subwidth(2) height]) ; 
     
     % text|popup pair: select reference tissue
@@ -69,42 +81,22 @@ h.StepsPanel.qsm = uipanel(hParent,...
 % define position and size of all method panels
 position_child = [0.01 0.04 0.95 0.75];
 
-    % TKD    
-    h = sepia_handle_panel_qsm_TKD(h.StepsPanel.qsm,h,position_child);
+% construct all method panels
+for k = 1:length(function_QSM_method_panel)
+    h = feval(function_QSM_method_panel{k},h.StepsPanel.qsm,h,position_child);
+end
 
-    % Closed-form solution  
-    h = sepia_handle_panel_qsm_CFS(h.StepsPanel.qsm,h,position_child);
-
-    % iLSQR  
-    h = sepia_handle_panel_qsm_iLSQR(h.StepsPanel.qsm,h,position_child);
-        
-    % STI suite iLSQR  
-    h = sepia_handle_panel_qsm_STIiLSQR(h.StepsPanel.qsm,h,position_child);
-    
-    % FANSI
-    h = sepia_handle_panel_qsm_FANSI(h.StepsPanel.qsm,h,position_child);
-        
-    % Star-QSM
-    h = sepia_handle_panel_qsm_Star(h.StepsPanel.qsm,h,position_child);
-
-    % MEDI
-    h = sepia_handle_panel_qsm_MEDI(h.StepsPanel.qsm,h,position_child);
-    
-    % NDI
-    h = sepia_handle_panel_qsm_NDI(h.StepsPanel.qsm,h,position_child);
-    
-    % in future, add panel of new method here
-
-% set callback
+%% set callback
 set(h.qsm.popup.qsm, 'Callback', {@PopupQSM_Callback,h});
 
 end
 
 %% Callback function
-function PopupQSM_Callback(source,eventdata,h)
 % display corresponding QSM method's panel
+function PopupQSM_Callback(source,eventdata,h)
 
-% global h
+% needs 'methodQSMName' here
+sepia_universal_variables;
 
 % get selected QSM method
 method = source.String{source.Value,1} ;
@@ -115,34 +107,12 @@ for kf = 1:length(fields)
     set(h.qsm.panel.(fields{kf}),   'Visible','off');
 end
 
-% switch on target panel
-switch method
-    case 'TKD'
-        set(h.qsm.panel.TKD,        'Visible','on');
-
-    case 'Closed-form solution'
-        set(h.qsm.panel.cfs,        'Visible','on');
-
-    case 'STI suite iLSQR'
-        set(h.qsm.panel.STIiLSQR,   'Visible','on');
-
-    case 'iLSQR'
-        set(h.qsm.panel.iLSQR,      'Visible','on');
-
-    case 'FANSI'
-        set(h.qsm.panel.FANSI,      'Visible','on');
-
-    case 'Star-QSM'
-        set(h.qsm.panel.Star,       'Visible','on');
-
-    case 'MEDI'
-        set(h.qsm.panel.MEDI,       'Visible','on');
-        
-    case 'NDI'
-        set(h.qsm.panel.NDI,        'Visible','on');
-
-    % in the future, add new method here
-
+% switch on only target panel
+for k = 1:length(methodQSMName)
+    if strcmpi(method,methodQSMName{k})
+        set(h.qsm.panel.(fields{k}), 'Visible','on');
+        break
+    end
 end
 
 end

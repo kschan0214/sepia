@@ -411,7 +411,7 @@ try
         fprintf('Done!\n');
     end
     
-catch
+catch ME
     % if the above selected method is not working then do Laplacian with
     % optimum weights
     warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping.')
@@ -420,7 +420,7 @@ catch
         exclude_threshold = Inf;
     end
     
-    unwrap = 'laplacian'; 
+    unwrap = 'Laplacian (MEDI)'; 
     sepia_addpath(unwrap);
     
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...

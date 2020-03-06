@@ -67,6 +67,10 @@
 % Date modified: 24 May 2019
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,varargin)
+
+sepia_universal_variables;
+methodBFRName = lower(methodBFRName);
+
 matrixSize = matrixSize(:).';
 voxelSize = voxelSize(:).';
 
@@ -79,11 +83,11 @@ if ~isempty(varargin)
     for kvar = 1:length(varargin)
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
-                case 'lbv'
+                case methodBFRName{1}   % 'lbv'
                     method = 'LBV';
                     [tol, depth, peel] = parse_varargin_LBV(varargin);
 %                     break
-                case 'pdf'
+                case methodBFRName{2}   % ''pdf'
                     method = 'PDF';
 %                     [B0_dir, tol, iteration, CGdefault, N_std, refine] = parse_varargin_PDF(varargin);
                     [B0_dir, tol, iteration, padSize, N_std] = parse_varargin_PDF(varargin);
@@ -91,23 +95,23 @@ if ~isempty(varargin)
                         N_std = ones(matrixSize)*1e-4;
                     end
 %                     break
-                case 'sharp'
+                case methodBFRName{4}   % ''sharp'
                     method = 'SHARP';
                     [radius, threshold] = parse_varargin_SHARP(varargin);
 %                     break
-                case 'resharp'
+                case methodBFRName{3}   % ''resharp'
                     method = 'RESHARP';
                     [radius, alpha] = parse_varargin_RESHARP(varargin);
 %                     break
-                case 'vsharpsti'
+                case methodBFRName{5}   % ''vsharpsti'
                     method = 'VSHARPSTISuite';
                     [radius] = parse_varargin_VSHARPSTI(varargin);
 %                     break
-                case 'iharperella'
+                case methodBFRName{7}   % ''iharperella'
                     method = 'iHARPERELLA';
                     [iteration] = parse_varargin_iHARPERELLA(varargin);
 %                     break
-                case 'vsharp'
+                case methodBFRName{6}   % ''vsharp'
                     method = 'VSHARP';
                     [radius] = parse_varargin_VSHARP(varargin);
             end

@@ -37,51 +37,46 @@
 % Date created: 29 June 2017
 % Date modified: 27 May 2018
 % Date modified: 24 May 2019
+% Date modified: 6 March 2020 (v0.8.0)
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,matrixSize,voxelSize,varargin)
 
-matrixSize = matrixSize(:).';
-voxelSize = voxelSize(:).';
-mask = [];
+sepia_universal_variables;
+methodUnwrapName = lower(methodUnwrapName);
+
+matrixSize  = matrixSize(:).';
+voxelSize   = voxelSize(:).';
+mask        = [];
 
 %% Parsing argument input flags
 if ~isempty(varargin)
     for kvar = 1:length(varargin)
         if strcmpi(varargin{kvar},'method')
-            switch lower(varargin{kvar+1})
-                case 'laplacian'
-                    
-                    method = 'Laplacian';
+            method = varargin{kvar+1};
+            switch lower(method)
+                case methodUnwrapName{1}    % laplacian medi
 
-                case 'laplacian_stisuite'
+                case methodUnwrapName{2}    % laplacian sti suite
                     
-                    method = 'Laplacian_stisuite';
+                case methodUnwrapName{3}    % 3d best path
 
-                case 'rg'
+                case methodUnwrapName{4}    % region growing medi
                     
-                    method = 'RegionGrowing';
                     [magn] = parse_varargin_RegionGrowing(varargin);
                     if isempty(magn)
                         disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
 
-                case 'gc'
+                case methodUnwrapName{5}    % graphcut
                     
-                    method = 'Graphcut';
                     [magn, subsampling] = parse_varargin_Graphcut(varargin);
                     if isempty(magn)
                         disp('Running algorithm without magnitude image could be problematic');
                         magn = ones(matrixSize);
                     end
-
-                case 'bestpath3d'
                     
-                    method = 'BestPath3D';
-                    
-                case 'segue'
-                    
-                    method = 'SEGUE';
+                case methodUnwrapName{6}    % segue
 
             end
         end
@@ -117,40 +112,40 @@ disp(['The following unwrapping method is being used: ' method]);
 sepia_addpath(method);
 
 % Laplacian based method required prior zero padding for odd number dimension
-if strcmpi(method,'Laplacian') || strcmpi(method,'Laplacian_stisuite')
+if strcmpi(method,methodUnwrapName{1}) || strcmpi(method,methodUnwrapName{2})
     wrappedField = zeropad_odd_dimension(wrappedField,'pre');
     matrixSize_new = size(wrappedField);
 end
 
 switch method
-    case 'Laplacian'
+    case methodUnwrapName{1}    % laplacian medi
         
         % Laplacian unwrapping
         unwrappedField = unwrapLaplacian(wrappedField,matrixSize_new,voxelSize);
         
-    case 'Laplacian_stisuite'
+    case methodUnwrapName{2}    % laplacian sti suite
 
         unwrappedField = MRPhaseUnwrap(wrappedField,'voxelsize',voxelSize,'padsize',[12,12,12]);
         
-    case 'RegionGrowing'
+    case methodUnwrapName{4}    % region growing
         if size(magn,4) > 1
             magn = sqrt(sum(abs(magn).^2,4));
         end
         magn = magn .* mask;
         unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
-    case 'Graphcut'
+    case methodUnwrapName{5}    % graphcut
         disp(['Graphcut subsampling factor: ' num2str(subsampling)]);
         if size(magn,4) > 1
             magn = sqrt(sum(abs(magn).^2,4));
         end
         magn = magn .* mask;
         unwrappedField = unwrapping_gc(wrappedField,magn,voxelSize,subsampling);
-    case 'BestPath3D'
+    case methodUnwrapName{3}    % 3d best path
         try
             unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);
             
         catch ME
-            sepia_addpath('RegionGrowing');
+            sepia_addpath(methodUnwrapName{4});
             
             warning('The library cannot be run in this platform, running region growing unwrapping instead...');
             [magn] = parse_varargin_RegionGrowing(varargin);
@@ -160,13 +155,13 @@ switch method
             end
             unwrappedField = unwrapPhase(magn,wrappedField,matrixSize);
         end
-    case 'SEGUE'
+    case methodUnwrapName{6}    % segue
         try 
             Inputs.Mask     = mask;
             Inputs.Phase    = wrappedField;
             unwrappedField  = SEGUE(Inputs);
         catch ME
-            sepia_addpath('RegionGrowing');
+            sepia_addpath(methodUnwrapName{4});
             
             warning('Problem suing function. Running MEDI region growing unwrapping instead...');
             [magn] = parse_varargin_RegionGrowing(varargin);
@@ -179,7 +174,7 @@ switch method
 end
 
 % remove zero padding with Laplacian based method result
-if strcmpi(method,'Laplacian') || strcmpi(method,'Laplacian_stisuite')
+if strcmpi(method,methodUnwrapName{1}) || strcmpi(method,methodUnwrapName{2})
     unwrappedField = zeropad_odd_dimension(unwrappedField,'post',matrixSize);
 end
 

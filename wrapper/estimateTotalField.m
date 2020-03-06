@@ -61,7 +61,7 @@ else
     % predefine paramater: if no varargin, use Laplacian
     disp('No method selected. Using the default setting...');
     echoCombine = 'Optimum weights';
-    unwrapMethod = 'Laplacian';
+    unwrapMethod = 'Laplacian (MEDI)';
     TE = 1;
     fieldStrength = 3;
     unit = 'ppm';

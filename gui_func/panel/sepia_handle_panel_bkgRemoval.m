@@ -18,12 +18,24 @@
 % k.chan@donders.ru.nl
 % Date created: 16 April 2018
 % Date modified: 1 June 2018
-% Date modified: 3 March 2020 (v0.8.0)
+% Date modified: 6 March 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_bkgRemoval(hParent,h,position)
 % set up method name displayed on GUI
-methodName = {'LBV','PDF','RESHARP','SHARP','VSHARP STI suite','VSHARP','iHARPERELLA'};
+sepia_universal_variables;
+
+% function that create the method specific panel
+% order must match the order in variable 'methodBFRName'
+function_BFR_method_panel = {'sepia_handle_panel_bkgRemoval_LBV',...
+                             'sepia_handle_panel_bkgRemoval_PDF',...
+                             'sepia_handle_panel_bkgRemoval_RESHARP',...
+                             'sepia_handle_panel_bkgRemoval_SHARP',...
+                             'sepia_handle_panel_bkgRemoval_VSHARPSTI',...
+                             'sepia_handle_panel_bkgRemoval_VSHARP',...
+                             'sepia_handle_panel_bkgRemoval_iHARPERELLA'
+                             };
+                             % in future, add panel of new method here
 
 % default value
 defaultRadius = 0;
@@ -56,7 +68,7 @@ h.StepsPanel.bkgRemoval = uipanel(hParent,...
         'tooltip','Select background field removal method');
     h.bkgRemoval.popup.bkgRemoval = uicontrol('Parent',h.StepsPanel.bkgRemoval,...
         'Style','popup',...
-        'String',methodName,...
+        'String',methodBFRName,...
         'units','normalized','position',[left(1)+width*subwidth(1) 0.85 width*subwidth(2) height]) ;   
     
     % utility function related to background field removal
@@ -84,39 +96,13 @@ h.StepsPanel.bkgRemoval = uipanel(hParent,...
 
     
 %% create control panel
-
 % define position and size of all method panels
 position_child = [0.01 0.15 0.95 0.65];
 
-    % LBV
-    h = sepia_handle_panel_bkgRemoval_LBV(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-        
-    % PDF
-    h = sepia_handle_panel_bkgRemoval_PDF(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-        
-    % SHARP
-    h = sepia_handle_panel_bkgRemoval_SHARP(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-    
-    % RESHARP    
-    h = sepia_handle_panel_bkgRemoval_RESHARP(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-        
-    % VSHARPSTI    
-    h = sepia_handle_panel_bkgRemoval_VSHARPSTI(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-    
-    % VSHARP
-    h = sepia_handle_panel_bkgRemoval_VSHARP(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-
-    % iHARPERELLA    
-    h = sepia_handle_panel_bkgRemoval_iHARPERELLA(h.StepsPanel.bkgRemoval,...
-                                                    h, position_child);
-
-    % in future, add panel of new method here
+% construct all method panels
+for k = 1:length(function_BFR_method_panel)
+    h = feval(function_BFR_method_panel{k},h.StepsPanel.bkgRemoval,h,position_child);
+end
 
 %% set callback function
 set(h.bkgRemoval.popup.bkgRemoval, 'Callback', {@PopupBkgRemoval_Callback,h});
@@ -125,44 +111,26 @@ set(h.bkgRemoval.edit.imerode,     'Callback', {@EditInputMinMax_Callback,defaul
 end
 
 %% Callback function
-function PopupBkgRemoval_Callback(source,eventdata,h)
 % display corresponding background field removal method's panel
+function PopupBkgRemoval_Callback(source,eventdata,h)
 
-% global h
-
+sepia_universal_variables;
+                           
 % get selected background removal method
 method = source.String{source.Value,1} ;
 
-% switch off all panels
+% switch off all panels first
 fields = fieldnames(h.bkgRemoval.panel);
 for kf = 1:length(fields)
     set(h.bkgRemoval.panel.(fields{kf}),    'Visible','off');
 end
 
-% switch on target panel
-switch method
-    case 'LBV'
-        set(h.bkgRemoval.panel.LBV,         'Visible','on');
-        
-    case 'PDF'
-        set(h.bkgRemoval.panel.PDF,         'Visible','on');
-
-    case 'RESHARP'
-        set(h.bkgRemoval.panel.RESHARP,     'Visible','on');
-
-    case 'SHARP'
-        set(h.bkgRemoval.panel.SHARP,       'Visible','on');
-
-    case 'VSHARP'
-        set(h.bkgRemoval.panel.VSHARP,      'Visible','on');
-
-    case 'VSHARP STI suite'
-        set(h.bkgRemoval.panel.VSHARPSTI,   'Visible','on');
-
-    case 'iHARPERELLA'
-        set(h.bkgRemoval.panel.iHARPERELLA, 'Visible','on');
-
-    % in the future, add new method here
+% switch on only target panel
+for k = 1:length(methodBFRName)
+    if strcmpi(method,methodBFRName{k})
+        set(h.bkgRemoval.panel.(fields{k}), 'Visible','on');
+        break
+    end
 end
 
 end

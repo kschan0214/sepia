@@ -18,14 +18,13 @@
 % Date created: 16 April 2018
 % Date modified: 18 April 2018
 % Date modified: 12 June 2018
+% Date modified: 6 March 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_phaseUnwrap(hParent,h,position)
 
-% set up method name displayed on GUI
-methodUnwrapName        = {'Laplacian','Laplacian STI suite','3D best path','Region growing','Graphcut','SEGUE'};
-methodEchoCombineName   = {'Optimum weights','MEDI nonlinear fit','MEDI nonlinear fit (Bipolar)'};
-methodExcludedName      = {'Weighting map','Brain mask'};
+% load universal variable for methods' names
+sepia_universal_variables;
 
 % set default value
 defaultThreshold = 0.5;
@@ -125,29 +124,31 @@ end
 % Phase unwrapping method
 function popupPhaseUnwrap_Callback(source,eventdata,h)
 
+sepia_universal_variables;
+
 % get selected background removal method
 method = source.String{source.Value,1} ;
 
 % switch on target panel
 switch method
-    case 'Laplacian'
+    case methodUnwrapName{1}    % Laplacian MEDI
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
         set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
         
-    case 'Laplacian STI suite'
+    case methodUnwrapName{2}    % Laplacian STI suite
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
         set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
 
-    case '3D best path'
+    case methodUnwrapName{3}    % 3D best path
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
 
-    case 'Region growing'
+    case methodUnwrapName{4}    % region growing medi
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
 
-    case 'Graphcut'
+    case methodUnwrapName{5}    % graphcut
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
         
-    case 'SEGUE'
+    case methodUnwrapName{6}    % segue
         set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
     
     % in the future, add new method here
@@ -158,20 +159,22 @@ end
 % echo phase combination method
 function popupPhaseCombine_Callback(source,eventdata,h)
 
+sepia_universal_variables;
+
 % get selected background removal method
 method = source.String{source.Value,1} ;
 
 % switch on target panel
 switch method
-    case 'Optimum weights'
+    case methodEchoCombineName{1}   % optimal weighted combination
         set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'on', 'Value', 0);
         set(h.phaseUnwrap.checkbox.eddyCorrect,     'Enable', 'on');
         
-    case 'MEDI nonlinear fit'
+    case methodEchoCombineName{2}   % MEDI nonlinear fit
         set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'off', 'Value', 0);
         set(h.phaseUnwrap.checkbox.eddyCorrect,     'Enable', 'on');
         
-    case 'MEDI nonlinear fit (Bipolar)'
+    case methodEchoCombineName{3}   % MEDI nonlinear fit with bipolar readout
         set(h.phaseUnwrap.checkbox.saveEchoPhase,   'Enable', 'off', 'Value', 0);
         set(h.phaseUnwrap.checkbox.eddyCorrect,     'Enable', 'off', 'Value', 0);
     

@@ -1,4 +1,4 @@
-%% qsm_hub_AddMethodPath(method)
+%% sepia_addpath(method)
 %
 % Description: remove all qsm_hub related directories from PATH and add
 % only the directory(ies) related to the input 'method'
@@ -10,6 +10,9 @@
 % Date modified: 5 June 2019
 %
 function sepia_addpath(method)
+sepia_universal_variables;
+methodUnwrapName = lower(methodUnwrapName);
+
 % specify the toolbox(es) directory
 SpecifyToolboxesDirectory;
 CheckPathValidity(MEDI_dir,STISuite_dir,FANSI_dir,SEGUE_dir);
@@ -20,7 +23,7 @@ currDir = fileparts(fullName);
 
 % disable warning related to remove path
 warning('off');
-% remove all qsm_hub related paths except it root directory
+% remove all related paths except it root directory
 rmpath(genpath(currDir));
 addpath(currDir);
 % enable warning
@@ -59,24 +62,24 @@ if nargin > 0
         case 'nonlinearfit'
             addpath(genpath(MEDI_dir));
             
-        case 'laplacian'
+        case methodUnwrapName{1} % 'laplacian (medi)'
             addpath(genpath(MEDI_dir));
 
-        case 'laplacian_stisuite'
+        case methodUnwrapName{2} % 'laplacian (sti suite)'
             addpath(genpath(MEDI_dir));
             add_path_STIsuitev3(STISuite_dir);
 
-        case 'regiongrowing'
+        case methodUnwrapName{4} % 'region growing (medi)'
             addpath(genpath(MEDI_dir));
 
-        case 'graphcut'    
+        case methodUnwrapName{5} % 'graphcut'    
             addpath(genpath(MEDI_dir));
 
-        case 'bestpath3d'
+        case methodUnwrapName{3} % '3d best path'
             addpath(genpath(MEDI_dir));
             addpath([misc_phaseUnwrap_dir filesep 'unwrapBestpath3D/']);
             
-        case 'segue'
+        case methodUnwrapName{6} % 'segue'
             addpath(genpath(SEGUE_dir));
 
         % background field removal

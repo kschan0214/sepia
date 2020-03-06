@@ -99,6 +99,9 @@ function [chi, lamdaOptimal] = QSMMacro(localField,mask,matrixSize,voxelSize,var
 
 gyro = 42.57747892;
 
+sepia_universal_variables;
+methodQSMName = lower(methodQSMName);
+
 lamdaOptimal    = [];
 voxelSize       = double(voxelSize(:).');
 matrixSize      = double(matrixSize(:).');
@@ -109,17 +112,17 @@ if ~isempty(varargin)
         [b0,b0dir,te,mask_ref] = parse_varargin_QSMmacro(varargin);
         if strcmpi(varargin{kvar},'method')
             switch lower(varargin{kvar+1})
-                case 'tkd'
+                case methodQSMName{1}   % 'tkd'
                     method = 'TKD';
                     [thre_tkd, ~] = parse_varargin_TKD(varargin);
                     break
                     
-                case 'closedforml2'
+                case methodQSMName{2}   % 'closedforml2'
                     method = 'CFL2';
                     [lambda,optimise,~] = parse_varargin_CFL2norm(varargin);
                     break
                     
-                case 'ilsqr'
+                case methodQSMName{5}   % 'ilsqr'
                     method = 'iLSQR';
                     [lambda, tol, maxiter, wmap, initGuess, optimise, ~] = parse_varargin_iLSQR(varargin);
                     if isempty(wmap)
@@ -130,7 +133,7 @@ if ~isempty(varargin)
                     end
                     break
                     
-                case 'stisuiteilsqr'
+                case methodQSMName{4}   % 'stisuiteilsqr'
                     method = 'STISuiteiLSQR';
                     algoPara = parse_varargin_STISuiteiLSQRv3(varargin);
                     algoPara.H          = b0dir(:).';
@@ -139,7 +142,7 @@ if ~isempty(varargin)
                     algoPara.voxelsize  = double(voxelSize(:).');
                     break
                     
-                case 'fansi'
+                case methodQSMName{6}   % 'fansi'
                     method = 'FANSI';
 %                     [mu1,mu2,alpha1,tol,maxiter,wmap,solver,constraint,b0dir]=parse_varargin_FANSI(varargin);
                     [mu1,alpha1,wmap,options,~]=parse_varargin_FANSI(varargin);
@@ -148,15 +151,15 @@ if ~isempty(varargin)
                     method = 'SSVSHARP';
                     [lambda,magn,tol,maxiter,Kernel_Sizes,~]=parse_varargin_SSQSM(varargin);
                     
-                case 'star'
+                case methodQSMName{7}   % 'star'
                     method = 'Star';
                     [padSize] = parse_varargin_Star(varargin);
                     
-                case 'medi_l1'
+                case methodQSMName{8}   % 'medi_l1'
                     method = 'MEDI_L1';
                     [N_std,magn,lambda,pad,~,CF,~,isMerit,isSMV,radius,wData,wGrad,Debug_Mode,lam_CSF,Mask_CSF,tmp_output_dir,percentage] = parse_varargin_MEDI_L1(varargin);
                     
-                case 'ndi'
+                case methodQSMName{3}   % 'ndi'
                     method = 'NDI';
                     [tol,stepSize,maxiter,wmap,~] = parse_varargin_NDI(varargin);
                     

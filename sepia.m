@@ -49,6 +49,8 @@ diary off
 
 sepia_addpath;
 
+clear global h
+
 global h
 
 % set GUI window size
@@ -66,11 +68,11 @@ end
 
 % create GUI 
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','Sepia GUI (dev0.8.0)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name','SEPIA GUI (v0.8.0)','NumberTitle','off');
 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
-h.Tabs.Sepia        = uitab(h.TabGroup,'Title','Sepia');
+h.Tabs.Sepia        = uitab(h.TabGroup,'Title','SEPIA');
 h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
@@ -78,32 +80,8 @@ h.Tabs.swismwi      = uitab(h.TabGroup,'Title','SWI/SMWI');
 h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
 % construct all tabs
-%% Phase unwrapping tab
-% I/O
-h = sepia_handle_panel_dataIO(h.Tabs.phaseUnwrap,              h,[0.01 0.8]);
-% phase unwrap
-h = sepia_handle_panel_phaseUnwrap(h.Tabs.phaseUnwrap,         h,[0.01 0.59]);
-
-%% background field removal tab
-% I/O
-h = sepia_handle_panel_dataIO(h.Tabs.bkgRemoval,               h,[0.01 0.8]);
-% background field
-h = sepia_handle_panel_bkgRemoval(h.Tabs.bkgRemoval,           h,[0.01 0.54]);
-
-%% qsm tab
-% I/O
-h = sepia_handle_panel_dataIO(h.Tabs.qsm,                      h,[0.01 0.8]);
-% QSM
-h = sepia_handle_panel_qsm(h.Tabs.qsm,                         h,[0.01 0.54]);
-
-%% SWI/SMWI tab
-h = sepia_handle_panel_swi_dataIO(h.Tabs.swismwi,              h,[0.01 0.8]);
-h = sepia_handle_panel_swi(h.Tabs.swismwi,                     h,[0.01 0.44]);
-
-%% utility tab
-h = sepia_handle_panel_Utility(h.Tabs.utility,                 h,[0.01 0.39]);
-
 %% GUI with QSM one-stop station tab
+% these panels will be switching position from tab to tab
 % I/O
 h = sepia_handle_panel_dataIO(h.Tabs.Sepia,                   h,[0.01 0.8]);
 % phase unwrap
@@ -113,6 +91,14 @@ h = sepia_handle_panel_bkgRemoval(h.Tabs.Sepia,               h,[0.01 0.33]);
 % QSM
 h = sepia_handle_panel_qsm(h.Tabs.Sepia,                      h,[0.01 0.07]);
 
+%% SWI/SMWI tab
+h = sepia_handle_panel_swi_dataIO(h.Tabs.swismwi,             h,[0.01 0.8]);
+h = sepia_handle_panel_swi(h.Tabs.swismwi,                    h,[0.01 0.44]);
+
+%% utility tab
+h = sepia_handle_panel_Utility(h.Tabs.utility,                h,[0.01 0.39]);
+
+%% extra content
 % Start button
 h.pushbutton_start = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','pushbutton',...
@@ -124,7 +110,7 @@ h.pushbutton_start = uicontrol('Parent',h.Tabs.Sepia,...
 h.pushbutton_loadConfig = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','pushbutton',...
     'String','Load config',...
-    'units','normalized','Position',[0.74 0.01 0.1 0.05],...
+    'units','normalized','Position',[0.01 0.01 0.1 0.05],...
     'backgroundcolor',get(h.fig,'color'));
 
 % GPU checkbox
@@ -132,8 +118,9 @@ h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
     'Style','checkbox',...
     'String','Enable GPU computation',...
     'units','normalized','Position',[0.01 0.01 0.4 0.05],...
-    'backgroundcolor',get(h.fig,'color'), 'Enable','off','Visible','off',...
-    'TooltipString',['Enable to use GPU for some of the algorithms in sepia. ' ...
+    'backgroundcolor',get(h.fig,'color'), ...
+    'Enable','off','Visible','off',...
+    'TooltipString',['Enable to use GPU for some of the algorithms in SEPIA. ' ...
                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
 if gpuDeviceCount > 0
     set(h.checkbox_gpu, 'Enable', 'on');
@@ -147,36 +134,58 @@ set(h.pushbutton_loadConfig,    'Callback',            {@PushbuttonLoadConfig_Ca
 end
 
 %% Callback functions
+%% switching tabs
 function SwitchTab_Callback(source,eventdata)
 % switch parent handle of StepsPanel based on current tab
 
 global h
 
+% global uicontrol for all tabs
+universial_handle = {h.StepsPanel.dataIO,...
+                     h.pushbutton_start,...         % Start pushbutton
+                     h.pushbutton_loadConfig,...    % load config pushbutton
+                     h.checkbox_gpu};               % GPU checkbox
+
+% Tab specific strings and tooltips
+tooltip.input_dir{1} = 'Directory contains all essential files (*ph*.nii*, *mag*.nii* & *header*.mat)';
+tooltip.input_dir{2} = 'Directory contains the total field map and SEPIA header (*total-field*.nii* & *header*.mat)';
+tooltip.input_dir{3} = 'Directory contains the local field map (*local-field*.nii*) files; for some QSM methods, additional file(s) may also be needed (e.g. *mag*.nii* and *weights*.nii*)';
+
+fieldString.inputData1{1}= 'or Phase:';
+fieldString.inputData1{2}= 'or Total field:';
+fieldString.inputData1{3}= 'or Local field:';
+
+fieldString.inputData3{1}= '    Weights:';
+fieldString.inputData3{2}= '    Noise SD:';
+
+% change universal elements' parent except SWI/SMWI tab and Utility tab
+if ~strcmpi(eventdata.NewValue.Title,'SWI/SMWI') && ~strcmpi(eventdata.NewValue.Title,'Utility')
+    for k = 1:length(universial_handle)
+        set(universial_handle{k}, 'Parent', source.SelectedTab);
+    end
+end
+
 switch eventdata.NewValue.Title
     
     % QSM one-stop station tab
-    case 'Sepia'
+    case 'SEPIA'
         % I/O
-        set(h.StepsPanel.dataIO,        'Parent',h.Tabs.Sepia);
-            % This tab supports both DICOM and NIfTI files
-            set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains NIfTI (*phase*.nii* and *magn*.nii*) files');
-            % BET is supported with this tab
-            set(h.dataIO.checkbox.brainExtraction,'Enable','on');
-            % phase invert is supported with this tab
-            set(h.dataIO.checkbox.invertPhase,'Enable','on');
-            % input data 1
-            set(h.dataIO.text.inputData1,'String','or Phase:');
-%             set(h.dataIO.edit.inputData1,'Enable','off');
-            % input data 2
+        % Change essential files if input is a directory
+        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
+        % BET is supported with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+        % phase invert is supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
+        % input data 1
+        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+        % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
-            set(h.dataIO.edit.inputData2,'Enable','on');
-            set(h.dataIO.button.inputData2,'Enable','on');
-            % input data 3
-            set(h.dataIO.text.inputData3,'String','    Weights:');
-            set(h.dataIO.edit.inputData3,'Enable','on');
-%             set(h.dataIO.edit.inputData3,'String',[]);
-            set(h.dataIO.button.inputData3,'Enable','on');
+        set(h.dataIO.edit.inputData2,           'Enable','on');
+        set(h.dataIO.button.inputData2,         'Enable','on');
+        % input data 3
+        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+        set(h.dataIO.edit.inputData3,           'Enable','on');
+        set(h.dataIO.button.inputData3,         'Enable','on');
             
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
@@ -184,127 +193,93 @@ switch eventdata.NewValue.Title
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.Sepia,'Position',[0.01 0.33 0.95 0.25]);
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.Sepia,'Position',[0.01 0.07 0.95 0.25]);
-        % Start pushbutton
-        set(h.pushbutton_start,         'Parent',h.Tabs.Sepia);
-        % load config pushbutton
-        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.Sepia);
-        % GPU checkbox
-        set(h.checkbox_gpu,             'Parent',h.Tabs.Sepia);
-%         set(h.checkbox_gpu,             'Enable', 'on');
         
     % Phase unwrapping tab
     case 'Phase unwrapping'
         % I/O
-        set(h.StepsPanel.dataIO,        'Parent',h.Tabs.phaseUnwrap);
-            % This tab supports both DICOM and NIfTI files
-            set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains NIfTI (*ph*.nii* and *mag*.nii*) files');
-            % BET is supported with this tab
-            set(h.dataIO.checkbox.brainExtraction,'Enable','on');
-            % phase invert is supported with this tab
-            set(h.dataIO.checkbox.invertPhase,'Enable','on');
-            % input data 1
-            set(h.dataIO.text.inputData1,'String','or Phase:');
-            % input data 2
+        % This tab supports both DICOM and NIfTI files
+        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
+        % BET is supported with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+        % phase invert is supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
+        % input data 1
+        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+        % input data 2
 %           set(h.dataIO.text.inputData2,'String','Magn. data:');
-            set(h.dataIO.edit.inputData2,'Enable','on');
-            set(h.dataIO.button.inputData2,'Enable','on');
-            % input data 3
-            set(h.dataIO.text.inputData3,'String','    Weights:');
-            set(h.dataIO.edit.inputData3,'Enable','off');
-            set(h.dataIO.button.inputData3,'Enable','off');
-            set(h.dataIO.edit.inputData3,'String',[]);
+        set(h.dataIO.edit.inputData2,           'Enable','on');
+        set(h.dataIO.button.inputData2,         'Enable','on');
+        % input data 3
+        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+        set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
+        set(h.dataIO.button.inputData3,         'Enable','off');
 
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
-        % Start pushbutton
-        set(h.pushbutton_start,         'Parent',h.Tabs.phaseUnwrap);
-        % load config pushbutton
-        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.phaseUnwrap);
-        % GPU checkbox
-        set(h.checkbox_gpu,             'Parent',h.Tabs.phaseUnwrap);
-%         set(h.checkbox_gpu,             'Enable', 'off');
-%         set(h.checkbox_gpu,             'Value',0);
         
     % background field removal tab    
     case 'Background field removal'
         % I/O
-        set(h.StepsPanel.dataIO,        'Parent',h.Tabs.bkgRemoval);
-            % This tab supports only NIfTI files
-            set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains the unwrapped total field map NIfTI (*total-field*.nii*) files');
-            % no BET support with this tab
-            set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            set(h.dataIO.edit.maskdir,              'Enable','on');
-            set(h.dataIO.button.maskdir,            'Enable','on');
-            % phase invert is not supported with this tab
-            set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-            % input data 1
-            set(h.dataIO.text.inputData1,'String','or Total field:');
-            % input data 2
+        % This tab supports only NIfTI files
+        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{2});
+        % no BET support with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+        set(h.dataIO.edit.maskdir,              'Enable','on');
+        set(h.dataIO.button.maskdir,            'Enable','on');
+        % phase invert is not supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+        % input data 1
+        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{2});
+        % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
-            set(h.dataIO.edit.inputData2,'Enable','off');
-            set(h.dataIO.button.inputData2,'Enable','off');
-            set(h.dataIO.edit.inputData2,'String',[]);
-            % input data 3
-            set(h.dataIO.text.inputData3,'String','    Noise SD:');
-            set(h.dataIO.edit.inputData3,'Enable','on');
-            set(h.dataIO.button.inputData3,'Enable','on');
+        set(h.dataIO.edit.inputData2,           'Enable','off','String',[]);
+        set(h.dataIO.button.inputData2,         'Enable','off');
+        % input data 3
+        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{2});
+        set(h.dataIO.edit.inputData3,           'Enable','on');
+        set(h.dataIO.button.inputData3,         'Enable','on');
 
         % background field
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
-        % Start pushbutton
-        set(h.pushbutton_start,         'Parent',h.Tabs.bkgRemoval);
-        % load config pushbutton
-        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.bkgRemoval);
-        % GPU checkbox
-        set(h.checkbox_gpu,             'Parent',h.Tabs.bkgRemoval);
-%         set(h.checkbox_gpu,             'Enable', 'on');
+
 
     % qsm tab    
     case 'QSM'
         % I/O
-        set(h.StepsPanel.dataIO,        'Parent',h.Tabs.qsm);
-            % This tab supports only NIfTI files
-            set(h.dataIO.text.input, 'Tooltip',...
-                'Input directory contains the local field map NIfTI (*local-field*.nii*) files; for some QSM methods additional file(s) may also be needed (e.g. *magn*.nii* and *weights*.nii*)');
-            % no BET support with this tab
-            set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            set(h.dataIO.edit.maskdir,              'Enable','on');
-            set(h.dataIO.button.maskdir,            'Enable','on');
-            % phase invert is not supported with this tab
-            set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-            % input data 1
-            set(h.dataIO.text.inputData1,'String','or Local field:');
-            % input data 2
+        % This tab supports only NIfTI files
+        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
+        % no BET support with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+        set(h.dataIO.edit.maskdir,              'Enable','on');
+        set(h.dataIO.button.maskdir,            'Enable','on');
+        % phase invert is not supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+        % input data 1
+        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{3});
+        % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
-            set(h.dataIO.edit.inputData2,   'Enable','on');
-            set(h.dataIO.button.inputData2, 'Enable','on');
-            % input data 3
-            set(h.dataIO.text.inputData3,   'String','    Weights:');
-            set(h.dataIO.edit.inputData3,   'Enable','on');
-            set(h.dataIO.button.inputData3, 'Enable','on');
-%             % input header
-%             set(h.dataIO.text.inputHeader,'String','Header:');
+        set(h.dataIO.edit.inputData2,           'Enable','on');
+        set(h.dataIO.button.inputData2,         'Enable','on');
+        % input data 3
+        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+        set(h.dataIO.edit.inputData3,           'Enable','on');
+        set(h.dataIO.button.inputData3,         'Enable','on');
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
-        % Start pushbutton
-        set(h.pushbutton_start,         'Parent',h.Tabs.qsm);
-        % load config pushbutton
-        set(h.pushbutton_loadConfig,   	'Parent',h.Tabs.qsm);
-        % GPU checkbox
-        set(h.checkbox_gpu,             'Parent',h.Tabs.qsm);
-%         set(h.checkbox_gpu,             'Enable', 'on');
         
 end
 
 end
 
+%% Start button
 function PushbuttonStart_Callback(source,eventdata)
-% core of Sepia GUI is to create a .m script to execute a command-based function
+% objective of Sepia GUI is to create a .m script to execute a command-based function
 
 global h
 
+sepia_universal_variables;
+
+%%%%%%%%%%%% Step 1: preparation %%%%%%%%%%%%
 % Disable the pushbutton to prevent double clicks
 set(source,'Enable','off');
 
@@ -325,8 +300,8 @@ outputBasename  = get(h.dataIO.edit.output,       	'String');
 maskFullName    = get(h.dataIO.edit.maskdir,       	'String');
 
 % get and create output directory
-output_index = strfind(outputBasename, filesep);
-outputDir = outputBasename(1:output_index(end));
+output_index    = strfind(outputBasename, filesep);
+outputDir       = outputBasename(1:output_index(end));
 % if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
@@ -344,6 +319,7 @@ if exist(configFilename,'file') == 2
 end
 fid = fopen(configFilename,'w');
 
+%%%%%%%%%%%% Step 2: Write config file %%%%%%%%%%%% 
 % general path
 fprintf(fid,'%% add general Path\n');
 fprintf(fid,'sepia_addpath\n\n');
@@ -373,200 +349,96 @@ if get(h.dataIO.checkbox.brainExtraction, 'Value')
     fprintf(fid,'algorParam.general.gradient_threshold   = %s ;\n'	,get(h.dataIO.edit.gradientThres,  	'String'));
 end
 fprintf(fid,'algorParam.general.isInvert    = %i ;\n'   ,get(h.dataIO.checkbox.invertPhase,     'Value'));
-fprintf(fid,'algorParam.general.isGPU       = %i ;\n'  	,get(h.checkbox_gpu,                    'Value'));
+% fprintf(fid,'algorParam.general.isGPU       = %i ;\n'  	,get(h.checkbox_gpu,                    'Value'));
 
 % phase unwrap algorithm parameters
-if strcmpi(tab,'Sepia') || strcmpi(tab,'Phase unwrapping')
-    fprintf(fid,'%% Phase unwrapping algorithm parameters\n');
+if strcmpi(tab,'SEPIA') || strcmpi(tab,'Phase unwrapping')
+    fprintf(fid,'%% Total field recovery algorithm parameters\n');
     % echo phase combine method
     fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1});
     % unwrap method
-    switch h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1}
-        case 'Laplacian'
-            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'laplacian');
-            
-        case 'Region growing'
-            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'rg');
-
-        case 'Graphcut'
-            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'gc');
-            fprintf(fid,'algorParam.unwrap.subsampling = %i ;\n'          ,1);
-
-        case 'Laplacian STI suite'
-            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'laplacian_stisuite');
-
-        case '3D best path'
-            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'bestpath3d');
-            
-        case 'SEGUE'
-            fprintf(fid,'algorParam.unwrap.unwrapMethod = ''%s'' ;\n'     ,'segue');
-    end
+    fprintf(fid,'algorParam.unwrap.unwrapMethod   = ''%s'' ;\n'     ,h.phaseUnwrap.popup.phaseUnwrap.String{h.phaseUnwrap.popup.phaseUnwrap.Value,1});
     % eddy current correction
-    fprintf(fid,'algorParam.unwrap.isEddyCorrect = %i ;\n'     ,get(h.phaseUnwrap.checkbox.eddyCorrect,'Value'));
+    fprintf(fid,'algorParam.unwrap.isEddyCorrect  = %i ;\n'         ,get(h.phaseUnwrap.checkbox.eddyCorrect,'Value'));
     % exclusion mask threshold
     if get(h.phaseUnwrap.checkbox.excludeMask,'Value')
         fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = %g ;\n'     ,str2double(get(h.phaseUnwrap.edit.excludeMask,'String')));
         fprintf(fid,'algorParam.unwrap.excludeMethod        = ''%s'' ;\n' ,h.phaseUnwrap.popup.excludeMethod.String{h.phaseUnwrap.popup.excludeMethod.Value,1});
-    else
-        fprintf(fid,'algorParam.unwrap.excludeMaskThreshold = Inf ;\n');
     end
     % save unwrapped echo phase
     fprintf(fid,'algorParam.unwrap.isSaveUnwrappedEcho = %i ;\n'     ,get(h.phaseUnwrap.checkbox.saveEchoPhase,'Value'));
 end
-    
+                
 % background field removal algorithm parameters
-if strcmpi(tab,'Sepia') || strcmpi(tab,'Background field removal')
+if strcmpi(tab,'SEPIA') || strcmpi(tab,'Background field removal')
     fprintf(fid,'%% Background field removal algorithm parameters\n');
     % polyfit
     fprintf(fid,'algorParam.bfr.refine = %i ;\n'        ,get(h.bkgRemoval.checkbox.bkgRemoval,'Value'));
     % Erode local field
     fprintf(fid,'algorParam.bfr.erode_radius = %s ;\n'	,get(h.bkgRemoval.edit.imerode,'String'));
+    
     % set parameters for selected method
-    switch h.bkgRemoval.popup.bkgRemoval.String{h.bkgRemoval.popup.bkgRemoval.Value,1}
-        case 'LBV'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,'lbv');
-            fprintf(fid,'algorParam.bfr.tol = %s ;\n'	,(get(h.bkgRemoval.LBV.edit.tol,	'String')));
-            fprintf(fid,'algorParam.bfr.depth = %s ;\n'	,(get(h.bkgRemoval.LBV.edit.depth,  'String')));
-            fprintf(fid,'algorParam.bfr.peel = %s ;\n' 	,(get(h.bkgRemoval.LBV.edit.peel,	'String')));
-
-        case 'PDF'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,'pdf');
-            fprintf(fid,'algorParam.bfr.tol = %s ;\n'       ,(get(h.bkgRemoval.PDF.edit.tol,  	'String')));
-            fprintf(fid,'algorParam.bfr.iteration = %s ;\n'	,(get(h.bkgRemoval.PDF.edit.maxIter,'String')));
-            fprintf(fid,'algorParam.bfr.padSize = %s ;\n' 	,(get(h.bkgRemoval.PDF.edit.padSize,'String')));
-
-        case 'RESHARP'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,'resharp');
-            fprintf(fid,'algorParam.bfr.radius = %s ;\n'	,(get(h.bkgRemoval.RESHARP.edit.radius,  'String')));
-            fprintf(fid,'algorParam.bfr.alpha = %s ;\n' 	,(get(h.bkgRemoval.RESHARP.edit.lambda,  'String')));
-
-        case 'SHARP'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'sharp');
-            fprintf(fid,'algorParam.bfr.radius = %s ;\n'	,(get(h.bkgRemoval.SHARP.edit.radius,    'String')));
-            fprintf(fid,'algorParam.bfr.threshold = %s ;\n'	,(get(h.bkgRemoval.SHARP.edit.threshold, 'String')));
-
-        case 'VSHARP'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'vsharp');
-            fprintf(fid,'algorParam.bfr.radius = [%s:-1:%s] ;\n' ,(get(h.bkgRemoval.VSHARP.edit.maxRadius,'String')),...
-                                                                   get(h.bkgRemoval.VSHARP.edit.minRadius,'String'));
-
-        case 'iHARPERELLA'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'iharperella');
-            fprintf(fid,'algorParam.bfr.iteration = %s ;\n' ,(get(h.bkgRemoval.iHARPERELLA.edit.maxIter,'String')));
-
-        case 'VSHARP STI suite'
-            fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'    ,'vsharpsti');
-            fprintf(fid,'algorParam.bfr.radius = %s ;\n' ,(get(h.bkgRemoval.VSHARPSTI.edit.smvSize,'String')));
-
+    bfr_method = h.bkgRemoval.popup.bkgRemoval.String{h.bkgRemoval.popup.bkgRemoval.Value,1};
+    fprintf(fid,'algorParam.bfr.method = ''%s'' ;\n'     ,bfr_method);
+    for k = 1:length(methodBFRName)
+        if strcmpi(bfr_method,methodBFRName{k})
+            feval(config_BFR_function{k},h,'set',fid);
+        end
     end
+
 end
 
 % QSM algorithm parameters
-if strcmpi(tab,'Sepia') || strcmpi(tab,'QSM')
+if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
     fprintf(fid,'%% QSM algorithm parameters\n');
-    % set parameters for selected method
-    switch h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1}
-        case 'TKD'
-            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n'	,'tkd');
-            fprintf(fid,'algorParam.qsm.threshold   = %s ;\n'       ,get(h.qsm.TKD.edit.threshold,'String'));
-        
-        case 'Closed-form solution'
-            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n'	,'closedforml2');
-            fprintf(fid,'algorParam.qsm.lambda      = %s ;\n'    	,get(h.qsm.cfs.edit.lambda,     'String'));
-            fprintf(fid,'algorParam.qsm.optimise	= %i ;\n'       ,get(h.qsm.cfs.checkbox.lambda, 'Value'));
-            
-        case 'NDI'
-            fprintf(fid,'algorParam.qsm.method   = ''%s'' ;\n'      ,'ndi');
-            fprintf(fid,'algorParam.qsm.tol      = %s ;\n'          ,get(h.qsm.NDI.edit.tol,          'String'));
-            fprintf(fid,'algorParam.qsm.maxiter  = %s ;\n'      	,get(h.qsm.NDI.edit.maxIter,      'String'));
-            fprintf(fid,'algorParam.qsm.stepSize = %s ;\n'          ,get(h.qsm.NDI.edit.stepSize,       'String'));
-
-        case 'STI suite iLSQR'
-            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n'       ,'stisuiteilsqr');
-            fprintf(fid,'algorParam.qsm.threshold   = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.threshold, 'String'));
-            fprintf(fid,'algorParam.qsm.maxiter     = %s ;\n'           ,get(h.qsm.STIiLSQR.edit.maxIter,   'String'));
-            fprintf(fid,'algorParam.qsm.tol1        = %s ;\n'         	,get(h.qsm.STIiLSQR.edit.tol1,   'String'));
-            fprintf(fid,'algorParam.qsm.tol2        = %s ;\n'          	,get(h.qsm.STIiLSQR.edit.tol2,      'String'));
-            fprintf(fid,'algorParam.qsm.padsize     = ones(1,3)*%s ;\n'	,get(h.qsm.STIiLSQR.edit.padSize,   'String'));
-
-        case 'iLSQR'
-            fprintf(fid,'algorParam.qsm.method   = ''%s'' ;\n'      ,'ilsqr');
-            fprintf(fid,'algorParam.qsm.tol      = %s ;\n'          ,get(h.qsm.iLSQR.edit.tol,          'String'));
-            fprintf(fid,'algorParam.qsm.maxiter  = %s ;\n'      	,get(h.qsm.iLSQR.edit.maxIter,      'String'));
-            fprintf(fid,'algorParam.qsm.lambda   = %s ;\n'      	,get(h.qsm.iLSQR.edit.lambda,       'String'));
-            fprintf(fid,'algorParam.qsm.optimise = %i ;\n'          ,get(h.qsm.iLSQR.checkbox.lambda,   'Value'));
-
-        case 'FANSI'
-            fprintf(fid,'algorParam.qsm.method          = ''%s'' ;\n' 	,'fansi');
-            fprintf(fid,'algorParam.qsm.tol             = %s ;\n'    	,get(h.qsm.FANSI.edit.tol,      'String'));
-            fprintf(fid,'algorParam.qsm.maxiter         = %s ;\n'      	,get(h.qsm.FANSI.edit.maxIter,  'String'));
-            fprintf(fid,'algorParam.qsm.lambda          = %s ;\n'      	,get(h.qsm.FANSI.edit.lambda,   'String'));
-            fprintf(fid,'algorParam.qsm.mu1             = %s ;\n'    	,get(h.qsm.FANSI.edit.mu,       'String'));
-            fprintf(fid,'algorParam.qsm.mu2             = %s ;\n'     	,get(h.qsm.FANSI.edit.mu2,      'String'));
-            fprintf(fid,'algorParam.qsm.solver          = ''%s'' ;\n'  	,h.qsm.FANSI.popup.solver.String{h.qsm.FANSI.popup.solver.Value,1});
-            fprintf(fid,'algorParam.qsm.constraint      = ''%s'' ;\n'   ,h.qsm.FANSI.popup.constraints.String{h.qsm.FANSI.popup.constraints.Value,1});
-            fprintf(fid,'algorParam.qsm.gradient_mode	= ''%s'' ;\n'   ,h.qsm.FANSI.popup.gradientMode.String{h.qsm.FANSI.popup.gradientMode.Value,1});
-            fprintf(fid,'algorParam.qsm.isWeakHarmonic  = %i ;\n'    	,get(h.qsm.FANSI.checkbox.isWeakHarmonic,'Value'));
-            
-            if get(h.qsm.FANSI.checkbox.isWeakHarmonic,'Value')
-                fprintf(fid,'algorParam.qsm.beta    = %s ;\n'    	,get(h.qsm.FANSI.edit.beta,'String'));
-                fprintf(fid,'algorParam.qsm.muh     = %s ;\n'    	,get(h.qsm.FANSI.edit.muh,'String'));
-            end
-
-        case 'Star-QSM'
-            fprintf(fid,'algorParam.qsm.method  = ''%s'' ;\n'       ,'star');
-            fprintf(fid,'algorParam.qsm.padsize = ones(1,3)*%s ;\n'	,get(h.qsm.Star.edit.padSize,   'String'));
-
-        case 'MEDI'
-            fprintf(fid,'algorParam.qsm.method      = ''%s'' ;\n' 	,'medi_l1');
-            fprintf(fid,'algorParam.qsm.lambda      = %s ;\n'      	,get(h.qsm.MEDI.edit.lambda,        'String'));
-            fprintf(fid,'algorParam.qsm.wData       = %s ;\n'     	,get(h.qsm.MEDI.edit.weightData,    'String'));
-            fprintf(fid,'algorParam.qsm.wGradient   = %s ;\n'    	,get(h.qsm.MEDI.edit.weightGradient,'String'));
-            fprintf(fid,'algorParam.qsm.zeropad     = %s ;\n'      	,get(h.qsm.MEDI.edit.zeropad,       'String'));
-            fprintf(fid,'algorParam.qsm.radius      = %s ;\n'      	,get(h.qsm.MEDI.edit.smv_radius,    'String'));
-            fprintf(fid,'algorParam.qsm.isSMV       = %i ;\n'   	,get(h.qsm.MEDI.checkbox.smv,       'Value'));
-            fprintf(fid,'algorParam.qsm.merit       = %i ;\n'   	,get(h.qsm.MEDI.checkbox.merit,     'Value'));
-            fprintf(fid,'algorParam.qsm.isLambdaCSF = %i ;\n'       ,get(h.qsm.MEDI.checkbox.lambda_csf,'Value'));
-            fprintf(fid,'algorParam.qsm.lambdaCSF   = %s ;\n'       ,get(h.qsm.MEDI.edit.lambda_csf,    'String'));  
-            fprintf(fid,'algorParam.qsm.percentage  = %s ;\n'       ,get(h.qsm.MEDI.edit.percentage,    'String')); 
-
-    end
+    
     fprintf(fid,'algorParam.qsm.reference_tissue = ''%s'' ;\n'   ,h.qsm.popup.tissue.String{h.qsm.popup.tissue.Value,1});
-end
-
-try
-    switch tab
-        case 'Sepia'
-            fprintf(fid,'\nSepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-            
-        case 'Phase unwrapping'
-            fprintf(fid,'\nUnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-        
-        case 'Background field removal'
-            fprintf(fid,'\nBackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-        
-        case 'QSM'
-            fprintf(fid,'\nQSMMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-            
-    end
     
-    fclose(fid);
-    
-    % log command window display to a text file
-    logFilename = [outputDir filesep 'run_sepia.log'];
-    if exist(logFilename,'file') == 2
-        counter = 1;
-        while exist(logFilename,'file') == 2
-            suffix = ['_' num2str(counter)];
-            logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
-            counter = counter + 1;
+    qsm_method = h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value,1};
+    fprintf(fid,'algorParam.qsm.method = ''%s'' ;\n'     ,qsm_method);
+    for k = 1:length(methodQSMName)
+        if strcmpi(qsm_method,methodQSMName{k})
+            feval(config_QSM_function{k},h,'set',fid);
         end
     end
-    diary(logFilename)
-    
+
+end
+
+% Determine application based on Tab
+switch tab
+    case 'SEPIA'
+        fprintf(fid,'\nSepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+
+    case 'Phase unwrapping'
+        fprintf(fid,'\nUnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+
+    case 'Background field removal'
+        fprintf(fid,'\nBackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+
+    case 'QSM'
+        fprintf(fid,'\nQSMMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+
+end
+
+fclose(fid);
+
+% log command window display to a text file
+logFilename = [outputDir filesep 'run_sepia.log'];
+if exist(logFilename,'file') == 2
+    counter = 1;
+    while exist(logFilename,'file') == 2
+        suffix = ['_' num2str(counter)];
+        logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
+        counter = counter + 1;
+    end
+end
+diary(logFilename)
+
+try
     % run process
     run(configFilename);
     
+    % turn off the log
     diary off
     
     % re-enable the pushbutton
@@ -612,6 +484,7 @@ global h
 % only read m file
 [config_filename,pathDir] = uigetfile({'*.m'},'Select a SEPIA config file');
 
+% if file is specified then read it
 if exist(fullfile(pathDir,config_filename),'file')
     set_config_Callback(fullfile(pathDir,config_filename),h);
 end
