@@ -18,6 +18,8 @@
 %
 function algorParam2 = check_and_set_SEPIA_algorithm_default(algorParam)
 
+sepia_universal_variables;
+
 algorParam2 = algorParam;
 
 try algorParam2.general.isInvert   	= algorParam.general.isInvert; 	catch; algorParam2.general.isInvert	= false;	end
@@ -27,9 +29,9 @@ try algorParam2.general.fractional_threshold   	= algorParam.general.fractional_
 try algorParam2.general.gradient_threshold   	= algorParam.general.gradient_threshold; 	catch; algorParam2.general.gradient_threshold   	= 0;	end
 
 % default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
-try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = 'MEDI nonlinear fit';	end
+try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = methodEchoCombineName{2};	end
 % default phase unwrapping method is Laplacian
-try algorParam2.unwrap.unwrapMethod         = algorParam.unwrap.unwrapMethod;           catch; algorParam2.unwrap.unwrapMethod          = 'Laplacian';          end
+try algorParam2.unwrap.unwrapMethod         = algorParam.unwrap.unwrapMethod;           catch; algorParam2.unwrap.unwrapMethod          = methodUnwrapName{1};   	end
 try algorParam2.unwrap.isEddyCorrect        = algorParam.unwrap.isEddyCorrect;          catch; algorParam2.unwrap.isEddyCorrect         = 0;                    end
 try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThreshold;	catch; algorParam2.unwrap.excludeMaskThreshold	= Inf;                  end
 % for the rest, if the parameter does not exist then initiates it with an empty array
@@ -38,7 +40,7 @@ try algorParam2.unwrap.isSaveUnwrappedEcho	= algorParam.unwrap.isSaveUnwrappedEc
 try algorParam2.unwrap.excludeMethod        = algorParam.unwrap.excludeMethod;          catch; algorParam2.unwrap.excludeMethod         = 'Weighting map';      end
 
 % default background field removal method is VSHARP
-try algorParam2.bfr.method      = algorParam.bfr.method;        catch; algorParam2.bfr.method = 'vsharpsti';end
+try algorParam2.bfr.method      = algorParam.bfr.method;        catch; algorParam2.bfr.method = methodBFRName{5};end
 try algorParam2.bfr.radius      = algorParam.bfr.radius;        catch; algorParam2.bfr.radius = 10;         end
 try algorParam2.bfr.refine      = algorParam.bfr.refine;        catch; algorParam2.bfr.refine = false;      end
 try algorParam2.bfr.erode_radius= algorParam.bfr.erode_radius;	catch; algorParam2.bfr.erode_radius = 1;    end
@@ -52,7 +54,7 @@ try algorParam2.bfr.alpha       = algorParam.bfr.alpha;    	catch; algorParam2.b
 try algorParam2.bfr.threshold   = algorParam.bfr.threshold;	catch; algorParam2.bfr.threshold = [];      end
 
 % default background field removal method is TKD
-try algorParam2.qsm.method      = algorParam.qsm.method;        catch; algorParam2.qsm.method       = 'tkd';	end
+try algorParam2.qsm.method      = algorParam.qsm.method;        catch; algorParam2.qsm.method       = methodQSMName{1};	end
 try algorParam2.qsm.threshold   = algorParam.qsm.threshold;     catch; algorParam2.qsm.threshold    = 0.15;     end
 % for the rest, if the parameter does not exist then initiates it with an empty array
 try algorParam2.qsm.radius      = algorParam.qsm.radius;        catch; algorParam2.qsm.radius       = [];       end

@@ -35,6 +35,8 @@ function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,mas
 %% add general Path
 sepia_addpath;
 
+sepia_universal_variables;
+
 %% define variables
 prefix = 'sepia_';
 gyro = 42.57747892;
@@ -274,6 +276,9 @@ end
 
 % Step 0: Eddy current correction for bipolar readout
 if isEddyCorrect
+    disp('--------------------------');
+    disp('Bipolar readout correction');
+    disp('--------------------------');
     disp('Correcting eddy current effect on bipolar readout data...');
     
     % BipolarEddyCorrect requries complex-valued input
@@ -288,6 +293,9 @@ if isEddyCorrect
 end
 
 % Step 1: Phase unwrapping and echo phase combination
+disp('--------------------');
+disp('Total field recovery');
+disp('--------------------');
 disp('Calculating field map...');
 
 % fix the output field map unit in Hz
@@ -318,7 +326,7 @@ catch
         exclude_threshold = Inf;
     end
     
-    unwrap = 'laplacian'; 
+    unwrap = methodUnwrapName{1}; % 'Laplacian (MEDI)'; 
     sepia_addpath(unwrap);
     
     [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...

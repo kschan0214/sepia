@@ -570,7 +570,7 @@ end
 % (if necessary) prepare all essential data for individual algorithm
 switch lower(QSM_method)
         
-    case methodQSMname{8}   % MEDI
+    case 'medi_l1'
         
         if length(TE) == 1 && QSM_isLambdaCSF
             QSM_isLambdaCSF = false;

@@ -242,6 +242,9 @@ matrixSize  = double(matrixSize);
 fieldmapSD  = double(fieldmapSD);
 
 %% Background field removal
+disp('------------------------');
+disp('Background field removal');
+disp('------------------------');
 disp('Recovering local field...');
 
 % core of background field removal
