@@ -12,6 +12,8 @@
 function sepia_addpath(method)
 sepia_universal_variables;
 methodUnwrapName = lower(methodUnwrapName);
+methodBFRName    = lower(methodBFRName);
+methodQSMName    = lower(methodQSMName);
 
 % specify the toolbox(es) directory
 SpecifyToolboxesDirectory;
@@ -83,54 +85,54 @@ if nargin > 0
             addpath(genpath(SEGUE_dir));
 
         % background field removal
-        case 'lbv'
+        case methodBFRName{1} % 'lbv'
             addpath(genpath(MEDI_dir));
 
-        case 'pdf'
+        case methodBFRName{2} % 'pdf'
             addpath(genpath(MEDI_dir));
 
-        case 'sharp'
+        case methodBFRName{4} % 'sharp'
             addpath([misc_bkgRemoval_dir filesep 'SHARP']);
             addpath(genpath(MEDI_dir));
 
-        case 'resharp'
+        case methodBFRName{3} % 'resharp'
             addpath([misc_bkgRemoval_dir filesep 'RESHARP']);
             addpath(genpath(MEDI_dir));
 
-        case 'vsharpstisuite'
+        case methodBFRName{5} % 'vsharpstisuite'
             add_path_STIsuitev3(STISuite_dir);
 
-        case 'vsharp'
+        case methodBFRName{6} % 'vsharp'
             addpath([misc_bkgRemoval_dir filesep 'VSHARP_sepia']);
 
-        case 'iharperella'
+        case methodBFRName{7} % 'iharperella'
             add_path_STIsuitev3(STISuite_dir);
 
         % QSM
-        case 'tkd'
+        case methodQSMName{1} % 'tkd'
             addpath([misc_qsm_dir filesep 'TKD']);
 
-        case 'cfl2'
+        case methodQSMName{2} % 'cfl2'
             addpath([misc_qsm_dir filesep 'closedFormL2']);
             
-        case 'ndi'
+        case methodQSMName{3} % 'ndi'
             addpath([misc_qsm_dir filesep 'NDI']);
 
-        case 'ilsqr'
+        case methodQSMName{5} % 'ilsqr'
             addpath([misc_qsm_dir filesep 'closedFormL2']);
             addpath([misc_qsm_dir filesep 'iLSQR_qsmhub']);
 
-        case 'stisuiteilsqr'
+        case methodQSMName{4} % 'stisuiteilsqr'
             add_path_STIsuitev3(STISuite_dir);
 
-        case 'fansi'
+        case methodQSMName{6} % 'fansi'
             addpath([misc_qsm_dir filesep 'FANSI']);
             addpath(genpath(FANSI_dir));
 
-        case 'star'
+        case methodQSMName{7} % 'star'
             add_path_STIsuitev3(STISuite_dir);
 
-        case 'medi_l1'
+        case methodQSMName{8} % 'medi_l1'
             addpath([misc_qsm_dir filesep 'MEDI_L1']);
             addpath(genpath(MEDI_dir));
 

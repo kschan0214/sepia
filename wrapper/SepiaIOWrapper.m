@@ -75,13 +75,11 @@ sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';   
-gyro = 42.57747892;
 isInputDir = true;
 % make sure the input only load once (first one)
 isMagnLoad      = false;
 isPhaseLoad     = false;
 isWeightLoad    = false;
-maskCSF = [];
 
 %% Check if output directory exists 
 output_index = strfind(output, filesep);
@@ -99,59 +97,15 @@ end
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 % generl algorithm parameters
 isInvert            = algorParam.general.isInvert;
-isGPU               = algorParam.general.isGPU;
 isBET               = algorParam.general.isBET;
 fractional_threshold = algorParam.general.fractional_threshold;
 gradient_threshold   = algorParam.general.gradient_threshold;
 % phase unwrap algorithm parameters
 isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
-phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
-unwrap              = algorParam.unwrap.unwrapMethod;
-subsampling         = algorParam.unwrap.subsampling;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
-% background field removal algorithm parameters
-BFR                 = algorParam.bfr.method;
-refine              = algorParam.bfr.refine;
-BFR_tol             = algorParam.bfr.tol;
-BFR_depth           = algorParam.bfr.depth;
-BFR_peel            = algorParam.bfr.peel;
-BFR_iteration       = algorParam.bfr.iteration;
-BFR_padSize         = algorParam.bfr.padSize;
-BFR_radius          = algorParam.bfr.radius;
-BFR_alpha           = algorParam.bfr.alpha;
-BFR_threshold       = algorParam.bfr.threshold;
-BFR_erode_radius    = algorParam.bfr.erode_radius;
-% QSM algorithm parameters
-QSM_method          = algorParam.qsm.method; 
-QSM_threshold       = algorParam.qsm.threshold; 
-QSM_lambda          = algorParam.qsm.lambda; 
-QSM_optimise        = algorParam.qsm.optimise; 
-QSM_tol             = algorParam.qsm.tol;   
-QSM_maxiter         = algorParam.qsm.maxiter;
-QSM_tol1            = algorParam.qsm.tol1;  
-QSM_tol2            = algorParam.qsm.tol2; 
-QSM_padsize         = algorParam.qsm.padsize;
-QSM_mu1             = algorParam.qsm.mu1; 
-QSM_mu2             = algorParam.qsm.mu2;  
-QSM_solver          = algorParam.qsm.solver;  
-QSM_constraint      = algorParam.qsm.constraint; 
-QSM_gradient_mode   = algorParam.qsm.gradient_mode;
-QSM_isWeakHarmonic	= algorParam.qsm.isWeakHarmonic;
-QSM_beta            = algorParam.qsm.beta;
-QSM_muh             = algorParam.qsm.muh;
-QSM_radius          = algorParam.qsm.radius;
-QSM_zeropad         = algorParam.qsm.zeropad;   
-QSM_wData           = algorParam.qsm.wData; 
-QSM_wGradient       = algorParam.qsm.wGradient;
-QSM_isLambdaCSF     = algorParam.qsm.isLambdaCSF;
-QSM_lambdaCSF       = algorParam.qsm.lambdaCSF; 
-QSM_isSMV           = algorParam.qsm.isSMV;
-QSM_merit           = algorParam.qsm.merit;  
-QSM_stepSize        = algorParam.qsm.stepSize;  
-QSM_percentage      = algorParam.qsm.percentage;  
-reference_tissue   	= algorParam.qsm.reference_tissue;  
+
 
 %% Read input
 disp('-----');
@@ -327,16 +281,13 @@ disp(['B0 direction(x,y,z)      =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T)        =  ' num2str(B0)]);
 disp(['Number of echoes         =  ' num2str(length(TE))]);
 
-% make sure the following variables are row vectors
-matrixSize = matrixSize(:).';
-voxelSize = voxelSize(:).';
 
 % ensure variables are double
 magn        = double(magn);
 fieldMap    = double(fieldMap);
 TE          = double(TE);
-matrixSize  = double(matrixSize);
-voxelSize   = double(voxelSize);
+matrixSize  = double(matrixSize(:).');  % row vectors
+voxelSize   = double(voxelSize(:).');   % row vectors
 
 %% get brain mask
 mask = [];
@@ -372,81 +323,58 @@ if isempty(mask) || isBET
 
 end
 
-% double data type
-mask = double(mask);
+%% ensure all variable are double
+fieldMap  	= double(fieldMap);
+mask      	= double(mask);
 
+% header
+headerAndExtraData.b0       = B0;
+headerAndExtraData.b0dir  	= B0_dir;
+headerAndExtraData.te       = TE;
+headerAndExtraData.delta_TE = delta_TE;
+headerAndExtraData.CF    	= CF;
+
+headerAndExtraData.magn	= double(magn);
 %% total field and phase unwrap
 
-% Step 0: Eddy current correction for bipolar readout
+%%%%%%%%%% Step 0: Eddy current correction for bipolar readout %%%%%%%%%%
 if isEddyCorrect
-    disp('--------------------------');
-    disp('Bipolar readout correction');
-    disp('--------------------------');
-    disp('Step 0: Correcting eddy current effect on bipolar readout data...');
-    
+
     % BipolarEddyCorrect requries complex-valued input
-    imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
-    fieldMap = angle(imgCplx);
+    imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    fieldMap    = double(angle(imgCplx));
     
     % save the eddy current corrected output
     fprintf('Saving eddy current corrected phase data...');
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
     fprintf('Done!\n');
+    
     clear imgCplx
     
-    % convert data to single type to reduce memory usage
-    fieldMap = double(fieldMap);
 end
 
-% Step 1: Phase unwrapping and echo phase combination
-disp('--------------------');
-disp('Total field recovery');
-disp('--------------------');
-disp('Step 1: Calculating field map...');
+%%%%%%%%%% Step 1: Phase unwrapping and echo phase combination %%%%%%%%%%
+% core of temporo-spatial phase unwrapping
+[totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
-% fix the output field map unit in Hz
-unit = 'Hz';
-
-% core of phase unwrapping
-try 
-    [totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,magn,...
-                        matrixSize,voxelSize,...
-                        'method',phaseCombMethod,'Unwrap',unwrap,...
-                        'TE',TE,'B0',B0,'unit',unit,...
-                        'Subsampling',subsampling,'mask',mask);
-                    
-    if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
-        fprintf('Saving unwrapped echo phase...');
-        save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
-        clear fieldmapUnwrapAllEchoes
-        fprintf('Done!\n');
-    end
+% save unwrapped phase if chosen
+if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
+    % save the output                           
+    fprintf('Saving unwrapped echo phase...');
+    save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
+    fprintf('Done!\n');
     
-catch ME
-    % if the above selected method is not working then do Laplacian with
-    % optimum weights
-    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping.')
-    if ~isinf(exclude_threshold)
-        warning('Unreliable voxels will not be excluded due to switching of the algorithm.')
-        exclude_threshold = Inf;
-    end
-    
-    unwrap = methodUnwrapName{1}; % 'Laplacian (MEDI)'; 
-    sepia_addpath(unwrap);
-    
-    [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-                            'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
-                            'Subsampling',subsampling,'mask',mask);
+    clear fieldmapUnwrapAllEchoes
 end
 
-% Step 2: exclude unreliable voxel, based on monoexponential decay model with
-% single freuqnecy shift
+%%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 fprintf('Computing weighting map...');
 if length(TE) > 1 && ~isinf(exclude_threshold)
     % multi-echo data
-    r2s = R2star_trapezoidal(magn,TE);
-    relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
-    maskReliable = relativeResidual < exclude_threshold;
+    r2s                 = R2star_trapezoidal(magn,TE);
+    relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
+    maskReliable        = relativeResidual < exclude_threshold;
+    
     clear r2s
 else
     % single-echo & no threshold
@@ -461,57 +389,55 @@ switch exclude_method
     % threshold brain mask with the reliable voxel mask
     case 'Brain mask'
         mask = mask .* maskReliable;
-        save_nii_quick(outputNiftiTemplate,mask,  [outputDir filesep prefix 'mask-local_field.nii.gz']);
         
 end
 fprintf('Done!\n');
 
-% 20180815: test with creating weights using relativeResidual
-% weightResidual = 1-(relativeResidual./exclude_threshold);
-% weightResidual(weightResidual>1) = 1;
-% weightResidual(weightResidual<0) = 0;
-
-% deprecated
-% mask = and(mask,maskReliable);
+% create weighting map 
+% for weighting map: higher SNR -> higher weighting
+if ~isWeightLoad
+    weights                 = 1./fieldmapSD;
+    weights(isinf(weights)) = 0;
+    weights(isnan(weights)) = 0;
+    weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
+end
+weights = weights .* and(mask>0,maskReliable);
              
 % save the output                           
 fprintf('Saving unwrapped field map...');
 
 save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
+if ~isWeightLoad
+    save_nii_quick(outputNiftiTemplate,weights,	[outputDir filesep prefix 'weights.nii.gz']);
+end
 
 if ~isinf(exclude_threshold)
+    
     save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
+    
+    if strcmpi(exclude_method,'Brain mask')
+       save_nii_quick(outputNiftiTemplate,mask,         [outputDir filesep prefix 'mask-local_field.nii.gz']); 
+    end
+    
     clear relativeResidual
 end
-fprintf('done!\n');
+fprintf('Done!\n');
+
+% store some output to extradata
+headerAndExtraData.N_std    = double(fieldmapSD);
+headerAndExtraData.weights  = double(weights);
 
 % clear variable that no longer be needed
-clear fieldMap
+clear fieldMap magn fieldmapSD weights maskReliable
 
 %% Background field removal
-disp('------------------------');
-disp('Background field removal');
-disp('------------------------');
-disp('Step 2: Recovering local field...');
+% make sure all variables are double
+totalField  = double(totalField);
+mask       	= double(mask);
 
-% core of background field removal
-if isGPU
-    localField = cuBackgroundRemovalMacro(...
-                        totalField,mask,matrixSize,voxelSize,...
-                        'method',BFR,'refine',refine,'erode',BFR_erode_radius,'tol',BFR_tol,'depth',BFR_depth,...
-                        'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'padsize',...
-                        BFR_padSize,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
-                        'threshold',BFR_threshold); 
-else
-    localField = BackgroundRemovalMacro(...
-                        totalField,mask,matrixSize,voxelSize,...
-                        'method',BFR,'refine',refine,'erode',BFR_erode_radius,'tol',BFR_tol,'depth',BFR_depth,...
-                        'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'padsize',...
-                        BFR_padSize,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
-                        'threshold',BFR_threshold); 
-end
+localField = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
   
 % generate new mask based on backgroudn field removal result
 maskFinal = double(localField ~=0);
@@ -520,103 +446,22 @@ maskFinal = double(localField ~=0);
 fprintf('Saving local field map...');
 
 save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'local-field.nii.gz']);
-save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-qsm.nii.gz']);
+save_nii_quick(outputNiftiTemplate,maskFinal,	[outputDir filesep prefix 'mask-qsm.nii.gz']);
 fprintf('done!\n');
 
-% create weighting map based on final mask
-% for weighting map: higher SNR -> higher weighting
-% wmap = fieldmapSD./norm(fieldmapSD(maskFinal==1));   
-if isWeightLoad
-    wmap = weights;
-else
-    wmap = 1./fieldmapSD;
-    wmap(isinf(wmap)) = 0;
-    wmap(isnan(wmap)) = 0;
-    wmap = wmap./max(wmap(and(maskFinal>0,maskReliable>0)));
-    wmap = wmap .* maskFinal;
-end
-% wmap = wmap .* weightResidual;
-wmap = wmap .* double(maskReliable);
-if ~isWeightLoad || ~isinf(exclude_threshold)
-    save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
-end
-
 % clear variables that no longer be needed
-clear maskReliable totalField mask
+clear totalField mask
 
 %% QSM
-disp('Step 3: Computing QSM...');
+% make sure all variables are double
+localField	= double(localField);
+maskFinal   = double(maskFinal);
 
-% reference tissue
-switch reference_tissue
-    case 'None'
-        mask_ref = [];
-        
-    case 'Brain mask'
-        mask_ref = maskFinal;
-        
-    case 'CSF'
-        if isempty(magn) || size(magn,4) == 1
-            warning('Please specify a multi-echo magnitude data if you want to use CSF as reference.');
-            warning('No normalisation will be done on the susceptibility map in this instance.');
-            mask_ref = [];
-        else
-            sepia_addpath('medi_l1');
-            r2s         = arlo(TE,magn);
-            mask_ref    = extract_CSF(r2s,maskFinal,voxelSize)>0;
-        end
-end
-
-% (if necessary) prepare all essential data for individual algorithm
-switch lower(QSM_method)
-        
-    case methodQSMname{8}   % MEDI
-        
-        if length(TE) == 1 && QSM_isLambdaCSF
-            QSM_isLambdaCSF = false;
-            warning('Single echo data cannot use CSF regularisation.');
-            warning('No CSF regularisation will be used');
-        end
-            
-        % zero reference using CSF requires CSF mask
-        if QSM_isLambdaCSF && isMagnLoad
-            sepia_addpath('medi_l1');
-            
-            fprintf('Extracting CSF mask....');
-            % R2* mapping & computing CSF mask
-            r2s = arlo(TE,magn);
-            maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
-            
-            fprintf('done!');
-            magn = sqrt(sum(magn.^2,4));
-        end
-        
-end
+% Apply final mask to weights
+headerAndExtraData.weights = headerAndExtraData.weights .* maskFinal;
 
 % core of QSM
-if isGPU
-    chi = cuQSMMacro(localField,maskFinal,matrixSize,voxelSize,...
-                     'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-                     'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
-                     'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
-                     'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                     'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
-                     'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-                     'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
-else
-    chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,...
-                   'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-                   'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',wmap,...
-                   'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
-                   'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                   'noisestd',fieldmapSD,'magnitude',magn,'data_weighting',QSM_wData,...
-                   'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-                   'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
-                   'stepsize',QSM_stepSize,'percentage',QSM_percentage,'tmp_output_dir',outputDir,...
-                   'gradient_mode',QSM_gradient_mode,'isWeakHarmonic',QSM_isWeakHarmonic,'beta',QSM_beta,'muh',QSM_muh,...
-                   'reference_mask',mask_ref);
-               
-end
+chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
   
 % save results
 fprintf('Saving susceptibility map...');

@@ -44,7 +44,7 @@ switch lower(mode)
         % L-curve optimisation
         k = k+1;
         pattern_curr    = str_pattern{k};
-        val             = get_num_as_string(Aconfig_txt, pattern_curr, '=', ';');
+        val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
         set_non_nan_value(action_handle{k}, 'Value', str2double(val))
         % trigger popup callback to switch method panel
         feval(action_handle{k}.Callback{1},action_handle{k},[],action_handle{k-1},0);

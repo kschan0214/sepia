@@ -52,7 +52,7 @@ function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath
 
-sepia_univer
+sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';
@@ -274,7 +274,9 @@ end
 B0_dir = B0_dir ./ norm(B0_dir);
 
 % display some header info
+disp('-----------------------');
 disp('Basic DICOM information');
+disp('-----------------------');
 disp(['Voxel size(x,y,z mm^3)   =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
 disp(['matrix size(x,y,z)       =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
 disp(['B0 direction(x,y,z)      =  ' num2str(B0_dir(:)')]);
@@ -341,13 +343,8 @@ disp('Computing QSM...');
 
 % prepare all essential components for individual algorithm
 switch lower(QSM_method)
-    case 'closedforml2'
         
-    case 'ilsqr'
-        
-    case 'stisuiteilsqr'
-        
-    case 'fansi'
+    case methodQSMname{6}   % 'fansi'
         % if both data are loaded
         if isWeightLoad && isMagnLoad
             disp('Both weighting map and magnitude images are loaded.');
@@ -363,13 +360,8 @@ switch lower(QSM_method)
         if ~isWeightLoad && ~isMagnLoad
             warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
         end
-        
-    case 'ssvsharp'
-        % not support yet
-        
-    case 'star'
-%         
-    case 'medi_l1'
+ 
+    case methodQSMname{8}   % 'medi_l1'
         % zero reference using CSF requires CSF mask
         if QSM_isLambdaCSF && isMagnLoad
             disp('Extracting CSF mask....');
@@ -380,7 +372,7 @@ switch lower(QSM_method)
 %             magn    = sqrt(sum(magn.^2,4));
         end
         
-    case 'ndi'
+    case methodQSMname{3}   % 'ndi'
         % if both data are loaded
         if isWeightLoad && isMagnLoad
             disp('Both weighting map and magnitude images are loaded.');
@@ -410,6 +402,7 @@ if isGPU
                      'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
                      'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
 else
+    
     chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,...
                    'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
                    'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...

@@ -174,6 +174,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
         % BET is supported with this tab
         set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
         % phase invert is supported with this tab
         set(h.dataIO.checkbox.invertPhase,      'Enable','on');
         % input data 1
@@ -201,6 +203,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
         % BET is supported with this tab
         set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
         % phase invert is supported with this tab
         set(h.dataIO.checkbox.invertPhase,      'Enable','on');
         % input data 1
@@ -224,6 +228,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{2});
         % no BET support with this tab
         set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
         set(h.dataIO.edit.maskdir,              'Enable','on');
         set(h.dataIO.button.maskdir,            'Enable','on');
         % phase invert is not supported with this tab
@@ -250,6 +256,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
         % no BET support with this tab
         set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
         set(h.dataIO.edit.maskdir,              'Enable','on');
         set(h.dataIO.button.maskdir,            'Enable','on');
         % phase invert is not supported with this tab
@@ -487,6 +495,84 @@ global h
 % if file is specified then read it
 if exist(fullfile(pathDir,config_filename),'file')
     set_config_Callback(fullfile(pathDir,config_filename),h);
+end
+
+tab = get(h.StepsPanel.dataIO,'parent');
+tab = tab.Title;
+
+switch tab
+    
+    % QSM one-stop station tab
+    case 'SEPIA'
+        % I/O
+        % BET is supported with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+        % phase invert is supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
+        % input data 1
+        set(h.dataIO.edit.inputData2,           'Enable','on');
+        set(h.dataIO.button.inputData2,         'Enable','on');
+        % input data 3
+        set(h.dataIO.edit.inputData3,           'Enable','on');
+        set(h.dataIO.button.inputData3,         'Enable','on');
+            
+        
+    % Phase unwrapping tab
+    case 'Phase unwrapping'
+        % I/O
+        % BET is supported with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+        % phase invert is supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
+        % input data 2
+%           set(h.dataIO.text.inputData2,'String','Magn. data:');
+        set(h.dataIO.edit.inputData2,           'Enable','on');
+        set(h.dataIO.button.inputData2,         'Enable','on');
+        % input data 3
+        set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
+        set(h.dataIO.button.inputData3,         'Enable','off');
+
+        
+    % background field removal tab    
+    case 'Background field removal'
+        % no BET support with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+        set(h.dataIO.edit.maskdir,              'Enable','on');
+        set(h.dataIO.button.maskdir,            'Enable','on');
+        % phase invert is not supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+        % input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+        set(h.dataIO.edit.inputData2,           'Enable','off','String',[]);
+        set(h.dataIO.button.inputData2,         'Enable','off');
+        % input data 3
+        set(h.dataIO.edit.inputData3,           'Enable','on');
+        set(h.dataIO.button.inputData3,         'Enable','on');
+
+    % qsm tab    
+    case 'QSM'
+        
+        % no BET support with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+        set(h.dataIO.edit.maskdir,              'Enable','on');
+        set(h.dataIO.button.maskdir,            'Enable','on');
+        % phase invert is not supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+       
+        set(h.dataIO.edit.inputData2,           'Enable','on');
+        set(h.dataIO.button.inputData2,         'Enable','on');
+        % input data 3
+        set(h.dataIO.edit.inputData3,           'Enable','on');
+        set(h.dataIO.button.inputData3,         'Enable','on');
+        
 end
 
 end
