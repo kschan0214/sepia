@@ -46,18 +46,24 @@ delta_TE    = headerAndExtraData.delta_TE;
 TE          = headerAndExtraData.te;
 CF          = headerAndExtraData.CF;
 iMag        = headerAndExtraData.magn;
-N_std       = headerAndExtraData.weights;
+N_std       = headerAndExtraData.weights;   % contrast of N_std is inverse of weights
 
 matrix_size = matrixSize;
 voxel_size  = voxelSize;
 RDF         = localField;
 Mask        = mask;
 iFreq       = [];
+Mask_CSF    = [];
 
 % add path
 sepia_addpath(method);
 
 %% Preparation
+N_std               = (1./N_std).*mask;
+N_std(isnan(N_std)) = 0;
+N_std(isinf(N_std)) = 0;
+N_std = N_std / norm(N_std(mask>0));
+
 % zero reference using CSF requires CSF mask
 if isLambdaCSF && ~isempty(iMag)
     disp('Extracting CSF mask....');

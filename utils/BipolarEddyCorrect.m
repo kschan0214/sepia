@@ -30,28 +30,23 @@ disp('Bipolar readout correction');
 disp('--------------------------');
 disp('Correcting eddy current effect on bipolar readout data...');
 
-% if nargin < 3
-%     unwrap = methodUnwrapName{4};
-% end
+bipolarCplxME(isnan(bipolarCplxME))=0;
+
+dims = size(bipolarCplxME) ;
 
 % successive phase difference mean made so that the last echo taken into
 % account has to be an odd number ()
-bipolarCplxME(isnan(bipolarCplxME))=0;
-% dims = size(bipolarCplxME) ;
 % to= dims(4)-(-mod(dims(4),2)+1);
-
 % Phase of mean evens minus mean odds - contains Eddy Current and
-
-dims = size(bipolarCplxME) ;
-to= dims(4)-(mod(dims(4),2));
-PhaseDiffEvensMinusOdds=angle(mean(bipolarCplxME(:,:,:,2:2:to)./bipolarCplxME(:,:,:,1:2:to-1),4));
-PhaseDiffEvensMinusOdds(isnan(PhaseDiffEvensMinusOdds))=0;
+to = dims(4)-(mod(dims(4),2));
+PhaseDiffEvensMinusOdds = angle(mean(bipolarCplxME(:,:,:,2:2:to)./bipolarCplxME(:,:,:,1:2:to-1),4));
+PhaseDiffEvensMinusOdds(isnan(PhaseDiffEvensMinusOdds)) = 0;
 
 % Phase of even minus odd images - contains Eddy Current and Field Map
 % PhaseDiffEvensMinusOddsFluctuations=angle(mean(bipolarCplxME(:,:,:,2:2:end-2)./bipolarCplxME(:,:,:,1:2:end-3),4));
 
-PhaseDiffEvens=angle(mean(bipolarCplxME(:,:,:,4:2:end)./bipolarCplxME(:,:,:,2:2:end-2),4));
-PhaseDiffOdds=angle(mean(bipolarCplxME(:,:,:,3:2:end)./bipolarCplxME(:,:,:,1:2:end-2),4));
+PhaseDiffEvens  = angle(mean(bipolarCplxME(:,:,:,4:2:end)./bipolarCplxME(:,:,:,2:2:end-2),4));
+PhaseDiffOdds   = angle(mean(bipolarCplxME(:,:,:,3:2:end)./bipolarCplxME(:,:,:,1:2:end-2),4));
 PhaseDiffEvens(isnan(PhaseDiffEvens))=0;
 PhaseDiffOdds(isnan(PhaseDiffOdds))=0;
 % BipolarOddvsEven=mean(abs(bipolarCplxME(:,:,:,1:2:end)),4)-mean(abs(bipolarCplxME(:,:,:,2:2:end-1)),4);
@@ -62,6 +57,7 @@ PhaseDiffOdds(isnan(PhaseDiffOdds))=0;
 te=1:dims(4);
 
 algorParam.unwrap.unit 	= 'radHz';
+algorParam.unwrap.echoCombMethod = methodEchoCombineName{1}; 
 
 headerAndExtraData.te   = te(4)-te(2);
 headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4));

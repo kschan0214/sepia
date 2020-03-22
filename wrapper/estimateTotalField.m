@@ -105,7 +105,7 @@ switch echoCombine
             totalFieldSD                        = sqrt(totalFieldVariance);
             totalFieldSD(isnan(totalFieldSD))   = 0;
             totalFieldSD(isinf(totalFieldSD))   = 0;
-            totalFieldSD                        = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
+            totalFieldSD                        = totalFieldSD./norm(totalFieldSD(mask~=0));
             
             % get the unwrapped phase accumulation across echoes
             % unwrap first echo
@@ -123,7 +123,7 @@ switch echoCombine
             totalFieldSD                        = 1./magn;
             totalFieldSD(isnan(totalFieldSD))   = 0;
             totalFieldSD(isinf(totalFieldSD))   = 0;
-            totalFieldSD                        = totalFieldSD./norm(totalFieldSD(totalFieldSD~=0));
+            totalFieldSD                        = totalFieldSD./norm(totalFieldSD(mask~=0));
         end
         
         N_std = totalFieldSD;

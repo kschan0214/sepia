@@ -42,17 +42,20 @@
 % Date last modified: 1 June 2018
 % Date last modified: 2 March 2020 (v0.8.0)
 %
-function sepia
-clear 
+function sepia 
 
+% clear previous handles
+clear global h
+
+% make sure nothing is logged at the moment
 diary off
 
+% add path
 sepia_addpath;
-
-clear global h
 
 global h
 
+%% create basic GUI
 % set GUI window size
 screenSize  = get(0,'ScreenSize');
 posLeft     = round(screenSize(3)/4);
@@ -66,10 +69,11 @@ if guiSizeVert < 700
     guiSizeVert = 700;
 end
 
-% create GUI 
+% create GUI figure
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
     'MenuBar','None','Toolbar','None','Name','SEPIA GUI (v0.8.0)','NumberTitle','off');
 
+%% construct panels for each tab 
 % create Tabs for GUI
 h.TabGroup          = uitabgroup(h.fig,'position',[.01 .01 0.98 0.98]);
 h.Tabs.Sepia        = uitab(h.TabGroup,'Title','SEPIA');
@@ -79,24 +83,27 @@ h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
 h.Tabs.swismwi      = uitab(h.TabGroup,'Title','SWI/SMWI');
 h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
-% construct all tabs
 %% GUI with QSM one-stop station tab
 % these panels will be switching position from tab to tab
+parent_curr = h.Tabs.Sepia;
 % I/O
-h = sepia_handle_panel_dataIO(h.Tabs.Sepia,                   h,[0.01 0.8]);
+h = sepia_handle_panel_dataIO(parent_curr,      h,[0.01 0.8]);
 % phase unwrap
-h = sepia_handle_panel_phaseUnwrap(h.Tabs.Sepia,              h,[0.01 0.59]);
+h = sepia_handle_panel_phaseUnwrap(parent_curr,	h,[0.01 0.59]);
 % background field
-h = sepia_handle_panel_bkgRemoval(h.Tabs.Sepia,               h,[0.01 0.33]);
+h = sepia_handle_panel_bkgRemoval(parent_curr,	h,[0.01 0.33]);
 % QSM
-h = sepia_handle_panel_qsm(h.Tabs.Sepia,                      h,[0.01 0.07]);
+h = sepia_handle_panel_qsm(parent_curr,       	h,[0.01 0.07]);
 
 %% SWI/SMWI tab
-h = sepia_handle_panel_swi_dataIO(h.Tabs.swismwi,             h,[0.01 0.8]);
-h = sepia_handle_panel_swi(h.Tabs.swismwi,                    h,[0.01 0.44]);
+parent_curr = h.Tabs.swismwi;
+% I/O
+h = sepia_handle_panel_swi_dataIO(parent_curr,	h,[0.01 0.8]);
+% Method
+h = sepia_handle_panel_swi(parent_curr,       	h,[0.01 0.44]);
 
 %% utility tab
-h = sepia_handle_panel_Utility(h.Tabs.utility,                h,[0.01 0.39]);
+h = sepia_handle_panel_Utility(h.Tabs.utility,	h,[0.01 0.39]);
 
 %% extra content
 % Start button
@@ -134,6 +141,7 @@ set(h.pushbutton_loadConfig,    'Callback',            {@PushbuttonLoadConfig_Ca
 end
 
 %% Callback functions
+
 %% switching tabs
 function SwitchTab_Callback(source,eventdata)
 % switch parent handle of StepsPanel based on current tab
@@ -158,13 +166,14 @@ fieldString.inputData1{3}= 'or Local field:';
 fieldString.inputData3{1}= '    Weights:';
 fieldString.inputData3{2}= '    Noise SD:';
 
-% change universal elements' parent except SWI/SMWI tab and Utility tab
+% change universal elements' parent except 'SWI/SMWI' tab and 'Utility' tab
 if ~strcmpi(eventdata.NewValue.Title,'SWI/SMWI') && ~strcmpi(eventdata.NewValue.Title,'Utility')
     for k = 1:length(universial_handle)
         set(universial_handle{k}, 'Parent', source.SelectedTab);
     end
 end
 
+% Specify tab-specific content
 switch eventdata.NewValue.Title
     
     % QSM one-stop station tab
@@ -291,7 +300,7 @@ sepia_universal_variables;
 % Disable the pushbutton to prevent double clicks
 set(source,'Enable','off');
 
-% get the tab name of the standalone
+% get the current tab name of the standalone
 tab = h.StepsPanel.dataIO.Parent.Title;
 
 % get I/O GUI input
@@ -497,8 +506,7 @@ if exist(fullfile(pathDir,config_filename),'file')
     set_config_Callback(fullfile(pathDir,config_filename),h);
 end
 
-tab = get(h.StepsPanel.dataIO,'parent');
-tab = tab.Title;
+tab = h.StepsPanel.dataIO.Parent.Title;
 
 switch tab
     
