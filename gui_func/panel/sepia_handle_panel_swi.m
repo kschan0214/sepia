@@ -65,10 +65,8 @@ set(h.swi.button.start,	'Callback', {@PushbuttonStart_swi_Callback,h});
 end
 
 %% Callback function
+% display corresponding method panel
 function PopupSWI_Callback(source,eventdata,h)
-% display corresponding QSM method's panel
-
-% global h
 
 % get selected QSM method
 method = source.String{source.Value,1} ;
@@ -103,11 +101,8 @@ set(source,'Enable','off');
 % option 2: input are NIfTI files
 input(1).name = get(h.swi.dataIO.edit.inputData1, 	'String');
 input(2).name = get(h.swi.dataIO.edit.inputData2,  	'String');
-%     input(3).name = get(h.swi.dataIO.edit.inputData3,  	'String');
-% input(4).name = get(h.swi.dataIO.edit.inputHeader, 	'String');
 
 outputBasename  = get(h.swi.dataIO.edit.output,       	'String');
-% maskFullName    = get(h.swi.dataIO.edit.maskdir,       	'String');
 
 % get and create output directory
 output_index = strfind(outputBasename, filesep);
@@ -118,33 +113,39 @@ if exist(outputDir,'dir') ~= 7
 end
 
 % create a new m file
-logFilename = [outputDir filesep 'sepia_log.m'];
-if exist(logFilename,'file') == 2
+% logFilename = [outputDir filesep 'sepia_log.m'];
+% if exist(logFilename,'file') == 2
+%     counter = 1;
+%     while exist(logFilename,'file') == 2
+%         suffix = ['_' num2str(counter)];
+%         logFilename = [outputDir filesep 'sepia_log' suffix '.m'];
+%         counter = counter + 1;
+%     end
+% end
+% fid = fopen(logFilename,'w');
+% create a new m file
+configFilename = [outputDir filesep 'sepia_config.m'];
+if exist(configFilename,'file') == 2
     counter = 1;
-    while exist(logFilename,'file') == 2
+    while exist(configFilename,'file') == 2
         suffix = ['_' num2str(counter)];
-        logFilename = [outputDir filesep 'sepia_log' suffix '.m'];
+        configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
         counter = counter + 1;
     end
 end
-fid = fopen(logFilename,'w');
+fid = fopen(configFilename,'w');
+
 % input data
 fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
 fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
-%     fprintf(fid,'input(3).name = ''%s'' ;\n',input(3).name);
-% fprintf(fid,'input(4).name = ''%s'' ;\n',input(4).name);
 
 % output
 fprintf(fid,'output_basename = ''%s'' ;\n',outputBasename);
 
-% mask
-% fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
-
-try
 % write algorithm parameters
 switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
     case 'SWI'
-        fprintf(fid,'algorParam.swi.m = %s ;\n'             ,get(h.swi.SWI.edit.m,  'String'));
+        fprintf(fid,'algorParam.swi.m = %s ;\n'                 ,get(h.swi.SWI.edit.m,  'String'));
         fprintf(fid,'algorParam.swi.threshold = %s ;\n'         ,get(h.swi.SWI.edit.threshold,  'String'));
         fprintf(fid,'algorParam.swi.filterSize = %s ;\n'        ,get(h.swi.SWI.edit.filterSize,  'String'));
         switch h.swi.SWI.popup.method.String{h.swi.SWI.popup.method.Value,1}
@@ -163,11 +164,11 @@ switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
         fprintf(fid,'\nSWIIOWrapper(input,output_basename,algorParam);\n');
         
     case 'SMWI'
-        fprintf(fid,'algorParam.smwi.m = %s ;\n'             ,get(h.swi.SMWI.edit.m,  'String'));
-        fprintf(fid,'algorParam.smwi.threshold = %s ;\n'         ,get(h.swi.SMWI.edit.threshold,  'String'));
-        fprintf(fid,'algorParam.smwi.isParamagnetic = %i ;\n'    ,get(h.swi.SMWI.checkbox.paramagnetic,'Value'));
-        fprintf(fid,'algorParam.smwi.isDiamagnetic = %i ;\n'     ,get(h.swi.SMWI.checkbox.diamagnetic,'Value'));
-        fprintf(fid,'algorParam.smwi.ismIP = %i ;\n'             ,get(h.swi.SMWI.checkbox.mIP,'Value'));
+        fprintf(fid,'algorParam.smwi.m = %s ;\n'                ,get(h.swi.SMWI.edit.m,  'String'));
+        fprintf(fid,'algorParam.smwi.threshold = %s ;\n'        ,get(h.swi.SMWI.edit.threshold,  'String'));
+        fprintf(fid,'algorParam.smwi.isParamagnetic = %i ;\n'   ,get(h.swi.SMWI.checkbox.paramagnetic,'Value'));
+        fprintf(fid,'algorParam.smwi.isDiamagnetic = %i ;\n'    ,get(h.swi.SMWI.checkbox.diamagnetic,'Value'));
+        fprintf(fid,'algorParam.smwi.ismIP = %i ;\n'            ,get(h.swi.SMWI.checkbox.mIP,'Value'));
         if get(h.swi.SMWI.checkbox.mIP,'Value')
             fprintf(fid,'algorParam.smwi.slice_mIP = %s ;\n' ,get(h.swi.SMWI.edit.mIP,  'String'));
         end
@@ -176,17 +177,56 @@ switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
 end
 
 fclose(fid);
-    
-% run process
-run(logFilename);
 
-% re-enable the pushbutton
-set(source,'Enable','on');
+% log command window display to a text file
+logFilename = [outputDir filesep 'run_sepia.log'];
+if exist(logFilename,'file') == 2
+    counter = 1;
+    while exist(logFilename,'file') == 2
+        suffix = ['_' num2str(counter)];
+        logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
+        counter = counter + 1;
+    end
+end
+diary(logFilename)
+    
+try
+    
+    % run process
+    run(logFilename);
+    
+    % turn off the log
+    diary off
+
+    % re-enable the pushbutton
+    set(source,'Enable','on');
 
 catch ME
     % re-enable the start button before displaying the error
     set(source,'Enable','on');
-
+    
+     % close log file
+    disp('There was an error! Please check the command window/error message file for more information.');
+    diary off
+    
+    % open a new text file for error message
+    errorMessageFilename = [outputDir filesep 'run_sepia.error'];
+    if exist(errorMessageFilename,'file') == 2
+        counter = 1;
+        while exist(errorMessageFilename,'file') == 2
+            suffix = ['_' num2str(counter)];
+            errorMessageFilename = [outputDir filesep 'run_sepia' suffix '.error'];
+            counter = counter + 1;
+        end
+    end
+    fid = fopen(errorMessageFilename,'w');
+    fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
+    fprintf(fid,'The message was:\n\n');
+    msgString = getReport(ME,'extended','hyperlinks','off');
+    fprintf(fid,'%s',msgString);
+    fclose(fid);
+    
+    % rethrow the error message to command window
     rethrow(ME);
 end
 

@@ -93,7 +93,7 @@ disp('Saving SMWI results...');
 if isParamagnetic
     save_nii_quick(outputNiftiTemplate,pSMWI, [outputDir filesep prefix 'smwi-paramagnetic.nii.gz']);
     if ismIP
-        save_nii_quick(outputNiftiTemplate,psmwi_mIP, [outputDir filesep prefix 'swi-mIP-paramagnetic.nii.gz']);
+        save_nii_quick(outputNiftiTemplate,psmwi_mIP, [outputDir filesep prefix 'smwi-mIP-paramagnetic.nii.gz']);
     end
 end
 if isDiamagnetic
