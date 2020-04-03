@@ -15,13 +15,23 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 1 June 2018
-% Date last modified: 
+% Date modified: 3 April 2020
 %
 %
 function h = sepia_handle_panel_qsm_TKD(hParent,h,position)
 
 %% set default values
 defaultThreshold = 0.15;
+
+%% Tooltips
+tooltip.qsm.TKD.threshold	= 'K-space threshold';
+
+%% layout of the panel
+nrow        = 4;
+rspacing    = 0.01;
+ncol        = 2;
+cspacing    = 0.01;
+[height,bottom,width,left] = sepia_layout_measurement(nrow,rspacing,ncol,cspacing);
 
 %% Parent handle of TKD panel children
 
@@ -32,18 +42,23 @@ h.qsm.panel.TKD = uipanel(hParent,...
 
 %% Children of TKD panel
     
+    % width of each element in a functional column, in normalised unit of
+    % the functional column width
+    subwidth(1) = width*0.5;
+    subwidth(2) = width-subwidth(1);
+    
     % text|edit field pair: threshold
     h.qsm.TKD.text.threshold = uicontrol('Parent',h.qsm.panel.TKD,...
         'Style','text',...
         'String','Threshold (0-1):',...
-        'units','normalized','position',[0.01 0.75 0.23 0.2],...
+        'units','normalized','position',[left(1) bottom(1) subwidth(1) height],...
         'HorizontalAlignment','left',...
         'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','K-space threshold');
+        'tooltip',tooltip.qsm.TKD.threshold);
     h.qsm.TKD.edit.threshold = uicontrol('Parent',h.qsm.panel.TKD,...
         'Style','edit',...
         'String',num2str(defaultThreshold),...
-        'units','normalized','position',[0.25 0.75 0.2 0.2],...
+        'units','normalized','position',[left(1)+subwidth(1) bottom(1) subwidth(2) height],...
         'backgroundcolor','white');
 
 %% set callbacks

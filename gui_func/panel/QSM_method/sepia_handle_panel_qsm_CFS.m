@@ -15,13 +15,24 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 1 June 2018
-% Date last modified: 
+% Date modified: 4 April 2020
 %
 %
 function h = sepia_handle_panel_qsm_CFS(hParent,h,position)
 
 %% set default values
 defaultLambda = 0.13;
+
+%% Tooltips
+tooltip.qsm.cfs.lambda_text   	= 'Regularisation parameter to control spatial smoothness of QSM';
+tooltip.qsm.cfs.lambda_checkbox	= 'Self estimation of lambda based on L-curve approach';
+
+%% layout of the panel
+nrow        = 4;
+rspacing    = 0.01;
+ncol        = 2;
+cspacing    = 0.01;
+[height,bottom,width,left] = sepia_layout_measurement(nrow,rspacing,ncol,cspacing);
 
 %% Parent handle of CFS panel children
 
@@ -30,29 +41,35 @@ h.qsm.panel.cfs = uipanel(hParent,...
     'position',position,...
     'backgroundcolor',get(h.fig,'color'),'Visible','off');
         
-
 %% Children of CFS panel
     
+    % width of each element in a functional column, in normalised unit of
+    % the functional column width
+    subwidth(1) = width*0.5;
+    subwidth(2) = width-subwidth(1);
+    
+    % row 1
     % text|edit field pair: regulariation parameter
     h.qsm.cfs.text.lambda = uicontrol('Parent',h.qsm.panel.cfs,...
         'Style','text',...
         'String','Lambda:',...
-        'units','normalized','position',[0.01 0.75 0.2 0.2],...
+        'units','normalized','position',[left(1) bottom(1) subwidth(1) height],...
         'HorizontalAlignment','left',...
         'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Regularisation parameter to control spatial smoothness of QSM');
+        'tooltip',tooltip.qsm.cfs.lambda_text);
     h.qsm.cfs.edit.lambda = uicontrol('Parent',h.qsm.panel.cfs,'Style','edit',...
         'String',num2str(defaultLambda),...
-        'units','normalized','position',[0.25 0.75 0.2 0.2],...
+        'units','normalized','position',[left(1)+subwidth(1) bottom(1) subwidth(2) height],...
         'backgroundcolor','white');
-
+    
+    % row 2
     % checkbox of self-estimated regularisation
     h.qsm.cfs.checkbox.lambda = uicontrol('Parent',h.qsm.panel.cfs,...
         'Style','checkbox',...
         'String','Self-optimisation by L-curve approach',...
-        'units','normalized','position',[0.01 0.5 1 0.2],...
+        'units','normalized','position',[left(1) bottom(2) width height],...
         'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Self estimation of lambda based on L-curve approach');
+        'tooltip',tooltip.qsm.cfs.lambda_checkbox);
 
 %% set callbacks
 % edit field

@@ -155,9 +155,9 @@ universial_handle = {h.StepsPanel.dataIO,...
                      h.checkbox_gpu};               % GPU checkbox
 
 % Tab specific strings and tooltips
-tooltip.input_dir{1} = 'Directory contains all essential files (*ph*.nii*, *mag*.nii* & *header*.mat)';
-tooltip.input_dir{2} = 'Directory contains the total field map and SEPIA header (*total-field*.nii* & *header*.mat)';
-tooltip.input_dir{3} = 'Directory contains the local field map (*local-field*.nii*) files; for some QSM methods, additional file(s) may also be needed (e.g. *mag*.nii* and *weights*.nii*)';
+tooltip.input_dir{1} = 'Directory contains phase (*ph*.nii*), magnitude (*mag*.nii) & header (*header*.mat) (& mask, *mask*nii*) files';
+tooltip.input_dir{2} = 'Directory contains the total field map (*total-field*.nii*) and SEPIA header (*header*.mat)';
+tooltip.input_dir{3} = 'Directory contains the local field map (*local-field*.nii*) (depending on QSM algorithm, additional file(s) may also be needed, e.g. *mag*.nii* and *weights*.nii*)';
 
 fieldString.inputData1{1}= 'or Phase:';
 fieldString.inputData1{2}= 'or Total field:';
