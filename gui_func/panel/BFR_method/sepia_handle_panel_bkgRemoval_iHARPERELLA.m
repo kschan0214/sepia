@@ -41,26 +41,20 @@ h.bkgRemoval.panel.iHARPERELLA = uipanel(hParent,...
     'backgroundcolor',get(h.fig,'color'),'Visible','off');
 
 %% Chrild of iHARPERELLA panel
-
-    % width of each element in a functional column, in normalised unit of
-    % the functional column width
-    subwidth(1) = width*0.5;
-    subwidth(2) = width-subwidth(1);
     
-    % row 1
-    % text|edit field pair: maximum number of iterations
-    h.bkgRemoval.iHARPERELLA.text.maxIter = uicontrol('Parent',h.bkgRemoval.panel.iHARPERELLA,...
-        'Style','text',...
-        'String','Max. iterations:',...
-        'units','normalized','position',[left(1) bottom(1) subwidth(1) height],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip',tooltip.bkgRemoval.iHARPERELLA.maxIter);
-    h.bkgRemoval.iHARPERELLA.edit.maxIter = uicontrol('Parent',h.bkgRemoval.panel.iHARPERELLA,...
-        'Style','edit',...
-        'String',num2str(defaultMaxiter),...
-        'units','normalized','position',[left(1)+subwidth(1) bottom(1) subwidth(2) height],...
-        'backgroundcolor','white');
+    panelParent = h.bkgRemoval.panel.iHARPERELLA;
+
+    % width of each element in a functional column, in normalised unit
+    wratio = 0.5;
+    
+    % row 1, col 1
+    % text|edit pair: maximum number of iterations
+    [h.bkgRemoval.iHARPERELLA.text.maxIter,h.bkgRemoval.iHARPERELLA.edit.maxIter] = sepia_construct_text_edit(...
+        panelParent,'Max. iterations:', defaultMaxiter, [left(1) bottom(1) width height], wratio);
+
+
+%% set tooltips
+set(h.bkgRemoval.iHARPERELLA.text.maxIter,  'Tooltip',tooltip.bkgRemoval.iHARPERELLA.maxIter);
 
 %% set callbacks
 set(h.bkgRemoval.iHARPERELLA.edit.maxIter,	'Callback', {@EditInputMinMax_Callback,defaultMaxiter,1,1});

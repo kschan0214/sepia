@@ -26,7 +26,7 @@ sepia_universal_variables;
 
 % get algorithm parameters
 algorParam  = check_and_set_algorithm_default(algorParam);
-method     = algorParam.qsm.method;
+method      = algorParam.qsm.method;
 lambda      = algorParam.qsm.lambda;
 optimise    = algorParam.qsm.optimise;
 

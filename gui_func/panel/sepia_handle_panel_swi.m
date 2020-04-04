@@ -23,22 +23,27 @@ function h = sepia_handle_panel_swi(hParent,h,position)
 % set up method name displayed on GUI
 methodName = {'SWI','SMWI'};
 
-% Set parent of qsm panel
+%% layout of the panel
+% define maximum level of options and spacing between options
+ncol    = 2; % 2 columns in the panel
+rspacing = 0.01;
+width   = (1-(ncol+1)*rspacing)/ncol;
+left    = (rspacing:width+rspacing:(width+rspacing)*ncol);
+
+%% Set parent of qsm panel
 h.StepsPanel.swi = uipanel(hParent,...
     'Title','SWI','backgroundcolor',get(h.fig,'color'),...
     'position',[position(1) position(2) 0.95 0.35]);
 
 %% design of this panel
 
+    height = 0.1;
+    wratio = 0.5;
+
+    % col 1
     % text|popup pair: select method
-    h.swi.text.swi = uicontrol('Parent',h.StepsPanel.swi,'Style','text','String','Method:',...
-        'units','normalized','position',[0.01 0.85 0.15 0.1],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Select SWI/SMWI');
-    h.swi.popup.swi = uicontrol('Parent',h.StepsPanel.swi,'Style','popup',...
-        'String',methodName,...
-        'units','normalized','position',[0.31 0.85 0.4 0.1]) ; 
+    [h.swi.text.swi,h.swi.popup.swi] = sepia_construct_text_popup(...
+        h.StepsPanel.swi,'Method:', methodName, [left(1) 0.85 width height], wratio);
     
     % start button
     h.swi.button.start = uicontrol('Parent',h.StepsPanel.swi,...
@@ -58,8 +63,11 @@ position_child = [0.01 0.15 0.95 0.6];
     h = sepia_handle_panel_swi_SMWI(h.StepsPanel.swi,h,position_child);
     
     % in future, add panel of new method here
+    
+%% set tooltip
+set(h.swi.text.swi,     'Tooltip','Select SWI/SMWI');
 
-% set callback
+%% set callback
 set(h.swi.popup.swi,    'Callback', {@PopupSWI_Callback,h});
 set(h.swi.button.start,	'Callback', {@PushbuttonStart_swi_Callback,h});
 end
