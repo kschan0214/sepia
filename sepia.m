@@ -53,6 +53,9 @@ diary off
 % add path
 sepia_addpath;
 
+% SEPIA version
+SEPIA_version = 'v0.8.0';
+
 global h
 
 %% create basic GUI
@@ -71,7 +74,7 @@ end
 
 % create GUI figure
 h.fig=figure('Units','pixels','position',[posLeft posBottom guiSizeHori guiSizeVert],...
-    'MenuBar','None','Toolbar','None','Name','SEPIA GUI (v0.8.0)','NumberTitle','off');
+    'MenuBar','None','Toolbar','None','Name',['SEPIA GUI (' SEPIA_version ')'],'NumberTitle','off');
 
 %% construct panels for each tab 
 % create Tabs for GUI
