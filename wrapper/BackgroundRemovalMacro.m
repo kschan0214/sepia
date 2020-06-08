@@ -66,15 +66,7 @@ for k = 1:length(wrapper_BFR_function)
 end
 disp('Done!');
 
-%% If refine is needed, do it now
-if refine
-    fprintf('Performing polynomial fitting...');
-    % PolyFit required data to be double type
-    [~,RDF,~]   = PolyFit(double(RDF),RDF~=0,4);
-    fprintf('Done!\n')
-end
-
-% get non-zero mask
+%% get non-zero mask
 if erode_radius > 0
     fprintf(['Eroding ' num2str(erode_radius) ' voxel(s) from edges...']);
     maskFinal = RDF ~=0;
@@ -88,6 +80,14 @@ if erode_radius > 0
     maskFinal(end-erode_radius:end,:,:) = 0;
     maskFinal(1:erode_radius,:,:)       = 0;
     RDF = RDF .* double(maskFinal);
+    fprintf('Done!\n')
+end
+
+%% If refine is needed, do it now
+if refine
+    fprintf('Performing polynomial fitting...');
+    % PolyFit required data to be double type
+    [~,RDF,~]   = PolyFit(double(RDF),RDF~=0,4);
     fprintf('Done!\n')
 end
 
