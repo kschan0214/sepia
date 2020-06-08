@@ -20,7 +20,7 @@ function get_set_qsm_myQSM(h,mode,input)
 
 str_pattern = {'.qsm.threshold'};
 
-action_handle = {h.qsm.TKD.edit.threshold};
+action_handle = {h.qsm.myQSM.edit.thresholdss};
 
 switch lower(mode)
     case 'set'
@@ -34,7 +34,7 @@ switch lower(mode)
         
         config_txt = input;
         
-        % first 3 edit fields
+        % first edit fieldss
         for k = 1:length(action_handle)
             pattern_curr    = str_pattern{k};
             val             = get_num_as_string(config_txt, pattern_curr, '=', ';');

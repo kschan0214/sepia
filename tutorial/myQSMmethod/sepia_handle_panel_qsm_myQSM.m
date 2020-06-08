@@ -36,7 +36,7 @@ cspacing    = 0.01;
 %% Parent handle of TKD panel children
 
 h.qsm.panel.myQSM = uipanel(hParent,...
-    'Title','Thresholded k-space division (TKD)',...
+    'Title','My QSM dipole inversion',...
     'position',position,...
     'backgroundcolor',get(h.fig,'color'),'Visible','on');
 
@@ -44,7 +44,7 @@ h.qsm.panel.myQSM = uipanel(hParent,...
     
     panelParent = h.qsm.panel.myQSM;
 
-    % width of each element in a functional column, in normalised unit
+    % width of the first element in a cell, in normalised unit
     wratio = 0.5;
     
     % row 1, col 1
