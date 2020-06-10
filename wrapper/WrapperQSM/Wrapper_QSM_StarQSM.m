@@ -36,7 +36,7 @@ b0    = headerAndExtraData.b0;
 te    = headerAndExtraData.delta_TE;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('STISuite');
 
 %% Display algorithm parameters
 disp('The following parameter is being used...');

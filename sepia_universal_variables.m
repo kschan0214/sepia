@@ -11,6 +11,9 @@
 % DO NOT change the variable name
 % DO NOT change the order of the entities, add a new one at the end instead
 %
+%% PATH
+SEPIA_HOME = fileparts(mfilename('fullpath'));
+
 %% General parameterss
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
 

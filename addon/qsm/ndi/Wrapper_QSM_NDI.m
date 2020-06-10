@@ -39,7 +39,7 @@ wmap  = headerAndExtraData.weights;
 magn  = headerAndExtraData.magn;
 
 % add path
-sepia_addpath(method);
+sepia_addpath;
 
 %% preparation
 % if both data are loaded

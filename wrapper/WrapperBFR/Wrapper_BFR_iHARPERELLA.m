@@ -30,7 +30,7 @@ method      = algorParam.bfr.method;
 iteration  	= algorParam.bfr.iteration;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('STISuite');
 
 %% Display algorithm parameters
 disp('The following parameter is being used...');

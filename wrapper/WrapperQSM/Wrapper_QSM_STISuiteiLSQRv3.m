@@ -41,7 +41,7 @@ params.B0           = headerAndExtraData.b0;
 params.voxelsize    = double(voxelSize(:).');
 
 % add path
-sepia_addpath(method);
+sepia_addpath('STISuite');
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');

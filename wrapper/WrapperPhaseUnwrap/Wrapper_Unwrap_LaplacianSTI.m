@@ -29,7 +29,8 @@ algorParam      = check_and_set_algorithm_default(algorParam);
 method          = algorParam.unwrap.unwrapMethod;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
+sepia_addpath('STISuite');
 
 %% main
 % Laplacian unwrapping

@@ -47,7 +47,9 @@ if isempty(initGuess)
 end
 
 % add path
-sepia_addpath(method);
+sepia_addpath;
+addpath(fullfile(SEPIA_HOME,'misc','qsm_algorithm','closedFormL2'));
+addpath(fullfile(SEPIA_HOME,'misc','qsm_algorithm','iLSQR_qsmhub'));
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');

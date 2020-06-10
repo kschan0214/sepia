@@ -134,7 +134,7 @@ switch echoCombine
         N_std = totalFieldSD;
         
     case methodEchoCombineName{2}
-        sepia_addpath('nonlinearfit');
+        sepia_addpath('MEDI');
         if numel(TE)>1 && ((TE(2)-TE(1))-(TE(3)-TE(2))>1e-5)
             % Estimate the frequency offset in each of the voxel using a complex
             % fitting (uneven echo spacing)
@@ -158,7 +158,7 @@ switch echoCombine
         totalField = totalField / dt;
         
     case methodEchoCombineName{3}
-        sepia_addpath('nonlinearfit');
+        sepia_addpath('MEDI');
         % Estimate the frequency offset in each of the voxel using a complex
         % fitting (even echo spacing)
         [iFreq_raw, N_std] = Fit_ppm_complex_bipolar(magn.*exp(-1i*fieldMap));

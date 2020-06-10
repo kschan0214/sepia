@@ -36,7 +36,8 @@ b0dir = headerAndExtraData.b0dir;
 b0    = headerAndExtraData.b0;
 
 % add path
-sepia_addpath(method);
+sepia_addpath;
+addpath(fullfile(SEPIA_HOME,'misc','qsm_algorithm','closedFormL2'));
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');

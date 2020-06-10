@@ -30,7 +30,8 @@ method      = algorParam.bfr.method;
 radius    	= algorParam.bfr.radius;
 
 % add path
-sepia_addpath(method);
+sepia_addpath;
+addpath(fullfile(SEPIA_HOME,'misc','background_removal','VSHARP_sepia'));
 
 %% Display algorithm parameters
 disp('The following parameter is being used...');

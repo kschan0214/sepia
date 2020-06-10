@@ -41,7 +41,7 @@ if isempty(N_std)
 end
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');

@@ -39,7 +39,7 @@ if isempty(magn)
 end
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
 
 %% main
 disp(['Graphcut subsampling factor: ' num2str(subsampling)]);

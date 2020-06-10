@@ -132,9 +132,11 @@ h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
     'Enable','off','Visible','off',...
     'TooltipString',['Enable to use GPU for some of the algorithms in SEPIA. ' ...
                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
-if gpuDeviceCount > 0
-    set(h.checkbox_gpu, 'Enable', 'on');
-end
+                 
+%%% deprecated
+% if gpuDeviceCount > 0
+%     set(h.checkbox_gpu, 'Enable', 'on');
+% end
 
 %% Set Callback functions
 set(h.TabGroup,                 'SelectionChangedFcn', {@SwitchTab_Callback})

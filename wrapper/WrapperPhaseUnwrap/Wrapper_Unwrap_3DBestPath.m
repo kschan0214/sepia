@@ -29,7 +29,8 @@ algorParam      = check_and_set_algorithm_default(algorParam);
 method          = algorParam.unwrap.unwrapMethod;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
+addpath(fullfile(SEPIA_HOME,'misc','phase_unwrap','unwrapBestpath3D'));
 
 %% main
 unwrappedField = UnwrapPhase_3DBestPath(wrappedField,mask,matrixSize);

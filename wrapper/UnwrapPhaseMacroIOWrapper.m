@@ -230,7 +230,7 @@ end
     
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
-    sepia_addpath('bet');
+    sepia_addpath('MEDI');
     
     fprintf('Performing FSL BET...');
     % this is the BET function provided with MEDI toolbox

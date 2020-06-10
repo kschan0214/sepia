@@ -38,7 +38,7 @@ if isempty(magn)
 end
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
 
 %% main
 if size(magn,4) > 1

@@ -76,7 +76,7 @@ switch reference_tissue
             warning('No normalisation will be done on the susceptibility map in this instance.');
             mask_ref = [];
         else
-            sepia_addpath('medi');
+            sepia_addpath('MEDI');
             r2s         = arlo(headerAndExtraData.te,headerAndExtraData.magn);
             mask_ref    = extract_CSF(r2s,mask,voxelSize)>0;
         end

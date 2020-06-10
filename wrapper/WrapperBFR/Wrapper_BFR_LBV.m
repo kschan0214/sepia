@@ -32,7 +32,7 @@ depth       = algorParam.bfr.depth;
 peel        = algorParam.bfr.peel;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');

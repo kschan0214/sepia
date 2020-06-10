@@ -35,7 +35,8 @@ b0dir = headerAndExtraData.b0dir;
 b0    = headerAndExtraData.b0;
 
 % add path
-sepia_addpath(method);
+sepia_addpath;
+addpath(fullfile(SEPIA_HOME,'misc','qsm_algorithm','TKD'));
 
 %% Display algorithm parameters
 disp('The following parameter is being used...');

@@ -48,7 +48,8 @@ wmap  = headerAndExtraData.weights;
 magn  = headerAndExtraData.magn;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('FANSI');
+addpath(fullfile(SEPIA_HOME,'misc','qsm_algorithm','FANSI'));
 
 %% preparation
 % algorithm parameters

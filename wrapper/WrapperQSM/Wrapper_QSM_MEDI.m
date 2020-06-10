@@ -56,7 +56,8 @@ iFreq       = [];
 Mask_CSF    = [];
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
+addpath(fullfile(SEPIA_HOME,'misc','qsm_algorithm','MEDI_L1'));
 
 %% Preparation
 N_std               = (1./N_std).*mask;

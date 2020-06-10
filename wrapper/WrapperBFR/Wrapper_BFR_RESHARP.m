@@ -31,7 +31,8 @@ radius     	= algorParam.bfr.radius;
 alpha       = algorParam.bfr.alpha;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
+addpath(fullfile(SEPIA_HOME,'misc','background_removal','RESHARP'));
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');

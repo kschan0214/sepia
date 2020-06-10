@@ -31,7 +31,8 @@ radius    	= algorParam.bfr.radius;
 threshold  	= algorParam.bfr.threshold;
 
 % add path
-sepia_addpath(method);
+sepia_addpath('MEDI');
+addpath(fullfile(SEPIA_HOME,'misc','background_removal','SHARP'));
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');
