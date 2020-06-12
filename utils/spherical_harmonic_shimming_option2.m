@@ -51,29 +51,32 @@ end
 N_terms = (order+1)^2;
 model = double(zeros(length(x1),N_terms));
 
+x = reshape(x1-dim(1)/2,length(x1),1);
+y = reshape(y1-dim(2)/2,length(x1),1);
+z = reshape(z1-dim(3)/2,length(x1),1);
+
+[azimuth,elevation,r] = cart2sph(x,y,z);
+% elevation = elevation + pi/2;
+
 % zeroth-order SH component
 if order >= 0
-    model(:,1) = 1; % constant term
+%     model(:,1) = 1; % constant term
+model(:,1) = harmonicY(order,0,elevation,azimuth,r,'type','real');
 end
+
 % first-order SH components
 if order >= 1
-    x = reshape(x1-dim(1)/2,length(x1),1);
-    y = reshape(y1-dim(2)/2,length(x1),1);
-    z = reshape(z1-dim(3)/2,length(x1),1);
-    model(:,2) = x;     % x 
-    model(:,3) = y;     % y 
-    model(:,4) = z;     % z 
+    model(:,2) = harmonicY(order,-1,elevation,azimuth,r,'type','real');    % x 
+    model(:,3) = harmonicY(order,0,elevation,azimuth,r,'type','real');     % y 
+    model(:,4) = harmonicY(order,1,elevation,azimuth,r,'type','real');     % z 
 end
 % second-order SH components
 if order >= 2
-    x2 = x.^2;
-    y2 = y.^2;
-    z2 = z.^2;
-    model(:,5) = x2 - y2;               % x^2-y^2
-    model(:,6) = x.*y;                	% xy 
-    model(:,7) = 2*z2 - x2 - y2;        % 2z^2 - x^2 - y^2
-    model(:,8) = y.*z;                 	% yz
-    model(:,9) = x.*z;              	% xz
+    model(:,5) = harmonicY(order,-2,elevation,azimuth,r,'type','real');               % x^2-y^2
+    model(:,6) = harmonicY(order,-1,elevation,azimuth,r,'type','real');                	% xy 
+    model(:,7) = harmonicY(order,0,elevation,azimuth,r,'type','real');        % 2z^2 - x^2 - y^2
+    model(:,8) = harmonicY(order,1,elevation,azimuth,r,'type','real');                 	% yz
+    model(:,9) = harmonicY(order,2,elevation,azimuth,r,'type','real');              	% xz
 end
 % third-order SH components
 if order >= 3
