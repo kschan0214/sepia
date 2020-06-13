@@ -32,6 +32,11 @@ sepia_configuration_unwrap
 %% background field removal related parameters
 sepia_configuration_BFR
 
+% Method to remove residual B1 field
+methodRefineName        = {'3D Polynomial',...
+                           'Spherical harmonic',...
+                           'None'};
+
 %% QSM related parameters
 sepia_configuration_QSM
 

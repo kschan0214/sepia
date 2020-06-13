@@ -13,7 +13,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 Feb 2020
-% Date last modified:
+% Date modified: 13 June 2020 (v0.8.0)
 %
 %
 function algorParam2 = check_and_set_SEPIA_algorithm_default(algorParam)
@@ -40,9 +40,11 @@ try algorParam2.unwrap.excludeMethod        = algorParam.unwrap.excludeMethod;  
 try algorParam2.unwrap.unit                 = algorParam.unwrap.unit;                   catch; algorParam2.unwrap.unit         = 'Hz';      end
 
 % default background field removal method is VSHARP
-try algorParam2.bfr.method      = algorParam.bfr.method;        catch; algorParam2.bfr.method = methodBFRName{5};   end
-try algorParam2.bfr.refine      = algorParam.bfr.refine;        catch; algorParam2.bfr.refine = false;              end
-try algorParam2.bfr.erode_radius= algorParam.bfr.erode_radius;	catch; algorParam2.bfr.erode_radius = 0;            end
+try algorParam2.bfr.method          = algorParam.bfr.method;        catch; algorParam2.bfr.method = methodBFRName{5};   end
+try algorParam2.bfr.erode_radius    = algorParam.bfr.erode_radius;	catch; algorParam2.bfr.erode_radius = 0;            end
+% try algorParam2.bfr.refine          = algorParam.bfr.refine;        catch; algorParam2.bfr.refine = false;              end
+try algorParam2.bfr.refine_method   = algorParam.bfr.refine_method;	catch; algorParam2.bfr.refine_method = 'polyfit';	end
+try algorParam2.bfr.refine_order   	= algorParam.bfr.refine_order;	catch; algorParam2.bfr.refine_order = 4;         	end
 
 % default background field removal method is TKD
 try algorParam2.qsm.method              = algorParam.qsm.method;            catch; algorParam2.qsm.method           = methodQSMName{1};	end

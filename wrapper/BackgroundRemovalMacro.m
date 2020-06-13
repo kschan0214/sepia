@@ -22,7 +22,7 @@
 % Date modified: 29 September 2017
 % Date modified: 1 April 2019
 % Date modified: 24 May 2019
-% Date modified: 8 March 2020 (v0.8.0)
+% Date modified: 13 June 2020 (v0.8.0)
 %
 function RDF = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
@@ -34,8 +34,11 @@ matrixSize      = double(matrixSize(:).');
 
 algorParam  	= check_and_set_SEPIA_algorithm_default(algorParam);
 method          = algorParam.bfr.method;
-refine          = algorParam.bfr.refine;
 erode_radius	= algorParam.bfr.erode_radius;
+% refine          = algorParam.bfr.refine;
+refine_method   = algorParam.bfr.refine_method;
+refine_order    = algorParam.bfr.refine_order;
+
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 
@@ -84,12 +87,27 @@ if erode_radius > 0
 end
 
 %% If refine is needed, do it now
-if refine
-    fprintf('Performing polynomial fitting...');
-    % PolyFit required data to be double type
-    [~,RDF,~]   = PolyFit(double(RDF),RDF~=0,4);
-    fprintf('Done!\n')
+% if refine
+switch refine_method
+    case methodRefineName{1}
+        fprintf('Performing polynomial fitting...');
+        % PolyFit required data to be double type
+        [~,RDF,~]   = PolyFit(double(RDF),RDF~=0,refine_order);
+        fprintf('Done!\n')
+
+    case methodRefineName{2} % Spherical Harmonic
+        fprintf('Performing spherical harmonic fitting...');
+        % PolyFit required data to be double type
+        mask_refine = RDF~=0;
+        [~,RDF,~]   = spherical_harmonic_shimming(double(RDF),mask_refine,refine_order);
+        RDF = RDF .* double(mask_refine);
+        fprintf('Done!\n')
+        
+    case methodRefineName{3}
+        % do nothing
+
 end
+% end
 
 % remove zero padding 
 RDF = double(zeropad_odd_dimension(RDF,'post',matrixSize));

@@ -146,10 +146,34 @@ end
 %% Panel: BFR
 if isModifyBFR
     
-% B1 polyfit
-str_pattern	= '.bfr.refine';
+% % logical B1 polyfit
+% str_pattern	= '.bfr.refine';
+% val      	= get_num_as_string(config_txt, str_pattern,'=',';');
+% set_non_nan_value(h.bkgRemoval.checkbox.refine, 'Value', str2double(val));
+% B1 polyfit method
+% popup manu for fit method
+str_pattern	= '.bfr.refine_method';
+val      	= get_string_as_string(config_txt, str_pattern);
+if ~isnan(val)
+    % matching algorithm name
+    for k = 1:length(methodRefineName)
+        if strcmpi(val,methodRefineName{k})
+            val = k;
+            break
+        end
+    end
+
+    % change method popup manu
+    set_non_nan_value(h.bkgRemoval.popup.refine,'Value',val);
+    
+    % trigger popup callback 
+    feval(h.bkgRemoval.popup.refine.Callback{1},h.bkgRemoval.popup.refine,[],h)
+
+end
+% B1 polyfit order
+str_pattern	= '.bfr.refine_order';
 val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-set_non_nan_value(h.bkgRemoval.checkbox.bkgRemoval, 'Value', str2double(val));
+set_non_nan_value(h.bkgRemoval.edit.order, 'String', val);
 
 % Erosion radius
 str_pattern	= '.bfr.erode_radius';
