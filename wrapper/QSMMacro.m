@@ -98,15 +98,16 @@ end
 
 % remove zero padding 
 chi = double(zeropad_odd_dimension(chi,'post',matrixSize));
+mask_update = chi ~= 0;
 
 % referencing
 if ~isempty(mask_ref)
     if strcmpi(method,'MEDI')
         if ~algorParam.qsm.isLambdaCSF          % not MEDI+0, MEDI+0 needs no referencing
-            chi = chi - mean(chi(mask_ref>0)); 
+            chi(mask_update) = chi(mask_update) - mean(chi(mask_ref>0)); 
         end
     else
-            chi = chi - mean(chi(mask_ref>0));
+            chi(mask_update) = chi(mask_update) - mean(chi(mask_ref>0));
     end
 end
 

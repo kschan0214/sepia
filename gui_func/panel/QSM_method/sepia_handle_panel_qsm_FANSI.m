@@ -113,11 +113,13 @@ h.qsm.panel.FANSI = uipanel(hParent,...
     % text|edit field pair: harmonic constrain weight
     [h.qsm.FANSI.text.beta,h.qsm.FANSI.edit.beta] = sepia_construct_text_edit(...
         panelParent,'Harmonic constraint:',     defaultBeta,        [left(3) bottom(2) width height], wratio);
+    set(h.qsm.FANSI.edit.beta, 'Enable', 'off');
     
     % col 3, row 3
     % text|edit field pair: harmonic consistency weight
     [h.qsm.FANSI.text.muh,h.qsm.FANSI.edit.muh] = sepia_construct_text_edit(...
         panelParent,'Harmonic consistency:',    defaultMuh,         [left(3) bottom(3) width height], wratio);
+    set(h.qsm.FANSI.edit.muh, 'Enable', 'off');
     
     
 %% set tooltips

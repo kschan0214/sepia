@@ -115,10 +115,14 @@ percentage = percentage/100;
 if isSMV
     chi = MEDI_L1('filename',tmp_filename,'lambda',lambda,'data_weighting',wData,'gradient_weighting',wGrad,...
               'merit',isMerit,'smv',radius,'zeropad',pad,'lambda_CSF',lam_CSF,'percentage',percentage);
+    SphereK = single(sphere_kernel(matrix_size, voxel_size,radius));
+    mask = SMV(Mask, SphereK)>0.999;
 else
     chi = MEDI_L1('filename',tmp_filename,'lambda',lambda,'data_weighting',wData,'gradient_weighting',wGrad,...
               'merit',isMerit,'zeropad',pad,'lambda_CSF',lam_CSF,'percentage',percentage);
 end
+
+chi = chi .* mask;
 
 % clean up MEDI output and temp files 
 delete(tmp_filename);
