@@ -75,17 +75,15 @@ mask = mask(2:end-1,2:end-1,2:end-1);
 
 end
 
-%% parse input arguments
-% function [radius] = parse_vararginVSHARP(arg)
-% radius = 5:-1:1;
-% if ~isempty(arg)
-%     for kvar = 1:length(arg)
-%         if strcmpi(arg{kvar},'radius')
-%             if ~isempty(arg{kvar+1})
-%                 tmp = arg{kvar+1};
-%                 radius = sort(tmp,'descend');
-%             end
-%         end
-%     end
-% end
-% end
+%% parser
+function [radius] = parse_varargin_VSHARP(arg)
+radius = 5:-1:1;
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'radius')
+            tmp = arg{kvar+1};
+            radius = sort(tmp,'descend');
+        end
+    end
+end
+end
