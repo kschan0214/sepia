@@ -20,7 +20,7 @@ function get_set_qsm_myQSM(h,mode,input)
 
 str_pattern = {'.qsm.threshold'};
 
-action_handle = {h.qsm.myQSM.edit.thresholdss};
+action_handle = {h.qsm.myQSM.edit.threshold};
 
 switch lower(mode)
     case 'set'
