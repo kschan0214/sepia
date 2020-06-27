@@ -41,7 +41,7 @@ addpath(fullfile(SEPIA_HOME,'configuration'));
 addpath(genpath(fullfile(SEPIA_HOME, 'gui_func')));
 addpath(genpath(fullfile(SEPIA_HOME, 'wrapper')));
 addpath(genpath(fullfile(SEPIA_HOME, 'utils')));
-addpath(genpath(fullfile(SEPIA_HOME, 'addon')));
+addpath(genpath(fullfile(SEPIA_HOME, 'addons')));
 
 % misc directory accommodates some non-toolbox specific algorithms
 misc_dir                = fullfile(SEPIA_HOME,  'misc');
