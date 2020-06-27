@@ -323,9 +323,7 @@ if isempty(mask) || isBET
 
 end
 
-%% ensure all variable are double
-fieldMap  	= double(fieldMap);
-mask      	= double(mask);
+%% store some data to headerAndExtraData
 
 % header
 headerAndExtraData.b0       = B0;
@@ -334,7 +332,8 @@ headerAndExtraData.te       = TE;
 headerAndExtraData.delta_TE = delta_TE;
 headerAndExtraData.CF    	= CF;
 
-headerAndExtraData.magn	= double(magn);
+headerAndExtraData.magn     = double(magn);
+headerAndExtraData.phase    = fieldMap;
 %% total field and phase unwrap
 
 %%%%%%%%%% Step 0: Eddy current correction for bipolar readout %%%%%%%%%%
@@ -348,6 +347,9 @@ if isEddyCorrect
     fprintf('Saving eddy current corrected phase data...');
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
     fprintf('Done!\n');
+    
+    % update phase in headerAndExtraData
+    headerAndExtraData.phase    = fieldMap;
     
     clear imgCplx
     

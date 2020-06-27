@@ -44,3 +44,6 @@ sepia_configuration_QSM
 tissueName              = {'None',...
                            'Brain mask',...
                            'CSF'};
+
+%% add-ons capability
+sepia_load_addons
