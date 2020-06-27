@@ -1,4 +1,4 @@
-%% get_set_bfr_lbv(h,mode,input)
+%% get_set_qsm_myQSM(h,mode,input)
 %
 % Input
 % --------------

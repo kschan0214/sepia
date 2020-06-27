@@ -11,7 +11,7 @@
 %
 %% main
 
-% This name will be used thorough the SEPIA framework for usage
+% This name will be used thorough the SEPIA framework
 addons.method = 'myQSM';
 
 % Specify the filename of the wrapper function (without extension)

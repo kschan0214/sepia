@@ -1,4 +1,4 @@
-%% h = sepia_handle_panel_qsm_TKD(hParent,h,position)
+%% h = sepia_handle_panel_qsm_myQSM(hParent,h,position)
 %
 % Input
 % --------------
