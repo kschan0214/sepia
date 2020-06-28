@@ -24,7 +24,7 @@
 % Date modified: 5 June 2019
 % Date modified: 27 Feb 2020 (v0.8.0)
 %
-function chi = QSMMacro(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
+function [chi,mask_ref] = QSMMacro(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
 sepia_universal_variables;
 methodQSMName = lower(methodQSMName);
@@ -98,6 +98,9 @@ end
 
 % remove zero padding 
 chi = double(zeropad_odd_dimension(chi,'post',matrixSize));
+if ~isempty(mask_ref)
+    mask_ref = double(zeropad_odd_dimension(mask_ref,'post',matrixSize));
+end
 mask_update = chi ~= 0;
 
 % referencing

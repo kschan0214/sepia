@@ -60,10 +60,12 @@ disp('Total field recovery');
 disp('--------------------');
 disp('Calculating field map...');
 
-if numel(TE) < 3
-    echoCombine = methodEchoCombineName{2};
-    warning('Number of echoes is less than 3. Using Optimum Weight method to combine echo phase instead.');
-end
+fprintf('Temporal phase unwrapping: %s \n',echoCombine);
+
+% if numel(TE) < 3
+%     echoCombine = methodEchoCombineName{2};
+%     warning('Number of echoes is less than 3. Using Optimum Weight method to combine echo phase instead.');
+% end
 
 %% Core
 switch echoCombine

@@ -266,12 +266,16 @@ headerAndExtraData.CF    	= CF;
 
 %% qsm
 % core of QSM
-chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
+[chi,mask_ref] = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
 % save results
 fprintf('Saving susceptibility map...');
 
 save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
+
+if ~isempty(mask_ref)
+    save_nii_quick(outputNiftiTemplate, mask_ref, [outputDir filesep prefix 'mask_reference_region.nii.gz']);
+end
 
 fprintf('Done!\n');
 

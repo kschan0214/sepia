@@ -371,7 +371,15 @@ end
 
 %%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 fprintf('Computing weighting map...');
-if length(TE) > 1 && ~isinf(exclude_threshold)
+% only work with multi-echo data
+if length(TE) == 1
+    warning('\nExcluding unreliable voxels can only work with multi-echo data.')
+    disp('No voxels are excluded');
+    exclude_threshold = inf;
+end
+    
+    
+if ~isinf(exclude_threshold)
     % multi-echo data
     r2s                 = R2star_trapezoidal(magn,TE);
     relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
@@ -463,11 +471,14 @@ maskFinal   = double(maskFinal);
 headerAndExtraData.weights = headerAndExtraData.weights .* maskFinal;
 
 % core of QSM
-chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
+[chi,mask_ref] = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
   
 % save results
 fprintf('Saving susceptibility map...');
 save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
+if ~isempty(mask_ref)
+    save_nii_quick(outputNiftiTemplate, mask_ref, [outputDir filesep prefix 'mask_reference_region.nii.gz']);
+end
 fprintf('done!\n');
 
 disp('Processing pipeline is completed!');

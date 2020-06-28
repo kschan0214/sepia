@@ -287,7 +287,14 @@ end
 %% Step 2: exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
 fprintf('Computing weighting map...');
-if length(TE) > 1 && ~isinf(exclude_threshold)
+% only work with multi-echo data
+if length(TE) == 1
+    warning('\nExcluding unreliable voxels can only work with multi-echo data.')
+    disp('No voxels are excluded');
+    exclude_threshold = inf;
+end
+
+if ~isinf(exclude_threshold)
     % multi-echo data
     r2s = R2star_trapezoidal(magn,TE);
     relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
