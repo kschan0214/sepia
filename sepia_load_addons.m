@@ -27,6 +27,7 @@ for klist = 3:length(listing)
             run(fullfile(curr_dir,'addon_config.m'))
             methodUnwrapName{end+1}        = addons.method;
             wrapper_Unwrap_function{end+1} = addons.wrapper_function;
+            gui_unwrap_exclusion{end+1}    = addons.gui_exclude_voxel;
         end
     end
 

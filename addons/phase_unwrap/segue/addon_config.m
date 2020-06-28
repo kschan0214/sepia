@@ -17,6 +17,12 @@ addons.method = 'SEGUE';
 % Specify the filename of the wrapper function (without extension)
 addons.wrapper_function	= 'Wrapper_Unwrap_SEGUE';
 
+% Specify if the exclusion of unreliable voxels option in the GUI is
+% enabled. The method must return the ture phase value if it is enabled.
+% Enable: 'on'
+% Disable: 'off'
+addons.gui_exclude_voxel= 'on';
+
 % Specify the filename of the GUI method panel function (without
 % extension) 
 % (optional): if no GUI support is provided, then set it to empty, i.e.

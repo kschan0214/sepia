@@ -18,7 +18,7 @@
 % Date created: 16 April 2018
 % Date modified: 18 April 2018
 % Date modified: 12 June 2018
-% Date modified: 3 April 2020 (v0.8.0)
+% Date modified: 28 June 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_phaseUnwrap(hParent,h,position)
@@ -130,29 +130,14 @@ sepia_universal_variables;
 % get selected background removal method
 method = source.String{source.Value,1} ;
 
+% Reset the option 
+set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
+set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
 % method the user chosen will affect if exclusion method can be used or not 
-switch method
-    case methodUnwrapName{1}    % Laplacian MEDI
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
-        set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
-        
-    case methodUnwrapName{2}    % Laplacian STI suite
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
-        set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
-
-    case methodUnwrapName{3}    % 3D best path
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
-
-    case methodUnwrapName{4}    % region growing medi
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
-
-    case methodUnwrapName{5}    % graphcut
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
-        
-    case methodUnwrapName{6}    % segue
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'on');
-    
-    % in the future, add new method here
+for k = 1:length(methodUnwrapName)
+    if strcmpi(method,methodUnwrapName{k})
+        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{k});
+    end
 end
 
 end
