@@ -26,19 +26,14 @@ switch lower(mode)
     case 'set'
         fid = input;
         
-        for k = 1:length(action_handle)
-            fprintf(fid,'algorParam%s = %s ;\n'	,str_pattern{k},get(action_handle{k},	'String'));
-        end
+        fprintf(fid,'algorParam%s = %s ;\n'	,str_pattern{1},get(action_handle{1},	'String'));
         
     case 'get'
         
         config_txt = input;
         
-        % first edit fieldss
-        for k = 1:length(action_handle)
-            pattern_curr    = str_pattern{k};
-            val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
-            set_non_nan_value(action_handle{k},'String',val)
-        end
+        % first edit field
+        val             = get_num_as_string(config_txt, str_pattern{1}, '=', ';');
+        set_non_nan_value(action_handle{1},'String',val)
 
 end

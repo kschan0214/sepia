@@ -65,10 +65,15 @@ N_std(isnan(N_std)) = 0;
 N_std(isinf(N_std)) = 0;
 N_std = N_std / norm(N_std(mask>0));
 
+if length(TE) < 3 && isLambdaCSF
+    warning('CSF regularisation requires data with more than 3 echoes');
+    disp('No CSF regularisation will be used.');
+    isLambdaCSF = false;
+end
+
 % zero reference using CSF requires CSF mask
 if isLambdaCSF && ~isempty(iMag)
     disp('Extracting CSF mask....');
-    sepia_addpath(method);
     % R2* mapping
     r2s         = arlo(TE,iMag);
     Mask_CSF    = extract_CSF(r2s,mask,voxelSize)>0;

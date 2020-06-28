@@ -71,8 +71,8 @@ switch reference_tissue
         mask_ref = mask;
         
     case 'CSF'
-        if isempty(headerAndExtraData.magn) || size(headerAndExtraData.magn,4) == 1
-            warning('Please specify a multi-echo magnitude data if you want to use CSF as reference.');
+        if isempty(headerAndExtraData.magn) || size(headerAndExtraData.magn,4) < 3
+            warning('Please specify a magnitude data (at least 3 echoes) if you want to use CSF as reference.');
             warning('No normalisation will be done on the susceptibility map in this instance.');
             mask_ref = [];
         else

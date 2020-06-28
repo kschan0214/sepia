@@ -133,6 +133,7 @@ method = source.String{source.Value,1} ;
 % Reset the option 
 set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
 set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
+set(h.phaseUnwrap.popup.excludeMethod,  'Enable', 'off');
 % method the user chosen will affect if exclusion method can be used or not 
 for k = 1:length(methodUnwrapName)
     if strcmpi(method,methodUnwrapName{k})
