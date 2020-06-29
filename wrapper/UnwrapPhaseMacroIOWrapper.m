@@ -256,6 +256,12 @@ headerAndExtraData.te       = TE;
 headerAndExtraData.delta_TE = delta_TE;
 
 %% Step 0: Eddy current correction for bipolar readout
+if numel(TE) < 4 && isEddyCorrect
+    warning('Bipolar readout correction requires data with at least 4 echoes.');
+    disp('No bipolar readout correction is performed.');
+    isEddyCorrect = false;
+end
+    
 if isEddyCorrect
     
     % BipolarEddyCorrect requries complex-valued input
