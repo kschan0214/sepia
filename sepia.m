@@ -433,20 +433,21 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
 end
 
 % Determine application based on Tab
-switch tab
-    case 'SEPIA'
-        fprintf(fid,'\nSepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-
-    case 'Phase unwrapping'
-        fprintf(fid,'\nUnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-
-    case 'Background field removal'
-        fprintf(fid,'\nBackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-
-    case 'QSM'
-        fprintf(fid,'\nQSMMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
-
-end
+fprintf(fid,'\nsepiaIO(input,output_basename,mask_filename,algorParam);\n');
+% switch tab
+%     case 'SEPIA'
+%         fprintf(fid,'\nSepiaIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+% 
+%     case 'Phase unwrapping'
+%         fprintf(fid,'\nUnwrapPhaseMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+% 
+%     case 'Background field removal'
+%         fprintf(fid,'\nBackgroundRemovalMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+% 
+%     case 'QSM'
+%         fprintf(fid,'\nQSMMacroIOWrapper(input,output_basename,mask_filename,algorParam);\n');
+% 
+% end
 
 fclose(fid);
 
