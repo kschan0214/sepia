@@ -108,6 +108,9 @@ if ~isempty(mask_ref)
     if strcmpi(method,'MEDI')
         if ~algorParam.qsm.isLambdaCSF          % not MEDI+0, MEDI+0 needs no referencing
             chi(mask_update) = chi(mask_update) - mean(chi(mask_ref>0)); 
+        else
+            warning('MEDI+0 already uses CSF as reference region in optimisation. No referencing is performed.');
+            mask_ref = [];
         end
     else
             chi(mask_update) = chi(mask_update) - mean(chi(mask_ref>0));
