@@ -378,8 +378,9 @@ end
 %%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 fprintf('Computing weighting map...');
 % only work with multi-echo data
-if length(TE) == 1
-    warning('\nExcluding unreliable voxels can only work with multi-echo data.')
+if length(TE) == 1 && ~isinf(exclude_threshold)
+    fprintf('\n');
+    warning('Excluding unreliable voxels can only work with multi-echo data.')
     disp('No voxels are excluded');
     exclude_threshold = inf;
 end
