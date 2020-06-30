@@ -201,7 +201,7 @@ diary(logFilename)
 try
     
     % run process
-    run(logFilename);
+    run(configFilename);
     
     % turn off the log
     diary off
