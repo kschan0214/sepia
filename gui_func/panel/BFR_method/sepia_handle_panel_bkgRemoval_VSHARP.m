@@ -15,10 +15,25 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 1 June 2018
-% Date last modified: 
+% Date modified: 4 April 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_bkgRemoval_VSHARP(hParent,h,position)
+
+%% set default values
+defaultMaxRadius = 10;
+defaultMinRadius = 3;
+
+%% Tooltips
+tooltip.bkgRemoval.VSHARP.maxRadius = 'Maximum radius of spherical mean value kernel';
+tooltip.bkgRemoval.VSHARP.minRadius = 'Minimum radius of spherical mean value kernel';
+
+%% layout of the panel
+nrow        = 4;
+rspacing    = 0.01;
+ncol        = 2;
+cspacing    = 0.01;
+[height,bottom,width,left] = sepia_layout_measurement(nrow,rspacing,ncol,cspacing);
 
 %% Parent handle of VSHARP panel children
 
@@ -29,33 +44,25 @@ h.bkgRemoval.panel.VSHARP = uipanel(hParent,...
 
 %% Children of VSHARP panel
 
-    % text|edit field pair: maximum radius
-    h.bkgRemoval.VSHARP.text.maxRadius = uicontrol('Parent',h.bkgRemoval.panel.VSHARP,...
-        'Style','text',...
-        'String','Max. radius (voxel):',...
-        'units','normalized','position',[0.01 0.75 0.2 0.2],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Maximum radius of spherical mean kernel');
-    h.bkgRemoval.VSHARP.edit.maxRadius = uicontrol('Parent',h.bkgRemoval.panel.VSHARP,...
-        'Style','edit',...
-        'String','10',...
-        'units','normalized','position',[0.25 0.75 0.2 0.2],...
-        'backgroundcolor','white');
+    panelParent = h.bkgRemoval.panel.VSHARP;
 
+    % width of each element in a functional column, in normalised unit
+    wratio = 0.5;
+    
+    % row 1, col 1
+    % text|edit field pair: maximum radius
+    [h.bkgRemoval.VSHARP.text.maxRadius,h.bkgRemoval.VSHARP.edit.maxRadius] = sepia_construct_text_edit(...
+        panelParent,'Max. radius (voxel):', defaultMaxRadius, [left(1) bottom(1) width height], wratio);
+    
+    % row 2, col 1
     % text|edit field pair: minimum radius
-    h.bkgRemoval.VSHARP.text.minRadius = uicontrol('Parent',h.bkgRemoval.panel.VSHARP,...
-        'Style','text',...
-        'String','Min. radius (voxel):',...
-        'units','normalized','position',[0.01 0.5 0.2 0.2],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Minimum radius of spherical mean kernel');
-    h.bkgRemoval.VSHARP.edit.minRadius = uicontrol('Parent',h.bkgRemoval.panel.VSHARP,...
-        'Style','edit',...
-        'String','3',...
-        'units','normalized','position',[0.25 0.5 0.2 0.2],...
-        'backgroundcolor','white');
+    [h.bkgRemoval.VSHARP.text.minRadius,h.bkgRemoval.VSHARP.edit.minRadius] = sepia_construct_text_edit(...
+        panelParent,'Min. radius (voxel):', defaultMinRadius, [left(1) bottom(2) width height], wratio);
+    
+
+%% set tooltips
+set(h.bkgRemoval.VSHARP.text.maxRadius,	'Tooltip',tooltip.bkgRemoval.VSHARP.maxRadius);
+set(h.bkgRemoval.VSHARP.text.minRadius,	'Tooltip',tooltip.bkgRemoval.VSHARP.minRadius);
 
 %% set callbacks
 set(h.bkgRemoval.VSHARP.edit.minRadius, 'Callback', {@EditVSHARPRadius_Callback,h});

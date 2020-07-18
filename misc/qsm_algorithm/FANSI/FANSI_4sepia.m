@@ -36,13 +36,15 @@ if nargin < 8
     B0_dir = [0,0,1]; % Assuming slices perpendicular to B0 
 end
 
-params.K = dipole_kernel_fansi( N, spatial_res, B0_dir ); 
+params.K = dipole_kernel_fansi( N, spatial_res, kmode, B0_dir ); 
 
 params.input = phase;
 params.weight = magn; 
  
 params.mu1 = mu;                  % gradient consistency
 params.alpha1 = alpha;            % gradient L1 penalty
+
+params.mu2 = options.mu2;
 
 
 if nargin > 6
@@ -64,21 +66,44 @@ if nargin < 7
     options.tgv = false;
 end
 
+if options.isWeakHarmonic
+    % weak harmonic regularisation
+    params.beta = options.beta;
+    params.muh  = options.muh;
+    
+    if options.nonlinear
+        if options.tgv
+            out = WH_nlTGV(params);
+        else
+            out = WH_nlTV_4sepia(params);
+        end
 
-if options.nonlinear
-    if options.tgv
-        out = nlTGV(params);
     else
-        out = nlTV(params);
+        if options.tgv
+            out = WH_wTGV_4sepia(params);
+        else
+            out = WH_wTV(params);
+        end
+
     end
     
 else
-    if options.tgv
-        out = wTGV(params);
+    
+    if options.nonlinear
+        if options.tgv
+            out = nlTGV(params);
+        else
+            out = nlTV(params);
+        end
+
     else
-        out = wTV(params);
+        if options.tgv
+            out = wTGV(params);
+        else
+            out = wTV(params);
+        end
+
     end
-        
 end
 
 % Sepia check the size of the output

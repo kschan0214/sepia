@@ -40,3 +40,24 @@ kernel_inv( abs(kernel) > thre_tkd ) = 1 ./ kernel(abs(kernel) > thre_tkd);
 chi = real( ifftn( fftn(localField) .* kernel_inv ) ) .* mask;
 
 end
+
+%% parser
+function [thre_tkd,b0dir] = parse_varargin_TKD(arg)
+
+% predefine parameters
+thre_tkd    = 0.15;
+b0dir       = [0,0,1];
+
+% use user defined input if any
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'threshold')
+            thre_tkd = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'b0dir')
+            b0dir = arg{kvar+1};
+        end
+    end
+end
+
+end

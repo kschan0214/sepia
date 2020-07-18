@@ -92,7 +92,7 @@ end
 switch method
     case 'default'
         
-    case 'multiecho'
+    case 'multiecho (testing)'
         swi_phase = cumsum(swi_phase,4);
 end
 

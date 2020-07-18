@@ -129,3 +129,28 @@ end
 function res = myDerivative(x,y)
     res = gradient(x)./gradient(y);
 end
+
+%% parser
+function [lambda,optimise,b0dir] = parse_varargin_CFL2norm(arg)
+
+% predefine parameters
+lambda      = 1e-1;
+optimise    = false;
+b0dir       = [0,0,1];
+
+% use user defined input if any
+if ~isempty(arg)
+    for kvar = 1:length(arg)
+        if strcmpi(arg{kvar},'lambda')
+            lambda = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'optimise')
+            optimise = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'b0dir')
+            b0dir = arg{kvar+1};
+        end
+    end
+end
+
+end

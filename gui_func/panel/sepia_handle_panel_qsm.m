@@ -18,70 +18,70 @@
 % Date created: 16 April 2018
 % Date modified: 1 June 2018
 % Date modified: 5 Juen 2019
+% Date modified: 6 March 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_qsm(hParent,h,position)
 % set up method name displayed on GUI
-methodName = {'TKD','Closed-form solution','NDI','STI suite iLSQR','iLSQR','FANSI','Star-QSM','MEDI'};
+sepia_universal_variables;
+
+tooltip.QSM.panel.method    = 'Select a QSM algorithm'; 
+tooltip.QSM.panel.reference	= 'Region used to normalise the magnetic susceptibility map';
+
+%% layout of the panel
+% define maximum level of options and spacing between options
+ncol    = 2; % 2 columns in the panel
+rspacing = 0.01;
+width   = (1-(ncol+1)*rspacing)/ncol;
+left    = (rspacing:width+rspacing:(width+rspacing)*ncol);
 
 % Set parent of qsm panel
 h.StepsPanel.qsm = uipanel(hParent,...
     'Title','QSM','backgroundcolor',get(h.fig,'color'),...
+    'fontweight', 'bold',...
     'position',[position(1) position(2) 0.95 0.25]);
 
 %% design of this panel
-
-    % text|popup pair: select method
-    h.qsm.text.qsm = uicontrol('Parent',h.StepsPanel.qsm,'Style','text','String','Method:',...
-        'units','normalized','position',[0.01 0.85 0.15 0.1],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Select QSM algorithm');
-    h.qsm.popup.qsm = uicontrol('Parent',h.StepsPanel.qsm,'Style','popup',...
-        'String',methodName,...
-        'units','normalized','position',[0.31 0.85 0.4 0.1]) ; 
     
-% create control panel
+    height = 0.1;
+    wratio = 0.5;
+
+    % col 1
+    % text|popup pair: select method
+    [h.qsm.text.qsm,h.qsm.popup.qsm] = sepia_construct_text_popup(...
+        h.StepsPanel.qsm,'Method:', methodQSMName, [left(1) 0.85 width height], wratio);
+    
+    % col 2
+    % text|popup pair: select reference tissue
+    [h.qsm.text.tissue,h.qsm.popup.tissue] = sepia_construct_text_popup(...
+        h.StepsPanel.qsm,'Reference tissue:', tissueName, [left(2) 0.85 width height], wratio);
+
+    
+%% create control panel
 
 % define position and size of all method panels
 position_child = [0.01 0.04 0.95 0.75];
 
-    % TKD    
-    h = sepia_handle_panel_qsm_TKD(h.StepsPanel.qsm,h,position_child);
+% construct all method panels
+for k = 1:length(function_QSM_method_panel)
+    h = feval(function_QSM_method_panel{k},h.StepsPanel.qsm,h,position_child);
+end
 
-    % Closed-form solution  
-    h = sepia_handle_panel_qsm_CFS(h.StepsPanel.qsm,h,position_child);
+%% set tooltip
+set(h.qsm.text.qsm,     'Tooltip',tooltip.QSM.panel.method);
+set(h.qsm.text.tissue,  'Tooltip',tooltip.QSM.panel.reference);
 
-    % iLSQR  
-    h = sepia_handle_panel_qsm_iLSQR(h.StepsPanel.qsm,h,position_child);
-        
-    % STI suite iLSQR  
-    h = sepia_handle_panel_qsm_STIiLSQR(h.StepsPanel.qsm,h,position_child);
-    
-    % FANSI
-    h = sepia_handle_panel_qsm_FANSI(h.StepsPanel.qsm,h,position_child);
-        
-    % Star-QSM
-    h = sepia_handle_panel_qsm_Star(h.StepsPanel.qsm,h,position_child);
-
-    % MEDI
-    h = sepia_handle_panel_qsm_MEDI(h.StepsPanel.qsm,h,position_child);
-    
-    % NDI
-    h = sepia_handle_panel_qsm_NDI(h.StepsPanel.qsm,h,position_child);
-    
-    % in future, add panel of new method here
-
-% set callback
+%% set callback
 set(h.qsm.popup.qsm, 'Callback', {@PopupQSM_Callback,h});
 
 end
 
 %% Callback function
-function PopupQSM_Callback(source,eventdata,h)
 % display corresponding QSM method's panel
+function PopupQSM_Callback(source,eventdata,h)
 
-% global h
+% needs 'methodQSMName' here
+sepia_universal_variables;
 
 % get selected QSM method
 method = source.String{source.Value,1} ;
@@ -92,34 +92,12 @@ for kf = 1:length(fields)
     set(h.qsm.panel.(fields{kf}),   'Visible','off');
 end
 
-% switch on target panel
-switch method
-    case 'TKD'
-        set(h.qsm.panel.TKD,        'Visible','on');
-
-    case 'Closed-form solution'
-        set(h.qsm.panel.cfs,        'Visible','on');
-
-    case 'STI suite iLSQR'
-        set(h.qsm.panel.STIiLSQR,   'Visible','on');
-
-    case 'iLSQR'
-        set(h.qsm.panel.iLSQR,      'Visible','on');
-
-    case 'FANSI'
-        set(h.qsm.panel.FANSI,      'Visible','on');
-
-    case 'Star-QSM'
-        set(h.qsm.panel.Star,       'Visible','on');
-
-    case 'MEDI'
-        set(h.qsm.panel.MEDI,       'Visible','on');
-        
-    case 'NDI'
-        set(h.qsm.panel.NDI,        'Visible','on');
-
-    % in the future, add new method here
-
+% switch on only target panel
+for k = 1:length(methodQSMName)
+    if strcmpi(method,methodQSMName{k})
+        set(h.qsm.panel.(fields{k}), 'Visible','on');
+        break
+    end
 end
 
 end

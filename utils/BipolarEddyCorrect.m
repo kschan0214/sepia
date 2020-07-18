@@ -19,30 +19,34 @@
 % Date last modified: 5 June 2019
 %
 %
-function bipolarCorr = BipolarEddyCorrect(bipolarCplxME,mask,unwrap)
+function bipolarCorr = BipolarEddyCorrect(bipolarCplxME,mask,algorParam)
 
-if nargin < 3
-    unwrap = 'Laplacian';
-end
+sepia_universal_variables;
+
+algorParam = check_and_set_SEPIA_algorithm_default(algorParam);
+
+disp('--------------------------');
+disp('Bipolar readout correction');
+disp('--------------------------');
+disp('Correcting eddy current effect on bipolar readout data...');
+
+bipolarCplxME(isnan(bipolarCplxME))=0;
+
+dims = size(bipolarCplxME) ;
 
 % successive phase difference mean made so that the last echo taken into
 % account has to be an odd number ()
-bipolarCplxME(isnan(bipolarCplxME))=0;
-% dims = size(bipolarCplxME) ;
 % to= dims(4)-(-mod(dims(4),2)+1);
-
 % Phase of mean evens minus mean odds - contains Eddy Current and
-
-dims = size(bipolarCplxME) ;
-to= dims(4)-(mod(dims(4),2));
-PhaseDiffEvensMinusOdds=angle(mean(bipolarCplxME(:,:,:,2:2:to)./bipolarCplxME(:,:,:,1:2:to-1),4));
-PhaseDiffEvensMinusOdds(isnan(PhaseDiffEvensMinusOdds))=0;
+to = dims(4)-(mod(dims(4),2));
+PhaseDiffEvensMinusOdds = angle(mean(bipolarCplxME(:,:,:,2:2:to)./bipolarCplxME(:,:,:,1:2:to-1),4));
+PhaseDiffEvensMinusOdds(isnan(PhaseDiffEvensMinusOdds)) = 0;
 
 % Phase of even minus odd images - contains Eddy Current and Field Map
 % PhaseDiffEvensMinusOddsFluctuations=angle(mean(bipolarCplxME(:,:,:,2:2:end-2)./bipolarCplxME(:,:,:,1:2:end-3),4));
 
-PhaseDiffEvens=angle(mean(bipolarCplxME(:,:,:,4:2:end)./bipolarCplxME(:,:,:,2:2:end-2),4));
-PhaseDiffOdds=angle(mean(bipolarCplxME(:,:,:,3:2:end)./bipolarCplxME(:,:,:,1:2:end-2),4));
+PhaseDiffEvens  = angle(mean(bipolarCplxME(:,:,:,4:2:end)./bipolarCplxME(:,:,:,2:2:end-2),4));
+PhaseDiffOdds   = angle(mean(bipolarCplxME(:,:,:,3:2:end)./bipolarCplxME(:,:,:,1:2:end-2),4));
 PhaseDiffEvens(isnan(PhaseDiffEvens))=0;
 PhaseDiffOdds(isnan(PhaseDiffOdds))=0;
 % BipolarOddvsEven=mean(abs(bipolarCplxME(:,:,:,1:2:end)),4)-mean(abs(bipolarCplxME(:,:,:,2:2:end-1)),4);
@@ -52,10 +56,21 @@ PhaseDiffOdds(isnan(PhaseDiffOdds))=0;
 %% a more robust eddy current estimation has to do unwrapping
 te=1:dims(4);
 
-[fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4)),dims(1:3),[1 1 1],...
-                        'Unwrap',unwrap,'TE',te(4)-te(2),'unit','radHz','mask',mask);
-[fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4)),dims(1:3),[1 1 1],...
-                        'Unwrap',unwrap,'TE',te(3)-te(1),'unit','radHz','mask',mask);
+algorParam.unwrap.unit 	= 'radHz';
+algorParam.unwrap.echoCombMethod = methodEchoCombineName{1}; 
+
+headerAndExtraData.te   = te(4)-te(2);
+headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4));
+[fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
+
+headerAndExtraData.te   = te(3)-te(1);
+headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4));
+[fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
+
+% [fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4)),dims(1:3),[1 1 1],...
+%                         'Unwrap',unwrap,'TE',te(4)-te(2),'unit','radHz','mask',mask);
+% [fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4)),dims(1:3),[1 1 1],...
+%                         'Unwrap',unwrap,'TE',te(3)-te(1),'unit','radHz','mask',mask);
 
 
 % Even=cat(4,mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4),mean(abs(bipolarCplxME(:,:,:,4:2:end)),4).*exp(i*PhaseDiffEvens)) ;
@@ -73,8 +88,12 @@ te=1:dims(4);
 
 
 % the last echo to be taken into account has to be even
-[fieldMapOddEven,~] = estimateTotalField(double(PhaseDiffEvensMinusOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4)),dims(1:3),[1 1 1],...
-                        'Unwrap',unwrap,'TE',te(1:2),'unit','radHz','mask',mask);
+headerAndExtraData.te   = te(1:2);
+headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4));
+[fieldMapOddEven,~] = estimateTotalField(double(PhaseDiffEvensMinusOdds),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
+
+% [fieldMapOddEven,~] = estimateTotalField(double(PhaseDiffEvensMinusOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4)),dims(1:3),[1 1 1],...
+%                         'Unwrap',unwrap,'TE',te(1:2),'unit','radHz','mask',mask);
 
 % OddEven=cat(4,mean(abs(bipolarCplxME(:,:,:,1:2:to)),4),mean(abs(bipolarCplxME(:,:,:,2:2:to)),4).*exp(i*PhaseDiffEvensMinusOdds)) ;
 % 
@@ -103,7 +122,6 @@ meanEddycurrent2(isnan(meanEddycurrent2))=0;
 bipolarCorr = zeros(dims);
 for echo=1:dims(4)
     bipolarCorr(:,:,:,echo)=bipolarCplxME(:,:,:,echo).*exp(-1i *(-1)^echo * 0.5 * FIT3D);
-    
-end;
+end
 
 end

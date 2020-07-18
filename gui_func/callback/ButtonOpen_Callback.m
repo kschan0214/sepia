@@ -29,7 +29,7 @@ switch field
             set(h.dataIO.edit.inputData1,    'String',[]);
             set(h.dataIO.edit.inputData2,    'String',[]);
             set(h.dataIO.edit.inputData3,    'String',[]);
-            set(h.dataIO.edit.inputHeader,    'String',[]);
+            set(h.dataIO.edit.inputHeader,   'String',[]);
         end
         
     case 'output'

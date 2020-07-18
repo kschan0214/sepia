@@ -1,43 +1,18 @@
-%% chi = qsmMacroIOWrapper(inputDir,outputDir,varargin)
+%% chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
 %
 % Input
 % --------------
-% inputDir              : input directory contains NIfTI (*localfield*, *magn* and *fieldmapsd*) files 
-% outputDir             : output directory that stores the output (susceptibility map)
-% varargin ('Name','Value' pair)
-% ---------
-% 'mask'                : mask file (in NIfTI format) full name 
-% 'QSM'                 : QSM method (default: 'TKD')
-% 'QSM_threshold'       : threshold of TKD (defualt: 0.15) 
-% 'QSM_lambda'          : regularisation parameter of TKD, CFL2, iLSQR, FANSI and MEDI (overloaded) (default: 0.13)
-% 'QSM_optimise'        : boolean automatically estimate regularisation parameter based on L-curve approach of CFL2 and iLSQR (overloaded) (default: false)
-% 'QSM_tol'             : tolerance of iLSQR and FANSI (overloaded)(default: 1e-3)
-% 'QSM_iteration'       : no. of iterations of iLSQR, STISuiteiLQR and FANSI (overloaded) (default: 50)
-% 'QSM_tol1'            : step 1 tolerance of STISuiteiLQR (default: 0.01)
-% 'QSM_tol2'            : step 2 tolerance of STISuiteiLQR (default: 0.001)
-% 'QSM_padsize'         : pad size of STISuiteiLQR (default: [4,4,4])
-% 'QSM_mu'              : regularisation parameter of data consistency of FANSI (default: 5e-5)
-% 'QSM_zeropad'         : size of zero-padding of MEDI (default: 0)
-% 'QSM_wData'           : weighting of data of MEDI (default: 1)
-% 'QSM_wGradient'       : weighting of gradient regularisation of MEDI (default: 1)
-% 'QSM_radius'          : radius for the spherical mean value operator of MEDI (default: 5)
-% 'QSM_isSMV'           : boolean using spherical mean value operator of MEDI (default: false)
-% 'QSM_merit'           : boolean model error reduction through iterative tuning of MEDI (default: false)
-% 'QSM_isLambdaCSF'     : boolen automatic zero reference (MEDI+0) (required CSF mask) (default: false)
-% 'QSM_lambdaCSF'       : regularisation parameter of CSF reference of MEDI (default: 100)
-% varargin ('flag')
-% 'linear'              : linear solver for FANSI (default)
-% 'non-linear'          : non-linear solver for FANSI
-% 'TV'                  : Total variation constraint for FANSI (default)
-% 'TGV'                 : total generalisaed variation for FANSI 
+% input         :   input directory contains NIfTI (*localfield*, *magn* and
+%                   *fieldmapsd*) files or structure containing filenames  
+% output        :   output directory that stores the output (susceptibility map)
+% maskFullName  :   mask filename
+% algorParam    :   structure contains method and method specific parameters
 %
 % Output
 % --------------
-% chi                   : quantitative susceptibility map (in ppm)
+% chi           : magnetic susceptibility map (in ppm)
 %
-% Description: This is a wrapper of BackgroundRemovalMac1ro.m which has the following objeectives:
-%               (1) matches the input format of qsm_hub.m
-%               (2) save the results in NIfTI format
+% Description: This is a wrapper of QSMMacro.m which for NIfTI input/output
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
@@ -45,21 +20,22 @@
 % Date modified: 26 August 2018
 % Date modified: 29 March 2019
 % Date modified: 5 June 2019
+% Date modified: 8 March 2020 (v0.8.0)
 %
 %
 function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath
 
+sepia_universal_variables;
+
 %% define variables
 prefix = 'sepia_';
-gyro = 42.57747892;
 isInputDir = true;
 % make sure the input only load once (first one)
-isLotalFieldLoad    = false;
+isLocalFieldLoad    = false;
 isWeightLoad        = false;
 isMagnLoad          = false; 
-maskCSF             = [];
 
 %% Check if output directory exists 
 output_index = strfind(output, filesep);
@@ -72,32 +48,6 @@ end
 if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
-
-%% Check and set default algorithm parameters
-algorParam = CheckAndSetDefault(algorParam);
-isGPU           = algorParam.general.isGPU;
-QSM_method      = algorParam.qsm.method; 
-QSM_threshold   = algorParam.qsm.threshold; 
-QSM_lambda      = algorParam.qsm.lambda; 
-QSM_optimise 	= algorParam.qsm.optimise; 
-QSM_tol         = algorParam.qsm.tol;   
-QSM_maxiter     = algorParam.qsm.maxiter;
-QSM_tol1        = algorParam.qsm.tol1;  
-QSM_tol2        = algorParam.qsm.tol2; 
-QSM_padsize     = algorParam.qsm.padsize;
-QSM_mu1         = algorParam.qsm.mu1; 
-QSM_mu2         = algorParam.qsm.mu2;  
-QSM_solver      = algorParam.qsm.solver;  
-QSM_constraint	= algorParam.qsm.constraint; 
-QSM_radius      = algorParam.qsm.radius;
-QSM_zeropad     = algorParam.qsm.zeropad;   
-QSM_wData       = algorParam.qsm.wData; 
-QSM_wGradient 	= algorParam.qsm.wGradient;
-QSM_isLambdaCSF	= algorParam.qsm.isLambdaCSF;
-QSM_lambdaCSF	= algorParam.qsm.lambdaCSF; 
-QSM_isSMV       = algorParam.qsm.isSMV;
-QSM_merit       = algorParam.qsm.merit;  
-QSM_stepSize   	= algorParam.qsm.stepSize;  
 
 %% Read input
 disp('Reading data...');
@@ -131,7 +81,7 @@ if ~isempty(inputNiftiList)
             % load true value from NIfTI
             localField = load_nii_img_only([inputNiftiList(1).name]);
 %             localField = double(inputLocalFieldNifti.img);
-            isLotalFieldLoad = true;
+            isLocalFieldLoad = true;
             
             disp('Local field map is loaded.')
         else
@@ -189,12 +139,12 @@ if ~isempty(inputNiftiList)
         for klist = 1:length(inputNiftiList)
 
                         %%%%%%%%%% Local field map %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'local-field') && ~isLotalFieldLoad
+            if ContainName(lower(inputNiftiList(klist).name),'local-field') && ~isLocalFieldLoad
                 inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
                 % load true value from NIfTI
                 localField = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
 %                 localField = double(inputLocalFieldNifti.img);
-                isLotalFieldLoad = true;
+                isLocalFieldLoad = true;
                 disp('Local field map is loaded.')
             end
 
@@ -221,7 +171,7 @@ if ~isempty(inputNiftiList)
         end
 
         % if no files matched the name format then displays error message
-        if ~isLotalFieldLoad
+        if ~isLocalFieldLoad
             error('No local field map is loaded. Please make sure the input directory contains files with name *localfield*');
         end
 
@@ -265,11 +215,13 @@ end
 B0_dir = B0_dir ./ norm(B0_dir);
 
 % display some header info
-disp('Basic DICOM information');
-disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
-disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
-disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
-disp(['Field strength(T) =  ' num2str(B0)]);
+disp('----------------------');
+disp('Basic Data information');
+disp('----------------------');
+disp(['Voxel size(x,y,z mm^3)   =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
+disp(['matrix size(x,y,z)       =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
+disp(['B0 direction(x,y,z)      =  ' num2str(B0_dir(:)')]);
+disp(['Field strength(T)        =  ' num2str(B0)]);
 
 %% get brain mask
 % look for qsm mask first
@@ -294,202 +246,40 @@ else
     
 end
 
-% make sure all variables are double
+%% make sure all variables are double
 localField	= double(localField);
 maskFinal   = double(maskFinal);
 voxelSize   = double(voxelSize);
 matrixSize  = double(matrixSize);
-if exist('wmap','var')
-    weights = double(weights);
-end
-if exist('magn','var')
-    magn = double(magn);
-end
+if exist('wmap','var'); weights                 = double(weights);	end
+if exist('magn','var'); headerAndExtraData.magn	= double(magn);   	end
 
 % create weighting map based on final mask
-% for weighting map: higher SNR -> higher weighting
-weights = weights .* maskFinal;
+% for weighting map: higher SNR -> higher weights
+headerAndExtraData.weights = weights .* maskFinal;
+
+headerAndExtraData.b0dir  	= B0_dir;
+headerAndExtraData.b0     	= B0;
+headerAndExtraData.te     	= TE;
+headerAndExtraData.delta_TE	= delta_TE;
+headerAndExtraData.CF    	= CF;
 
 %% qsm
-disp('Computing QSM...');
-
-% some QSM algorithms work better with certain unit of the local field map
-switch lower(QSM_method)
-    case 'closedforml2'
-        
-    case 'ilsqr'
-        
-    case 'stisuiteilsqr'
-        % The order of local field values doesn't affect the result of chi  
-        % in STI suite v3 implementation, i.e. 
-        % chi = method(localField,...) = method(localField*C,...)/C, where
-        % C is a constant.
-        % Therefore, because of the scaling factor in their implementation,
-        % the local field map is converted to rad
-        localField = localField * 2*pi * delta_TE; 
-        
-    case 'fansi'
-        % if both data are loaded
-        if isWeightLoad && isMagnLoad
-            disp('Both weighting map and magnitude images are loaded.');
-            disp('Only the weighing map will be used.');
-        end
-        % if only magnitude images are loaded
-        if ~isWeightLoad && isMagnLoad
-            disp('The normalised RMS magnitude image will be used as the weighting map.');
-            magn = sqrt(mean(magn.^2,4));
-            weights = (magn./max(magn(:))) .* (maskFinal); 
-        end
-        % if nothing is loaded
-        if ~isWeightLoad && ~isMagnLoad
-            warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
-        end
-            
-        % FANSI default parameters are optimised for ppm
-        localField = localField/(B0*gyro);
-        
-    case 'ssvsharp'
-        % not support yet
-        
-    case 'star'
-        % Unlike the iLSQR implementation, the order of local field map
-        % values will affect the Star-QSM result, i.e. 
-        % chi = method(localField,...) ~= method(localField*C,...)/C, where
-        % C is a constant. Lower order of local field magnitude will more 
-        % likely produce chi map with streaking artefact. 
-        % In the STI_Templates.m example, Star-QSM expecting local field in 
-        % the unit of rad. However, value of the field map in rad will 
-        % vary with echo time. Therefore, data acquired with short
-        % delta_TE will be prone to streaking artefact. To mitigate this
-        % potential problem, local field map is converted from Hz to radHz
-        % here and the resulting chi will be normalised by the same factor 
-        % 
-        localField = localField * 2*pi;
-        
-    case 'medi_l1'
-        % zero reference using CSF requires CSF mask
-        if QSM_isLambdaCSF && isMagnLoad
-            disp('Extracting CSF mask....');
-            sepia_addpath('medi_l1');
-            % R2* mapping
-            r2s = arlo(TE,magn);
-            maskCSF = extract_CSF(r2s,maskFinal,voxelSize)>0;
-            magn = sqrt(sum(magn.^2,4));
-        end
-        
-        % MEDI input expects local field in rad
-        localField = localField*2*pi*delta_TE;
-        
-    case 'ndi'
-        % if both data are loaded
-        if isWeightLoad && isMagnLoad
-            disp('Both weighting map and magnitude images are loaded.');
-            disp('Only the weighing map will be used.');
-        end
-        % if only magnitude images are loaded
-        if ~isWeightLoad && isMagnLoad
-            disp('The normalised RMS magnitude image will be used as the weighting map.');
-            magn = sqrt(mean(magn.^2,4));
-            weights = (magn./max(magn(:))) .* (maskFinal); 
-        end
-        % if nothing is loaded
-        if ~isWeightLoad && ~isMagnLoad
-            warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
-        end
-        % NDI default parameters are relative so okay for ppm
-        localField = localField/(B0*gyro);
-        
-end
-
 % core of QSM
-if isGPU
-    chi = cuQSMMacro(localField,maskFinal,matrixSize,voxelSize,...
-                     'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-                     'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...
-                     'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
-                     'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                     'noisestd',weights,'magnitude',magn,'data_weighting',QSM_wData,...
-                     'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-                     'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF);
-else
-    chi = QSMMacro(localField,maskFinal,matrixSize,voxelSize,...
-                   'method',QSM_method,'threshold',QSM_threshold,'lambda',QSM_lambda,...
-                   'optimise',QSM_optimise,'tol',QSM_tol,'iteration',QSM_maxiter,'weight',weights,...
-                   'b0dir',B0_dir,'tol_step1',QSM_tol1,'tol_step2',QSM_tol2,'TE',delta_TE,'B0',B0,...
-                   'padsize',QSM_padsize,'mu',QSM_mu1,'mu2',QSM_mu2,QSM_solver,QSM_constraint,...
-                   'noisestd',weights,'magnitude',magn,'data_weighting',QSM_wData,...
-                   'gradient_weighting',QSM_wGradient,'merit',QSM_merit,'smv',QSM_isSMV,'zeropad',QSM_zeropad,...
-                   'lambda_CSF',QSM_lambdaCSF,'CF',CF,'radius',QSM_radius,'Mask_CSF',maskCSF,...
-                   'stepsize',QSM_stepSize);
-end
-
-% convert the susceptibility map into ppm
-switch lower(QSM_method)
-    case 'tkd'
-        chi = chi/(B0*gyro);
-    case 'closedforml2'
-        chi = chi/(B0*gyro);
-    case 'ilsqr'
-        chi = chi/(B0*gyro);
-    case 'stisuiteilsqr'
-        % STI suite v3 implementation already converted the chi map to ppm
-    case 'fansi'
-        % FANSI default parameters are optimised for ppm
-    case 'ssvsharp'
-        chi = chi/(B0*gyro);
-    case 'star'
-        % STI suite v3 implementation already nomalised the output by B0
-        % and delta_TE, since the input is radHz here, we have to
-        % multiply the reuslt by delta_TE here
-        chi = chi * delta_TE;
-    case 'medi_l1'
-        % MEDI implementation already normalised the output to ppm
-    case 'ndi'
-        % NDI is converted for ppm
-end
+[chi,mask_ref] = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
 % save results
 fprintf('Saving susceptibility map...');
 
 save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
 
+if ~isempty(mask_ref)
+    save_nii_quick(outputNiftiTemplate, mask_ref, [outputDir filesep prefix 'mask_reference_region.nii.gz']);
+end
+
 fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
-
-end
-
-%% check and set all algorithm parameters
-function algorParam2 = CheckAndSetDefault(algorParam)
-algorParam2 = algorParam;
-
-try algorParam2.general.isGPU  	= algorParam.general.isGPU;     catch; algorParam2.general.isGPU    = false;	end
-
-% default background field removal method is TKD
-try algorParam2.qsm.method      = algorParam.qsm.method;        catch; algorParam2.qsm.method       = 'tkd';	end
-try algorParam2.qsm.threshold   = algorParam.qsm.threshold;     catch; algorParam2.qsm.threshold    = 0.15;     end
-
-% for the rest, if the parameter does not exist then initiates it with an empty array
-try algorParam2.qsm.radius      = algorParam.qsm.radius;        catch; algorParam2.qsm.radius       = [];       end
-try algorParam2.qsm.lambda      = algorParam.qsm.lambda;        catch; algorParam2.qsm.lambda       = [];       end
-try algorParam2.qsm.optimise   	= algorParam.qsm.optimise;     	catch; algorParam2.qsm.optimise     = [];       end
-try algorParam2.qsm.maxiter   	= algorParam.qsm.maxiter;       catch; algorParam2.qsm.maxiter      = [];     	end
-try algorParam2.qsm.tol1        = algorParam.qsm.tol1;          catch; algorParam2.qsm.tol1         = [];   	end
-try algorParam2.qsm.tol2        = algorParam.qsm.tol2;          catch; algorParam2.qsm.tol2         = [];      	end
-try algorParam2.qsm.padsize     = algorParam.qsm.padsize;       catch; algorParam2.qsm.padsize      = [];   	end
-try algorParam2.qsm.tol         = algorParam.qsm.tol;           catch; algorParam2.qsm.tol          = [];      	end
-try algorParam2.qsm.mu1         = algorParam.qsm.mu1;           catch; algorParam2.qsm.mu1          = [];      	end
-try algorParam2.qsm.mu2         = algorParam.qsm.mu2;           catch; algorParam2.qsm.mu2          = [];    	end
-try algorParam2.qsm.solver    	= algorParam.qsm.solver;    	catch; algorParam2.qsm.solver       = [];    	end
-try algorParam2.qsm.constraint 	= algorParam.qsm.constraint;   	catch; algorParam2.qsm.constraint   = [];       end
-try algorParam2.qsm.wData       = algorParam.qsm.wData;         catch; algorParam2.qsm.wData        = [];       end
-try algorParam2.qsm.wGradient  	= algorParam.qsm.wGradient;    	catch; algorParam2.qsm.wGradient    = [];       end
-try algorParam2.qsm.zeropad  	= algorParam.qsm.zeropad;    	catch; algorParam2.qsm.zeropad      = [];      	end
-try algorParam2.qsm.isSMV    	= algorParam.qsm.isSMV;         catch; algorParam2.qsm.isSMV        = [];    	end
-try algorParam2.qsm.isLambdaCSF	= algorParam.qsm.isLambdaCSF;	catch; algorParam2.qsm.isLambdaCSF  = [];   	end
-try algorParam2.qsm.lambdaCSF 	= algorParam.qsm.lambdaCSF;    	catch; algorParam2.qsm.lambdaCSF    = [];     	end
-try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = [];      	end
-try algorParam2.qsm.stepSize 	= algorParam.qsm.stepSize;   	catch; algorParam2.qsm.stepSize    	= [];      	end
 
 end
 

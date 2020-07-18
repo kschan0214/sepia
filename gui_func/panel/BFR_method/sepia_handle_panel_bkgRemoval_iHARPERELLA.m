@@ -15,13 +15,23 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 1 June 2018
-% Date last modified: 
+% Date modified: 4 April 2020 (v0.8.0)
 %
 %
 function h = sepia_handle_panel_bkgRemoval_iHARPERELLA(hParent,h,position)
 
 %% set default values
 defaultMaxiter      = 100;
+
+%% Tooltips
+tooltip.bkgRemoval.iHARPERELLA.maxIter = 'Maximum iteration allowed';
+
+%% layout of the panel
+nrow        = 4;
+rspacing    = 0.01;
+ncol        = 2;
+cspacing    = 0.01;
+[height,bottom,width,left] = sepia_layout_measurement(nrow,rspacing,ncol,cspacing);
 
 %% Parent handle of iHARPERELLA panel
 
@@ -31,20 +41,20 @@ h.bkgRemoval.panel.iHARPERELLA = uipanel(hParent,...
     'backgroundcolor',get(h.fig,'color'),'Visible','off');
 
 %% Chrild of iHARPERELLA panel
+    
+    panelParent = h.bkgRemoval.panel.iHARPERELLA;
 
-    % text|edit field pair: maximum number of iterations
-    h.bkgRemoval.iHARPERELLA.text.maxIter = uicontrol('Parent',h.bkgRemoval.panel.iHARPERELLA,...
-        'Style','text',...
-        'String','Max. iterations:',...
-        'units','normalized','position',[0.01 0.75 0.2 0.2],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Maximum iteration allowed');
-    h.bkgRemoval.iHARPERELLA.edit.maxIter = uicontrol('Parent',h.bkgRemoval.panel.iHARPERELLA,...
-        'Style','edit',...
-        'String',num2str(defaultMaxiter),...
-        'units','normalized','position',[0.25 0.75 0.2 0.2],...lb
-        'backgroundcolor','white');
+    % width of each element in a functional column, in normalised unit
+    wratio = 0.5;
+    
+    % row 1, col 1
+    % text|edit pair: maximum number of iterations
+    [h.bkgRemoval.iHARPERELLA.text.maxIter,h.bkgRemoval.iHARPERELLA.edit.maxIter] = sepia_construct_text_edit(...
+        panelParent,'Max. iterations:', defaultMaxiter, [left(1) bottom(1) width height], wratio);
+
+
+%% set tooltips
+set(h.bkgRemoval.iHARPERELLA.text.maxIter,  'Tooltip',tooltip.bkgRemoval.iHARPERELLA.maxIter);
 
 %% set callbacks
 set(h.bkgRemoval.iHARPERELLA.edit.maxIter,	'Callback', {@EditInputMinMax_Callback,defaultMaxiter,1,1});

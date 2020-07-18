@@ -23,22 +23,27 @@ function h = sepia_handle_panel_swi(hParent,h,position)
 % set up method name displayed on GUI
 methodName = {'SWI','SMWI'};
 
-% Set parent of qsm panel
+%% layout of the panel
+% define maximum level of options and spacing between options
+ncol    = 2; % 2 columns in the panel
+rspacing = 0.01;
+width   = (1-(ncol+1)*rspacing)/ncol;
+left    = (rspacing:width+rspacing:(width+rspacing)*ncol);
+
+%% Set parent of qsm panel
 h.StepsPanel.swi = uipanel(hParent,...
     'Title','SWI','backgroundcolor',get(h.fig,'color'),...
     'position',[position(1) position(2) 0.95 0.35]);
 
 %% design of this panel
 
+    height = 0.1;
+    wratio = 0.5;
+
+    % col 1
     % text|popup pair: select method
-    h.swi.text.swi = uicontrol('Parent',h.StepsPanel.swi,'Style','text','String','Method:',...
-        'units','normalized','position',[0.01 0.85 0.15 0.1],...
-        'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),...
-        'tooltip','Select SWI/SMWI');
-    h.swi.popup.swi = uicontrol('Parent',h.StepsPanel.swi,'Style','popup',...
-        'String',methodName,...
-        'units','normalized','position',[0.31 0.85 0.4 0.1]) ; 
+    [h.swi.text.swi,h.swi.popup.swi] = sepia_construct_text_popup(...
+        h.StepsPanel.swi,'Method:', methodName, [left(1) 0.85 width height], wratio);
     
     % start button
     h.swi.button.start = uicontrol('Parent',h.StepsPanel.swi,...
@@ -58,17 +63,18 @@ position_child = [0.01 0.15 0.95 0.6];
     h = sepia_handle_panel_swi_SMWI(h.StepsPanel.swi,h,position_child);
     
     % in future, add panel of new method here
+    
+%% set tooltip
+set(h.swi.text.swi,     'Tooltip','Select SWI/SMWI');
 
-% set callback
+%% set callback
 set(h.swi.popup.swi,    'Callback', {@PopupSWI_Callback,h});
 set(h.swi.button.start,	'Callback', {@PushbuttonStart_swi_Callback,h});
 end
 
 %% Callback function
+% display corresponding method panel
 function PopupSWI_Callback(source,eventdata,h)
-% display corresponding QSM method's panel
-
-% global h
 
 % get selected QSM method
 method = source.String{source.Value,1} ;
@@ -103,11 +109,8 @@ set(source,'Enable','off');
 % option 2: input are NIfTI files
 input(1).name = get(h.swi.dataIO.edit.inputData1, 	'String');
 input(2).name = get(h.swi.dataIO.edit.inputData2,  	'String');
-%     input(3).name = get(h.swi.dataIO.edit.inputData3,  	'String');
-% input(4).name = get(h.swi.dataIO.edit.inputHeader, 	'String');
 
 outputBasename  = get(h.swi.dataIO.edit.output,       	'String');
-% maskFullName    = get(h.swi.dataIO.edit.maskdir,       	'String');
 
 % get and create output directory
 output_index = strfind(outputBasename, filesep);
@@ -118,40 +121,46 @@ if exist(outputDir,'dir') ~= 7
 end
 
 % create a new m file
-logFilename = [outputDir filesep 'sepia_log.m'];
-if exist(logFilename,'file') == 2
+% logFilename = [outputDir filesep 'sepia_log.m'];
+% if exist(logFilename,'file') == 2
+%     counter = 1;
+%     while exist(logFilename,'file') == 2
+%         suffix = ['_' num2str(counter)];
+%         logFilename = [outputDir filesep 'sepia_log' suffix '.m'];
+%         counter = counter + 1;
+%     end
+% end
+% fid = fopen(logFilename,'w');
+% create a new m file
+configFilename = [outputDir filesep 'sepia_config.m'];
+if exist(configFilename,'file') == 2
     counter = 1;
-    while exist(logFilename,'file') == 2
+    while exist(configFilename,'file') == 2
         suffix = ['_' num2str(counter)];
-        logFilename = [outputDir filesep 'sepia_log' suffix '.m'];
+        configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
         counter = counter + 1;
     end
 end
-fid = fopen(logFilename,'w');
+fid = fopen(configFilename,'w');
+
 % input data
 fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
 fprintf(fid,'input(2).name = ''%s'' ;\n',input(2).name);
-%     fprintf(fid,'input(3).name = ''%s'' ;\n',input(3).name);
-% fprintf(fid,'input(4).name = ''%s'' ;\n',input(4).name);
 
 % output
 fprintf(fid,'output_basename = ''%s'' ;\n',outputBasename);
 
-% mask
-% fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
-
-try
 % write algorithm parameters
 switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
     case 'SWI'
-        fprintf(fid,'algorParam.swi.m = %s ;\n'             ,get(h.swi.SWI.edit.m,  'String'));
+        fprintf(fid,'algorParam.swi.m = %s ;\n'                 ,get(h.swi.SWI.edit.m,  'String'));
         fprintf(fid,'algorParam.swi.threshold = %s ;\n'         ,get(h.swi.SWI.edit.threshold,  'String'));
         fprintf(fid,'algorParam.swi.filterSize = %s ;\n'        ,get(h.swi.SWI.edit.filterSize,  'String'));
         switch h.swi.SWI.popup.method.String{h.swi.SWI.popup.method.Value,1}
             case 'default'
                 fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'default');
-            case 'multi-echo'
-                fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'multiecho');
+            case 'multi-echo (testing)'
+                fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'multiecho (testing)');
         end
         fprintf(fid,'algorParam.swi.isPositive = %i ;\n'        ,get(h.swi.SWI.checkbox.positive,'Value'));
         fprintf(fid,'algorParam.swi.isNegative = %i ;\n'        ,get(h.swi.SWI.checkbox.negative,'Value'));
@@ -163,11 +172,11 @@ switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
         fprintf(fid,'\nSWIIOWrapper(input,output_basename,algorParam);\n');
         
     case 'SMWI'
-        fprintf(fid,'algorParam.smwi.m = %s ;\n'             ,get(h.swi.SMWI.edit.m,  'String'));
-        fprintf(fid,'algorParam.smwi.threshold = %s ;\n'         ,get(h.swi.SMWI.edit.threshold,  'String'));
-        fprintf(fid,'algorParam.smwi.isParamagnetic = %i ;\n'    ,get(h.swi.SMWI.checkbox.paramagnetic,'Value'));
-        fprintf(fid,'algorParam.smwi.isDiamagnetic = %i ;\n'     ,get(h.swi.SMWI.checkbox.diamagnetic,'Value'));
-        fprintf(fid,'algorParam.smwi.ismIP = %i ;\n'             ,get(h.swi.SMWI.checkbox.mIP,'Value'));
+        fprintf(fid,'algorParam.smwi.m = %s ;\n'                ,get(h.swi.SMWI.edit.m,  'String'));
+        fprintf(fid,'algorParam.smwi.threshold = %s ;\n'        ,get(h.swi.SMWI.edit.threshold,  'String'));
+        fprintf(fid,'algorParam.smwi.isParamagnetic = %i ;\n'   ,get(h.swi.SMWI.checkbox.paramagnetic,'Value'));
+        fprintf(fid,'algorParam.smwi.isDiamagnetic = %i ;\n'    ,get(h.swi.SMWI.checkbox.diamagnetic,'Value'));
+        fprintf(fid,'algorParam.smwi.ismIP = %i ;\n'            ,get(h.swi.SMWI.checkbox.mIP,'Value'));
         if get(h.swi.SMWI.checkbox.mIP,'Value')
             fprintf(fid,'algorParam.smwi.slice_mIP = %s ;\n' ,get(h.swi.SMWI.edit.mIP,  'String'));
         end
@@ -176,17 +185,56 @@ switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
 end
 
 fclose(fid);
-    
-% run process
-run(logFilename);
 
-% re-enable the pushbutton
-set(source,'Enable','on');
+% log command window display to a text file
+logFilename = [outputDir filesep 'run_sepia.log'];
+if exist(logFilename,'file') == 2
+    counter = 1;
+    while exist(logFilename,'file') == 2
+        suffix = ['_' num2str(counter)];
+        logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
+        counter = counter + 1;
+    end
+end
+diary(logFilename)
+    
+try
+    
+    % run process
+    run(configFilename);
+    
+    % turn off the log
+    diary off
+
+    % re-enable the pushbutton
+    set(source,'Enable','on');
 
 catch ME
     % re-enable the start button before displaying the error
     set(source,'Enable','on');
-
+    
+     % close log file
+    disp('There was an error! Please check the command window/error message file for more information.');
+    diary off
+    
+    % open a new text file for error message
+    errorMessageFilename = [outputDir filesep 'run_sepia.error'];
+    if exist(errorMessageFilename,'file') == 2
+        counter = 1;
+        while exist(errorMessageFilename,'file') == 2
+            suffix = ['_' num2str(counter)];
+            errorMessageFilename = [outputDir filesep 'run_sepia' suffix '.error'];
+            counter = counter + 1;
+        end
+    end
+    fid = fopen(errorMessageFilename,'w');
+    fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
+    fprintf(fid,'The message was:\n\n');
+    msgString = getReport(ME,'extended','hyperlinks','off');
+    fprintf(fid,'%s',msgString);
+    fclose(fid);
+    
+    % rethrow the error message to command window
     rethrow(ME);
 end
 

@@ -5,12 +5,16 @@ function CheckboxBrainExtraction_Callback(source,eventdata,h)
 % global h
 
 if ~h.dataIO.checkbox.brainExtraction.Value
-    set(h.dataIO.button.maskdir,'Enable','on');
-    set(h.dataIO.edit.maskdir,  'Enable','on');
+    set(h.dataIO.button.maskdir,        'Enable','on');
+    set(h.dataIO.edit.maskdir,          'Enable','on');
+    set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
+    set(h.dataIO.edit.gradientThres,    'Enable', 'off')
 else
-    set(h.dataIO.button.maskdir,'Enable','off');
-    set(h.dataIO.edit.maskdir,  'Enable','off');
-    set(h.dataIO.edit.maskdir,  'String','');
+    set(h.dataIO.button.maskdir,        'Enable','off');
+    set(h.dataIO.edit.maskdir,          'Enable','off');
+    set(h.dataIO.edit.maskdir,          'String','');
+    set(h.dataIO.edit.fractionalThres,  'Enable', 'on');
+    set(h.dataIO.edit.gradientThres,    'Enable', 'on')
 end
 
 end

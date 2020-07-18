@@ -1,38 +1,27 @@
-%% [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(inputDir,outputDir,varargin)
+%% [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,algorParam)
 %
 % Input
 % --------------
-% inputDir              : input directory contains NIfTI (*totalfield* and *fieldmapsd*) files 
-% outputDir             : output directory that stores the output (local field and final mask)
-% varargin ('Name','Value' pair)
-% ---------
-% 'mask'                : mask file (in NIfTI format) full name 
-% 'BFR'                 : background field removal method (default: 'LBV')
-% 'refine'              : remove the remainin B1 field inhomogeneity using 4th order polynomial fitting (defualt: true) 
-% 'BFR_tol'             : tolerance of LBV or PDF (overloaded) (default: 0.01)
-% 'depth'               : depth of LBV (default: 5)
-% 'peel'                : layers to be peeled of LBV (default: 2)
-% 'BFR_iteration'       : no. of iterations of PDF or iHARPERELLA (overloaded) (default: 50)
-% 'BFR_padsize'         : zeropad size of PDF (default: 40)
-% 'BFR_radius'          : radius of spherical mean kernel of SHARP, RESHARP, VSHARP and VSHARPSTI
-%                         (overloaded) (default: 4)
-% 'BFR_alpha'           : regularisation parameter of RESHARP (default: 0.01)
-% 'BFR_threshold'       : threshold of SHARP (default: 0.03)
+% input         : input directory contains NIfTI (*totalfield* and
+%                 *fieldmapsd*) files or structure containing filenames
+% output        : output directory that stores the output (local field and final mask)
+% maskFullName  : mask filename
+% algorParam    : structure contains method and method specific parameters
 %
 % Output
 % --------------
-% localField            : local field (or tissue field) (in Hz)
-% maskFinal             : final mask used for QSM
+% localField    : local field (or tissue field) (in Hz)
+% maskFinal     : final mask used for QSM
 %
-% Description: This is a wrapper of BackgroundRemovalMacro.m which has the following objeectives:
-%               (1) matches the input format of qsm_hub.m
-%               (2) save the results in NIfTI format
+% Description:  This is a wrapper of BackgroundRemovalMacro.m for NIfTI
+%               input/output
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 17 April 2018
 % Date modified: 26 August 2018
 % Date modified: 29 March 2019
+% Date modified: 8 March 2020 (v0.8.0)
 %
 %
 function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,algorParam)
@@ -41,7 +30,7 @@ sepia_addpath;
 
 %% define variables
 prefix = 'sepia_';
-gyro = 42.57747892;
+
 isInputDir = true;
 % make sure the input only load once (first one)
 isTotalFieldLoad = false;
@@ -58,21 +47,6 @@ end
 if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
-
-%% Check and set default algorithm parameters
-algorParam = CheckAndSetDefault(algorParam);
-isGPU           = algorParam.general.isGPU;
-BFR             = algorParam.bfr.method;
-refine          = algorParam.bfr.refine;
-BFR_tol         = algorParam.bfr.tol;
-BFR_depth       = algorParam.bfr.depth;
-BFR_peel        = algorParam.bfr.peel;
-BFR_iteration	= algorParam.bfr.iteration;
-BFR_padSize     = algorParam.bfr.padSize;
-BFR_radius      = algorParam.bfr.radius;
-BFR_alpha       = algorParam.bfr.alpha;
-BFR_threshold   = algorParam.bfr.threshold;
-BFR_erode_radius= algorParam.bfr.erode_radius;
 
 %% Read input
 disp('Reading data...');
@@ -204,17 +178,14 @@ end
 % make sure the L2 norm of B0 direction = 1
 B0_dir = B0_dir ./ norm(B0_dir);
 
-% if no fieldmapSD found then creates one with all voxels have the same value
-if ~isFieldmapSDLoad
-    fieldmapSD = ones(matrixSize) * 0.01;
-end
-
 % display some header info
-disp('Basic DICOM information');
-disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
-disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
-disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
-disp(['Field strength(T) =  ' num2str(B0)]);
+disp('----------------------');
+disp('Basic Data information');
+disp('----------------------');
+disp(['Voxel size(x,y,z mm^3)   =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
+disp(['matrix size(x,y,z)       =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
+disp(['B0 direction(x,y,z)      =  ' num2str(B0_dir(:)')]);
+disp(['Field strength(T)        =  ' num2str(B0)]);
 
 %% get brain mask
 maskList = dir([inputDir '/*mask*']);
@@ -234,35 +205,21 @@ else
     
 end
 
-% make sure all variables are double
+%% make sure all variables are double
 totalField  = double(totalField);
 mask       	= double(mask);
 voxelSize   = double(voxelSize);
 matrixSize  = double(matrixSize);
-fieldmapSD  = double(fieldmapSD);
+
+headerAndExtraData = [];
+if exist('fieldmapSD','var'); headerAndExtraData.N_std = double(fieldmapSD); end
 
 %% Background field removal
-disp('Recovering local field...');
-
 % core of background field removal
-if isGPU
-    localField = cuBackgroundRemovalMacro(...
-                        totalField,mask,matrixSize,voxelSize,...
-                        'method',BFR,'refine',refine,'erode',BFR_erode_radius,'tol',BFR_tol,'depth',BFR_depth,...
-                        'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'padsize',...
-                        BFR_padSize,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
-                        'threshold',BFR_threshold); 
-else
-    localField = BackgroundRemovalMacro(...
-                        totalField,mask,matrixSize,voxelSize,...
-                        'method',BFR,'refine',refine,'erode',BFR_erode_radius,'tol',BFR_tol,'depth',BFR_depth,...
-                        'peel',BFR_peel,'b0dir',B0_dir,'iteration',BFR_iteration,'padsize',...
-                        BFR_padSize,'noisestd',fieldmapSD,'radius',BFR_radius,'alpha',BFR_alpha,...
-                        'threshold',BFR_threshold); 
-end
+localField = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
   
 % generate new mask based on backgroudn field removal result
-maskFinal = localField ~=0;
+maskFinal = localField ~= 0;
   
 % save results
 fprintf('Saving local field map...');
@@ -272,26 +229,6 @@ save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-q
 fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
-
-end
-
-%% check and set all algorithm parameters
-function algorParam2 = CheckAndSetDefault(algorParam)
-algorParam2 = algorParam;
-try algorParam2.general.isGPU  	= algorParam.general.isGPU;	catch; algorParam2.general.isGPU = false;   end
-% default background field removal method is VSHARP
-try algorParam2.bfr.method      = algorParam.bfr.method;   	catch; algorParam2.bfr.method = 'vsharpsti';end
-try algorParam2.bfr.radius      = algorParam.bfr.radius; 	catch; algorParam2.bfr.radius = 10;         end
-try algorParam2.bfr.refine      = algorParam.bfr.refine;   	catch; algorParam2.bfr.refine = false;      end
-try algorParam2.bfr.erode_radius= algorParam.bfr.erode_radius;	catch; algorParam2.bfr.erode_radius = 1;    end
-% for the rest, if the parameter does not exist then initiates it with an empty array
-try algorParam2.bfr.tol         = algorParam.bfr.tol;     	catch; algorParam2.bfr.tol = [];            end
-try algorParam2.bfr.depth       = algorParam.bfr.depth;  	catch; algorParam2.bfr.depth = [];          end
-try algorParam2.bfr.peel        = algorParam.bfr.peel;   	catch; algorParam2.bfr.peel = [];           end
-try algorParam2.bfr.iteration   = algorParam.bfr.iteration;	catch; algorParam2.bfr.iteration = [];      end
-try algorParam2.bfr.padSize     = algorParam.bfr.padSize; 	catch; algorParam2.bfr.padSize = [];        end
-try algorParam2.bfr.alpha       = algorParam.bfr.alpha;    	catch; algorParam2.bfr.alpha = [];          end
-try algorParam2.bfr.threshold   = algorParam.bfr.threshold;	catch; algorParam2.bfr.threshold = [];      end
 
 end
 

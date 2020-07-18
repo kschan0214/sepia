@@ -6,7 +6,12 @@
 
 **SEPIA** is a tool providing a graphical user interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
 
-This GUI is built based on three toolboxes including [MEDI](http://weill.cornell.edu/mri/pages/qsm.html), [STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html) and [FANSI](https://gitlab.com/cmilovic/FANSI-toolbox).
+This GUI is built to access the following toolboxes:
+[MEDI](http://weill.cornell.edu/mri/pages/qsm.html), 
+[STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
+[FANSI](https://gitlab.com/cmilovic/FANSI-toolbox),  
+[SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
+[nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox).
 
 SEPIA provides two key features for QSM processing:  
 1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline,
@@ -16,31 +21,40 @@ SEPIA is designed to provide a platform for easy access to different QSM process
 
 **For better readability, the documentation of SEPIA has moved to https://sepia-documentation.readthedocs.io/.**  
 
-Please report to me if you encounter any bug when using the tool.  
-
 ## Terms of use
-All the codes and methods developed by me in **SEPIA** are under MIT license. You can check [the license file](https://github.com/kschan0214/Sepia/blob/master/LICENSE) for more information. For the terms of use of the toolboxes related to this work, their own license applied and please check the corresponding license file(s) in each toolbox for more information. 
+All the original codes and methods developed for **SEPIA** are under MIT license. You can check [the license file](https://github.com/kschan0214/Sepia/blob/master/LICENSE) for more information. For the terms of use of the toolboxes related to this work, their own license applied and please check the corresponding license file(s) in each toolbox for more information. 
 
-When you use SEPIA in your research, please cite the following abstract:
+If you use SEPIA in your research, please cite the following abstract:
 
 K. Chan and J.P. Marques, SEPIA - SuscEptibility mapping PIpeline tool for phAse images, Proc. 27th Annual Meeting of the ISMRM, Montreal, Canada, 2019.  
 
 As well as any related papers in your processing pipeline. 
 
-If you have any question or you would like to provide suggestion to improve this toolbox/report bug(s) please feel free to contact me k.chan@donders.ru.nl (Kwok-Shing Chan) directly or raise an issue in the [github page](https://github.com/kschan0214/sepia/issues).
-
-Kwok  
-2018-09-01
+If you have any question or you would like to provide suggestion to improve this toolbox/report bug(s) please raise an issue in the [github page](https://github.com/kschan0214/sepia/issues).
 
 
 ## Update notes  
 
 ### Future release
-* Incorporating new version of MEDI toolbox (updated April 9, 2019)
+* Better compartibility with BIDS format data
 
-### 0.7.3 (master)
-* Support [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox) for QSM
+### 0.8.0 (master)
+* New layout for input/output panel for data selection
+* New output config file, log file and error message file
+* New feature to load parameters in config file to the GUI
+* New option to save unwrapped echo phase
+* New option to exlcude unreliable voxels
+* New option to select reference tissue for QSM normalisation
+* Support the lastest version of MEDI toolbox (Jan 15, 2020)
+* Support bipolar readout correction for total field recovery with MEDI's non-linear fitting algorithm
+* Support extra brain extraction (FSL's BET) parameters from MEDI toolbox
+* New 'percentage' option for MEDI+0 algorithm
+* Support the lastest version of FANSI toolbox (commit dc68c306)
+* New option to use [weak harmonic regularisation](https://onlinelibrary.wiley.com/doi/full/10.1002/mrm.27483) with FANSI
+* Support [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox) as external library
 * Support [SEGUE](https://xip.uclb.com/i/software/SEGUE.html) as external library
+
+**Please upload the MEDI toolbox (Jan 15, 2020) and FANSI toolbox (commit dc68c306) to the lastest version for the best performance.**
 
 ### 0.7.2 (20190604)  
 * Support single-echo dataset

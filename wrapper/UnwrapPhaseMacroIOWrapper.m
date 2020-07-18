@@ -1,27 +1,20 @@
-%% [totalField,fieldmapSD]=UnwrapPhaseMacroIOWrapper(inputDir,outputDir,varargin)
-%
+%% [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,algorParam)
+% 
 % Input
 % --------------
-% inputDir              : input directory contains DICOM or NIfTI (*magn* and *phase*) files 
-% outputDir             : output directory that stores the output (Unwrapped total field and fieldMapSD)
-% varargin ('Name','Value' pair)
-% ---------
-% 'FSLBet'              : boolen brain extraction using FSL's bet (defaut: false)
-% 'mask'                : mask file (in NIfTI format) full name 
-% 'unwrap'              : phase unwrapping method (default 'Laplacian')
-% 'subsampling'         : subsamling factor for graph-cut unwrapping (default:1) (unsupport yet)
-% 'exclude_threshold'   : threshold to exclude high SD voxel in analysis, [0,1] (default: 1 (unthrehold))
-% 'eddy'                : boolean eddy current correction for bipolar readout data (default: false)
+% input         : input directory contains NIfTI (*mag* and *ph*) files or structure containing filenames
+% output        : output directory that stores the output (Unwrapped total field and fieldMapSD)
+% maskFullName  : mask filename
+% algorParam    : structure contains method and method specific parameters
 %
 % Output
 % --------------
-% totalField            : unwrapped field map (in Hz)
-% fieldmapSD            : relative standard deviation of field map,
-%                         esimated using Eq. 11 of Robinson et al. NMR Biomed 2017 (doi:10.1002/nbm.3601)
-% mask                  : new mask with thresholded unreliable voxels
+% totalField    : total field (or background + tissue fields) (in Hz)
+% fieldmapSD    : noise standard deviation in the phase
+% mask          : signal (brain) mask
 %
 % Description: This is a wrapper of estimateTotalField.m which has the following objeectives:
-%               (1) matches the input format of qsm_hub.m
+%               (1) matches the input format of SEPIA.m
 %               (2) save the results in NIfTI format
 %
 % Kwok-shing Chan @ DCCN
@@ -29,18 +22,20 @@
 % Date created: 17 April 2018
 % Date modified: 16 September 2018
 % Date modified: 29 March 2019
+% Date modified: 9 March 2020
 %
 %
 function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath;
 
+sepia_universal_variables;
+
 %% define variables
 prefix = 'sepia_';
-gyro = 42.57747892;
 isInputDir = true;
 % make sure the input only load once (first one)
-isMagnLoad = false;
+isMagnLoad  = false;
 isPhaseLoad = false;
 
 %% Check output directory exist or not
@@ -56,14 +51,15 @@ if exist(outputDir,'dir') ~= 7
 end
 
 %% Check and set default algorithm parameters
-algorParam = CheckAndSetDefault(algorParam);
+algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 isInvert            = algorParam.general.isInvert;
 isBET               = algorParam.general.isBET ;
-isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
-phaseCombMethod    	= algorParam.unwrap.echoCombMethod;
-unwrap              = algorParam.unwrap.unwrapMethod;
-subsampling         = algorParam.unwrap.subsampling;
+fractional_threshold= algorParam.general.fractional_threshold;
+gradient_threshold  = algorParam.general.gradient_threshold;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
+exclude_method      = algorParam.unwrap.excludeMethod;
+isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
+isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
 
 %% Read input
 disp('Reading data...');
@@ -171,14 +167,6 @@ if ~isempty(inputNiftiList)
             end
         end
 
-%         % if no files matched the name format then displays error message
-%         if ~isMagnLoad
-%             error('No magnitude data is loaded. Please make sure the input directory contains NIfTI files with name *magn*');
-%         end
-%         if ~isPhaseLoad
-%             error('No phase data is loaded. Please make sure the input directory contains files with name *phase*');
-%         end
-
         %%%%%%%%%% sepia header file %%%%%%%%%%
         if ~isempty(dir([inputDir '/*header*']))
             % load header
@@ -212,16 +200,14 @@ end
 B0_dir = B0_dir ./ norm(B0_dir);
 
 % display some header info
-disp('Basic DICOM information');
+disp('----------------------');
+disp('Basic Data information');
+disp('----------------------');
 disp(['Voxel size(x,y,z mm^3) =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
-disp(['matrix size(x,y,z) =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
-disp(['B0 direction(x,y,z) =  ' num2str(B0_dir(:)')]);
-disp(['Field strength(T) =  ' num2str(B0)]);
-disp(['Number of echoes = ' num2str(length(TE))]);
-
-% make sure the following variables are row vectors
-matrixSize = matrixSize(:).';
-voxelSize = voxelSize(:).';
+disp(['matrix size(x,y,z)     =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
+disp(['B0 direction(x,y,z)    =  ' num2str(B0_dir(:)')]);
+disp(['Field strength(T)      =  ' num2str(B0)]);
+disp(['Number of echoes       = ' num2str(length(TE))]);
 
 %% get brain mask
 mask = [];
@@ -244,11 +230,11 @@ end
     
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
-    sepia_addpath('bet');
+    sepia_addpath('MEDI');
     
     fprintf('Performing FSL BET...');
-    % this is the BET functino provided with MEDI toolbox
-    mask = BET(magn(:,:,:,1),matrixSize,voxelSize);
+    % this is the BET function provided with MEDI toolbox
+    mask = BET(magn(:,:,:,1),matrixSize,voxelSize,fractional_threshold,gradient_threshold);
     fprintf('done!\n');
     
     fprintf('Saving brain mask...')
@@ -257,75 +243,65 @@ if isempty(mask) || isBET
 
 end
 
-% ensure all variable are double
-fieldMap     = double(fieldMap);
-mask         = double(mask);
-matrixSize   = double(matrixSize);
-voxelSize    = double(voxelSize);
-if exist('magn','var')
-    magn = double(magn);
+%% ensure all variable are double
+% make sure the following variables are row vectors
+matrixSize  = double(matrixSize(:).');
+voxelSize   = double(voxelSize(:).');
+fieldMap  	= double(fieldMap);
+mask      	= double(mask);
+
+headerAndExtraData.magn     = double(magn);
+headerAndExtraData.b0       = B0;
+headerAndExtraData.te       = TE;
+headerAndExtraData.delta_TE = delta_TE;
+
+%% Step 0: Eddy current correction for bipolar readout
+if numel(TE) < 4 && isEddyCorrect
+    warning('Bipolar readout correction requires data with at least 4 echoes.');
+    disp('No bipolar readout correction is performed.');
+    isEddyCorrect = false;
 end
-
-%% total field and phase unwrap
-
-% Step 0: Eddy current correction for bipolar readout
+    
 if isEddyCorrect
-    disp('Correcting eddy current effect on bipolar readout data...');
     
     % BipolarEddyCorrect requries complex-valued input
-    imgCplx = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,unwrap);
-    fieldMap = angle(imgCplx);
+    imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    fieldMap    = angle(imgCplx);
     
     fprintf('Saving eddy current corrected phase data...');
     % save the eddy current corrected output
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
     fprintf('Done!\n');
+    
     clear imgCplx
 end
 
+%% total field and phase unwrap
 % Step 1: Phase unwrapping and echo phase combination
-disp('Calculating field map...');
+% core of temporo-spatial phase unwrapping
+[totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
-% fix the output field map unit in Hz
-unit = 'Hz';
-
-% core of phase unwrapping
-try 
-    [totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,magn,...
-                        matrixSize,voxelSize,...
-                        'method',phaseCombMethod,'Unwrap',unwrap,...
-                        'TE',TE,'B0',B0,'unit',unit,...
-                        'Subsampling',subsampling,'mask',mask);
-                    
-    if ~isempty(fieldmapUnwrapAllEchoes)
-        % save the output                           
-        fprintf('Saving unwrapped echo phase...');
-        save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
-        clear fieldmapUnwrapAllEchoes
-        fprintf('Done!\n');
-    end
-    
-catch
-    % if the above selected method is not working then do Laplacian with
-    % optimum weights
-    warning('The selected method is not supported in this system. Using Laplacian algorithm for phase unwrapping.')
-    if ~isinf(exclude_threshold)
-        warning('Unreliable voxels will not be excluded due to switching of the algorithm.')
-        exclude_threshold = Inf;
-    end
-    
-    unwrap = 'laplacian'; 
-    sepia_addpath(unwrap);
-    
-    [totalField,fieldmapSD] = estimateTotalField(fieldMap,magn,matrixSize,voxelSize,...
-                            'Unwrap',unwrap,'TE',TE,'B0',B0,'unit',unit,...
-                            'Subsampling',subsampling,'mask',mask);
+% save unwrapped phase if chosen
+if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
+    % save the output                           
+    fprintf('Saving unwrapped echo phase...');
+    save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
+    clear fieldmapUnwrapAllEchoes
+    fprintf('Done!\n');
 end
-                    
-% Step 2: exclude unreliable voxel, based on monoexponential decay model with
+            
+%% Step 2: exclude unreliable voxel, based on monoexponential decay model with
 % single freuqnecy shift
 fprintf('Computing weighting map...');
-if length(TE) > 1 && ~isinf(exclude_threshold)
+% only work with multi-echo data
+if length(TE) == 1 && ~isinf(exclude_threshold)
+    fprintf('\n');
+    warning('Excluding unreliable voxels can only work with multi-echo data.')
+    disp('No voxels are excluded');
+    exclude_threshold = inf;
+end
+
+if ~isinf(exclude_threshold)
     % multi-echo data
     r2s = R2star_trapezoidal(magn,TE);
     relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
@@ -335,23 +311,26 @@ else
     maskReliable = ones(size(totalField),'like',fieldmapSD);
 end
 
-% threshold fieldmapSD with the reliable voxel mask
-fieldmapSD = fieldmapSD .* maskReliable;
+switch exclude_method
+    % threshold fieldmapSD with the reliable voxel mask
+    case 'Weighting map'
+        fieldmapSD = fieldmapSD .* maskReliable;
+    % threshold brain mask with the reliable voxel mask
+    case 'Brain mask'
+        mask = mask .* maskReliable;
+        
+end
 
 % 20180815: test with creating weights using relativeResidual
 % weightResidual = 1-(relativeResidual./exclude_threshold);
 % weightResidual(weightResidual>1) = 1;
 % weightResidual(weightResidual<0) = 0;
-
-% deprecated
-% mask = and(mask,maskReliable);
-
 % computing weights
-wmap = 1./fieldmapSD;
-wmap(isinf(wmap)) = 0;
-wmap(isnan(wmap)) = 0;
-wmap = wmap./max(wmap(and(mask>0,maskReliable>0)));
-wmap = wmap .* and(mask>0,maskReliable);
+weights                 = 1./fieldmapSD;
+weights(isinf(weights))	= 0;
+weights(isnan(weights))	= 0;
+weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
+weights                 = weights .* and(mask>0,maskReliable);
 fprintf('Done!\n');
              
 % save the output                           
@@ -359,32 +338,19 @@ fprintf('Saving unwrapped field map...');
 
 save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
-save_nii_quick(outputNiftiTemplate,wmap,  [outputDir filesep prefix 'weights.nii.gz']);
+save_nii_quick(outputNiftiTemplate,weights,  	[outputDir filesep prefix 'weights.nii.gz']);
 
+% additional output
 if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
+    if strcmpi(exclude_method,'Brain mask')
+       save_nii_quick(outputNiftiTemplate,mask,         [outputDir filesep prefix 'mask-local_field.nii.gz']); 
+    end
 end
 fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
-
-end
-
-%% check and set all algorithm parameters
-function algorParam2 = CheckAndSetDefault(algorParam)
-algorParam2 = algorParam;
-
-try algorParam2.general.isInvert            = algorParam.general.isInvert;              catch; algorParam2.general.isInvert             = false;                end
-try algorParam2.general.isBET               = algorParam.general.isBET;                 catch; algorParam2.general.isBET                = false;                end
-% default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
-try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = 'MEDI nonlinear fit';	end
-% default phase unwrapping method is Laplacian
-try algorParam2.unwrap.unwrapMethod         = algorParam.unwrap.unwrapMethod;           catch; algorParam2.unwrap.unwrapMethod          = 'Laplacian';          end
-try algorParam2.unwrap.isEddyCorrect        = algorParam.unwrap.isEddyCorrect;          catch; algorParam2.unwrap.isEddyCorrect         = 0;                    end
-try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThreshold;	catch; algorParam2.unwrap.excludeMaskThreshold	= Inf;                  end
-% for the rest, if the parameter does not exist then initiates it with an empty array
-try algorParam2.unwrap.subsampling          = algorParam.unwrap.subsampling;            catch; algorParam2.unwrap.subsampling           = [];                   end
 
 end
 

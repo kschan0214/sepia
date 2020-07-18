@@ -19,7 +19,7 @@ function GetVentricleMaskIOWrapper(input, outputDir, maskFullName, TE)
 prefix = 'Sepia';
 
 % add path
-sepia_addpath('medi_l1');
+sepia_addpath('MEDI');
 
 disp('Loading data...')
 
