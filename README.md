@@ -40,7 +40,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/.
 ### Future release
 * Better compartibility with BIDS format data
 
-### 0.8.0 (master)
+### 0.8.0 (commmit b4255d8) (current master)
 * New layout for input/output panel for data selection
 * New output config file, log file and error message file
 * New feature to load parameters in config file to the GUI
