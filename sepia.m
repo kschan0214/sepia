@@ -50,8 +50,8 @@ clear global h SEPIA_version
 % make sure nothing is logged at the moment
 diary off
 
-% add path
-sepia_addpath;
+% add path and check toolboxes availability
+sepia_addpath('',1);
 
 global h SEPIA_version
 
