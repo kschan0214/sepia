@@ -19,7 +19,7 @@ FANSI_HOME      = '/path/to/FANSI/Toolboxes/';
 SEGUE_HOME      = '/path/to/SEGUE/Toolboxes/';
 
 %% if you have any missing toolbox, then specify it as empty array
-% MEDI_dir      = [];
-% STISuite_dir  = [];
-% FANSI_dir     = [];
-% SEGUE_dir     = [];
+% MEDI_HOME      = [];
+% STISuite_HOME  = [];
+% FANSI_HOME     = [];
+% SEGUE_HOME     = [];
