@@ -1,17 +1,20 @@
-%% SWIIOWrapper(input,output,algorParam)
+%% SMWIIOWrapper(input,output,algorParam)
 %
 % Input
 % --------------
+% input         :   input structure containing filenames  
+% output        :   output directory that stores the output 
+% algorParam    :   structure contains method and method specific parameters
 %
 % Output
 % --------------
 %
-% Description:
+% Description: Compute susceptibility map-weighted images
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 April 2019
-% Date last modified:
+% Date modified:
 %
 %
 function SMWIIOWrapper(input,output,algorParam)

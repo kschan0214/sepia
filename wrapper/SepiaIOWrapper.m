@@ -2,50 +2,10 @@
 %
 % Input
 % --------------
-% inputDir              : input directory contains DICOM or NIfTI (*magn* and *phase*) files 
-% outputDir             : output directory that stores the output (Unwrapped total field and fieldMapSD)
-% varargin ('Name','Value' pair)
-% ---------
-% 'FSLBet'              : boolen brain extraction using FSL's bet (defaut: false)
-% 'mask'                : mask file (in NIfTI format) full name 
-% 'unwrap'              : phase unwrapping method (default 'Laplacian')
-% 'subsampling'         : subsamling factor for graph-cut unwrapping (default:1) (unsupport yet)
-% 'exclude_threshold'   : threshold to exclude high SD voxel in analysis, [0,1] (default: 1 (unthrehold))
-% 'eddy'                : boolean eddy current correction for bipolar readout data (default: false)
-% 'BFR'                 : background field removal method (default: 'LBV')
-% 'refine'              : remove the remainin B1 field inhomogeneity using 4th order polynomial fitting (defualt: true) 
-% 'BFR_tol'             : tolerance of LBV or PDF (overloaded) (default: 0.01)
-% 'depth'               : depth of LBV (default: 5)
-% 'peel'                : layers to be peeled of LBV (default: 2)
-% 'BFR_iteration'       : no. of iterations of PDF or iHARPERELLA (overloaded) (default: 50)
-% 'BFR_padsize'         : zeropad size of PDF (default: 40)
-% 'BFR_radius'          : radius of spherical mean kernel of SHARP, RESHARP, VSHARP and VSHARPSTI
-%                         (overloaded) (default: 4)
-% 'BFR_alpha'           : regularisation parameter of RESHARP (default: 0.01)
-% 'BFR_threshold'       : threshold of SHARP (default: 0.03)
-% 'QSM'                 : QSM method (default: 'TKD')
-% 'QSM_threshold'       : threshold of TKD (defualt: 0.15) 
-% 'QSM_lambda'          : regularisation parameter of TKD, CFL2, iLSQR, FANSI and MEDI (overloaded) (default: 0.13)
-% 'QSM_optimise'        : boolean automatically estimate regularisation parameter based on L-curve approach of CFL2 and iLSQR (overloaded) (default: false)
-% 'QSM_tol'             : tolerance of iLSQR and FANSI (overloaded)(default: 1e-3)
-% 'QSM_iteration'       : no. of iterations of iLSQR, STISuiteiLQR and FANSI (overloaded) (default: 50)
-% 'QSM_tol1'            : step 1 tolerance of STISuiteiLQR (default: 0.01)
-% 'QSM_tol2'            : step 2 tolerance of STISuiteiLQR (default: 0.001)
-% 'QSM_padsize'         : pad size of STISuiteiLQR (default: [4,4,4])
-% 'QSM_mu'              : regularisation parameter of data consistency of FANSI (default: 5e-5)
-% 'QSM_zeropad'         : size of zero-padding of MEDI (default: 0)
-% 'QSM_wData'           : weighting of data of MEDI (default: 1)
-% 'QSM_wGradient'       : weighting of gradient regularisation of MEDI (default: 1)
-% 'QSM_radius'          : radius for the spherical mean value operator of MEDI (default: 5)
-% 'QSM_isSMV'           : boolean using spherical mean value operator of MEDI (default: false)
-% 'QSM_merit'           : boolean model error reduction through iterative tuning of MEDI (default: false)
-% 'QSM_isLambdaCSF'     : boolen automatic zero reference (MEDI+0) (required CSF mask) (default: false)
-% 'QSM_lambdaCSF'       : regularisation parameter of CSF reference of MEDI (default: 100)
-% varargin ('flag')
-% 'linear'              : linear solver for FANSI (default)
-% 'non-linear'          : non-linear solver for FANSI
-% 'TV'                  : Total variation constraint for FANSI (default)
-% 'TGV'                 : total generalisaed variation for FANSI 
+% input         :   input directory contains NIfTI files or structure containing filenames  
+% output        :   output directory that stores the output (susceptibility map)
+% maskFullName  :   mask filename
+% algorParam    :   structure contains method and method specific parameters
 %
 % Output
 % --------------

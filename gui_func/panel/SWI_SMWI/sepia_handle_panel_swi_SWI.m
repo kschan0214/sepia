@@ -65,7 +65,7 @@ h.swi.panel.SWI = uipanel(hParent,...
     % row 4, col 1
     % text|popup field pair: method
     [h.swi.SWI.text.method ,h.swi.SWI.popup.method] = sepia_construct_text_popup(...
-        panelParent,'Method:', {'default','multi-echo'}, [left(1) bottom(4) width height], wratio);
+        panelParent,'Method:', {'default','multi-echo (testing)'}, [left(1) bottom(4) width height], wratio);
     
     % row 1, col 2
     % checkbox: save positive phase image

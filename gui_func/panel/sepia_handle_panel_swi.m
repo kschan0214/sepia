@@ -159,8 +159,8 @@ switch h.swi.popup.swi.String{h.swi.popup.swi.Value,1}
         switch h.swi.SWI.popup.method.String{h.swi.SWI.popup.method.Value,1}
             case 'default'
                 fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'default');
-            case 'multi-echo'
-                fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'multiecho');
+            case 'multi-echo (testing)'
+                fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'multiecho (testing)');
         end
         fprintf(fid,'algorParam.swi.isPositive = %i ;\n'        ,get(h.swi.SWI.checkbox.positive,'Value'));
         fprintf(fid,'algorParam.swi.isNegative = %i ;\n'        ,get(h.swi.SWI.checkbox.negative,'Value'));
