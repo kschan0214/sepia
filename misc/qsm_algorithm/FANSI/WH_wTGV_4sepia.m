@@ -120,7 +120,7 @@ function out = WH_wTGV_4sepia(params)
     
     E1tE1 = Et1.*E1;    E2tE2 = Et2.*E2;    E3tE3 = Et3.*E3;
     EE2 = E1tE1 + E2tE2 + E3tE3;
-    Lap = E1+Et1+E2+Et1+E3+Et2; %Lap = E1+E1t+E2+E2t+E3+E3t;
+    Lap = E1+Et1+E2+Et2+E3+Et3; %Lap = E1+E1t+E2+E2t+E3+E3t;
     mu0_over_2_E1tE2 = mu0/2*Et1.*E2;
     mu0_over_2_E1tE3 = mu0/2*Et1.*E3;
     mu0_over_2_E2tE3 = mu0/2*Et2.*E3;
