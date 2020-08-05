@@ -14,7 +14,7 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 4 August June 2018
+% Date created: 4 August 2020
 % Date modified: 
 %
 %
@@ -42,7 +42,7 @@ cspacing    = 0.01;
 %% Parent handle of iterTik panel children
 
 h.qsm.panel.iterTik = uipanel(hParent,...
-        'Title','TKD + iterative Tikhonov',...
+        'Title','Truncated K-space division + direct/iterative Tikhonov regularisation',...
         'position',position,...
         'backgroundcolor',get(h.fig,'color'),'Visible','off');
 
@@ -66,13 +66,13 @@ h.qsm.panel.iterTik = uipanel(hParent,...
     % col 1, row 3
     % text|edit field pair: maximum iterations
     [h.qsm.iterTik.text.lambda,h.qsm.iterTik.edit.lambda] = sepia_construct_text_edit(...
-        panelParent,'Regularisation:',          defaultLambda,      [left(1) bottom(3) width height], wratio);
+        panelParent,'Lambda:',                  defaultLambda,      [left(1) bottom(3) width height], wratio);
     set(h.qsm.iterTik.edit.lambda, 'Enable', 'off');
     
     % col 1, row 4
     % text|edit field pair: tolerance
     [h.qsm.iterTik.text.tol,h.qsm.iterTik.edit.tol] = sepia_construct_text_edit(...
-        panelParent,'Tolerance:',               defaultTol,         [left(1) bottom(4) width height], wratio);
+        panelParent,'CG Tolerance:',          	defaultTol,         [left(1) bottom(4) width height], wratio);
     set(h.qsm.iterTik.edit.tol, 'Enable', 'off');
     
     

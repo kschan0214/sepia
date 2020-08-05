@@ -54,6 +54,9 @@ mask        = double(zeropad_odd_dimension(mask,'pre'));
 if ~isempty(headerAndExtraData.N_std)
     headerAndExtraData.N_std = double(zeropad_odd_dimension(headerAndExtraData.N_std,'pre'));
 end
+if ~isempty(headerAndExtraData.phase)
+    headerAndExtraData.phase = double(zeropad_odd_dimension(headerAndExtraData.phase,'pre'));
+end
 matrixSize_new = size(totalField);
 
 fprintf('Done!\n');
