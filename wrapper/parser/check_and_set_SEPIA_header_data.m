@@ -33,6 +33,7 @@ try headerAndExtraData2.CF          = headerAndExtraData.CF;        catch; heade
 
 try headerAndExtraData2.weights     = headerAndExtraData.weights;   catch; headerAndExtraData2.weights   = []; end
 try headerAndExtraData2.magn        = headerAndExtraData.magn;      catch; headerAndExtraData2.magn      = []; end
+try headerAndExtraData2.phase       = headerAndExtraData.phase;     catch; headerAndExtraData2.phase     = []; end
 try headerAndExtraData2.mask_ref    = headerAndExtraData.mask_ref; 	catch; headerAndExtraData2.mask_ref  = []; end
 try headerAndExtraData2.initGuess   = headerAndExtraData.initGuess;	catch; headerAndExtraData2.initGuess = []; end
 try headerAndExtraData2.N_std       = headerAndExtraData.N_std;     catch; headerAndExtraData2.N_std     = []; end
