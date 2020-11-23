@@ -51,7 +51,7 @@ if isstruct(input)
     inputNifti = load_untouch_nii(input.nifti);
     a = sqrt(1 - inputNifti.hdr.hist.quatern_b^2 - inputNifti.hdr.hist.quatern_c^2 - inputNifti.hdr.hist.quatern_d^2);
     rotmat_nifti=qGetR([a, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
-    B0_dir = rotmat_nifti(3,:);
+    B0_dir = rotmat_nifti \ [0;0;1];
     
     % voxel size
     voxelSize = inputNifti.hdr.dime.pixdim(2:4);
@@ -74,7 +74,7 @@ else
         inputNifti = load_untouch_nii(fullfile(input,inputNiftiList(1).name));
         a = sqrt(1 - inputNifti.hdr.hist.quatern_b^2 - inputNifti.hdr.hist.quatern_c^2 - inputNifti.hdr.hist.quatern_d^2);
         rotmat_nifti=qGetR([a, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
-        B0_dir = rotmat_nifti(3,:);
+        B0_dir = rotmat_nifti \ [0;0;1];
 
         % voxel size
         voxelSize = inputNifti.hdr.dime.pixdim(2:4);
