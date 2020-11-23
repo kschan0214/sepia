@@ -200,7 +200,7 @@ if ~isempty(inputNiftiList)
     if ~isWeightLoad
         disp('No weights file is loaded.');
 %         fieldmapSD = ones(matrixSize) * 0.01;
-        weights = ones(matrixSize);
+%         weights = ones(matrixSize);
     end
     
     % store the header the NIfTI files, all following results will have
@@ -251,12 +251,12 @@ localField	= double(localField);
 maskFinal   = double(maskFinal);
 voxelSize   = double(voxelSize);
 matrixSize  = double(matrixSize);
-if exist('wmap','var'); weights                 = double(weights);	end
-if exist('magn','var'); headerAndExtraData.magn	= double(magn);   	end
+if exist('wmap','var'); headerAndExtraData.weights  = double(weights).* maskFinal;	end
+if exist('magn','var'); headerAndExtraData.magn     = double(magn);   	end
 
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weights
-headerAndExtraData.weights = weights .* maskFinal;
+% headerAndExtraData.weights = weights .* maskFinal;
 
 headerAndExtraData.b0dir  	= B0_dir;
 headerAndExtraData.b0     	= B0;

@@ -49,8 +49,9 @@ if isstruct(input)
     
     % B0 direction
     inputNifti = load_untouch_nii(input.nifti);
-    a=qGetR([0, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
-    B0_dir = -a(3,:);
+    a = sqrt(1 - inputNifti.hdr.hist.quatern_b^2 - inputNifti.hdr.hist.quatern_c^2 - inputNifti.hdr.hist.quatern_d^2);
+    rotmat_nifti=qGetR([a, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
+    B0_dir = rotmat_nifti(3,:);
     
     % voxel size
     voxelSize = inputNifti.hdr.dime.pixdim(2:4);
@@ -71,8 +72,9 @@ else
         %% Option 2: input is a directory containing nifti and TE files
         % B0 direction
         inputNifti = load_untouch_nii(fullfile(input,inputNiftiList(1).name));
-        a=qGetR([0, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
-        B0_dir = -a(3,:);
+        a = sqrt(1 - inputNifti.hdr.hist.quatern_b^2 - inputNifti.hdr.hist.quatern_c^2 - inputNifti.hdr.hist.quatern_d^2);
+        rotmat_nifti=qGetR([a, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
+        B0_dir = rotmat_nifti(3,:);
 
         % voxel size
         voxelSize = inputNifti.hdr.dime.pixdim(2:4);
