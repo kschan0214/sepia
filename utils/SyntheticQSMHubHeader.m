@@ -38,8 +38,9 @@ gyro = 42.57747892;
 
 if isempty(B0_dir)
     % get main field direction
-    a=qGetR([0, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
-    B0_dir = -a(3,:);
+    a = sqrt(1 - nii.hdr.hist.quatern_b^2 - nii.hdr.hist.quatern_c^2 - nii.hdr.hist.quatern_d^2);
+    rotmat_nifti=qGetR([a, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
+    B0_dir = rotmat_nifti \ [0;0;1];
 end
 if isempty(voxelSize)
     % get voxel size
