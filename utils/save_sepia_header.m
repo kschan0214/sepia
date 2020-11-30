@@ -112,6 +112,8 @@ else
         end
     else
         %% Option 3: input is a directory containing DICOM files
+        sepia_addpath('MEDI');
+        
         [~,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(input);
         
         B0 = CF/(gyro*1e6);
