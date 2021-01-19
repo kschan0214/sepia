@@ -23,7 +23,7 @@ function h = sepia_handle_panel_qsm_MEDI(hParent,h,position)
 %% set default values
 % defaultWeightGradient   = 1;
 defaultLambda           = 1000;
-defaultZeropad          = 0;
+defaultZeropad          = [0 0 0];
 defaultWeightData       = 1;
 defaultSMV              = 5;
 defaultLambda_csf       = 100;
@@ -64,7 +64,7 @@ h.qsm.panel.MEDI = uipanel(hParent,...
     % col 2, row 1
     % text|edit field pair: size of zero padding
     [h.qsm.MEDI.text.zeropad,h.qsm.MEDI.edit.zeropad] = sepia_construct_text_edit(...
-        panelParent,'Zeropad:',                 defaultZeropad,     [left(2) bottom(1) width height], wratio);
+        panelParent,'Zeropad (x,y,z):',         defaultZeropad,     [left(2) bottom(1) width height], wratio, true);
 
     % col 1, row 2
     % text|edit field pair: weighting of phase data
@@ -119,7 +119,7 @@ set(h.qsm.MEDI.text.percentage,	'Tooltip',tooltip.qsm.MEDI.percentage);
 set(h.qsm.MEDI.edit.lambda_csf,     'Callback', {@EditInputMinMax_Callback,defaultLambda_csf,       0,0});
 set(h.qsm.MEDI.edit.smv_radius,     'Callback', {@EditInputMinMax_Callback,defaultSMV,              0,0});
 set(h.qsm.MEDI.edit.weightData,     'Callback', {@EditInputMinMax_Callback,defaultWeightData,       1,0,1});
-set(h.qsm.MEDI.edit.zeropad,        'Callback', {@EditInputMinMax_Callback,defaultZeropad,          1,0});
+% set(h.qsm.MEDI.edit.zeropad,        'Callback', {@EditInputMinMax_Callback,defaultZeropad,          1,0});
 set(h.qsm.MEDI.edit.lambda,         'Callback', {@EditInputMinMax_Callback,defaultLambda,           0,0});
 set(h.qsm.MEDI.edit.percentage,     'Callback', {@EditInputMinMax_Callback,defaultPercentage,     	0,0,100});
 % set(h.qsm.MEDI.edit.weightGradient, 'Callback', {@EditInputMinMax_Callback,defaultWeightGradient,   0,0});

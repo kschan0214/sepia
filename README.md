@@ -24,9 +24,9 @@ SEPIA is designed to provide a platform for easy access to different QSM process
 ## Terms of use
 All the original codes and methods developed for **SEPIA** are under MIT license. You can check [the license file](https://github.com/kschan0214/Sepia/blob/master/LICENSE) for more information. For the terms of use of the toolboxes related to this work, their own license applied and please check the corresponding license file(s) in each toolbox for more information. 
 
-If you use SEPIA in your research, please cite the following abstract:
+If you use SEPIA in your research, please cite the following article:
 
-K. Chan and J.P. Marques, SEPIA - SuscEptibility mapping PIpeline tool for phAse images, Proc. 27th Annual Meeting of the ISMRM, Montreal, Canada, 2019.  
+[Chan, K.-S., Marques, J.P., 2021. SEPIA—Susceptibility mapping pipeline tool for phase images. Neuroimage 227, 117611.](https://doi.org/10.1016/j.neuroimage.2020.117611)  
 
 As well as any related papers in your processing pipeline. 
 

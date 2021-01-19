@@ -21,6 +21,7 @@
 % Date modified: 29 March 2019
 % Date modified: 5 June 2019
 % Date modified: 8 March 2020 (v0.8.0)
+% Date modified: 19 Jan 2020 (v0.8.1)
 %
 %
 function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
@@ -251,8 +252,8 @@ localField	= double(localField);
 maskFinal   = double(maskFinal);
 voxelSize   = double(voxelSize);
 matrixSize  = double(matrixSize);
-if exist('wmap','var'); headerAndExtraData.weights  = double(weights).* maskFinal;	end
-if exist('magn','var'); headerAndExtraData.magn     = double(magn);   	end
+if exist('weights','var');  headerAndExtraData.weights  = double(weights).* maskFinal;	end
+if exist('magn','var');     headerAndExtraData.magn     = double(magn);   	end
 
 % create weighting map based on final mask
 % for weighting map: higher SNR -> higher weights

@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date last modified:
+% Date modified: 19 Jan 2021
 %
 %
 function [chi] = Wrapper_QSM_MEDI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -102,7 +102,7 @@ end
 disp('The following parameters are being used...');
 disp(['Regularisation lambda	= ' num2str(lambda)]);
 disp(['Data mode                = ' num2str(wData)]);
-disp(['Zero padding             = ' num2str(pad)]);
+disp(['Zero padding (x,y,z)     = ' num2str(pad)]);
 disp(['Mask precentage (%)      = ' num2str(percentage)]);
 disp(['Is SMV?                  = ' num2str(isSMV)]);
 if isSMV
