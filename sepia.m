@@ -367,6 +367,7 @@ fprintf(fid,'mask_filename = [''%s''] ;\n\n',maskFullName);
 
 % general algorithm parameters
 fprintf(fid,'%% General algorithm parameters\n');
+fprintf(fid,'algorParam=struct();\n');
 fprintf(fid,'algorParam.general.isBET       = %i ;\n'	,get(h.dataIO.checkbox.brainExtraction, 'Value'));
 if get(h.dataIO.checkbox.brainExtraction, 'Value')
     fprintf(fid,'algorParam.general.fractional_threshold = %s ;\n'	,get(h.dataIO.edit.fractionalThres, 'String'));
@@ -451,24 +452,24 @@ fprintf(fid,'\nsepiaIO(input,output_basename,mask_filename,algorParam);\n');
 
 fclose(fid);
 
-% log command window display to a text file
-logFilename = [outputDir filesep 'run_sepia.log'];
-if exist(logFilename,'file') == 2
-    counter = 1;
-    while exist(logFilename,'file') == 2
-        suffix = ['_' num2str(counter)];
-        logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
-        counter = counter + 1;
-    end
-end
-diary(logFilename)
+% % log command window display to a text file
+% logFilename = [outputDir filesep 'run_sepia.log'];
+% if exist(logFilename,'file') == 2
+%     counter = 1;
+%     while exist(logFilename,'file') == 2
+%         suffix = ['_' num2str(counter)];
+%         logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
+%         counter = counter + 1;
+%     end
+% end
+% diary(logFilename)
 
 try
     % run process
     run(configFilename);
     
-    % turn off the log
-    diary off
+%     % turn off the log
+%     diary off
     
     % re-enable the pushbutton
     set(source,'Enable','on');
@@ -477,26 +478,26 @@ catch ME
     % re-enable the start button before displaying the error
     set(source,'Enable','on');
     
-    % close log file
-    disp('There was an error! Please check the command window/error message file for more information.');
-    diary off
+%     % close log file
+%     disp('There was an error! Please check the command window/error message file for more information.');
+%     diary off
     
-    % open a new text file for error message
-    errorMessageFilename = [outputDir filesep 'run_sepia.error'];
-    if exist(errorMessageFilename,'file') == 2
-        counter = 1;
-        while exist(errorMessageFilename,'file') == 2
-            suffix = ['_' num2str(counter)];
-            errorMessageFilename = [outputDir filesep 'run_sepia' suffix '.error'];
-            counter = counter + 1;
-        end
-    end
-    fid = fopen(errorMessageFilename,'w');
-    fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
-    fprintf(fid,'The message was:\n\n');
-    msgString = getReport(ME,'extended','hyperlinks','off');
-    fprintf(fid,'%s',msgString);
-    fclose(fid);
+%     % open a new text file for error message
+%     errorMessageFilename = [outputDir filesep 'run_sepia.error'];
+%     if exist(errorMessageFilename,'file') == 2
+%         counter = 1;
+%         while exist(errorMessageFilename,'file') == 2
+%             suffix = ['_' num2str(counter)];
+%             errorMessageFilename = [outputDir filesep 'run_sepia' suffix '.error'];
+%             counter = counter + 1;
+%         end
+%     end
+%     fid = fopen(errorMessageFilename,'w');
+%     fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
+%     fprintf(fid,'The message was:\n\n');
+%     msgString = getReport(ME,'extended','hyperlinks','off');
+%     fprintf(fid,'%s',msgString);
+%     fclose(fid);
     
     % rethrow the error message to command window
     rethrow(ME);

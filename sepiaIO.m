@@ -13,11 +13,42 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2020 (v0.8.0)
-% Date modified: 
+% Date modified: 19 Jan 2021 (v0.8.1)
 %
 %
 function sepiaIO(input,output,maskFullName,algorParam)
 
+%%% Step 1 %%%
+% 1.1: get and create output directory
+output_index    = strfind(output, filesep);
+outputDir       = output(1:output_index(end));
+% if the output directory does not exist then create the directory
+if exist(outputDir,'dir') ~= 7
+    mkdir(outputDir);
+end
+% move to output directory
+cd(outputDir)
+
+% 1.2 log command window display to a text file
+% use current time as unique identifier
+identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
+
+logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
+while exist(logFilename,'file') == 2
+    % update current time as unique identifier
+    identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
+    logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
+end
+diary(logFilename)
+
+% display the parent script
+fn = dbstack('-completenames');
+if length(fn) >=2 
+    fprintf('Running script: %s\n',fn(2).file);
+end
+
+%%% Step 2 %%%
+try 
 % check if the input algorithm parameters contain any specific tasks
 isUnwrapParam   =  isfield(algorParam,'unwrap');
 isBRFParam      =  isfield(algorParam,'bfr');
@@ -33,6 +64,7 @@ end
 % One-stop processing contains all task parameter
 isOneStop = and(and(isUnwrapParam,isBRFParam),isQSMParam);
 
+%%% Step 3 %%%
 % determine which pipeline the data will go
 if isOneStop
     % if algorParam contains all three task, then execute one-stop
@@ -59,4 +91,26 @@ else
             QSMMacroIOWrapper(input,output,maskFullName,algorParam);
         end
     end
+end
+
+% turn off the log
+diary off
+    
+catch ME
+    
+    % close log file
+    disp('There was an error! Please check the command window/error message file for more information.');
+    diary off
+    
+    % open a new text file for error message
+    errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
+    fid = fopen(errorMessageFilename,'w');
+    fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
+    fprintf(fid,'The message was:\n\n');
+    msgString = getReport(ME,'extended','hyperlinks','off');
+    fprintf(fid,'%s',msgString);
+    fclose(fid);
+    
+    % rethrow the error message to command window
+    rethrow(ME);
 end
