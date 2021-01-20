@@ -23,6 +23,7 @@
 % Date modified: 16 September 2018
 % Date modified: 29 March 2019
 % Date modified: 9 March 2020
+% Date modified: 20 Jan 2020 (v0.8.1)
 %
 %
 function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,algorParam)
@@ -33,14 +34,13 @@ sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';
-isInputDir = true;
 % make sure the input only load once (first one)
 isMagnLoad  = false;
 isPhaseLoad = false;
 
 %% Check output directory exist or not
-output_index = strfind(output, filesep);
-outputDir = output(1:output_index(end));
+output_index    = strfind(output, filesep);
+outputDir       = output(1:output_index(end));
 if ~isempty(output(output_index(end)+1:end))
     prefix = [output(output_index(end)+1:end) '_'];
 end
@@ -68,124 +68,106 @@ disp('Reading data...');
 if isstruct(input)
     % Option 1: input are files
     inputNiftiList = input;
-    isInputDir = false;
     
     % take the phase data directory as reference input directory 
     [inputDir,~,~] = fileparts(inputNiftiList(1).name);
 else
     % Option 2: input is a directory
     inputDir = input;
-    inputNiftiList = dir([inputDir '/*.nii*']);
+%     inputNiftiList = dir([inputDir '/*.nii*']);
+
+    % check and get filenames
+    inputNiftiList = struct();
+    filePattern = {'ph','mag','','header'}; % don't change the order
+    for  k = 1:length(filePattern)
+        if k ~= 3
+            % get filename
+            if k ~= 4   % NIFTI image input
+                [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
+            else        % SEPIA header
+                [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
+            end
+
+            % actions given the number of files detected
+            if numFiles == 1        % only one file -> get the name
+                fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
+                inputNiftiList(k).name = file.name;
+            elseif numFiles == 0     % no file -> fatal error
+                error(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+            else % multiple files -> fatal error
+                error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
+            end
+        else
+            inputNiftiList(k).name = '';    % third field is empty in this application
+        end
+    end
+    
 end
 
 % Step 2: load data
-if ~isempty(inputNiftiList)
+%%%%%%%%%% 2.1 phase data %%%%%%%%%%
+if ~isempty(inputNiftiList(1).name)
     
-    if ~isInputDir
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        disp('NIfTI input is being used.');
+    % load true value from NIfTI
+    fieldMap = load_nii_img_only([inputNiftiList(1).name]);
+    
+    disp('Phase data is loaded.')
+    
+    % check whether phase data contains DICOM values or wrapped
+    % phase value
+    if max(fieldMap(:))>4 || min(fieldMap(:))<-4
+        disp('Values of input phase map exceed range of [-pi,pi]. DICOM value is assumed.')
+        fprintf('Converting phase data from DICOM image value to radian unit...')
+        inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
+        fieldMap        = DICOM2Phase(inputPhaseNifti);
+        fprintf('Done.\n')
+
+        fprintf('Saving phase images in unit of radian...');
+        save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
+        fprintf('Done.\n')
         
-                        %%%%%%%%%% magnitude data %%%%%%%%%%
-        if ~isempty(inputNiftiList(2).name)
-            inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-            % make sure the data is multi-echo magnitude data
-            magn = double(inputMagnNifti.img);
-            isMagnLoad = true;
-            disp('Magnitude data is loaded.');
-            
-        else
-            error('Please specify a single-echo/multi-echo magnitude data.');
-        end
-                         %%%%%%%%%% phase data %%%%%%%%%%
-        if ~isempty(inputNiftiList(1).name)
-            inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
-            fieldMap = double(inputPhaseNifti.img);
-            % check whether phase data contains DICOM values or wrapped
-            % phase value
-            if max(fieldMap(:))>1000
-                disp('Converting phase data from DICOM image value to radian unit...')
-                fieldMap = DICOM2Phase(inputPhaseNifti);
-
-                disp('Saving phase images in unit of radian...');
-                save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
-
-            end
-            isPhaseLoad = true;
-            disp('Phase data is loaded.')
-        else
-            error('Please specify a single-echo/multi-echo phase data.');
-        end
-                        %%%%%%%%%% sepia header %%%%%%%%%%
-        if ~isempty(inputNiftiList(4).name)
-            load([inputNiftiList(4).name]);
-            disp('Header data is loaded.');
-        else
-            error('Please specify a Sepia header.');
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    else
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % validate indput directory files
-        disp('Directory input is being used.');
-        fprintf('Validating filenames in the directory....');
-        CheckFileName(inputNiftiList);
-        fprintf('Filenames are valid.\n');
-        
-        % loop all NIfTI files in the directory for magnitude and phase files
-        for klist = 1:length(inputNiftiList)
-                            %%%%%%%%%% magnitude data %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'mag') && ~isMagnLoad
-                inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                % only load multi-echo magnitude data
-                magn = double(inputMagnNifti.img);
-                isMagnLoad = true;
-                disp('Magnitude data is loaded.')
-            end
-
-                            %%%%%%%%%% phase data %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'ph') && ~isPhaseLoad
-                inputPhaseNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                fieldMap = double(inputPhaseNifti.img);
-
-                % if input fieldmap is directly converted from nifti converter
-                % then converts the fieldmap to unit of radian and save to output dir
-                if max(fieldMap(:))>1000
-                    disp('Converting phase data from DICOM image value to radian unit ...')
-                    fieldMap = DICOM2Phase(inputPhaseNifti);
-
-                    fprintf('Saving phase images in unit of radian...');
-                    save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
-                    fprintf('Done!\n');
-
-                end
-                isPhaseLoad = true;
-                disp('Phase data is loaded.')
-            end
-        end
-
-        %%%%%%%%%% sepia header file %%%%%%%%%%
-        if ~isempty(dir([inputDir '/*header*']))
-            % load header
-            headerList = dir([inputDir '/*header*']);
-            load([inputDir filesep headerList(1).name]);
-
-            disp('Header data is loaded.');
-
-        else
-            error('Please specify a header required by Sepia.');
-
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        clearvars inputPhaseNifti
     end
     
-    % store the header the NIfTI files, all following results will have
-    % the same header
-    outputNiftiTemplate = inputMagnNifti;
+    isPhaseLoad = true;
     
+else
+    error('Please specify a single-echo/multi-echo phase data.');
+end
+
+%%%%%%%%%% magnitude data %%%%%%%%%%
+if ~isempty(inputNiftiList(2).name)
+    inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
+    % load true value from NIfTI
+    magn = load_nii_img_only([inputNiftiList(2).name]);
+
+    isMagnLoad = true;
+    
+    disp('Magnitude data is loaded.');
+else
+    error('Please specify a single-echo/multi-echo magnitude data.');
+end
+
+%%%%%%%%%% SEPIA header %%%%%%%%%%
+if ~isempty(inputNiftiList(4).name)
+    load([inputNiftiList(4).name]);
+    disp('Header data is loaded.');
+else
+    error('Please specify a header required by SEPIA.');
+end
+
+% store the header of the NIfTI files, all following results will have
+% the same header
+outputNiftiTemplate = inputMagnNifti;
+clearvars inputMagnNifti
+
+% In case some parameters are missing in the header file
+if ~exist('matrixSize','var')
+    matrixSize = size(magn);
+    matrixSize = matrixSize(1:3);
+end
+if ~exist('voxelSize','var')
+    voxelSize = outputNiftiTemplate.hdr.dime.pixdim(2:4);
 end
 
 % validate loaded input
@@ -211,15 +193,24 @@ disp(['Number of echoes       = ' num2str(length(TE))]);
 
 %% get brain mask
 mask = [];
-maskList = dir([inputDir '/*mask*nii*']);
+maskList = dir(fullfile(inputDir,'*mask*nii*'));
 if ~isempty(maskFullName)
     % Option 1: mask file is provided
     mask = load_nii_img_only(maskFullName) > 0;
     
 elseif ~isempty(maskList) 
     % Option 2: input directory contains NIfTI file with name '*mask*'
-    inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
-	mask = inputMaskNii.img > 0;
+    fprintf('A mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
+    disp('Trying to load the file as signal mask');
+    mask = load_nii_img_only(fullfile(inputDir, maskList(1).name)) > 0;
+    
+    % make sure the mask has the same dimension as other input data
+    if ~isequal(size(mask),matrixSize)
+        disp('The file does not have the same dimension as other images.')
+        mask = [];
+    end
+    
+    disp('Mask file is loaded.');
     
 end
 
@@ -351,41 +342,6 @@ end
 fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
-
-end
-
-%% Validate nifti filenames with directory input
-function CheckFileName(inputNiftiList)
-% no. of files with particular name that has been read
-numMagFile      = 0;
-numPhaseFile    = 0;
-
-    % go through all files in the directory
-    for klist = 1:length(inputNiftiList)
-        if ContainName(lower(inputNiftiList(klist).name),'mag')
-            numMagFile = numMagFile + 1;
-        end
-        if ContainName(lower(inputNiftiList(klist).name),'ph')
-            numPhaseFile = numPhaseFile + 1;
-        end
-    end
-    
-    % bring the error message if multiple files with the same string are
-    % detected
-    if numMagFile > 1
-        error('Multiple files with name containing string ''mag'' are detected. Please make sure only the magnitude data contains string ''mag''');
-    end
-    if numPhaseFile > 1
-        error('Multiple files with name containing string ''ph'' are detected. Please make sure only the phase data contains string ''ph''');
-    end
-    
-    % bring the error message if no file is detected
-    if numMagFile == 0
-        error('No file with name containing string ''mag'' is detected. Please make sure the input directory contains a magnitude data');
-    end
-    if numPhaseFile == 0
-        error('No file with name containing string ''ph'' is detected. Please make sure the input directory contains a phase data');
-    end
 
 end
 

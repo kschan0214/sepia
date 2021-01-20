@@ -22,6 +22,7 @@
 % Date modified: 26 August 2018
 % Date modified: 29 March 2019
 % Date modified: 8 March 2020 (v0.8.0)
+% Date modified: 20 Jan 2020 (v0.8.1)
 %
 %
 function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,algorParam)
@@ -31,14 +32,13 @@ sepia_addpath;
 %% define variables
 prefix = 'sepia_';
 
-isInputDir = true;
 % make sure the input only load once (first one)
 isTotalFieldLoad = false;
 isFieldmapSDLoad = false;
 
 %% Check if output directory exists 
-output_index = strfind(output, filesep);
-outputDir = output(1:output_index(end));
+output_index    = strfind(output, filesep);
+outputDir       = output(1:output_index(end));
 % get prefix
 if ~isempty(output(output_index(end)+1:end))
     prefix = [output(output_index(end)+1:end) '_'];
@@ -62,118 +62,90 @@ if isstruct(input)
 else
     % Option 2: input is a directory
     inputDir = input;
-    inputNiftiList = dir([inputDir '/*.nii*']);
+%     inputNiftiList = dir([inputDir '/*.nii*']);
+    
+    % check and get filenames
+    inputNiftiList = struct();
+    filePattern = {'total-field','','noise-sd','header'}; % don't change the order
+    for  k = 1:length(filePattern)
+        if k ~= 2
+            % get filename
+            if k ~= 4   % NIFTI image input
+                [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
+            else        % SEPIA header
+                [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
+            end
+
+            % actions given the number of files detected
+            if numFiles == 1        % only one file -> get the name
+                fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
+                inputNiftiList(k).name = file.name;
+            elseif numFiles == 0     % no file -> fatal error
+                if k ~= 3 % essential file 'total-field'
+                    error(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+                else
+                    disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+                end
+            else % multiple files -> fatal error
+                error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
+            end
+        else
+            inputNiftiList(k).name = '';
+        end
+    end
+    
 end
 
 % Step 2: load data
-if ~isempty(inputNiftiList)
+%%%%%%%%%% Total field map %%%%%%%%%%
+if ~isempty(inputNiftiList(1).name)
     
-    if ~isInputDir
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        disp('NIfTI input is being used.');
-        
-                        %%%%%%%%%% Total field map %%%%%%%%%%
-        if ~isempty(inputNiftiList(1).name)
-            inputTotalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
-            % load true value from NIfTI
-            totalField = load_nii_img_only([inputNiftiList(1).name]);
-%             totalField = double(inputTotalFieldNifti.img);
-            isTotalFieldLoad = true;
-            
-            disp('Total field map is loaded.')
-        else
-            error('Please specify a 3D total field map.');
-        end
-        
-                         %%%%%%%%%% Fieldmapsd data %%%%%%%%%%
-        if ~isempty(inputNiftiList(3).name)
-%             inputFieldMapSDNifti = load_untouch_nii([inputNiftiList(3).name]);
-            % load true value from NIfTI
-            fieldmapSD = load_nii_img_only([inputNiftiList(3).name]);
-%             fieldmapSD = double(inputFieldMapSDNifti.img);
-            isFieldmapSDLoad = true;
-            
-            disp('Noise SD data is loaded.')
-        else
-            disp('No field map standard deviation data is loaded.');
-        end
-        
-                        %%%%%%%%%% sepia header %%%%%%%%%%
-        if ~isempty(inputNiftiList(4).name)
-            load([inputNiftiList(4).name]);
-            disp('Header data is loaded.');
-        else
-            error('Please specify a header required by SEPIA.');
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    else
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % validate indput directory files
-        disp('Directory input is being used.');
-        fprintf('Validating filenames in the directory....');
-        CheckFileName(inputNiftiList);
-        fprintf('Filenames are valid.\n');
-        
-        % loop all NIfTI files in the directory for total field map and fieldmap SD (optional)
-        for klist = 1:length(inputNiftiList)
-
-                        %%%%%%%%%% Total field map %%%%%%%%%%
-            if ContainName(inputNiftiList(klist).name,'total-field') && ~isTotalFieldLoad
-                inputTotalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                % load true value from NIfTI
-                totalField = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
-%                 totalField = double(inputTotalFieldNifti.img);
-                isTotalFieldLoad = true;
-
-                disp('Total field map is loaded.')
-            end
-
-                         %%%%%%%%%% Fieldmapsd data %%%%%%%%%%
-            if ContainName(inputNiftiList(klist).name,'noise-sd') && ~isFieldmapSDLoad
-%                 inputFieldMapSDNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                % load true value from NIfTI
-                fieldmapSD = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
-%                 fieldmapSD = double(inputFieldMapSDNifti.img);
-                isFieldmapSDLoad = true;
-
-                disp('Noise SD data is loaded.')
-            end
-        end
-
-        % if no files matched the name format then displays error message
-        if ~isTotalFieldLoad
-            error('No total field map is loaded. Please make sure the input directory contains files with name *total-field*');
-        end
-        if ~isFieldmapSDLoad
-            disp('No noise standard deviation data is loaded.');
-        end
-
-        %%%%%%%%%% SEPIA header file %%%%%%%%%%
-        if ~isempty(dir([inputDir '/*header*']))
-            % load header
-            headerList = dir([inputDir '/*header*']);
-            load([inputDir filesep headerList(1).name]);
-
-            disp('Header data is loaded.');
-
-        else
-            error('Please specify a header required by SEPIA.');
-        end
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    end
+    inputTotalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
+    % load true value from NIfTI
+    totalField = load_nii_img_only(inputNiftiList(1).name);
     
-    % store the header the NIfTI files, all following results will have
-    % the same header
-    outputNiftiTemplate = inputTotalFieldNifti;
-    
+    isTotalFieldLoad = true;
+
+    disp('Total field map is loaded.')
 else
-    error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
+    error('Please specify a 3D total field map.');
 end
+
+%%%%%%%%%% Fieldmapsd data %%%%%%%%%%
+if ~isempty(inputNiftiList(3).name)
+    
+    % load true value from NIfTI
+    fieldmapSD = load_nii_img_only([inputNiftiList(3).name]);
+    
+    isFieldmapSDLoad = true;
+
+    disp('Noise SD data is loaded.')
+else
+    disp('No field map standard deviation data is loaded.');
+end
+
+%%%%%%%%%% SEPIA header %%%%%%%%%%
+if ~isempty(inputNiftiList(4).name)
+    load([inputNiftiList(4).name]);
+    disp('Header data is loaded.');
+else
+    error('Please specify a header required by SEPIA.');
+end
+
+% store the header of the NIfTI files, all following results will have
+% the same header
+outputNiftiTemplate = inputTotalFieldNifti;
+clearvars inputTotalFieldNifti
+
+% In case some parameters are missing in the header file
+if ~exist('matrixSize','var')
+    matrixSize = size(magn);
+    matrixSize = matrixSize(1:3);
+end
+if ~exist('voxelSize','var')
+    voxelSize = outputNiftiTemplate.hdr.dime.pixdim(2:4);
+end
+
 
 % make sure the L2 norm of B0 direction = 1
 B0_dir = B0_dir ./ norm(B0_dir);
@@ -188,7 +160,10 @@ disp(['B0 direction(x,y,z)      =  ' num2str(B0_dir(:)')]);
 disp(['Field strength(T)        =  ' num2str(B0)]);
 
 %% get brain mask
-maskList = dir([inputDir '/*mask*']);
+maskList = dir([inputDir '/*mask-local_field*']);
+if isempty(maskList)
+    maskList = dir([inputDir '/*mask*']);
+end
 
 if ~isempty(maskFullName)
     % Option 1: mask file is provided
@@ -196,8 +171,18 @@ if ~isempty(maskFullName)
     
 elseif ~isempty(maskList) 
     % Option 2: input directory contains NIfTI file with name '*mask*'
-    inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
-	mask = inputMaskNii.img > 0;
+    fprintf('A mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
+    disp('Trying to load the file as signal mask');
+    mask = load_nii_img_only(fullfile(inputDir, maskList(1).name)) > 0;
+    
+    % make sure the mask has the same dimension as other input data
+    if ~isequal(size(mask),matrixSize)
+        disp('The file does not have the same dimension as other images.')
+        % display error message if nothing is found
+        error('No mask file is found. Please specify your mask file or put it in the input directory.');
+    end
+    
+    disp('Mask file is loaded.');
     
 else
     % display error message if nothing is found

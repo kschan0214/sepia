@@ -21,7 +21,7 @@
 % Date modified: 29 March 2019
 % Date modified: 5 June 2019
 % Date modified: 8 March 2020 (v0.8.0)
-% Date modified: 19 Jan 2020 (v0.8.1)
+% Date modified: 21 Jan 2020 (v0.8.1)
 %
 %
 function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
@@ -64,153 +64,104 @@ if isstruct(input)
 else
     % Option 2: input is a directory
     inputDir = input;
-    inputNiftiList = dir([inputDir '/*.nii*']);
+%     inputNiftiList = dir([inputDir '/*.nii*']);
+    % check and get filenames
+    inputNiftiList = struct();
+    filePattern = {'local-field','mag','weights','header'}; % don't change the order
+    for  k = 1:length(filePattern)
+        % get filename
+        if k ~= 4   % NIFTI image input
+            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
+        else        % SEPIA header
+            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
+        end
+        
+        % actions given the number of files detected
+        if numFiles == 1        % only one file -> get the name
+            fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
+            inputNiftiList(k).name = file.name;
+        elseif numFiles == 0     % no file -> fatal error
+            if k ~= 2 && k ~= 3 % essential file 'local-field' 
+                error(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+            else
+                disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+            end
+        else % multiple files -> fatal error
+            error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
+        end
+    end
 end
 
 % Step 2: load data
-if ~isempty(inputNiftiList)
+%%%%%%%%%% Local field map %%%%%%%%%% 
+if ~isempty(inputNiftiList(1).name)
+    inputLocalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
+    % load true value from NIfTI
+    localField = load_nii_img_only([inputNiftiList(1).name]);
     
-    if ~isInputDir
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%% Pathway 1: Input are NIfTI files %%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        disp('NIfTI input is being used.');
-        
-                        %%%%%%%%%% Local field map %%%%%%%%%% 
-        if ~isempty(inputNiftiList(1).name)
-            inputLocalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
-            % load true value from NIfTI
-            localField = load_nii_img_only([inputNiftiList(1).name]);
-%             localField = double(inputLocalFieldNifti.img);
-            isLocalFieldLoad = true;
-            
-            disp('Local field map is loaded.')
-        else
-            error('Please specify a 3D local field map.');
-        end
-        
-                        %%%%%%%%%% magnitude data %%%%%%%%%%
-        if ~isempty(inputNiftiList(2).name)
-%             inputMagnNifti = load_untouch_nii([inputNiftiList(2).name]);
-            % load true value from NIfTI
-            magn = load_nii_img_only([inputNiftiList(2).name]);
-%             magn = double(inputMagnNifti.img);
-            isMagnLoad = true;
-            disp('Magnitude data is loaded.');
-        else
-            disp('No magnitude data is loaded.');
-            magn = ones(size(localField));
-        end
-        
-                        %%%%%%%%%% weights map %%%%%%%%%%
-        if ~isempty(inputNiftiList(3).name)
-%             inputWeightNifti = load_untouch_nii([inputNiftiList(3).name]);
-            % load true value from NIfTI
-            weights = load_nii_img_only([inputNiftiList(3).name]);
-%             weights = double(inputWeightNifti.img);
-            % check whether phase data contains DICOM values or wrapped
-            if size(weights,4) > 1
-                error('Please specify a 3D weight data.');
-            end
-            isWeightLoad = true;
-            disp('Weights data is loaded');
-        else
-            disp('Default weighting method will be used for QSM.');
-        end
-        
-                        %%%%%%%%%% qsm hub header %%%%%%%%%%
-        if ~isempty(inputNiftiList(4).name)
-            load([inputNiftiList(4).name]);
-            disp('Header data is loaded.');
-        else
-            error('Please specify a header required by SEPIA.');
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    else
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%% Pathway 2: Input is a directory with NIfTI %%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % validate indput directory files
-        disp('Directory input is being used.');
-        fprintf('Validating filenames in the directory....');
-        CheckFileName(inputNiftiList);
-        fprintf('Filenames are valid.\n');
-        
-        % loop all NIfTI files in the directory for magnitude,localField and fieldmapSD
-        for klist = 1:length(inputNiftiList)
+    isLocalFieldLoad = true;
 
-                        %%%%%%%%%% Local field map %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'local-field') && ~isLocalFieldLoad
-                inputLocalFieldNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                % load true value from NIfTI
-                localField = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
-%                 localField = double(inputLocalFieldNifti.img);
-                isLocalFieldLoad = true;
-                disp('Local field map is loaded.')
-            end
-
-                        %%%%%%%%%% magnitude data %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'mag') && ~ContainName(lower(inputNiftiList(klist).name),'brain') && ~isMagnLoad
-%                 inputMagnNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                % load true value from NIfTI
-                magn = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
-                isMagnLoad = true;
-%                 magn = double(inputMagnNifti.img);
-                disp('Magnitude data is loaded.')
-            end
-
-                        %%%%%%%%%% weights map %%%%%%%%%%
-            if ContainName(lower(inputNiftiList(klist).name),'weights') && ~isWeightLoad
-%                 inputWeightNifti = load_untouch_nii([inputDir filesep inputNiftiList(klist).name]);
-                % load true value from NIfTI
-                weights = load_nii_img_only([inputDir filesep inputNiftiList(klist).name]);
-%                 weights = double(inputWeightNifti.img);
-                isWeightLoad = true;
-                disp('Weights data is loaded.')
-            end
-
-        end
-
-        % if no files matched the name format then displays error message
-        if ~isLocalFieldLoad
-            error('No local field map is loaded. Please make sure the input directory contains files with name *localfield*');
-        end
-
-                    %%%%%%%%%% qsm hub header file %%%%%%%%%%
-        if ~isempty(dir([inputDir '/*header*']))
-            % load header
-            headerList = dir([inputDir '/*header*']);
-            load([inputDir filesep headerList(1).name]);
-
-            disp('Header data is loaded.');
-
-        else
-            error('Please specify a header required by Sepia.');
-        end
-
-        % if no magnitude found then creates one with all voxels have the same value
-        if ~isMagnLoad && strcmpi(QSM_method,'medi_l1')
-            error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
-        elseif ~isMagnLoad
-            disp('No magnitude data is loaded.');
-            magn = ones(matrixSize,'like',matrixSize);
-        end
-    end
-    
-    % if no fieldmapSD found then creates one with all voxels have the same value
-    if ~isWeightLoad
-        disp('No weights file is loaded.');
-%         fieldmapSD = ones(matrixSize) * 0.01;
-%         weights = ones(matrixSize);
-    end
-    
-    % store the header the NIfTI files, all following results will have
-    % the same header
-    outputNiftiTemplate = inputLocalFieldNifti;
-    
+    disp('Local field map is loaded.')
 else
-    error('This standalone only reads NIfTI format input data (*.nii or *.nii.gz).');
+    error('Please specify a 3D local field map.');
 end
+%%%%%%%%%% magnitude data %%%%%%%%%%
+if ~isempty(inputNiftiList(2).name)
+    
+    % load true value from NIfTI
+    magn = load_nii_img_only([inputNiftiList(2).name]);
+%             magn = double(inputMagnNifti.img);
+    isMagnLoad = true;
+    disp('Magnitude data is loaded.');
+else
+    disp('No magnitude data is loaded.');
+    magn = ones(size(localField));
+end
+%%%%%%%%%% weights map %%%%%%%%%%
+if ~isempty(inputNiftiList(3).name)
+    
+    % load true value from NIfTI
+    weights = load_nii_img_only([inputNiftiList(3).name]);
+    
+    % check whether phase data contains DICOM values or wrapped
+    if size(weights,4) > 1
+        error('Input weighting map is 4D. Please specify a 3D weight data.');
+    end
+    isWeightLoad = true;
+    disp('Weights data is loaded');
+else
+    disp('Default weighting method will be used for QSM.');
+end
+%%%%%%%%%% SEPIA header %%%%%%%%%%
+if ~isempty(inputNiftiList(4).name)
+    load([inputNiftiList(4).name]);
+    disp('Header data is loaded.');
+else
+    error('Please specify a header required by SEPIA.');
+end
+
+% if no magnitude is loaded and MEDI is chosen -> fatal error
+if ~isMagnLoad && strcmpi(algorParam.qsm.method,'MEDI')
+    error('MEDI requires magnitude data. Please put the magnitude multi-echo data to input directory or use other algorithm');
+end
+if ~isWeightLoad && strcmpi(algorParam.qsm.method,'MEDI')
+    error('MEDI requires a weighting map. Please put a (SNR) weighting map to input directory or use other algorithm');
+end
+
+% store the header the NIfTI files, all following results will have
+% the same header
+outputNiftiTemplate = inputLocalFieldNifti;
+clearvars inputLocalFieldNifti
+
+% In case some parameters are missing in the header file
+if ~exist('matrixSize','var')
+    matrixSize = size(magn);
+    matrixSize = matrixSize(1:3);
+end
+if ~exist('voxelSize','var')
+    voxelSize = outputNiftiTemplate.hdr.dime.pixdim(2:4);
+end
+
 
 % make sure the L2 norm of B0 direction = 1
 B0_dir = B0_dir ./ norm(B0_dir);
@@ -226,10 +177,10 @@ disp(['Field strength(T)        =  ' num2str(B0)]);
 
 %% get brain mask
 % look for qsm mask first
-maskList = dir([inputDir '/*mask-qsm*']);
+maskList = dir(fullfile(inputDir, '*mask-qsm*'));
 % if no final mask then just look for normal mask
 if isempty(maskList)
-    maskList = dir([inputDir '/*mask*']);
+    maskList = dir(fullfile(inputDir, '*mask*'));
 end
 
 if ~isempty(maskFullName)
@@ -238,8 +189,18 @@ if ~isempty(maskFullName)
     
 elseif ~isempty(maskList) 
     % Option 2: input directory contains NIfTI file with name '*mask*'
-    inputMaskNii = load_untouch_nii([inputDir filesep maskList(1).name]);
-	maskFinal = inputMaskNii.img > 0;
+    fprintf('A mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
+    disp('Trying to load the file as signal mask');
+    mask = load_nii_img_only(fullfile(inputDir, maskList(1).name)) > 0;
+    
+    % make sure the mask has the same dimension as other input data
+    if ~isequal(size(mask),matrixSize)
+        disp('The file does not have the same dimension as other images.')
+        % display error message if nothing is found
+        error('No mask file is loaded. Pleasee specific your mask file or put it in the input directory.');
+    end
+    
+    disp('Mask file is loaded.');
     
 else
     % display error message if nothing is found

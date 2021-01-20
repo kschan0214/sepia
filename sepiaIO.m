@@ -13,12 +13,13 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 29 June 2020 (v0.8.0)
-% Date modified: 19 Jan 2021 (v0.8.1)
+% Date modified: 21 Jan 2021 (v0.8.1)
 %
 %
 function sepiaIO(input,output,maskFullName,algorParam)
 
 %%% Step 1 %%%
+currDir = pwd;
 % 1.1: get and create output directory
 output_index    = strfind(output, filesep);
 outputDir       = output(1:output_index(end));
@@ -95,12 +96,16 @@ end
 
 % turn off the log
 diary off
+% move back to original directory
+cd(currDir)
     
 catch ME
     
     % close log file
     disp('There was an error! Please check the command window/error message file for more information.');
     diary off
+    % move back to original directory
+    cd(currDir)
     
     % open a new text file for error message
     errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
