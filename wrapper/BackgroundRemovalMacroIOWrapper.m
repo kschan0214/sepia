@@ -22,12 +22,14 @@
 % Date modified: 26 August 2018
 % Date modified: 29 March 2019
 % Date modified: 8 March 2020 (v0.8.0)
-% Date modified: 20 Jan 2020 (v0.8.1)
+% Date modified: 21 Jan 2020 (v0.8.1)
 %
 %
 function [localField,maskFinal] = BackgroundRemovalMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath;
+
+sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';
@@ -48,21 +50,29 @@ if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
 
-%% Read input
-disp('Reading data...');
+% display output info
+fprintf('Output directory       : %s\n',outputDir);
+fprintf('Output filename prefix : %s\n',prefix);
 
-% Step 1: check input for nifti files first
+%% Setting up Input
+disp('---------');
+disp('Load data');
+disp('---------');
+
+%%%%%% Step 1: get all required filenames
 if isstruct(input)
+    
     % Option 1: input are files
     inputNiftiList = input;
-    isInputDir = false;
     
     % take the total field map directory as reference input directory 
     [inputDir,~,~] = fileparts(inputNiftiList(1).name);
+    
 else
+    
     % Option 2: input is a directory
+    disp('Searching input directory...');
     inputDir = input;
-%     inputNiftiList = dir([inputDir '/*.nii*']);
     
     % check and get filenames
     inputNiftiList = struct();
@@ -78,16 +88,22 @@ else
 
             % actions given the number of files detected
             if numFiles == 1        % only one file -> get the name
+                
                 fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
                 inputNiftiList(k).name = file.name;
-            elseif numFiles == 0     % no file -> fatal error
+                
+            elseif numFiles == 0     % no file -> error
+                
                 if k ~= 3 % essential file 'total-field'
                     error(['No file with name containing string ''' filePattern{k} ''' is detected.']);
                 else
                     disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
                 end
+                
             else % multiple files -> fatal error
+                
                 error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
+                
             end
         else
             inputNiftiList(k).name = '';
@@ -96,38 +112,39 @@ else
     
 end
 
-% Step 2: load data
-%%%%%%%%%% Total field map %%%%%%%%%%
+%%%%%% Step 2: load data
+% 2.1 Total field map 
 if ~isempty(inputNiftiList(1).name)
     
+    % load nifti structure for output template
     inputTotalFieldNifti = load_untouch_nii([inputNiftiList(1).name]);
     % load true value from NIfTI
     totalField = load_nii_img_only(inputNiftiList(1).name);
-    
     isTotalFieldLoad = true;
-
     disp('Total field map is loaded.')
+    
 else
     error('Please specify a 3D total field map.');
 end
 
-%%%%%%%%%% Fieldmapsd data %%%%%%%%%%
+% 2.2 Fieldmapsd data 
 if ~isempty(inputNiftiList(3).name)
     
     % load true value from NIfTI
     fieldmapSD = load_nii_img_only([inputNiftiList(3).name]);
-    
     isFieldmapSDLoad = true;
-
-    disp('Noise SD data is loaded.')
+    disp('Field map standard deviation (noise SD) data is loaded.')
+    
 else
     disp('No field map standard deviation data is loaded.');
 end
 
-%%%%%%%%%% SEPIA header %%%%%%%%%%
+%2.3 SEPIA header
 if ~isempty(inputNiftiList(4).name)
+    
     load([inputNiftiList(4).name]);
     disp('Header data is loaded.');
+    
 else
     error('Please specify a header required by SEPIA.');
 end
@@ -135,69 +152,91 @@ end
 % store the header of the NIfTI files, all following results will have
 % the same header
 outputNiftiTemplate = inputTotalFieldNifti;
-clearvars inputTotalFieldNifti
 
-% In case some parameters are missing in the header file
-if ~exist('matrixSize','var')
-    matrixSize = size(magn);
-    matrixSize = matrixSize(1:3);
-end
-if ~exist('voxelSize','var')
-    voxelSize = outputNiftiTemplate.hdr.dime.pixdim(2:4);
-end
+%%%%%% Step 3: validate input
+% 3.1 Validate header information
+validate_sepia_header;
 
-
-% make sure the L2 norm of B0 direction = 1
-B0_dir = B0_dir ./ norm(B0_dir);
+% 3.2 Validate NIfTI input
+disp('Validating input NIfTI files...')
+% make sure the dimension of input data is consistent
+check_input_dimension(totalField,matrixSize,TE);
+if exist('fieldmapSD','var'); check_input_dimension(fieldmapSD,matrixSize,TE); end
+disp('Input NIfTI files are valid.')
 
 % display some header info
 disp('----------------------');
-disp('Basic Data information');
+disp('Basic data information');
 disp('----------------------');
-disp(['Voxel size(x,y,z mm^3)   =  ' num2str(voxelSize(1)) 'x' num2str(voxelSize(2)) 'x' num2str(voxelSize(3))]);
-disp(['matrix size(x,y,z)       =  ' num2str(matrixSize(1)) 'x' num2str(matrixSize(2)) 'x' num2str(matrixSize(3))]);
-disp(['B0 direction(x,y,z)      =  ' num2str(B0_dir(:)')]);
-disp(['Field strength(T)        =  ' num2str(B0)]);
+fprintf('Voxel size(x,y,z)   = %s mm x %s mm x %s mm\n' ,num2str(voxelSize(1)),num2str(voxelSize(2)),num2str(voxelSize(3)));
+fprintf('Matrix size(x,y,z)  = %s x %s x %s\n'          ,num2str(matrixSize(1)),num2str(matrixSize(2)),num2str(matrixSize(3)));
+fprintf('B0 direction(x,y,z) = [%s; %s; %s]\n'          ,num2str(B0_dir(1)),num2str(B0_dir(2)),num2str(B0_dir(3)));
+fprintf('Field strength      = %s T\n'                  ,num2str(B0));
+fprintf('Number of echoes    = %s\n'                    ,num2str(length(TE)));
+fprintf('TE1/dTE             = %s/%s ms\n'              ,num2str(TE(1)*1e3),num2str(delta_TE*1e3));
+
+% ensure variables are double
+totalField  = double(totalField);
+voxelSize   = double(voxelSize);
+matrixSize  = double(matrixSize);
+if exist('fieldmapSD','var'); fieldmapSD = double(fieldmapSD); end
+
+%%%%%% Step 5: store some data to headerAndExtraData
+% header
+headerAndExtraData.b0           = B0;
+headerAndExtraData.b0dir        = B0_dir;
+headerAndExtraData.te           = TE;
+headerAndExtraData.delta_TE     = delta_TE;
+headerAndExtraData.CF           = CF;
+headerAndExtraData.voxelSize    = voxelSize;
+headerAndExtraData.matrixSize   = matrixSize;
+
+if exist('fieldmapSD','var'); headerAndExtraData.N_std = fieldmapSD; end
+
+clearvars inputTotalFieldNifti
 
 %% get brain mask
-maskList = dir([inputDir '/*mask-local_field*']);
+disp('-----------');
+disp('Signal mask');
+disp('-----------');
+
+% check if there is any mask specifically for BFR first
+maskList = dir(fullfile(inputDir,'*mask-local_field*nii*'));
+% if not then look for a general mask
 if isempty(maskList)
-    maskList = dir([inputDir '/*mask*']);
+    maskList = dir(fullfile(inputDir,'*mask*nii*'));
 end
 
-if ~isempty(maskFullName)
-    % Option 1: mask file is provided
-    mask = load_nii_img_only(maskFullName) > 0;
+% Scenario: No specified mask file + there is a file called mask in the input directory
+if isempty(maskFullName) && ~isempty(maskList)
     
-elseif ~isempty(maskList) 
-    % Option 2: input directory contains NIfTI file with name '*mask*'
-    fprintf('A mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
+    fprintf('No mask file is specified but a mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
     disp('Trying to load the file as signal mask');
-    mask = load_nii_img_only(fullfile(inputDir, maskList(1).name)) > 0;
+    
+    maskFullName = fullfile(inputDir, maskList(1).name);
+end
+
+% Scenario: User provided a mask file or above scenario was satified
+if ~isempty(maskFullName)
+    
+    % load mask file
+    mask = load_nii_img_only(maskFullName) > 0;
     
     % make sure the mask has the same dimension as other input data
     if ~isequal(size(mask),matrixSize)
         disp('The file does not have the same dimension as other images.')
-        % display error message if nothing is found
-        error('No mask file is found. Please specify your mask file or put it in the input directory.');
+        % display error message 
+        error('No mask file is loaded. Please specify a valid mask file or put it in the input directory.');
+    else
+        disp('Mask file is loaded.');
     end
-    
-    disp('Mask file is loaded.');
     
 else
     % display error message if nothing is found
     error('No mask file is found. Please specify your mask file or put it in the input directory.');
-    
 end
 
-%% make sure all variables are double
-totalField  = double(totalField);
-mask       	= double(mask);
-voxelSize   = double(voxelSize);
-matrixSize  = double(matrixSize);
-
-headerAndExtraData = [];
-if exist('fieldmapSD','var'); headerAndExtraData.N_std = double(fieldmapSD); end
+mask = double(mask);
 
 %% Background field removal
 % core of background field removal
@@ -208,7 +247,6 @@ maskFinal = localField ~= 0;
   
 % save results
 fprintf('Saving local field map...');
-
 save_nii_quick(outputNiftiTemplate,localField, [outputDir filesep prefix 'local-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,maskFinal,  [outputDir filesep prefix 'mask-qsm.nii.gz']);
 fprintf('Done!\n');
@@ -217,27 +255,21 @@ disp('Processing pipeline is completed!');
 
 end
 
-%% Validate nifti filenames with directory input
-function CheckFileName(inputNiftiList)
-% no. of files with particular name that has been read
-numTotalFieldFile      = 0;
+%% Validate input data dimension
+function check_input_dimension(img,matrixSize,TE)
 
-    % go through all files in the directory
-    for klist = 1:length(inputNiftiList)
-        if ContainName(lower(inputNiftiList(klist).name),'total-field')
-            numTotalFieldFile = numTotalFieldFile + 1;
-        end
+matrixSize_img	= size(img);
+
+% check matrix size between total field/fieldmap sd input and SEPIA header
+if ~isequal(matrixSize_img(1:3),matrixSize)
+    erro('Input NIfTI files and SEPIA header do not have the same matrix size. Please check these files and/or remove the ''matrixSize'' variable from the SEPIA header.')
+end
+
+% check echo dimension 
+if ndims(img) == 4
+    if matrixSize_img(4) ~= length(TE)
+        error('Input NIfTI file and SEPIA header do not have the same number of echoes.  Please check these files.');
     end
-    
-    % bring the error message if multiple files with the same string are
-    % detected
-    if numTotalFieldFile > 1
-        error('Multiple files with name containing string ''total-field'' are detected. Please make sure only the magnitude data contains string ''total-field''');
-    end
-    
-    % bring the error message if no file is detected
-    if numTotalFieldFile == 0
-        error('No file with name containing string ''total-field'' is detected. Please make sure the input directory contains a total field map');
-    end
+end
 
 end

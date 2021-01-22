@@ -27,7 +27,8 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 11 April 2018
-% Date last modified: 24 May 2018
+% Date modified: 24 May 2018
+% Date modified: 21 Jan 2021
 %
 %
 function [B0,B0_dir,voxelSize,matrixSize,TE,delta_TE,CF]=SyntheticQSMHubHeader(nii,varargin)
@@ -38,9 +39,10 @@ gyro = 42.57747892;
 
 if isempty(B0_dir)
     % get main field direction
-    a = sqrt(1 - nii.hdr.hist.quatern_b^2 - nii.hdr.hist.quatern_c^2 - nii.hdr.hist.quatern_d^2);
-    rotmat_nifti=qGetR([a, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
-    B0_dir = rotmat_nifti \ [0;0;1];
+    B0_dir = get_B0_dir_from_nifti(nii);
+%     a = sqrt(1 - nii.hdr.hist.quatern_b^2 - nii.hdr.hist.quatern_c^2 - nii.hdr.hist.quatern_d^2);
+%     rotmat_nifti=qGetR([a, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
+%     B0_dir = rotmat_nifti \ [0;0;1];
 end
 if isempty(voxelSize)
     % get voxel size
