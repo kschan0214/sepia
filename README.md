@@ -38,7 +38,19 @@ If you have any question or you would like to provide suggestion to improve this
 For full update log, please visit https://sepia-documentation.readthedocs.io/.
 
 ### Future release
+* Support FANSI v2.0
+* Support [iterative Tikhonov regularisation for QSM dipole inversion](https://xip.uclb.com/i/software/mri_qsm_tkd.html) 
 * Better compartibility with BIDS format data
+
+### 0.8.1 (current master)
+* Log file and error message file are now paired (last 15 digits in the extension) instead of sorting in simple numerical order
+* Log file and error message file are now supported in both GUI and command-based (when using ``sepiaIO``) operations
+* When running SEPIA, the current directory will temporaily move to the output directory to avoid overwriting temporary files if multiple processings happen simultaneously
+* Bug fix when running FANSI (details [here](https://github.com/kschan0214/sepia/issues/8))
+* Bug fix when getting B0 direction from Sagittal or Coronal acquisition (details [here](https://github.com/kschan0214/sepia/issues/10))
+* Bug fix when running QSM standalone with magnitude image for regularisation (details [here](https://github.com/kschan0214/sepia/issues/9))
+* Bug fix when running MEDI with zeropadding option is not equal to zero
+* (For developer) Improved readiility of how the data are loaded in SEPIA, which could make better BIDS compartibility in the future
 
 ### 0.8.0 (commmit b4255d8) (current master)
 * New layout for input/output panel for data selection
