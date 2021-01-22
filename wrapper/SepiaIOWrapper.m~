@@ -1,52 +1,55 @@
-%% [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,algorParam)
-% 
+%% [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(inputDir,outputDir,varargin)
+%
 % Input
 % --------------
-% input         : input directory contains NIfTI (*mag* and *ph*) files or structure containing filenames
-% output        : output directory that stores the output (Unwrapped total field and fieldMapSD)
-% maskFullName  : mask filename
-% algorParam    : structure contains method and method specific parameters
+% input         :   input directory contains NIfTI files or structure containing filenames  
+% output        :   output directory that stores the output (susceptibility map)
+% maskFullName  :   mask filename
+% algorParam    :   structure contains method and method specific parameters
 %
 % Output
 % --------------
-% totalField    : total field (or background + tissue fields) (in Hz)
-% fieldmapSD    : noise standard deviation in the phase
-% mask          : signal (brain) mask
+% totalField            : unwrapped field map (in Hz)
+% fieldmapSD            : relative standard deviation of field map,
+%                         esimated using Eq. 11 of Robinson et al. NMR Biomed 2017 (doi:10.1002/nbm.3601)
+% localField            : local field (or tissue field) (in Hz)
+% chi                   : quantitative susceptibility map (in ppm)
 %
 % Description: This is a wrapper of estimateTotalField.m which has the following objeectives:
-%               (1) matches the input format of SEPIA.m
+%               (1) matches the input format of sepia.m
 %               (2) save the results in NIfTI format
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 17 April 2018
-% Date modified: 16 September 2018
+% Date created: 14 September 2017
+% Date modified: 26 August 2018
 % Date modified: 29 March 2019
-% Date modified: 9 March 2020
+% Date modified: 27 Feb 2020 (v0.8.0)
 % Date modified: 21 Jan 2020 (v0.8.1)
 %
 %
-function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,maskFullName,algorParam)
-%% add general Path
-sepia_addpath;
+function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
+%% add general Path and universal variables
+sepia_addpath
 
 sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';
-% make sure the input only load once (first one)
-isMagnLoad  = false;
-isPhaseLoad = false;
+% set up indicator to check if certain input are loaded
+isMagnLoad      = false;
+isPhaseLoad     = false;
+isWeightLoad    = false;
 
-%% Check output directory exist or not
+%% Check if output directory exists 
 output_index    = strfind(output, filesep);
 outputDir       = output(1:output_index(end));
+% get prefix
 if ~isempty(output(output_index(end)+1:end))
     prefix = [output(output_index(end)+1:end) '_'];
 end
-
+% if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
-    % if not then create the directory
     mkdir(outputDir);
 end
 
@@ -56,13 +59,15 @@ fprintf('Output filename prefix : %s\n',prefix);
 
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
+% generl algorithm parameters
 isInvert            = algorParam.general.isInvert;
-isBET               = algorParam.general.isBET ;
+isBET               = algorParam.general.isBET;
 fractional_threshold= algorParam.general.fractional_threshold;
 gradient_threshold  = algorParam.general.gradient_threshold;
+% phase unwrap algorithm parameters
+isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
-isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
 
 %% Setting up Input
@@ -74,48 +79,48 @@ disp('---------');
 if isstruct(input)
     
     % Option 1: input are files
-    inputNiftiList = input;
+    inputNiftiList  = input;
     
     % take the phase data directory as reference input directory 
     [inputDir,~,~] = fileparts(inputNiftiList(1).name);
     
 else
+    
     % Option 2: input is a directory
     disp('Searching input directory...');
-    inputDir = input;
-
+    inputDir        = input; 
+    
     % check and get filenames
     inputNiftiList = struct();
-    filePattern = {'ph','mag','','header'}; % don't change the order
+    filePattern = {'ph','mag','weights','header'}; % don't change the order
     for  k = 1:length(filePattern)
-        if k ~= 3
-            % get filename
-            if k ~= 4   % NIFTI image input
-                [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
-            else        % SEPIA header
-                [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
-            end
-
-            % actions given the number of files detected
-            if numFiles == 1        % only one file -> get the name
-                
-                fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
-                inputNiftiList(k).name = file.name;
-                
-            elseif numFiles == 0     % no file -> fatal error
-                
+        % get filename
+        if k ~= 4   % NIFTI image input
+            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
+        else        % SEPIA header
+            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
+        end
+        
+        % actions given the number of files detected
+        if numFiles == 1        % only one file -> get the name
+            
+            fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
+            inputNiftiList(k).name = file.name;
+            
+        elseif numFiles == 0     % no file -> error
+            
+            if k ~= 3 % essential files 'ph', 'mag' and 'header, corresponding to k = 1,2&4
                 error(['No file with name containing string ''' filePattern{k} ''' is detected.']);
-                
-            else % multiple files -> fatal error
-                
-                error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
-                
+            else
+                disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
             end
-        else
-            inputNiftiList(k).name = '';    % third field is empty in this application
+            
+        else % multiple files -> fatal error
+            
+            error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
+            
         end
     end
-    
 end
 
 %%%%%% Step 2: load data
@@ -136,6 +141,7 @@ if ~isempty(inputNiftiList(2).name)
     
     % load nifti structure for output template
     inputMagnNifti  = load_untouch_nii([inputNiftiList(2).name]);
+
     % load true value from NIfTI
     magn            = load_nii_img_only([inputNiftiList(2).name]);
     isMagnLoad      = true;
@@ -145,7 +151,18 @@ else
     error('Please specify a single-echo/multi-echo magnitude data.');
 end
 
-% 2.3 SEPIA header 
+% 2.3 Weights data 
+if ~isempty(inputNiftiList(3).name)
+    
+    % load true value from NIfTI
+    weights         = load_nii_img_only([inputNiftiList(3).name]);
+    isWeightLoad    = true;
+    
+else
+    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
+end
+
+% 2.4 SEPIA header 
 if ~isempty(inputNiftiList(4).name)
     load([inputNiftiList(4).name]);
     disp('Header data is loaded.');
@@ -163,8 +180,15 @@ validate_sepia_header_4wrapper;
 
 % 3.2 Validate NIfTI input
 disp('Validating input NIfTI files...')
+
 % make sure the dimension of input data is consistent
 check_input_dimension(magn,fieldMap,matrixSize,TE);
+% check dimension of weights
+if exist('weights','var')
+    if size(weights,4) > 1
+        error('Input weighting map is 4D. SEPIA accepts weighting map to be 3D only.');
+    end
+end
 disp('Input NIfTI files are valid.')
 
 %%%%%% Step 4: Basic correction
@@ -200,6 +224,7 @@ fieldMap    = double(fieldMap);
 TE          = double(TE);
 matrixSize  = double(matrixSize);  
 voxelSize   = double(voxelSize);  
+if exist('weights','var'); weights = double(weights); end
 
 %%%%%% Step 5: store some data to headerAndExtraData
 % header
@@ -207,8 +232,9 @@ create_header_structure_4wrapper;
 
 headerAndExtraData.magn     = magn;
 headerAndExtraData.phase    = fieldMap;
+if exist('weights','var'); headerAndExtraData.weights  = weights; end
 
-clearvars inputMagnNifti
+clearvars inputMagnNifti 
 
 %% get brain mask
 disp('-----------');
@@ -266,34 +292,36 @@ end
 % put the mask to headerAndExtraData
 headerAndExtraData.mask = mask;
 
-%% Step 0: Eddy current correction for bipolar readout
+%% Main QSM processing - Step 1: total field and phase unwrap
+
+%%%%%%%%%% Step 0: Eddy current correction for bipolar readout %%%%%%%%%%
 if numel(TE) < 4 && isEddyCorrect
     
     warning('Bipolar readout correction requires data with at least 4 echoes.');
-    disp('Bipolar readout correction is not performed.');
+    disp('No bipolar readout correction is performed.');
     isEddyCorrect = false;
     
 end
-    
+
 if isEddyCorrect
-    
+
     % BipolarEddyCorrect requries complex-valued input
     imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
-    fieldMap    = angle(imgCplx);
+    fieldMap    = double(angle(imgCplx));
     
-    fprintf('Saving eddy current corrected phase data...');
     % save the eddy current corrected output
+    fprintf('Saving eddy current corrected phase data...');
     save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
     fprintf('Done!\n');
     
     % update phase in headerAndExtraData
     headerAndExtraData.phase    = fieldMap;
     
-    clear imgCplx
+    clearvars imgCplx
+    
 end
 
-%% total field and phase unwrap
-% Step 1: Phase unwrapping and echo phase combination
+%%%%%%%%%% Step 1: Phase unwrapping and echo phase combination %%%%%%%%%%
 % core of temporo-spatial phase unwrapping
 [totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
@@ -302,12 +330,12 @@ if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
     % save the output                           
     fprintf('Saving unwrapped echo phase...');
     save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
-    clear fieldmapUnwrapAllEchoes
     fprintf('Done!\n');
+    
+    clear fieldmapUnwrapAllEchoes
 end
-            
-%% Step 2: exclude unreliable voxel, based on monoexponential decay model with
-% single freuqnecy shift
+
+%%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 fprintf('Computing weighting map...');
 % only work with multi-echo data
 if length(TE) == 1 && ~isinf(exclude_threshold)
@@ -316,16 +344,20 @@ if length(TE) == 1 && ~isinf(exclude_threshold)
     disp('No voxels are excluded');
     exclude_threshold = inf;
 end
-
+    
+    
 if ~isinf(exclude_threshold)
     % multi-echo data
-    r2s = R2star_trapezoidal(magn,TE);
-    relativeResidual = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
-    maskReliable = relativeResidual < exclude_threshold;
+    r2s                 = R2star_trapezoidal(magn,TE);
+    relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
+    maskReliable        = relativeResidual < exclude_threshold;
+    
+    clear r2s
 else
     % single-echo & no threshold
-    maskReliable = ones(size(totalField),'like',fieldmapSD);
+    maskReliable = ones(size(totalField),'like',totalField);
 end
+
 
 switch exclude_method
     % threshold fieldmapSD with the reliable voxel mask
@@ -336,34 +368,88 @@ switch exclude_method
         mask = mask .* maskReliable;
         
 end
-
-% computing weights
-weights                 = 1./fieldmapSD;
-weights(isinf(weights))	= 0;
-weights(isnan(weights))	= 0;
-weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
-weights                 = weights .* and(mask>0,maskReliable);
 fprintf('Done!\n');
+
+% create weighting map 
+% for weighting map: higher SNR -> higher weighting
+if ~isWeightLoad
+    weights                 = 1./fieldmapSD;
+    weights(isinf(weights)) = 0;
+    weights(isnan(weights)) = 0;
+    weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
+end
+weights = weights .* and(mask>0,maskReliable);
              
 % save the output                           
 fprintf('Saving unwrapped field map...');
 
 save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
-save_nii_quick(outputNiftiTemplate,weights,  	[outputDir filesep prefix 'weights.nii.gz']);
+if ~isWeightLoad
+    save_nii_quick(outputNiftiTemplate,weights,	[outputDir filesep prefix 'weights.nii.gz']);
+end
 
-% additional output
 if ~isinf(exclude_threshold)
+    
     save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
     save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
+    
     if strcmpi(exclude_method,'Brain mask')
        save_nii_quick(outputNiftiTemplate,mask,         [outputDir filesep prefix 'mask-local_field.nii.gz']); 
     end
+    
+    clear relativeResidual
 end
 fprintf('Done!\n');
 
-disp('Processing pipeline is completed!');
+% store some output to extradata
+headerAndExtraData.N_std    = double(fieldmapSD);
+headerAndExtraData.weights  = double(weights);
 
+% clear variable that no longer be needed
+clear fieldMap magn fieldmapSD weights maskReliable
+
+%% Background field removal
+% make sure all variables are double
+totalField  = double(totalField);
+mask       	= double(mask);
+
+localField = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+  
+% generate new mask based on backgroudn field removal result
+maskFinal = double(localField ~=0);
+  
+% save results
+fprintf('Saving local field map...');
+
+save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'local-field.nii.gz']);
+save_nii_quick(outputNiftiTemplate,maskFinal,	[outputDir filesep prefix 'mask-qsm.nii.gz']);
+fprintf('done!\n');
+
+% clear variables that no longer be needed
+clear totalField mask
+
+%% QSM
+% make sure all variables are double
+localField	= double(localField);
+maskFinal   = double(maskFinal);
+
+% Apply final mask to weights
+headerAndExtraData.weights = headerAndExtraData.weights .* maskFinal;
+
+% core of QSM
+[chi,mask_ref] = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
+  
+% save results
+fprintf('Saving susceptibility map...');
+save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
+if ~isempty(mask_ref)
+    save_nii_quick(outputNiftiTemplate, mask_ref, [outputDir filesep prefix 'mask_reference_region.nii.gz']);
+end
+fprintf('done!\n');
+
+disp('Processing pipeline is completed!');
+          
 end
 
 %% Validate input data dimension

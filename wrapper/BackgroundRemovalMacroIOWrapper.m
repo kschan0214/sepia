@@ -165,15 +165,7 @@ if exist('fieldmapSD','var'); check_input_dimension(fieldmapSD,matrixSize,TE); e
 disp('Input NIfTI files are valid.')
 
 % display some header info
-disp('----------------------');
-disp('Basic data information');
-disp('----------------------');
-fprintf('Voxel size(x,y,z)   = %s mm x %s mm x %s mm\n' ,num2str(voxelSize(1)),num2str(voxelSize(2)),num2str(voxelSize(3)));
-fprintf('Matrix size(x,y,z)  = %s x %s x %s\n'          ,num2str(matrixSize(1)),num2str(matrixSize(2)),num2str(matrixSize(3)));
-fprintf('B0 direction(x,y,z) = [%s; %s; %s]\n'          ,num2str(B0_dir(1)),num2str(B0_dir(2)),num2str(B0_dir(3)));
-fprintf('Field strength      = %s T\n'                  ,num2str(B0));
-fprintf('Number of echoes    = %s\n'                    ,num2str(length(TE)));
-fprintf('TE1/dTE             = %s/%s ms\n'              ,num2str(TE(1)*1e3),num2str(delta_TE*1e3));
+display_sepia_header_info_4wrapper;
 
 % ensure variables are double
 totalField  = double(totalField);
@@ -183,13 +175,7 @@ if exist('fieldmapSD','var'); fieldmapSD = double(fieldmapSD); end
 
 %%%%%% Step 5: store some data to headerAndExtraData
 % header
-headerAndExtraData.b0           = B0;
-headerAndExtraData.b0dir        = B0_dir;
-headerAndExtraData.te           = TE;
-headerAndExtraData.delta_TE     = delta_TE;
-headerAndExtraData.CF           = CF;
-headerAndExtraData.voxelSize    = voxelSize;
-headerAndExtraData.matrixSize   = matrixSize;
+create_header_structure_4wrapper;
 
 if exist('fieldmapSD','var'); headerAndExtraData.N_std = fieldmapSD; end
 

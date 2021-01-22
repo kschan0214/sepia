@@ -167,7 +167,7 @@ outputNiftiTemplate = inputLocalFieldNifti;
 
 %%%%%% Step 3: validate input
 % 3.1 Validate header information
-validate_sepia_header;
+validate_sepia_header_4wrapper;
 
 % 3.2 Validate NIfTI input
 disp('Validating input NIfTI files...')
@@ -179,22 +179,14 @@ if exist('weights','var')
     if ~isequal(size(weights),matrixSize)
         erro('Input NIfTI files and SEPIA header do not have the same matrix size. Please check these files and/or remove the ''matrixSize'' variable from the SEPIA header.')
     end
-    if size(weights,4) > 1
+    if ndims(weights) > 3
         error('Input weighting map is 4D. SEPIA accepts weighting map to be 3D only.');
     end
 end
 disp('Input NIfTI files are valid.')
 
 % display some header info
-disp('----------------------');
-disp('Basic data information');
-disp('----------------------');
-fprintf('Voxel size(x,y,z)   = %s mm x %s mm x %s mm\n' ,num2str(voxelSize(1)),num2str(voxelSize(2)),num2str(voxelSize(3)));
-fprintf('Matrix size(x,y,z)  = %s x %s x %s\n'          ,num2str(matrixSize(1)),num2str(matrixSize(2)),num2str(matrixSize(3)));
-fprintf('B0 direction(x,y,z) = [%s; %s; %s]\n'          ,num2str(B0_dir(1)),num2str(B0_dir(2)),num2str(B0_dir(3)));
-fprintf('Field strength      = %s T\n'                  ,num2str(B0));
-fprintf('Number of echoes    = %s\n'                    ,num2str(length(TE)));
-fprintf('TE1/dTE             = %s/%s ms\n'              ,num2str(TE(1)*1e3),num2str(delta_TE*1e3));
+display_sepia_header_info_4wrapper;
 
 % ensure variables are double
 localField	= double(localField);
@@ -206,13 +198,7 @@ if exist('magn','var');     magn     = double(magn);   	end
 
 %%%%%% Step 5: store some data to headerAndExtraData
 % header
-headerAndExtraData.b0           = B0;
-headerAndExtraData.b0dir        = B0_dir;
-headerAndExtraData.te           = TE;
-headerAndExtraData.delta_TE     = delta_TE;
-headerAndExtraData.CF           = CF;
-headerAndExtraData.voxelSize    = voxelSize;
-headerAndExtraData.matrixSize   = matrixSize;
+create_header_structure_4wrapper;
 
 if exist('magn','var');     headerAndExtraData.magn     = magn; end
 if exist('weights','var');  headerAndExtraData.weights  = weights; end

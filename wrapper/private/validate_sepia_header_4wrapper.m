@@ -1,5 +1,11 @@
 %% Standard script to validate input sepia header
-
+%
+% Kwok-shing Chan @ DCCN
+% k.chan@donders.ru.nl
+% Date created: 22 Jan 2021
+% Date modified: 
+%
+%
 disp('Validating SEPIA header...')
 
 % Magnetic field strength and TE are rarely stored in NIfTI
