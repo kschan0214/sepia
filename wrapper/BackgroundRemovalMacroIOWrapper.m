@@ -155,7 +155,7 @@ outputNiftiTemplate = inputTotalFieldNifti;
 
 %%%%%% Step 3: validate input
 % 3.1 Validate header information
-validate_sepia_header;
+validate_sepia_header_4wrapper;
 
 % 3.2 Validate NIfTI input
 disp('Validating input NIfTI files...')

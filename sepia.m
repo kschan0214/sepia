@@ -56,7 +56,7 @@ sepia_addpath('',1);
 global h SEPIA_version
 
 % SEPIA version
-SEPIA_version = 'dev0.8.1';
+SEPIA_version = 'v0.8.1';
 
 %% create basic GUI
 % set GUI window size
