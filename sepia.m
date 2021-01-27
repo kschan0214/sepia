@@ -21,7 +21,7 @@
 % Considering different toolboxes may use their own function for the same
 % processing which has the same name, the specific method will only be
 % loaded just before being used as Matlab does not support function
-% overloading. Nebertheless the GUI will automatically do this for you.
+% overloading. Nevertheless the GUI will automatically do this for you.
 %
 % Most of the processing methods are provided from other toolboxes,
 % inclduing MEDI, STI Suite and FANSI. Please cite the correspoding
@@ -39,13 +39,14 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 14 September 2017
-% Date last modified: 1 June 2018
-% Date last modified: 2 March 2020 (v0.8.0)
+% Date modified: 1 June 2018
+% Date modified: 2 March 2020 (v0.8.0)
+% Date modified: 27 Jan 2020 (v0.8.1)
 %
 function sepia 
 
 % clear previous handles
-clear global h SEPIA_version
+clear global h 
 
 % make sure nothing is logged at the moment
 diary off
@@ -53,10 +54,11 @@ diary off
 % add path and check toolboxes availability
 sepia_addpath('',1);
 
-global h SEPIA_version
+global h 
 
 % SEPIA version
-SEPIA_version = 'v0.8.1';
+sepia_universal_variables;
+% SEPIA_version = 'v0.8.1';
 
 %% create basic GUI
 % set GUI window size
@@ -297,7 +299,7 @@ end
 function PushbuttonStart_Callback(source,eventdata)
 % objective of Sepia GUI is to create a .m script to execute a command-based function
 
-global h SEPIA_version
+global h
 
 sepia_universal_variables;
 

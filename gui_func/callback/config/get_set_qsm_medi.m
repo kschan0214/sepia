@@ -13,7 +13,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 March 2020
-% Date modified: 19 Jan 2021 (v0.8.1)
+% Date modified: 27 Jan 2021 (v0.8.1)
 %
 %
 function get_set_qsm_medi(h,mode,input)
@@ -48,7 +48,7 @@ switch lower(mode)
         end
         k = k+1;
         % zeropad
-        fprintf(fid,'algorParam%s = [%s] ;\n'           ,str_pattern{k},get(action_handle{k},	'String'));
+        fprintf(fid,'algorParam%s = [%s] ;\n'           ,str_pattern{k},num2str(str2num(get(action_handle{k},	'String'))));
         
         % isSMV
         k = k+1;
@@ -70,11 +70,17 @@ switch lower(mode)
         
         config_txt = input;
         
-        for k = 1:4
+        for k = 1:3
             pattern_curr    = str_pattern{k};
             val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
             set_non_nan_value(action_handle{k},'String',val)
         end
+        
+        % zeropad
+        k = k+1;
+        pattern_curr    = str_pattern{k};
+        val             = ['[' num2str(str2num(get_num_as_string(config_txt, pattern_curr, '=', ';',false))) ']'];
+        set_non_nan_value(action_handle{k},'String',val)
 
         % SMV
         k = k+1;

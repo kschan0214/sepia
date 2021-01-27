@@ -14,10 +14,14 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 March 2020
-% Date last modified:
+% Date modified: 27 Jan 2021
 %
 %
-function str = get_num_as_string(A, str_pattern, start_indicator, end_indicator)
+function str = get_num_as_string(A, str_pattern, start_indicator, end_indicator, isScalarString)
+
+if nargin < 5
+    isScalarString = true;
+end
 
 % get the last position of thw string
 str_end_idx = regexp(A,str_pattern,'end');
@@ -41,8 +45,10 @@ if ~isempty(str_end_idx)
     % get all characters between the indicators
     str = A(indicatorS_idx(find(indicatorS_idx > str_end_idx, 1 ))+1:indicatorE_idx(find(indicatorE_idx > str_end_idx, 1 ))-1);
 
-    % remove all white space
-    str = str(find(~isspace(str)));
+    % remove all white space for scalar quantity
+    if isScalarString
+        str = str(find(~isspace(str)));
+    end
 else
     str = nan;
 end
