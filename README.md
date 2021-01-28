@@ -44,8 +44,9 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/.
 
 ### 0.8.1 (current master)
 * Log file and error message file are now paired (last 15 digits in the extension) instead of sorting in simple numerical order
-* Log file and error message file are now supported in both GUI and command-based (when using ``sepiaIO``) operations
+* Log file and error message file are now supported in both GUI and command-based operations (when using ``sepiaIO``)
 * When running SEPIA, the current directory will temporaily move to the output directory to avoid overwriting temporary files if multiple processings happen simultaneously
+* A SEPIA pipeline configuration file will be automatically generated using ``sepiaIO`` is the output directory does not have any existing configuration file. This would be useful to look up the pipeline used to produce the results when using command-based operationn.
 * Bug fix when running FANSI (details [here](https://github.com/kschan0214/sepia/issues/8))
 * Bug fix when getting B0 direction from Sagittal or Coronal acquisition (details [here](https://github.com/kschan0214/sepia/issues/10))
 * Bug fix when running QSM standalone with magnitude image for regularisation (details [here](https://github.com/kschan0214/sepia/issues/9))
