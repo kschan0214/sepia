@@ -26,6 +26,7 @@
 % Date modified: 29 March 2019
 % Date modified: 27 Feb 2020 (v0.8.0)
 % Date modified: 21 Jan 2020 (v0.8.1)
+% Date modified: 6 May 2021 (v0.8.1.1)
 %
 %
 function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
@@ -193,7 +194,7 @@ disp('Input NIfTI files are valid.')
 
 %%%%%% Step 4: Basic correction
 % 4.1: check whether phase data contains DICOM values or wrapped phase value
-if max(fieldMap(:))>pi || min(fieldMap(:))<-pi
+if abs(max(fieldMap(:))-pi)>1e-4 || abs(min(fieldMap(:))-(-pi))>1e-4 % allow small differences possibly due to data stype conversion
 
     disp('Values of input phase map exceed the range of [-pi,pi]. DICOM value is assumed.')
     fprintf('Rescaling phase data from DICOM image value to wrapped radian unit...')
@@ -457,6 +458,13 @@ function check_input_dimension(magn,phase,matrixSize,TE)
 
 matrixSize_magn     = size(magn);
 matrixSize_phase    = size(phase);
+
+if ndims(magn) == 3
+    matrixSize_magn(4) = 1;
+end
+if ndims(phase) == 3
+    matrixSize_phase(4) = 1;
+end
 
 % check matrix size between magnitude data and phase data
 if ~isequal(matrixSize_magn,matrixSize_phase)

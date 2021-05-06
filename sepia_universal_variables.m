@@ -6,13 +6,13 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 March 2020
-% Date modified: 
+% Date modified: 6 May 2021 (v0.8.1.1)
 %
 % DO NOT change the variable name
 % DO NOT change the order of the entities, add a new one at the end instead
 %
 %% Version
-SEPIA_version = 'v0.8.1';
+SEPIA_version = 'v0.8.1.1';
 
 %% PATH
 SEPIA_HOME = fileparts(mfilename('fullpath'));
