@@ -42,7 +42,11 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/.
 * Support [iterative Tikhonov regularisation for QSM dipole inversion](https://xip.uclb.com/i/software/mri_qsm_tkd.html) 
 * Better compartibility with BIDS format data
 
-### 0.8.1 (current master)
+### 0.8.1.1 (current master)
+* Fixed bug when using single-echo dataset
+* Fixed bug when input phase data in unit of radian with single datatype
+
+### 0.8.1 (commit c78247d)
 * Log file and error message file are now paired (last 15 digits in the extension) instead of sorting in simple numerical order
 * Log file and error message file are now supported in both GUI and command-based operations (when using ``sepiaIO``)
 * When running SEPIA, the current directory will temporaily move to the output directory to avoid overwriting temporary files if multiple processings happen simultaneously
@@ -53,7 +57,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/.
 * Bug fix when running MEDI with zeropadding option is not equal to zero
 * (For developer) Improved readiility of how the data are loaded in SEPIA, which could make better BIDS compartibility in the future
 
-### 0.8.0 (commmit b4255d8) (current master)
+### 0.8.0 (commmit b4255d8) 
 * New layout for input/output panel for data selection
 * New output config file, log file and error message file
 * New feature to load parameters in config file to the GUI
