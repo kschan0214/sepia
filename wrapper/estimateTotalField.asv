@@ -27,7 +27,6 @@
 % Date modified: 16 September 2018
 % Date modified: 24 may 2019
 % Date modified: 9 March 2020 (v0.8.0)
-% Date modified: 5 June 2021 (v1.0)
 %
 function [totalField,N_std,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 sepia_universal_variables;
@@ -41,15 +40,20 @@ echoCombine	= algorParam.unwrap.echoCombMethod;
 unit        = algorParam.unwrap.unit;
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
+TE = headerAndExtraData.te;
 dt = headerAndExtraData.delta_TE;
-
-if isempty(headerAndExtraData.magn)
-    headerAndExtraData.magn = repmat(mask,1,1,1,size(fieldMap,4));
+if ~isempty(headerAndExtraData.magn)
+    magn = double(headerAndExtraData.magn);
+else
+    magn = repmat(mask,1,1,1,size(fieldMap,4));
 end
 
 %% ensure all variables have the same data type
 fieldMap	= double(fieldMap);
 mask       	= double(mask);
+
+% find the centre of mass
+pos=round(centerofmass(magn(:,:,:,1)));
 
 disp('--------------------');
 disp('Total field recovery');
@@ -64,10 +68,16 @@ fprintf('Temporal phase unwrapping: %s \n',echoCombine);
 % end
 
 %% Core
-for k = 1:length(wrapper_EchoCombine_function)
-    if strcmpi(echoCombine,methodEchoCombineName{k})
-        [totalField, N_std, headerAndExtraData] = feval(wrapper_EchoCombine_function{k},fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
-    end
+switch echoCombine
+    case methodEchoCombineName{1}
+        [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_OptimumWeight(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+        
+    case methodEchoCombineName{2}
+        [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_MEDInonlinearfit(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+        
+    case methodEchoCombineName{3}
+        [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_MEDInonlinearfit_bipolar(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+        
 end
 
 if isfield(headerAndExtraData,'fieldmapUnwrapAllEchoes')
@@ -93,4 +103,17 @@ end
 
 N_std = real(N_std);
 
+end
+
+%% find the centre of mass
+function coord=centerofmass(data)
+data=abs(data);
+dims=size(data);
+    for k=1:length(dims)
+    %     datatemp=permute(data,[k ]);
+    dimsvect=ones([1, length(dims)]);
+    dimsvect(k)=dims(k);
+    temp=bsxfun(@times,(data),reshape(1:dims(k),dimsvect));
+    coord(k)=sum(temp(:))./sum(data(:));
+    end
 end

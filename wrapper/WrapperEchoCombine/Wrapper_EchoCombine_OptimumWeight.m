@@ -1,25 +1,32 @@
 % [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_OptimumWeight(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 %
-% Usage:
-%
 % Input
 % --------------
+% fieldMap      : original single-/multi-echo wrapped phase image, in rad
+% mask          : signal mask
+% matrixSize    : size of the input image
+% voxelSize     : spatial resolution of each dimension of the data, in mm
+% algorParam    : structure contains fields with algorithm-specific parameter(s)
+% headerAndExtraData : structure contains extra header info/data for the algorithm
 %
 % Output
 % --------------
+% totalField    : unwrapped total field, in radHz
+% N_std         : noise standard deviation in the field map
+% fieldmapUnwrapAllEchoes : unwrapped echo phase, in rad
 %
-% Description:
+% Description: Wrapper to perform phase echo combination
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 5 June 2021
+% Date created: 5 June 2021 (v1.0)
 % Date modified:
 %
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_OptimumWeight(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
 % get some data from headerAndExtraData
-magn	= headerAndExtraData.magn;
+magn	= double(headerAndExtraData.magn);
 TE      = headerAndExtraData.te;
 
 % initiate empty variable
@@ -100,17 +107,4 @@ if ~isempty(fieldmapUnwrapAllEchoes)
     headerAndExtraData.fieldmapUnwrapAllEchoes = fieldmapUnwrapAllEchoes;
 end
 
-end
-
-%% find the centre of mass
-function coord=centerofmass(data)
-data=abs(data);
-dims=size(data);
-    for k=1:length(dims)
-    %     datatemp=permute(data,[k ]);
-    dimsvect=ones([1, length(dims)]);
-    dimsvect(k)=dims(k);
-    temp=bsxfun(@times,(data),reshape(1:dims(k),dimsvect));
-    coord(k)=sum(temp(:))./sum(data(:));
-    end
 end
