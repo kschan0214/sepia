@@ -41,7 +41,6 @@ ncol        = 2;
 cspacing    = 0.01;
 [~,~,width,left] = sepia_layout_measurement(nrow,rspacing,ncol,cspacing);
 
-%%
 % Set parent of background removal panel
 h.StepsPanel.bkgRemoval = uipanel(hParent,...
     'Title','Background field removal',...

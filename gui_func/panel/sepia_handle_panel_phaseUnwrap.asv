@@ -40,7 +40,7 @@ tooltip.unwrap.panel.method         = 'Select a method to combine field maps fro
 %                                         'it is possible to save the unwrapped phase for each echo.'];
 
 %% layout of the panel
-nrow        = 4;
+nrow        = 5;
 rspacing    = 0.01;
 ncol        = 2;
 cspacing    = 0.01;
@@ -56,26 +56,18 @@ h.StepsPanel.phaseUnwrap = uipanel(hParent,...
     
     % width of each element in a functional column, in normalised unit of
     % the functional column width
-    height = 0.1;   % row height
+    height = 0.08;   % row height
     wratio = 0.5;   % colume width
     
     % row 1
     % Temporo-spatial unwrapping methods, 'text|popup' functional column,
     % col 1
     % text|popup pair: select method
+    [h.qsm.text.qsm,h.qsm.popup.qsm] = sepia_construct_text_popup(...
+        h.StepsPanel.qsm,'Method:', methodQSMName, [left(1) 0.85 width height], wratio);
+    
     [h.phaseUnwrap.text.phaseCombMethod,h.phaseUnwrap.popup.phaseCombMethod] = sepia_construct_text_popup(...
         h.StepsPanel.phaseUnwrap,'Echo phase combination:', methodEchoCombineName, [left(1) 0.85 width height], wratio);
-
-%% create control panel
-
-% define position and size of all method panels
-position_child = [0.01 0.04 0.95 0.75];
-
-% construct all method panels
-for k = 1:length(function_EchoCombine_method_panel)
-    h = feval(function_EchoCombine_method_panel{k},h.StepsPanel.phaseUnwrap,h,position_child);
-end
-
 
 %     % row 2
 %     % phase unwrapping method, 'text|popup' 
@@ -120,8 +112,8 @@ end
 %         'backgroundcolor',get(h.fig,'color'),...
 %         'Enable','on');
 % 
-%% set tooltips
-set(h.phaseUnwrap.text.phaseCombMethod,     'Tooltip',tooltip.unwrap.panel.method);
+% %% set tooltips
+% set(h.phaseUnwrap.text.phaseCombMethod,     'Tooltip',tooltip.unwrap.panel.method);
 % set(h.phaseUnwrap.text.phaseUnwrap,         'Tooltip',tooltip.unwrap.panel.unwrap);
 % set(h.phaseUnwrap.checkbox.eddyCorrect,     'Tooltip',tooltip.unwrap.panel.eddy);
 % set(h.phaseUnwrap.checkbox.excludeMask,     'Tooltip',tooltip.unwrap.panel.exclude);
