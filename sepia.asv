@@ -381,17 +381,6 @@ fprintf(fid,'algorParam.general.isInvert    = %i ;\n'   ,get(h.dataIO.checkbox.i
 % phase unwrap algorithm parameters
 if strcmpi(tab,'SEPIA') || strcmpi(tab,'Phase unwrapping')
     fprintf(fid,'%% Total field recovery algorithm parameters\n');
-    
-    % echo phase combine method
-    % set parameters for selected method
-    echoCombine_method = h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1};
-    fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,echoCombine_method);
-    for k = 1:length(methodEchoCombineName)
-        if strcmpi(echoCombine_method,methodEchoCombineName{k})
-            feval(config_EchoCombine_function{k},h,'set',fid);
-        end
-    end
-    
 %     % echo phase combine method
 %     fprintf(fid,'algorParam.unwrap.echoCombMethod = ''%s'' ;\n'     ,h.phaseUnwrap.popup.phaseCombMethod.String{h.phaseUnwrap.popup.phaseCombMethod.Value,1});
 %     % unwrap method

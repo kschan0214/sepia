@@ -128,7 +128,8 @@ set(h.phaseUnwrap.text.phaseCombMethod,     'Tooltip',tooltip.unwrap.panel.metho
 % set(h.phaseUnwrap.edit.excludeMask,         'Tooltip',tooltip.unwrap.panel.exclude_edit);
 % set(h.phaseUnwrap.checkbox.saveEchoPhase,	'Tooltip',tooltip.unwrap.panel.saveUnwrap);
 % 
-% %% set callback functions
+%% set callback functions
+set(h.phaseUnwrap.popup.phaseCombMethod, 'Callback', {@PopupEchoCombine_Callback,h});
 % set(h.phaseUnwrap.checkbox.excludeMask,	'Callback', {@CheckboxEditPair_Callback,{h.phaseUnwrap.edit.excludeMask,h.phaseUnwrap.popup.excludeMethod},1});
 % set(h.phaseUnwrap.edit.excludeMask, 	'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
 % set(h.phaseUnwrap.popup.phaseUnwrap,    'Callback', {@popupPhaseUnwrap_Callback,h});
@@ -137,22 +138,26 @@ set(h.phaseUnwrap.text.phaseCombMethod,     'Tooltip',tooltip.unwrap.panel.metho
 end
 
 %% Callback functions
-% Phase unwrapping method specific panel setting
-function popupPhaseUnwrap_Callback(source,eventdata,h)
+% display corresponding QSM method's panel
+function PopupEchoCombine_Callback(source,eventdata,h)
 
+% needs 'methodQSMName' here
 sepia_universal_variables;
 
-% get selected background removal method
+% get selected QSM method
 method = source.String{source.Value,1} ;
 
-% Reset the option 
-set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
-set(h.phaseUnwrap.edit.excludeMask,     'Enable', 'off');
-set(h.phaseUnwrap.popup.excludeMethod,  'Enable', 'off');
-% method the user chosen will affect if exclusion method can be used or not 
-for k = 1:length(methodUnwrapName)
-    if strcmpi(method,methodUnwrapName{k})
-        set(h.phaseUnwrap.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{k});
+% switch off all panels
+fields = fieldnames(h.phaseUnwrap.panel);
+for kf = 1:length(fields)
+    set(h.phaseUnwrap.panel.(fields{kf}),   'Visible','off');
+end
+
+% switch on only target panel
+for k = 1:length(methodEchoCombineName)
+    if strcmpi(method,methodEchoCombineName{k})
+        set(h.phaseUnwrap.panel.(fields{k}), 'Visible','on');
+        break
     end
 end
 

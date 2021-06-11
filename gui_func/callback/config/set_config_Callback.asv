@@ -69,7 +69,7 @@ echoCombine_method	= get_string_as_string(config_txt, str_pattern);
 if ~isnan(echoCombine_method)
     % matching algorithm name
     for k = 1:length(methodEchoCombineName)
-        if strcmpi(echoCombine_method,methodEchoCombineName{k})
+        if strcmpi(val,methodEchoCombineName{k})
             feval(config_EchoCombine_function{k},h,'get',config_txt);
             echoCombine_method = k;
             break
@@ -77,9 +77,27 @@ if ~isnan(echoCombine_method)
     end
     
     % change method popup manu
-    set_non_nan_value(h.phaseUnwrap.popup.phaseCombMethod,'Value',echoCombine_method);
+    set_non_nan_value(h.phaseUnwrap.popup.phaseCombMethod,'Value',val);
     % trigger popup callback to switch method panel
     feval(h.phaseUnwrap.popup.phaseCombMethod.Callback{1},h.phaseUnwrap.popup.phaseCombMethod,[],h)
+end
+
+% method
+str_pattern	= '.bfr.method';
+BFR_method	= get_string_as_string(config_txt, str_pattern);
+if ~isnan(BFR_method)
+    
+    for k = 1:length(methodBFRName)
+        if strcmpi(BFR_method,methodBFRName{k})
+            feval(config_BFR_function{k},h,'get',config_txt);
+            BFR_method = k;
+        end
+    end
+    
+    % change method popup manu
+    set_non_nan_value(h.bkgRemoval.popup.bkgRemoval,'Value',BFR_method);
+    % trigger popup callback to switch method panel
+    feval(h.bkgRemoval.popup.bkgRemoval.Callback{1},h.bkgRemoval.popup.bkgRemoval,[],h)
 end
 
 % % phase unwrap
