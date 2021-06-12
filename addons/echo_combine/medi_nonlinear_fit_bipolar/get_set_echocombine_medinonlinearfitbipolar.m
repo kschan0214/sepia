@@ -1,4 +1,4 @@
-%% get_set_echocombine_optimumweigts(h,mode,input)
+%% get_set_echocombine_medinonlinearfitbipolar(h,mode,input)
 %
 % Input
 % --------------
@@ -16,26 +16,22 @@
 % Date modified:
 %
 %
-function get_set_echocombine_optimumweigts(h,mode,input)
+function get_set_echocombine_medinonlinearfitbipolar(h,mode,input)
 
 sepia_universal_variables;
 
 % these are the string to be printed in the pipeline config file
 % for best practice, the entries should be matched with action_handle
 str_pattern = {'.unwrap.unwrapMethod',...
-               '.unwrap.isEddyCorrect',...
-               '.unwrap.isSaveUnwrappedEcho',...
                '',...
                '.unwrap.excludeMaskThreshold',...
                '.unwrap.excludeMethod'};
 
 % these are the options available in the GUI
-action_handle = {h.phaseUnwrap.optimumWeights.popup.phaseUnwrap,...
-                 h.phaseUnwrap.optimumWeights.checkbox.eddyCorrect,...
-                 h.phaseUnwrap.optimumWeights.checkbox.saveEchoPhase,...
-                 h.phaseUnwrap.optimumWeights.checkbox.excludeMask,...
-                 h.phaseUnwrap.optimumWeights.edit.excludeMask,...
-                 h.phaseUnwrap.optimumWeights.popup.excludeMethod};
+action_handle = {h.phaseUnwrap.MEDINonLinearfitBipolar.popup.phaseUnwrap,...
+                 h.phaseUnwrap.MEDINonLinearfitBipolar.checkbox.excludeMask,...
+                 h.phaseUnwrap.MEDINonLinearfitBipolar.edit.excludeMask,...
+                 h.phaseUnwrap.MEDINonLinearfitBipolar.popup.excludeMethod};
 
 switch lower(mode)
     case 'set'
@@ -44,11 +40,6 @@ switch lower(mode)
         % print spatial phase unwrapping method | popup 
         k = 1;
         sepia_print_popup_as_string(fid,str_pattern{k},action_handle{k});
-        
-        % print bipolar correction & save unwrapped phase checkbox | checkbox
-        for k = 2:3
-            sepia_print_checkbox_value(fid,str_pattern{k},action_handle{k});
-        end
         
         % more complicated operation for exclude mask options
         k = k+1;
@@ -77,11 +68,6 @@ switch lower(mode)
         % the input has to be matched with the callback function in the
         % sepia_handle_panel_EchoCombine_XXX.m
         feval(action_handle{k}.Callback{1},action_handle{k},[],h);
-        
-        % read bipolar correction & save unwrapped phase checkbox | checkbox
-        for k = 2:3
-            sepia_read_checkbox_value(config_txt, str_pattern{k}, action_handle{k});
-        end
         
         % exclusion method | 'checkbox + edit + popup' combo
         % check for exclusion threshold

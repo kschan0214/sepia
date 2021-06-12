@@ -14,7 +14,8 @@
 %% Background field removal method available in SEPIA (MUST)
 % Specify the names of the methods
 methodEchoCombineName	= {'Optimum weights',...
-                           'MEDI nonlinear fit'};
+                           'MEDI nonlinear fit',...
+                           };
 %                            'MEDI nonlinear fit (Bipolar, testing)'};
                        % in future, add panel of new method here
 
@@ -22,17 +23,21 @@ methodEchoCombineName	= {'Optimum weights',...
 % Specify the name of the wrapper function to connect SEPIA and the
 % algorithm
 wrapper_EchoCombine_function	= {'Wrapper_EchoCombine_OptimumWeight',...
-                                   'Wrapper_EchoCombine_MEDInonlinearfit'} ;
+                                   'Wrapper_EchoCombine_MEDInonlinearfit',...
+                                   } ;
                        % in future, add panel of new method here
 
 %% function that create the method specific panel (Optional, for GUI)
 % Specify the name of the function of the panel design 
 function_EchoCombine_method_panel = {'sepia_handle_panel_EchoCombine_optimum_weights',...
-                                     'sepia_handle_panel_EchoCombine_medi_nonlinear_fit'};
+                                     'sepia_handle_panel_EchoCombine_medi_nonlinear_fit',...
+                                     };
                              % in future, add panel of new method here
                              
 %% functions that generate and read BFR algorithm parameters (Optional, for GUI)
 % Specify the name of the function that export/import parameters to/from
 % output config file
-config_EchoCombine_function     = {'get_set_echocombine_optimumweigts'};
+config_EchoCombine_function     = {'get_set_echocombine_optimumweigts',...
+                                   'get_set_echocombine_medinonlinearfit',...
+                                   };
                        % in future, add panel of new method here

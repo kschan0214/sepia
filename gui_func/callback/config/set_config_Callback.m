@@ -1,4 +1,18 @@
-
+%% sepia_read_popup_value(config_txt, str_pattern, action_handle, popup_list)
+%
+% Input
+% --------------
+% config_filename : filename of the sepia pipeline configureation file
+% h               : master handle of SEPIA
+%
+% Description: Read pipeline configuration in the file back to GUI
+%
+% Kwok-shing Chan @ DCCN
+% k.chan@donders.ru.nl
+% Date created: 6 March 2020 (v0.8.1)
+% Date modified:12 JUne 2021 (v1.0)
+%
+%
 function set_config_Callback(config_filename,h)
 
 sepia_universal_variables;
@@ -36,26 +50,29 @@ end
 if isModifyGeneral
     
 % invert phase data
-str_pattern	= '.general.isInvert';
-val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-set_non_nan_value(h.dataIO.checkbox.invertPhase, 'Value', str2double(val));
+str_pattern     = '.general.isInvert';
+action_handle   = h.dataIO.checkbox.invertPhase;
+sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
 
 % BET
-str_pattern	= '.general.isBET';
-val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-set_non_nan_value(h.dataIO.checkbox.brainExtraction, 'Value', str2double(val));
+str_pattern     = '.general.isBET';
+action_handle   = h.dataIO.checkbox.brainExtraction;
+val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
 % trigger checkout callback
 feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+
+% isBet is true then change the BET parameters
 if str2double(val)
     % -f
-    str_pattern	= '.general.fractional_threshold';
-    val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-    set_non_nan_value(h.dataIO.edit.fractionalThres, 'String', val);
+    str_pattern     = '.general.fractional_threshold';
+    action_handle   = h.dataIO.edit.fractionalThres;
+    sepia_read_edit_string(config_txt, str_pattern, action_handle);
     
     % -g
-    str_pattern	= '.general.gradient_threshold';
-    val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-    set_non_nan_value(h.dataIO.edit.gradientThres, 'String', val);
+    str_pattern     = '.general.gradient_threshold';
+    action_handle   = h.dataIO.edit.gradientThres;
+    sepia_read_edit_string(config_txt, str_pattern, action_handle);
+    
 end
 
 end
@@ -63,176 +80,89 @@ end
 %% Panel: Total field
 if isModifyUnwrap
     
-% echo combination
-str_pattern         = '.unwrap.echoCombMethod';
-echoCombine_method	= get_string_as_string(config_txt, str_pattern);
-if ~isnan(echoCombine_method)
-    % matching algorithm name
-    for k = 1:length(methodEchoCombineName)
-        if strcmpi(echoCombine_method,methodEchoCombineName{k})
-            feval(config_EchoCombine_function{k},h,'get',config_txt);
-            echoCombine_method = k;
-            break
-        end
-    end
-    
-    % change method popup manu
-    set_non_nan_value(h.phaseUnwrap.popup.phaseCombMethod,'Value',echoCombine_method);
-    % trigger popup callback to switch method panel
-    feval(h.phaseUnwrap.popup.phaseCombMethod.Callback{1},h.phaseUnwrap.popup.phaseCombMethod,[],h)
-end
-
-% % phase unwrap
-% str_pattern	= '.unwrap.unwrapMethod';
-% val	= get_string_as_string(config_txt, str_pattern);
-% if ~isnan(val)
-%     % matching algorithm name
-%     for k = 1:length(methodUnwrapName)
-%         if strcmpi(val,methodUnwrapName{k})
-%             val = k;
-%             break
-%         end
-%     end
-%     
-%     % change method popup manu
-%     set_non_nan_value(h.phaseUnwrap.popup.phaseUnwrap,'Value',val);
-%     % trigger popup callback to switch method panel
-%     feval(h.phaseUnwrap.popup.phaseUnwrap.Callback{1},h.phaseUnwrap.popup.phaseUnwrap,[],h)
-% end
-
-% % eddy corr
-% str_pattern	= '.unwrap.isEddyCorrect';
-% val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-% set_non_nan_value(h.phaseUnwrap.checkbox.eddyCorrect, 'Value', str2double(val));
-
-% % exlusion threshold
-% str_pattern	= '.unwrap.excludeMaskThreshold';
-% val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-% if isnan(val)
-%     % trigger checkbox
-%     set(h.phaseUnwrap.checkbox.excludeMask,'Value',0);
-%     feval(h.phaseUnwrap.checkbox.excludeMask.Callback{1},h.phaseUnwrap.checkbox.excludeMask,[],{h.phaseUnwrap.edit.excludeMask,h.phaseUnwrap.popup.excludeMethod},1);
-% else
-%     % trigger checkbox
-%     set(h.phaseUnwrap.checkbox.excludeMask,'Value',1);
-%     feval(h.phaseUnwrap.checkbox.excludeMask.Callback{1},h.phaseUnwrap.checkbox.excludeMask,[],{h.phaseUnwrap.edit.excludeMask,h.phaseUnwrap.popup.excludeMethod},1);
-%     
-%     % modifiy edit field value
-%     set_non_nan_value(h.phaseUnwrap.edit.excludeMask, 'String', val);
-%     
-%     % popup manu for thresholding method
-%     str_pattern	= '.unwrap.excludeMethod';
-%     val      	= get_string_as_string(config_txt, str_pattern);
-%     if ~isnan(val)
-%         % matching algorithm name
-%         for k = 1:length(methodExcludedName)
-%             if strcmpi(val,methodExcludedName{k})
-%                 val = k;
-%                 break
-%             end
-%         end
-%     
-%         % change method popup manu
-%         set_non_nan_value(h.phaseUnwrap.popup.excludeMethod,'Value',val);
-%     end
-% end
-
-% % save unwrap
-% str_pattern	= '.unwrap.isSaveUnwrappedEcho';
-% val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-% set_non_nan_value(h.phaseUnwrap.checkbox.saveEchoPhase, 'Value', str2double(val));
+% echo combination method
+str_pattern      = '.unwrap.echoCombMethod';
+action_handle    = h.phaseUnwrap.popup.phaseCombMethod;
+popup_list       = methodEchoCombineName;
+config_func_list = config_EchoCombine_function;
+read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_func_list, h)
 
 end
 
 %% Panel: BFR
 if isModifyBFR
     
-% % logical B1 polyfit
-% str_pattern	= '.bfr.refine';
-% val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-% set_non_nan_value(h.bkgRemoval.checkbox.refine, 'Value', str2double(val));
 % B1 polyfit method
 % popup manu for fit method
-str_pattern	= '.bfr.refine_method';
-val      	= get_string_as_string(config_txt, str_pattern);
-if ~isnan(val)
-    % matching algorithm name
-    for k = 1:length(methodRefineName)
-        if strcmpi(val,methodRefineName{k})
-            val = k;
-            break
-        end
-    end
+str_pattern     = '.bfr.refine_method';
+action_handle   = h.bkgRemoval.popup.refine;
+sepia_read_popup_value(config_txt, str_pattern, action_handle, methodRefineName);
+% trigger popup callback 
+feval(h.bkgRemoval.popup.refine.Callback{1},h.bkgRemoval.popup.refine,[],h)
 
-    % change method popup manu
-    set_non_nan_value(h.bkgRemoval.popup.refine,'Value',val);
-    
-    % trigger popup callback 
-    feval(h.bkgRemoval.popup.refine.Callback{1},h.bkgRemoval.popup.refine,[],h)
-
-end
 % B1 polyfit order
-str_pattern	= '.bfr.refine_order';
-val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-set_non_nan_value(h.bkgRemoval.edit.order, 'String', val);
+str_pattern     = '.bfr.refine_order';
+action_handle   = h.bkgRemoval.edit.order;
+sepia_read_edit_string(config_txt, str_pattern, action_handle);
 
 % Erosion radius
-str_pattern	= '.bfr.erode_radius';
-val      	= get_num_as_string(config_txt, str_pattern,'=',';');
-set_non_nan_value(h.bkgRemoval.edit.imerode, 'String', val);
+str_pattern     = '.bfr.erode_radius';
+action_handle   = h.bkgRemoval.edit.imerode;
+sepia_read_edit_string(config_txt, str_pattern, action_handle);
 
-% method
-str_pattern	= '.bfr.method';
-BFR_method	= get_string_as_string(config_txt, str_pattern);
-if ~isnan(BFR_method)
-    
-    for k = 1:length(methodBFRName)
-        if strcmpi(BFR_method,methodBFRName{k})
-            feval(config_BFR_function{k},h,'get',config_txt);
-            BFR_method = k;
-        end
-    end
-    
-    % change method popup manu
-    set_non_nan_value(h.bkgRemoval.popup.bkgRemoval,'Value',BFR_method);
-    % trigger popup callback to switch method panel
-    feval(h.bkgRemoval.popup.bkgRemoval.Callback{1},h.bkgRemoval.popup.bkgRemoval,[],h)
-end
+% background field removal method
+str_pattern      = '.bfr.method';
+action_handle    = h.bkgRemoval.popup.bkgRemoval;
+popup_list       = methodBFRName;
+config_func_list = config_BFR_function;
+read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_func_list, h)
 
 end
 %% Panel: QSM
 if isModifyQSM
     
 % reference tissue
-str_pattern	= '.qsm.reference_tissue';
-val      	= get_string_as_string(config_txt, str_pattern);
-switch lower(val)
-    case 'none'
-        set_non_nan_value(h.qsm.popup.tissue,'Value',1)
-    case 'brain mask'
-        set_non_nan_value(h.qsm.popup.tissue,'Value',2)
-    case 'csf'
-        set_non_nan_value(h.qsm.popup.tissue,'Value',3)
+str_pattern     = '.qsm.reference_tissue';
+action_handle   = h.qsm.popup.tissue;
+sepia_read_popup_value(config_txt, str_pattern, action_handle, tissueName);
+
+% QSM dipole inversion method
+str_pattern      = '.qsm.method';
+action_handle    = h.qsm.popup.qsm;
+popup_list       = methodQSMName;
+config_func_list = config_QSM_function;
+read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_func_list, h)
+
 end
 
-% method
-str_pattern	= '.qsm.method';
-QSM_method	= get_string_as_string(config_txt, str_pattern);
-if ~isnan(QSM_method)
-    
-    for k = 1:length(methodQSMName)
-        if strcmpi(QSM_method,methodQSMName{k})
-            feval(config_QSM_function{k},h,'get',config_txt);
-            QSM_method = k;
+end
+
+%% read the popup method that triggers the switch of method panel
+% config_txt    : variable contains config text
+% str_pattern   : string pattern to be printed after algorParam parameter
+% action_handle : handle of the GUI popup
+% popup_list    : popup list, in cell (methods in this case)
+% config_func_list: the correspinding get_set_XXX file of the methods
+% h             : master handle
+function read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_func_list, h)
+
+% get option as string
+method = get_string_as_string(config_txt, str_pattern);
+
+if ~isnan(method)
+    % matching popup list name
+    for j = 1:length(popup_list)
+        if strcmpi(method,popup_list{j})
+            method = j;
+            feval(config_func_list{j},h,'get',config_txt);
+            break
         end
     end
-    
-    % change method popup manu
-    set_non_nan_value(h.qsm.popup.qsm,'Value',QSM_method);
-    % trigger popup callback to switch method panel
-    feval(h.qsm.popup.qsm.Callback{1},h.qsm.popup.qsm,[],h)
-end
 
+    % change popup manu
+    set_non_nan_value(action_handle,'Value',method);
+    % trigger popup callback to switch method panel
+    feval(action_handle.Callback{1},action_handle,[],h)
 end
 
 end
