@@ -23,7 +23,7 @@
 % Date last modified:
 %
 %
-function [unwrappedField] = Wrapper_TotalField_ROMEO(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
+function [totalField, N_std, headerAndExtraData] = Wrapper_TotalField_ROMEO(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
 sepia_universal_variables;
 
 % get algorithm parameters
@@ -38,9 +38,8 @@ magn = headerAndExtraData.magn;
 sepia_addpath('ROMEO');
 
 %% main
-Inputs.Mask     = mask;
-Inputs.Phase    = wrappedField;
-unwrappedField  = SEGUE(Inputs);
+totalField  = ROMEO(wrappedField, magn, mask);
+N_std = totalField;
        
 end
 
