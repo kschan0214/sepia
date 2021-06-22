@@ -38,6 +38,7 @@ MEDI_HOME       = [];
 STISuite_HOME  	= [];
 SEGUE_HOME      = [];
 ROMEO_HOME      = [];
+MRISC_HOME      = [];
 
 SpecifyToolboxesDirectory;
 
@@ -54,41 +55,47 @@ wratio = [0.2,0.75,0.05];
     % Dependency 1: FANSI directory input
     [h.Utility.magageDependency.text.FANSIDir,h.Utility.magageDependency.edit.FANSIDir,h.Utility.magageDependency.button.FANSIDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
-        'FANSI directory:',FANSI_HOME,open_icon,[left bottom(1) width height],wratio);
+        'FANSI Home:',FANSI_HOME,open_icon,[left bottom(1) width height],wratio);
     
     % Dependency 2: MEDI directory input
     [h.Utility.magageDependency.text.MEDIDir,h.Utility.magageDependency.edit.MEDIDir,h.Utility.magageDependency.button.MEDIDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
-        'MEDI directory:',MEDI_HOME,open_icon,[left bottom(2) width height],wratio);
+        'MEDI Home:',MEDI_HOME,open_icon,[left bottom(2) width height],wratio);
   
     % Dependency 3: STI Suite directory input
     [h.Utility.magageDependency.text.STISuiteDir,h.Utility.magageDependency.edit.STISuiteDir,h.Utility.magageDependency.button.STISuiteDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
-        'STI Suite directory:',STISuite_HOME,open_icon,[left bottom(3) width height],wratio);
+        'STI Suite Home:',STISuite_HOME,open_icon,[left bottom(3) width height],wratio);
     
     % Dependency 4: SEGUE directory input
     [h.Utility.magageDependency.text.SEGUEDir,h.Utility.magageDependency.edit.SEGUEDir,h.Utility.magageDependency.button.SEGUEDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
-        'SEGUE directory:',SEGUE_HOME,open_icon,[left bottom(4) width height],wratio);
+        'SEGUE Home:',SEGUE_HOME,open_icon,[left bottom(4) width height],wratio);
     
     % Dependency 5: ROMEO directory input
     [h.Utility.magageDependency.text.ROMEODir,h.Utility.magageDependency.edit.ROMEODir,h.Utility.magageDependency.button.ROMEODir] = ...
         sepia_construct_text_edit_button(parent_panel,...
-        'ROMEO directory:',ROMEO_HOME,open_icon,[left bottom(5) width height],wratio);
+        'ROMEO Home:',ROMEO_HOME,open_icon,[left bottom(5) width height],wratio);
+
+    % Dependency 6: ROMEO directory input
+    [h.Utility.magageDependency.text.MRISuscCalcDir,h.Utility.magageDependency.edit.MRISuscCalcDir,h.Utility.magageDependency.button.MRISuscCalcDir] = ...
+        sepia_construct_text_edit_button(parent_panel,...
+        'MRI susc. calc. Home:',MRISC_HOME,open_icon,[left bottom(6) width height],wratio);
     
     % run
     h.Utility.magageDependency.button.save = uicontrol('Parent',parent_panel,...
         'Style','pushbutton','String','Save',...
         'units','normalized','position',[0.79 bottom(10) 0.2 height],...
-        'backgroundcolor','white','enable','off');
+        'backgroundcolor','white','enable','on');
     
 %% set callback functions
-set(h.Utility.magageDependency.button.FANSIDir,  	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.FANSIDir});
-set(h.Utility.magageDependency.button.MEDIDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MEDIDir});
-set(h.Utility.magageDependency.button.STISuiteDir,	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.STISuiteDir});
-set(h.Utility.magageDependency.button.SEGUEDir,     'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.SEGUEDir});
-set(h.Utility.magageDependency.button.ROMEODir,     'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ROMEODir});
-set(h.Utility.magageDependency.button.save,       	'Callback', {@PushbuttonSave_Utility_magageDependency_Callback,h});
+set(h.Utility.magageDependency.button.FANSIDir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.FANSIDir});
+set(h.Utility.magageDependency.button.MEDIDir,          'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MEDIDir});
+set(h.Utility.magageDependency.button.STISuiteDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.STISuiteDir});
+set(h.Utility.magageDependency.button.SEGUEDir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.SEGUEDir});
+set(h.Utility.magageDependency.button.ROMEODir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ROMEODir});
+set(h.Utility.magageDependency.button.MRISuscCalcDir,   'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRISuscCalcDir});
+set(h.Utility.magageDependency.button.save,             'Callback', {@PushbuttonSave_Utility_magageDependency_Callback,h});
 end
 
 %% Callback functions
@@ -107,27 +114,74 @@ end
 
 function PushbuttonSave_Utility_magageDependency_Callback(source,eventdata,h)
 
+dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','ROMEO_HOME','MRISC_HOME'};
+gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'ROMEODir'  ,'MRISuscCalcDir'};
+
 SpecifyToolboxesDirectory;
 
-directory_text = fileread(fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m'));
+% get all the text from SpecifyToolboxesDirectory.m 
+fid             = fopen( fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m') );
+directory_text  = textscan( fid, '%s', 'Delimiter','\n', 'CollectOutput',true );
+fclose( fid );
 
+isOverWrite = false;
 
-if ~exist('FANSI_HOME','var')   % scenario 1: if such variable doesn't exist yet
-    gui_FANSI_HOME = fileparts(get(h.Utility.magageDependency.edit.FANSIDir,'String'));
-    % add string to the end of the file
+for k = 1:length(gui_handles)
+
+% get string from GUI
+gui_HOME = fileparts(get(h.Utility.magageDependency.edit.(gui_handles{k}),'String'));
+
+% if GUI is not empty, then allows changes
+if ~isempty( gui_HOME )
     
-elseif isempty(FANSI_HOME)      % scenario 2: if such variable is empty
-    gui_FANSI_HOME = fileparts(get(h.Utility.magageDependency.edit.FANSIDir,'String'));
-else
-    % check if the variable is the same as in the GUI
-    curr_FANSI_HOME = fileparts(FANSI_HOME);
-    gui_FANSI_HOME  = fileparts(get(h.Utility.magageDependency.edit.FANSIDir,'String'));
-    isIdentical     = strcmp(curr_FANSI_HOME,gui_FANSI_HOME);
+    % default update is false
+    isUpdateHome = false;
+    
+    % check if changing is needed for the following conditions
+    if ~exist(dependency_homes{k},'var')                % scenario 1: if such variable doesn't exist yet
+        isUpdateHome = true;
+
+    elseif isempty(eval(dependency_homes{k}))           % scenario 2: if such variable is empty
+        isUpdateHome = true;
+    else                                                % scenario 3: check if the variable is the same as in the GUI
+        curr_HOME = fileparts(eval(dependency_homes{k}));
+        isUpdateHome = ~strcmp(curr_HOME,gui_HOME);    % if not identical then update
+    end
+    
+    % update SpecifyToolboxesDirectory.m
+    if isUpdateHome
+        
+        % check if the file contains the variable name that is about to be changed 
+        % if so, and if the 1st char is not '%' then comment the line out
+        for j = 1:length(directory_text{1})
+            
+            isContain = ContainName(directory_text{1}{j},lower(dependency_homes{k}));
+            
+            if isContain && ~strcmp(directory_text{1}{j}(1),'%')
+                % insert a '%' to comment the line out
+                directory_text{1}{j} = ['% ' directory_text{1}{j}];
+            end
+                
+        end
+        % insert the variable to the end of the file
+        directory_text{1}{j+1} = sprintf('%s = ''%s'';',dependency_homes{k}, gui_HOME);
+        
+        isOverWrite = true;
+    end
+    
+end
 end
 
+% overwrite SpecifyToolboxesDirectory.m
+if isOverWrite
+    
+    fid = fopen( fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m'), 'w');
+    for j = 1:length(directory_text{1})
+        fprintf( fid, '%s\n', directory_text{1}{j} );
+    end
+    fclose( fid );
 
+end
 
-
-idx  = regexp(directory_text,'FANSI_HOME');
 
 end
