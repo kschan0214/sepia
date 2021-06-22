@@ -9,6 +9,7 @@
 % Date modified: 24 August 2018
 % Date modified: 5 June 2019
 % Date modified: 9 June 2020 (v0.8.0)
+% Date modified: 22 June 2021 (v1.0)
 %
 function sepia_addpath(method, isStartCheck)
 
@@ -22,7 +23,26 @@ end
 % specify the toolbox(es) directory
 SpecifyToolboxesDirectory;
 if isStartCheck
-    CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME);
+    if ~exist('MEDI_HOME','var')
+        MEDI_HOME = [];
+    end
+    if ~exist('STISuite_HOME','var')
+        STISuite_HOME = [];
+    end
+    if ~exist('FANSI_HOME','var')
+        FANSI_HOME = [];
+    end
+    if ~exist('SEGUE_HOME','var')
+        SEGUE_HOME = [];
+    end
+    if ~exist('ROMEO_HOME','var')
+        ROMEO_HOME = [];
+    end
+    if ~exist('MRISC_HOME','var')
+        MRISC_HOME = [];
+    end
+        
+    CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,ROMEO_HOME,MRISC_HOME);
 end
 
 % get SEPIA_HOME from this file 
@@ -65,13 +85,19 @@ switch lower(method)
         
     case 'fansi'
         addpath(genpath(FANSI_HOME));
+        
+    case 'romeo'
+        addpath(genpath(ROMEO_HOME));
+        
+    case 'mrisc'
+        addpath(genpath(MRISC_HOME));
 
 end
 
 end
 
 %% check the following paths exist or not
-function CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME)
+function CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,ROMEO_HOME,MRISC_HOME)
 
 if exist(MEDI_HOME,'dir')~=7
     warning('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
@@ -91,6 +117,16 @@ end
 if exist(SEGUE_HOME,'dir')~=7
     warning('Please specify a correct path for SEGUE in SpecifyToolboxesDirectory.m');
     warning('All functions related to SEGUE cannot be used.');
+end
+
+if exist(ROMEO_HOME,'dir')~=7
+    warning('Please specify a correct path for ROMEO in SpecifyToolboxesDirectory.m');
+    warning('All functions related to ROMEO cannot be used.');
+end
+
+if exist(MRISC_HOME,'dir')~=7
+    warning('Please specify a correct path for MRI Susceptibility Calculation in SpecifyToolboxesDirectory.m');
+    warning('All functions related to MRI Susceptibility Calculation cannot be used.');
 end
     
 end
