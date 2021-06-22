@@ -19,7 +19,7 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 5 June 2021 (v1.0)
+% Date created: 22 June 2021 (v1.0)
 % Date modified:
 %
 %
@@ -85,7 +85,8 @@ if isMultiecho
     % get the unwrapped phase accumulation across echoes
     % unwrap first echo
     tmp                     = UnwrapPhaseMacro(fieldMap(:,:,:,1),mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
-    tmp                     = tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+%     tmp                     = tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+    tmp                     = tmp-round(mean(tmp( mask == 1))/(2*pi))*2*pi;
     fieldmapUnwrapAllEchoes = cat(4,tmp,tmp2);
     fieldmapUnwrapAllEchoes = cumsum(fieldmapUnwrapAllEchoes,4);
 
@@ -93,7 +94,8 @@ else
 
 %%%%%%%%%%%%%%%%%%%%%%%% Single echo %%%%%%%%%%%%%%%%%%%%%%%%
     tmp                                 = UnwrapPhaseMacro(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
-    tmp                                 = tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+%     tmp                     = tmp-round(tmp(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+    tmp                                 = tmp-round(mean(tmp( mask == 1))/(2*pi))*2*pi;
     totalField                          = tmp/(TE(1));
     totalFieldSD                        = 1./magn;
     totalFieldSD(isnan(totalFieldSD))   = 0;
@@ -102,6 +104,11 @@ else
 end
 
 N_std = totalFieldSD;
+
+% apply mask
+totalField              = bsxfun(@times,totalField,mask);
+N_std                   = bsxfun(@times,N_std,mask);
+fieldmapUnwrapAllEchoes = bsxfun(@times,fieldmapUnwrapAllEchoes,mask);
 
 if ~isempty(fieldmapUnwrapAllEchoes)
     headerAndExtraData.fieldmapUnwrapAllEchoes = fieldmapUnwrapAllEchoes;

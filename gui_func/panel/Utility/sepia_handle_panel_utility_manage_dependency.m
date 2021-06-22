@@ -107,7 +107,7 @@ pathDir = uigetdir;
 
 if pathDir ~= 0
     % set input edit field for display
-    set(h_edit, 'String', pathDir);
+    set(h_edit, 'String', [pathDir filesep]);
 end
 
 end
@@ -129,10 +129,12 @@ isOverWrite = false;
 for k = 1:length(gui_handles)
 
 % get string from GUI
-gui_HOME = fileparts(get(h.Utility.magageDependency.edit.(gui_handles{k}),'String'));
+gui_field = get(h.Utility.magageDependency.edit.(gui_handles{k}),'String');
 
 % if GUI is not empty, then allows changes
-if ~isempty( gui_HOME )
+if ~isempty( gui_field )
+    
+    gui_HOME = fileparts(fullfile(gui_field,filesep));
     
     % default update is false
     isUpdateHome = false;
@@ -164,7 +166,7 @@ if ~isempty( gui_HOME )
                 
         end
         % insert the variable to the end of the file
-        directory_text{1}{j+1} = sprintf('%s = ''%s'';',dependency_homes{k}, gui_HOME);
+        directory_text{1}{j+1} = sprintf('%s = ''%s'';',dependency_homes{k}, fullfile(gui_HOME,filesep));
         
         isOverWrite = true;
     end

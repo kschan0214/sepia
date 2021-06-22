@@ -19,8 +19,8 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 5 June 2021 (v1.0)
-% Date last modified:
+% Date created: 22 June 2021 (v1.0)
+% Date modified:
 %
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_MEDInonlinearfit(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
@@ -52,13 +52,18 @@ headerAndExtraData.magn = sqrt(sum(abs(magn).^2,4));
 totalField = UnwrapPhaseMacro(iFreq_raw,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
 % use the centre of mass as reference phase
-totalField = totalField-round(totalField(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+% totalField = totalField-round(totalField(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
+totalField = totalField-round(mean(totalField( mask == 1))/(2*pi))*2*pi;
 
 % convert rad to radHz
 totalField = totalField / dt;
         
 % return the original data
 headerAndExtraData.magn = magn;
+
+% apply mask
+totalField	= bsxfun(@times,totalField,mask);
+N_std     	= bsxfun(@times,N_std,mask);
 
 end
 
