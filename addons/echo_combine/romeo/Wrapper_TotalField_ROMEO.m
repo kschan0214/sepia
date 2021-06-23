@@ -38,7 +38,8 @@ magn = headerAndExtraData.magn;
 sepia_addpath('ROMEO');
 
 %% main
-totalField  = ROMEO(wrappedField, magn, mask);
+% TODO mcpc3ds, bipolar correction
+totalField  = ROMEO(wrappedField, magn, mask, headerAndExtraData.te);
 N_std = totalField;
        
 end
