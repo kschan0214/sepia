@@ -27,7 +27,7 @@ function [totalField, N_std, headerAndExtraData] = Wrapper_TotalField_ROMEO(wrap
 sepia_universal_variables;
 
 % get algorithm parameters
-algorParam      = check_and_set_algorithm_default(algorParam);
+parameters      = check_and_set_algorithm_default(algorParam, headerAndExtraData);
 method          = algorParam.unwrap.unwrapMethod;
 
 % get magnitude
@@ -39,16 +39,16 @@ sepia_addpath('ROMEO');
 
 %% main
 % TODO mcpc3ds, bipolar correction
-totalField  = ROMEO(wrappedField, magn, mask, headerAndExtraData.te);
+totalField  = ROMEO(wrappedField, magn, mask, parameters);
 N_std = totalField;
        
 end
 
 %% set default parameter if not specified
-function algorParam2 = check_and_set_algorithm_default(algorParam)
+function parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData)
 
-algorParam2 = algorParam;
+parameters.TE = headerAndExtraData.te;
 
-try algorParam2.unwrap.subsampling = algorParam.unwrap.subsampling; catch; algorParam2.unwrap.subsampling  = 1;  end
+try parameters.unwrap.subsampling = algorParam.unwrap.subsampling; catch; parameters.unwrap.subsampling  = 1;  end
 
 end

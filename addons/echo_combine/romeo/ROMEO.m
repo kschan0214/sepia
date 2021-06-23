@@ -1,44 +1,67 @@
-function totalField = ROMEO(phase, mag, mask, TE)
-    tmp_dir = fullfile(tempdir, 'romeo_tmp'); % should create a suitable temporary directory on every machine
+function totalField = ROMEO_totalField(phase, mag, mask, parameters)
+    % TODO set the path in SEPIA and retrieve it
+    path_to_binary = 'C:\Users\korbi\Desktop\romeo_win_3.2.0\bin';
+
+    % Should create a suitable temporary directory on every machine
+    tmp_dir = fullfile(tempdir, 'romeo_tmp'); 
     mkdir(tmp_dir);
-    % Input
+    
+    % Input Files
     fn_phase = fullfile(tmp_dir, 'Phase.nii');
     fn_mag = fullfile(tmp_dir, 'Mag.nii'); 
     fn_mask = fullfile(tmp_dir, 'Mask.nii');
-    % Output
-    fn_unwrapped = fullfile(tmp_dir, 'Unwrapped.nii');
-    fn_totalField = fullfile(tmp_dir, 'B0.nii');
-    fn_phase_offset = fullfile(tmp_dir, 'phase_offset.nii');
-    fn_corrected_phase = fullfile(tmp_dir, 'corrected_phase.nii');
-    fn_romeo_settings = fullfile(tmp_dir, 'settings_romeo.txt');
-    
     save_nii(make_nii(phase), fn_phase);
     save_nii(make_nii(mag), fn_mag);
     save_nii(make_nii(mask), fn_mask);
-    path_to_binary = 'C:\Users\korbi\Desktop\romeo_win_3.2.0\bin';
     
+    % Output Files
+    fn_unwrapped = fullfile(tmp_dir, 'Unwrapped.nii');
+    fn_totalField = fullfile(tmp_dir, 'B0.nii');
+    
+    % Always required parameters
+    cmd_phase = [' -p ' fn_phase];
+    cmd_output = [' -o ' fn_unwrapped];
+    cmd_calculate_B0 = ' -B';
+    cmd_mag = [' -m ' fn_mag];
+    cmd_echo_times = [' -t ' mat2str(parameters.TE)];
+    
+    % Optional parameters
+    cmd_mask = '';
+    if strcmp(parameters.mask, 'SEPIA')
+        cmd_mask = [' -k ' fn_mask];
+    elseif strcmp(parameters.mask, 'nomask')
+        cmd_mask = [' -k ' 'nomask'];
+    elseif strcmp(paramaters.mask, 'romeomask')
+        cmd_mask = [' -k ' 'robustmask'];
+    end
+    cmd_phase_offset_correction = '';
+    if strcmp(parameters.phase_offset_correction, 'bipolar')
+        cmd_phase_offset_correction = [' --phase-offset-correction ' 'bipolar'];
+    elseif parameters.phase_offset_correction
+        cmd_phase_offset_correction = [' --phase-offset-correction ' 'on'];
+    end
+    
+    % Romeo binary name
     romeo_name = 'romeo';
     if ispc
         romeo_name = 'romeo.exe';
     end
     romeo_binary = fullfile(path_to_binary, romeo_name); 
     
-    romeo_cmd = sprintf('%s %s -m %s -o %s -k %s -t %s -B --phase-offset-correction bipolar', romeo_binary, fn_phase, fn_mag, fn_unwrapped, fn_mask, mat2str(TE));
-    success = system(romeo_cmd); % system command should work on every machine
+    % Create romeo CMD command
+    romeo_cmd = [romeo_binary cmd_phase cmd_mag cmd_mask cmd_output cmd_calculate_B0 cmd_echo_times cmd_phase_offset_correction];
+    
+    % Run romeo
+    success = system(romeo_cmd); % system() call should work on every machine
     
     if success ~= 0
         error(['ROMEO unwrapping failed! Check input files for corruption in ' tmp_dir]);
     end
     
+    % Load the calculated total field
     totalField = load_nii_img_only(fn_totalField);
-    delete(fn_totalField)
-    delete(fn_phase)
-    delete(fn_mag)
-    delete(fn_mask)
-    delete(fn_unwrapped)
-    delete(fn_romeo_settings)
-    delete(fn_phase_offset)
-    delete(fn_corrected_phase)
-    rmdir(tmp_dir)
+    
+    % Remove all temp output files and the temp folder
+    rmdir(tmp_dir, 's')
 end
 
