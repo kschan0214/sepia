@@ -1,8 +1,8 @@
-%% [unwrappedField] = Wrapper_TotalField_ROMEO(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
+%% [totalField, N_std, headerAndExtraData] = Wrapper_TotalField_ROMEO(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
 %
 % Input
 % --------------
-% fieldMap      : original single-/multi-echo wrapped phase image, in rad
+% wrappedField  : original single-/multi-echo wrapped phase image, in rad
 % mask          : signal mask
 % matrixSize    : size of the input image
 % voxelSize     : spatial resolution of each dimension of the data, in mm
@@ -28,6 +28,7 @@ sepia_universal_variables;
 
 % get algorithm parameters
 parameters      = check_and_set_algorithm_default(algorParam, headerAndExtraData);
+parameters.voxelSize = voxelSize; % for MCPC-3D-S phase offset smoothing
 method          = algorParam.unwrap.unwrapMethod;
 
 % get magnitude
@@ -38,9 +39,12 @@ magn = headerAndExtraData.magn;
 sepia_addpath('ROMEO');
 
 %% main
-% TODO mcpc3ds, bipolar correction
-totalField  = ROMEO(wrappedField, magn, mask, parameters);
-N_std = totalField;
+[totalField, fieldmapUnwrapAllEchoes] = ROMEO(wrappedField, magn, mask, parameters);
+if algorParam.unwrap.isSaveUnwrappedEcho
+    headerAndExtraData.fieldmapUnwrapAllEchoes = fieldmapUnwrapAllEchoes;
+end
+TEs = resphape(headerAndExtraData.te, 1,1,1,length(headerAndExtraData.te));
+N_std = sqrt(sum(magn .* magn .* (TEs .* TEs), 4)); % TODO compare with SEPIA version
        
 end
 
@@ -48,7 +52,24 @@ end
 function parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData)
 
 parameters.TE = headerAndExtraData.te;
+parameters.isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
+parameters.calculateB0 = true;
+parameters.useMag = true;
 
-try parameters.unwrap.subsampling = algorParam.unwrap.subsampling; catch; parameters.unwrap.subsampling  = 1;  end
+if contains(lower(algorParam.unwrap.offsetCorrect), 'bipolar')
+    parameters.phaseOffsetCorrection = 'bipolar';
+elseif contains(lower(algorParam.unwrap.offsetCorrect), 'on')
+    parameters.phaseOffsetCorrection = 'on';
+else
+    parameters.phaseOffsetCorrection = 'off';
+end
+
+if contains(lower(algorParam.unwrap.mask), 'sepia')
+    parameters.mask = 'file';
+elseif contains(lower(algorParam.unwrap.mask), 'romeo')
+    parameters.mask = 'robustmask';
+else
+    parameters.mask = 'nomask';
+end
 
 end

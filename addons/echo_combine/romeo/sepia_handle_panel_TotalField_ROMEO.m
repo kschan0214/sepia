@@ -24,6 +24,7 @@ sepia_universal_variables;
 
 %% set default values
 defaultThreshold = 0.5;
+%defaultMcpc3dsSelection = 1;
 
 %% Tooltips
 % tooltips
@@ -33,7 +34,7 @@ tooltip.unwrap.panel.exclude        = ['Apply threshold on relative residual to 
 tooltip.unwrap.panel.exclude_edit	= ['Higher value means accepting larger error between the data fitting and measurement'];
 
 %% layout of the panel
-nrow        = 4;
+nrow        = 3;
 rspacing    = 0.01;
 ncol        = 2;
 cspacing    = 0.01;
@@ -53,40 +54,29 @@ h.phaseUnwrap.panel.ROMEOTotalField = uipanel(hParent,...
     % width of each element in a functional column, in normalised unit
     wratio = 0.5;
     
-    % row 1, left 
     krow = 1;
-    % phase unwrapping method, 'text|popup' 
-    [h.phaseUnwrap.ROMEOTotalField.text.phaseUnwrap,h.phaseUnwrap.ROMEOTotalField.popup.phaseUnwrap] = sepia_construct_text_popup(...
-        panelParent,'Phase unwrapping:', methodUnwrapName, [left(1) bottom(krow) width height], wratio);
+    % row 1, left
+    % MCPC-3D-S phase offset correction popup
+    methodOffsetCorrect = {'Off', 'On', 'Bipolar (>= 3 echoes)'};
+    [h.phaseUnwrap.ROMEOTotalField.text.offsetCorrect,h.phaseUnwrap.ROMEOTotalField.popup.offsetCorrect] = sepia_construct_text_popup(...
+        panelParent,'MCPC-3D-S phase offset correction:', methodOffsetCorrect, [left(1) bottom(krow) width height], wratio);
     
-    % row 2, left
-    krow = krow + 1;
+    % row 1, right
     % eddy current correction for bipolar readout, 'checkbox' functional
-    % TODO options: ROMEO bipolar correction, SEPIA correction, both
     h.phaseUnwrap.ROMEOTotalField.checkbox.eddyCorrect = uicontrol('Parent',panelParent ,...
-        'Style','checkbox','String','Bipolar readout correction',...
-        'units','normalized','Position',[left(1) bottom(krow) width height],...
+        'Style','checkbox','String','SEPIA Bipolar readout correction (alternative to MPCP-3D-S bipolar)',...
+        'units','normalized','Position',[left(2) bottom(krow) width height],...
         'backgroundcolor',get(h.fig,'color'));
+    
+    krow = krow + 1;
+    % row 2, left
+    % Mask used for ROMEO
+    methodMask = {'SEPIA mask', 'ROMEO mask', 'No Mask'};
+    [h.phaseUnwrap.ROMEOTotalField.text.mask,h.phaseUnwrap.ROMEOTotalField.popup.mask] = sepia_construct_text_popup(...
+        panelParent,'Mask for unwrapping:', methodMask, [left(1) bottom(krow) width height], wratio);
     
     % row 2, right
-    % save unwrapped echo phase option, 'checkbox', 3th row
-    h.phaseUnwrap.ROMEOTotalField.checkbox.saveEchoPhase = uicontrol('Parent',panelParent ,...
-        'Style','checkbox','String','Save unwrapped echo phase',...
-        'units','normalized','position',[left(2) bottom(krow) width height],...
-        'backgroundcolor',get(h.fig,'color'),...
-        'Enable','on');
-    
-    
-    krow = krow + 1;
-    % left
-    % MCPC-3D-S phase offset correction, 'checkbox' functional
-    h.phaseUnwrap.ROMEOTotalField.checkbox.offsetCorrect = uicontrol('Parent',panelParent ,...
-        'Style','checkbox','String','MCPC-3D-S phase offset correction',...
-        'units','normalized','Position',[left(1) bottom(krow) width height],...
-        'backgroundcolor',get(h.fig,'color'));
-    
-    % right
-    % save unwrapped echo phase option, 'checkbox', 3th row
+    % save unwrapped echo phase option, 'checkbox'
     h.phaseUnwrap.ROMEOTotalField.checkbox.saveEchoPhase = uicontrol('Parent',panelParent ,...
         'Style','checkbox','String','Save unwrapped echo phase',...
         'units','normalized','position',[left(2) bottom(krow) width height],...
@@ -121,35 +111,18 @@ h.phaseUnwrap.panel.ROMEOTotalField = uipanel(hParent,...
     
 
 %% set tooltips
-set(h.phaseUnwrap.ROMEOTotalField.text.phaseUnwrap,          'Tooltip',tooltip.unwrap.panel.unwrap);
+%set(h.phaseUnwrap.ROMEOTotalField.text.phaseUnwrap,          'Tooltip',tooltip.unwrap.panel.unwrap);
 set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask,      'Tooltip',tooltip.unwrap.panel.exclude);
 set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,          'Tooltip',tooltip.unwrap.panel.exclude_edit);
 
 %% set callbacks
 set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask,  'Callback', {@CheckboxEditPair_Callback,{h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod},1});
 set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,      'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
-set(h.phaseUnwrap.ROMEOTotalField.popup.phaseUnwrap,     'Callback', {@popupPhaseUnwrap_Callback,h});
+%set(h.phaseUnwrap.ROMEOTotalField.popup.phaseUnwrap,     'Callback', {@popupPhaseUnwrap_Callback,h});
 
-end
-
-%% Callback functions
-% Phase unwrapping method specific panel setting
-function popupPhaseUnwrap_Callback(source,eventdata,h)
-
-sepia_universal_variables;
-
-% get selected background removal method
-method = source.String{source.Value,1} ;
-
-% Reset the option 
-set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
-set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,     'Enable', 'off');
-set(h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod,  'Enable', 'off');
-% method the user chosen will affect if exclusion method can be used or not 
-for k = 1:length(methodUnwrapName)
-    if strcmpi(method,methodUnwrapName{k})
-        set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{k});
-    end
-end
+% Enable exlude options 
+set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask, 'Enable', 'on', 'Value', 0);
+set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,     'Enable', 'on');
+set(h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod,  'Enable', 'on');
 
 end

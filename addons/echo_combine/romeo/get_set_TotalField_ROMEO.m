@@ -22,13 +22,19 @@ sepia_universal_variables;
 
 % these are the string to be printed in the pipeline config file
 % for best practice, the entries should be matched with action_handle
-str_pattern = {'.unwrap.unwrapMethod',...
+str_pattern = {'.unwrap.offsetCorrect',...
+               '.unwrap.mask',...
+               '.unwrap.isEddyCorrect',...
+               '.unwrap.isSaveUnwrappedEcho',...
                '',...
                '.unwrap.excludeMaskThreshold',...
                '.unwrap.excludeMethod'};
 
 % these are the options available in the GUI
-action_handle = {h.phaseUnwrap.ROMEOTotalField.popup.phaseUnwrap,...
+action_handle = {h.phaseUnwrap.ROMEOTotalField.popup.offsetCorrect,...
+                 h.phaseUnwrap.ROMEOTotalField.popup.mask,...
+                 h.phaseUnwrap.ROMEOTotalField.checkbox.eddyCorrect,...
+                 h.phaseUnwrap.ROMEOTotalField.checkbox.saveEchoPhase,...
                  h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask,...
                  h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,...
                  h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod};
@@ -37,9 +43,13 @@ switch lower(mode)
     case 'set'
         fid = input;
         
-        % print spatial phase unwrapping method | popup 
-        k = 1;
-        sepia_print_popup_as_string(fid,str_pattern{k},action_handle{k});
+        for k = 1:2
+            sepia_print_popup_as_string(fid,str_pattern{k},action_handle{k});
+        end
+        
+        for k = 3:4
+            sepia_print_checkbox_value(fid,str_pattern{k},action_handle{k});
+        end
         
         % more complicated operation for exclude mask options
         k = k+1;
@@ -61,13 +71,18 @@ switch lower(mode)
         config_txt = input;
         
         % spatial phase unwrapping popup | popup
-        k = 1;
-        % change popup to the selected method
-        sepia_read_popup_value(config_txt, str_pattern{k}, action_handle{k}, methodUnwrapName);
-        % trigger popup callback to switch method panel
-        % the input has to be matched with the callback function in the
-        % sepia_handle_panel_EchoCombine_XXX.m
-        feval(action_handle{k}.Callback{1},action_handle{k},[],h);
+        for k = 1:2
+            % change popup to the selected method
+            sepia_read_popup_value(config_txt, str_pattern{k}, action_handle{k}, methodUnwrapName);
+            % trigger popup callback to switch method panel
+            % the input has to be matched with the callback function in the
+            % sepia_handle_panel_EchoCombine_XXX.m
+            feval(action_handle{k}.Callback{1},action_handle{k},[],h);
+        end
+        
+        for k = 2:3
+            sepia_read_checkbox_value(config_txt, str_pattern{k}, action_handle{k});
+        end
         
         % exclusion method | 'checkbox + edit + popup' combo
         % check for exclusion threshold
