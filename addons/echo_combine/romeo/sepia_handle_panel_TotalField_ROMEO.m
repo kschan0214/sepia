@@ -126,3 +126,25 @@ set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,     'Enable', 'on');
 set(h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod,  'Enable', 'on');
 
 end
+
+%% Callback functions
+% Phase unwrapping method specific panel setting
+function popupPhaseUnwrap_Callback(source,eventdata,h)
+
+sepia_universal_variables;
+
+% get selected background removal method
+method = source.String{source.Value,1} ;
+
+% Reset the option 
+set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
+set(h.phaseUnwrap.optimumWeights.edit.excludeMask,     'Enable', 'off');
+set(h.phaseUnwrap.optimumWeights.popup.excludeMethod,  'Enable', 'off');
+% method the user chosen will affect if exclusion method can be used or not 
+for k = 1:length(methodUnwrapName)
+    if strcmpi(method,methodUnwrapName{k})
+        set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{k});
+    end
+end
+
+end

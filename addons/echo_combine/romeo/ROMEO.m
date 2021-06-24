@@ -1,30 +1,34 @@
-function [totalField, fieldmapUnwrapAllEchoes] = ROMEO(phase, mag, mask, parameters)
-    % TODO set the path in SEPIA and retrieve it
-    path_to_binary = 'C:\Users\korbi\Desktop\romeo_win_3.2.0\bin';
-
-    % Should create a suitable temporary directory on every machine
-    tmp_dir = fullfile(tempdir, 'romeo_tmp'); 
-    mkdir(tmp_dir);
+function [unwrapped, B0] = ROMEO(phase, parameters)
+    romeo_path = 'C:\Users\korbi\Desktop\romeo_win_3.2.0\bin';
+    romeo_name = 'romeo';
+    if ispc
+        romeo_name = 'romeo.exe';
+    end
+    romeo_binary = fullfile(romeo_path, romeo_name); 
+    
+    output_dir = parameters.output_dir;
     
     % Input Files
-    fn_phase = fullfile(tmp_dir, 'Phase.nii');
-    fn_mask = fullfile(tmp_dir, 'Mask.nii');
-    fn_mag = fullfile(tmp_dir, 'Mag.nii');
+    fn_phase = fullfile(output_dir, 'Phase.nii');
+    fn_mask = fullfile(output_dir, 'Mask.nii');
+    fn_mag = fullfile(output_dir, 'Mag.nii');
     
     phase_nii = make_nii(phase);
-    phase_nii.hdr.dime.pixdim(2:4) = parameters.voxelSize;
-    save_nii(phase_nii, fn_phase); % TODO set voxel size
-    if parameters.useMag
-        save_nii(make_nii(mag), fn_mag);
+    if isfield(parameters, 'voxel_size')
+        phase_nii.hdr.dime.pixdim(2:4) = parameters.voxel_size;
     end
-    if strcmp(parameters.mask, 'file')    
-        save_nii(make_nii(mask), fn_mask);
+    save_nii(phase_nii, fn_phase);
+    if ~isempty(parameters.mag)
+        save_nii(make_nii(parameters.mag), fn_mag);
+    end
+    if isnumeric(parameters.mask)
+        save_nii(make_nii(parameters.mask), fn_mask);
     end
     
     
     % Output Files
-    fn_unwrapped = fullfile(tmp_dir, 'Unwrapped.nii');
-    fn_totalField = fullfile(tmp_dir, 'B0.nii');
+    fn_unwrapped = fullfile(output_dir, 'Unwrapped.nii');
+    fn_total_field = fullfile(output_dir, 'B0.nii');
     
     % Always required parameters
     cmd_phase = [' -p ' fn_phase];
@@ -32,48 +36,44 @@ function [totalField, fieldmapUnwrapAllEchoes] = ROMEO(phase, mag, mask, paramet
     
     % Optional parameters
     cmd_calculate_B0 = '';
-    if parameters.calculateB0
+    if parameters.calculate_B0
         cmd_calculate_B0 = ' -B';
     end
     cmd_mag = '';
-    if parameters.useMag
+    if ~isempty(parameters.mag)
         cmd_mag = [' -m ' fn_mag];
     end
     cmd_echo_times = [' -t ' mat2str(parameters.TE)];
-    if strcmp(parameters.mask, 'file')
+    if isnumeric(parameters.mask)
         cmd_mask = [' -k ' fn_mask];
     else
         cmd_mask = [' -k ' parameters.mask];
     end
-    cmd_phase_offset_correction = [' --phase-offset-correction ' parameters.phaseOffsetCorrection];
-    
-    % Romeo binary name
-    romeo_name = 'romeo';
-    if ispc
-        romeo_name = 'romeo.exe';
+    cmd_phase_offset_correction = [' --phase-offset-correction ' parameters.phase_offset_correction];
+    additional_flags = '';
+    if isfield(parameters, 'additional_flags')
+        additional_flags = parameters.additional_flags;
     end
-    romeo_binary = fullfile(path_to_binary, romeo_name); 
     
     % Create romeo CMD command
-    romeo_cmd = [romeo_binary cmd_phase cmd_mag cmd_output cmd_echo_times cmd_mask cmd_calculate_B0 cmd_phase_offset_correction];
-    display(['ROMEO command: ' romeo_cmd]);
+    romeo_cmd = [romeo_binary cmd_phase cmd_mag cmd_output cmd_echo_times cmd_mask cmd_calculate_B0 cmd_phase_offset_correction additional_flags];
+    disp(['ROMEO command: ' romeo_cmd])
     
     % Run romeo
     success = system(romeo_cmd); % system() call should work on every machine
     
     if success ~= 0
-        error(['ROMEO unwrapping failed! Check input files for corruption in ' tmp_dir]);
+        error(['ROMEO unwrapping failed! Check input files for corruption in ' output_dir]);
     end
     
     % Load the calculated output
-    totalField = load_nii_img_only(fn_totalField);
-    if parameters.isSaveUnwrappedEcho
-        fieldmapUnwrapAllEchoes = load_nii_img_only(fn_unwrapped);
-    else
-        fieldmapUnwrapAllEchoes = [];
+    B0 = [];
+    unwrapped = [];
+    if parameters.calculate_B0
+        B0 = load_nii_img_only(fn_total_field);
     end
-    
-    % Remove all temp output files and the temp folder
-    rmdir(tmp_dir, 's')
+    if ~parameters.no_unwrapped_output
+        unwrapped = load_nii_img_only(fn_unwrapped);
+    end
 end
 

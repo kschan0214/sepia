@@ -25,47 +25,52 @@
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_TotalField_ROMEO(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
 sepia_universal_variables;
-
-% get algorithm parameters
-parameters      = check_and_set_algorithm_default(algorParam, headerAndExtraData);
-parameters.voxelSize = voxelSize; % for MCPC-3D-S phase offset smoothing
-method          = algorParam.unwrap.unwrapMethod;
-
-% get magnitude
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-magn = headerAndExtraData.magn;
 
 % add path
 sepia_addpath('ROMEO');
 
+% get algorithm parameters
+parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData, mask);
+parameters.voxel_size = voxelSize; % for MCPC-3D-S phase offset smoothing
+% Should create a suitable temporary directory on every machine
+parameters.output_dir = fullfile(tempdir, 'romeo_tmp');
+mkdir(parameters.output_dir);
+
 %% main
-[totalField, fieldmapUnwrapAllEchoes] = ROMEO(wrappedField, magn, mask, parameters);
+[fieldmapUnwrapAllEchoes, totalField] = ROMEO(wrappedField, parameters);
+
+% Remove all temp output files and the temp folder
+rmdir(parameters.output_dir, 's')
+
+%% Set additional outputs
 if algorParam.unwrap.isSaveUnwrappedEcho
     headerAndExtraData.fieldmapUnwrapAllEchoes = fieldmapUnwrapAllEchoes;
 end
-TEs = resphape(headerAndExtraData.te, 1,1,1,length(headerAndExtraData.te));
-N_std = sqrt(sum(magn .* magn .* (TEs .* TEs), 4)); % TODO compare with SEPIA version
+TEs = reshape(headerAndExtraData.te, 1,1,1,length(headerAndExtraData.te));
+mag = headerAndExtraData.magn;
+N_std = sqrt(sum(mag .* mag .* (TEs .* TEs), 4)); % TODO compare with SEPIA version
        
 end
 
-%% set default parameter if not specified
-function parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData)
+%% set default parameters if not specified
+function parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData, mask)
 
 parameters.TE = headerAndExtraData.te;
-parameters.isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
-parameters.calculateB0 = true;
-parameters.useMag = true;
+parameters.no_unwrapped_output = ~algorParam.unwrap.isSaveUnwrappedEcho;
+parameters.calculate_B0 = true;
+parameters.mag = headerAndExtraData.magn;
 
 if contains(lower(algorParam.unwrap.offsetCorrect), 'bipolar')
-    parameters.phaseOffsetCorrection = 'bipolar';
+    parameters.phase_offset_correction = 'bipolar';
 elseif contains(lower(algorParam.unwrap.offsetCorrect), 'on')
-    parameters.phaseOffsetCorrection = 'on';
+    parameters.phase_offset_correction = 'on';
 else
-    parameters.phaseOffsetCorrection = 'off';
+    parameters.phase_offset_correction = 'off';
 end
 
 if contains(lower(algorParam.unwrap.mask), 'sepia')
-    parameters.mask = 'file';
+    parameters.mask = mask;
 elseif contains(lower(algorParam.unwrap.mask), 'romeo')
     parameters.mask = 'robustmask';
 else
