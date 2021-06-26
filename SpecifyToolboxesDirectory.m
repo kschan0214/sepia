@@ -17,6 +17,7 @@ MEDI_HOME       = '/path/to/MEDI/Toolboxes/';
 STISuite_HOME   = '/path/to/STI/Suite/';
 FANSI_HOME      = '/path/to/FANSI/Toolboxes/';
 SEGUE_HOME      = '/path/to/SEGUE/Toolboxes/';
+ROMEO_HOME      = 'C:\Users\korbi\Desktop\romeo_win_3.2.0';
 
 %% if you have any missing toolbox, then specify it as empty array
 % MEDI_HOME      = [];

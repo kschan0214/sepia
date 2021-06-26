@@ -22,7 +22,7 @@ end
 % specify the toolbox(es) directory
 SpecifyToolboxesDirectory;
 if isStartCheck
-    CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME);
+    CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,ROMEO_HOME);
 end
 
 % get SEPIA_HOME from this file 
@@ -65,13 +65,16 @@ switch lower(method)
         
     case 'fansi'
         addpath(genpath(FANSI_HOME));
+        
+    case 'romeo'
+        addpath(genpath(ROMEO_HOME));
 
 end
 
 end
 
 %% check the following paths exist or not
-function CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME)
+function CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,ROMEO_HOME)
 
 if exist(MEDI_HOME,'dir')~=7
     warning('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
@@ -92,7 +95,12 @@ if exist(SEGUE_HOME,'dir')~=7
     warning('Please specify a correct path for SEGUE in SpecifyToolboxesDirectory.m');
     warning('All functions related to SEGUE cannot be used.');
 end
-    
+   
+if exist(ROMEO_HOME,'dir')~=7
+    warning('Please specify a correct path for ROMEO in SpecifyToolboxesDirectory.m');
+    warning('All functions related to ROMEO cannot be used.');
+end
+
 end
 
 %% Special for STI suite
