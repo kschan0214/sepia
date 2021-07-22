@@ -71,15 +71,29 @@ h.phaseUnwrap.panel.ROMEOTotalField = uipanel(hParent,...
     krow = krow + 1;
     % row 2, left
     % Mask used for ROMEO
-    methodMask = {'SEPIA mask', 'ROMEO mask', 'No Mask'};
+    methodMask = {'SEPIA mask', 'ROMEO robustmask', 'ROMEO qualitymask', 'No Mask'};
     [h.phaseUnwrap.ROMEOTotalField.text.mask,h.phaseUnwrap.ROMEOTotalField.popup.mask] = sepia_construct_text_popup(...
-        panelParent,'Mask for unwrapping:', methodMask, [left(1) bottom(krow) width height], wratio);
+        panelParent,'Mask for unwrapping:', methodMask, [left(1) bottom(krow) width/2 height], wratio);
+    % Threshold setting for qualitymask
+    qualitymaskDefaultThreshold = 0.5;
+    h.phaseUnwrap.ROMEOTotalField.edit.qualitymaskThreshold = uicontrol('Parent',panelParent ,...
+        'Style','edit',...
+        'String',num2str(qualitymaskDefaultThreshold),...
+        'units','normalized','position',[left(1)+0.4 bottom(krow) 0.04 height],...
+        'backgroundcolor','white',...
+        'Enable','off');
+    % use romeo mask
+    h.phaseUnwrap.ROMEOTotalField.checkbox.useRomeoMask = uicontrol('Parent',panelParent ,...
+        'Style','checkbox','String','Use ROMEO Mask in SEPIA',...
+        'units','normalized','position',[left(2) bottom(krow) width/2 height],...
+        'backgroundcolor',get(h.fig,'color'),...
+        'Enable','on');
     
     % row 2, right
     % save unwrapped echo phase option, 'checkbox'
     h.phaseUnwrap.ROMEOTotalField.checkbox.saveEchoPhase = uicontrol('Parent',panelParent ,...
         'Style','checkbox','String','Save unwrapped echo phase',...
-        'units','normalized','position',[left(2) bottom(krow) width height],...
+        'units','normalized','position',[left(2)+width/2 bottom(krow) width/2 height],...
         'backgroundcolor',get(h.fig,'color'),...
         'Enable','on');
     
@@ -111,40 +125,34 @@ h.phaseUnwrap.panel.ROMEOTotalField = uipanel(hParent,...
     
 
 %% set tooltips
-%set(h.phaseUnwrap.ROMEOTotalField.text.phaseUnwrap,          'Tooltip',tooltip.unwrap.panel.unwrap);
 set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask,      'Tooltip',tooltip.unwrap.panel.exclude);
 set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,          'Tooltip',tooltip.unwrap.panel.exclude_edit);
 
 %% set callbacks
-set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask,  'Callback', {@CheckboxEditPair_Callback,{h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod},1});
-set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,      'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
-%set(h.phaseUnwrap.ROMEOTotalField.popup.phaseUnwrap,     'Callback', {@popupPhaseUnwrap_Callback,h});
+set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask,     'Callback', {@CheckboxEditPair_Callback,{h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod},1});
+set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,         'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
+set(h.phaseUnwrap.ROMEOTotalField.edit.qualitymaskThreshold,'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
+set(h.phaseUnwrap.ROMEOTotalField.popup.mask,               'Callback', {@romeo_mask_selection_Callback,h});
 
 % Enable exlude options 
 set(h.phaseUnwrap.ROMEOTotalField.checkbox.excludeMask, 'Enable', 'on', 'Value', 0);
-set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,     'Enable', 'on');
-set(h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod,  'Enable', 'on');
+set(h.phaseUnwrap.ROMEOTotalField.edit.excludeMask,     'Enable', 'off');
+set(h.phaseUnwrap.ROMEOTotalField.popup.excludeMethod,  'Enable', 'off');
+set(h.phaseUnwrap.ROMEOTotalField.checkbox.useRomeoMask,'Enable', 'off')
 
 end
 
 %% Callback functions
-% Phase unwrapping method specific panel setting
-function popupPhaseUnwrap_Callback(source,eventdata,h)
-
-sepia_universal_variables;
-
-% get selected background removal method
-method = source.String{source.Value,1} ;
-
-% Reset the option 
-set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask, 'Enable', 'off', 'Value', 0);
-set(h.phaseUnwrap.optimumWeights.edit.excludeMask,     'Enable', 'off');
-set(h.phaseUnwrap.optimumWeights.popup.excludeMethod,  'Enable', 'off');
-% method the user chosen will affect if exclusion method can be used or not 
-for k = 1:length(methodUnwrapName)
-    if strcmpi(method,methodUnwrapName{k})
-        set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{k});
+function romeo_mask_selection_Callback(source,eventdata,h)
+    if strcmp(source.String{source.Value,1}, 'ROMEO qualitymask')
+       set(h.phaseUnwrap.ROMEOTotalField.edit.qualitymaskThreshold, 'Enable', 'on');
+    else
+        set(h.phaseUnwrap.ROMEOTotalField.edit.qualitymaskThreshold, 'Enable', 'off');
     end
-end
-
+    
+    if strcmp(source.String{source.Value,1}, 'ROMEO qualitymask') || strcmp(source.String{source.Value,1}, 'ROMEO robustmask')
+        set(h.phaseUnwrap.ROMEOTotalField.checkbox.useRomeoMask, 'Enable', 'on')
+    else
+        set(h.phaseUnwrap.ROMEOTotalField.checkbox.useRomeoMask, 'Enable', 'off', 'Value', false);
+    end
 end
