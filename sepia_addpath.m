@@ -118,7 +118,7 @@ if exist(SEGUE_HOME,'dir')~=7
     warning('Please specify a correct path for SEGUE in SpecifyToolboxesDirectory.m');
     warning('All functions related to SEGUE cannot be used.');
 end
-
+   
 if exist(ROMEO_HOME,'dir')~=7
     warning('Please specify a correct path for ROMEO in SpecifyToolboxesDirectory.m');
     warning('All functions related to ROMEO cannot be used.');
