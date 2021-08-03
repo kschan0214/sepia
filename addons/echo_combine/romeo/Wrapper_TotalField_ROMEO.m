@@ -54,6 +54,17 @@ end
 TEs = reshape(headerAndExtraData.te, 1,1,1,length(headerAndExtraData.te));
 mag = headerAndExtraData.magn;
 N_std = sqrt(sum(mag .* mag .* (TEs .* TEs), 4)); % TODO compare with SEPIA version
+
+% KC 20210803: N_std is the SD of noise, similar to inverse of SNR map
+N_std               = 1./(N_std);
+N_std               = N_std./norm(rmoutliers(N_std(mask>0)));
+N_std(isnan(N_std)) = 0;
+N_std(isinf(N_std)) = 0;
+
+% KC 20210803: convert total field from Hz to radHz, and make sure no NaN
+totalField                      = totalField *2*pi;
+totalField(isnan(totalField))   = 0;
+totalField(isinf(totalField))   = 0;
        
 end
 
@@ -61,7 +72,8 @@ end
 function parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData, mask)
 
 parameters.use_romeo_mask = algorParam.unwrap.useRomeoMask;
-parameters.TE = headerAndExtraData.te;
+% 20210803 KC: convert TE from s to ms
+parameters.TE = headerAndExtraData.te * 1e3;
 parameters.no_unwrapped_output = ~algorParam.unwrap.isSaveUnwrappedEcho;
 parameters.calculate_B0 = true;
 parameters.mag = headerAndExtraData.magn;
