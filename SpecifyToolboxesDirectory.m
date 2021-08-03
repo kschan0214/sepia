@@ -11,6 +11,7 @@
 % Date created: 24 August 2018
 % Date modified: 9 November 2019
 % Date modified: 18 July 2020 (v0.8.0)
+% Date modified: 3 August 2020 (v1.0)
 %
 %% Specify the directories of the toolbox here
 MEDI_HOME       = '/path/to/MEDI/Toolboxes/';
@@ -24,3 +25,4 @@ ROMEO_HOME      = '/path/to/ROMEO/Toolboxes/';
 % STISuite_HOME  = [];
 % FANSI_HOME     = [];
 % SEGUE_HOME     = [];
+% ROMEO_HOME     = [];
