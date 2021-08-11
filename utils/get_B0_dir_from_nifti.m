@@ -15,7 +15,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 21 Jan 2021
-% Date modified:
+% Date modified: 11 August 2021
 %
 %
 function B0_dir = get_B0_dir_from_nifti(nii,B0_dir)
@@ -25,11 +25,18 @@ if nargin < 2
     B0_dir = [0;0;1];
 end
 
+if isfield(nii, 'hdr')  % header structure from load_untouch_nii.m
+    hist = nii.hdr.hist;
+end
+if isfield(nii, 'hist') % header structure from load_untouch_header_only.m
+    hist = nii.hist;
+end
+
 % first element of quaternion
-a = sqrt(1 - nii.hdr.hist.quatern_b^2 - nii.hdr.hist.quatern_c^2 - nii.hdr.hist.quatern_d^2);
+a = sqrt(1 - hist.quatern_b^2 - hist.quatern_c^2 - hist.quatern_d^2);
 
 % transform from qiaternion representation to rotation matrix
-rotmat_nifti = qGetR([a, nii.hdr.hist.quatern_b,nii.hdr.hist.quatern_c,nii.hdr.hist.quatern_d]);
+rotmat_nifti = qGetR([a, hist.quatern_b,hist.quatern_c,hist.quatern_d]);
 
 % apply rotation matrix to B0
 B0_dir = rotmat_nifti \ B0_dir;

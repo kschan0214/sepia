@@ -13,7 +13,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 23 May 2019
-% Date last modified:
+% Date modified:11 August 2021
 %
 %
 function save_sepia_header(input,userDefine,output)
@@ -32,11 +32,25 @@ CF          = [];
 
 %% Check if output directory exists 
 output_index = strfind(output, filesep);
-outputDir = output(1:output_index(end));
-% get prefix
-if ~isempty(output(output_index(end)+1:end))
-    prefix = [output(output_index(end)+1:end) '_'];
+if ~isempty(output_index)
+    outputDir = output(1:output_index(end));
+    % get prefix
+    if ~isempty(output(output_index(end)+1:end))
+        if ~strcmp(output(end),'_') % avoid double separators
+            prefix = [output(output_index(end)+1:end) '_'];
+        else
+            prefix = [output(output_index(end)+1:end)];
+        end
+    end
+    
+else
+    outputDir = pwd;
+    prefix = output;
+    if ~strcmp(prefix(end),'_') % avoid double separators
+        prefix = [prefix '_'];
+    end
 end
+
 % if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
@@ -45,23 +59,25 @@ end
 %% extract header info from input
 if isstruct(input)
     %% Option 1: input are files
-    % extract information from NIfTI
     
+    % 1.1 extract information from NIfTI
+    inputNifti  = load_untouch_header_only(input.nifti);
     % B0 direction
-    inputNifti = load_untouch_nii(input.nifti);
-    a = sqrt(1 - inputNifti.hdr.hist.quatern_b^2 - inputNifti.hdr.hist.quatern_c^2 - inputNifti.hdr.hist.quatern_d^2);
-    rotmat_nifti=qGetR([a, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
-    B0_dir = rotmat_nifti \ [0;0;1];
-    
+    B0_dir      = get_B0_dir_from_nifti(inputNifti);
     % voxel size
-    voxelSize = inputNifti.hdr.dime.pixdim(2:4);
-    
+    voxelSize = inputNifti.dime.pixdim(2:4);
     % matrix size
-    matrixSize = inputNifti.hdr.dime.dim(2:4);
+    matrixSize = inputNifti.dime.dim(2:4);
     
+    % 1.2 extract information from txt/json file(s)
     % TE
     if ~isempty(input.TEFileList)
         TE = readEchoTime(input.TEFileList);
+    end
+    % get extension from input file
+    [~,~,ext] = fileparts(input.TEFileList{1});
+    if strcmpi(ext, '.json')
+        [FA, TR, B0, CF] = get_sequence_parameters_from_json(input.TEFileList{1});
     end
     
 else
@@ -69,19 +85,19 @@ else
     inputNiftiList = dir([input '/*.nii*']);
     
     if ~isempty(inputNiftiList)
+        
         %% Option 2: input is a directory containing nifti and TE files
         % B0 direction
-        inputNifti = load_untouch_nii(fullfile(input,inputNiftiList(1).name));
-        a = sqrt(1 - inputNifti.hdr.hist.quatern_b^2 - inputNifti.hdr.hist.quatern_c^2 - inputNifti.hdr.hist.quatern_d^2);
-        rotmat_nifti=qGetR([a, inputNifti.hdr.hist.quatern_b,inputNifti.hdr.hist.quatern_c,inputNifti.hdr.hist.quatern_d]);
-        B0_dir = rotmat_nifti \ [0;0;1];
-
+        % 1.1 extract information from NIfTI
+        inputNifti  = load_untouch_header_only(fullfile(input,inputNiftiList(1).name));
+        % B0 direction
+        B0_dir      = get_B0_dir_from_nifti(inputNifti);
         % voxel size
-        voxelSize = inputNifti.hdr.dime.pixdim(2:4);
-
+        voxelSize = inputNifti.dime.pixdim(2:4);
         % matrix size
-        matrixSize = inputNifti.hdr.dime.dim(2:4);
-
+        matrixSize = inputNifti.dime.dim(2:4);
+        
+        % TE
         inputTEList = dir([input '/*.txt*']);
         if ~isempty(inputTEList)
             TE = readEchoTime(inputTEList(1));
@@ -95,12 +111,8 @@ else
                 
                 TE = readEchoTime(inputTEListCell);
                 
-                % dcm2niix: B0 is available with tag 'MagneticFieldStrength'
-                B0 = get_value_from_file(inputTEListCell{1},'MagneticFieldStrength');
-                if ~isempty(B0)
-                    B0 = str2double(B0);
-                end
-                
+                [FA, TR, B0, CF] = get_sequence_parameters_from_json(inputTEListCell{1});
+                                
             else
                 inputTEList = dir([input '/*.mat*']);
                 if ~isempty(inputTEList)
@@ -111,7 +123,7 @@ else
             end
         end
     else
-        %% Option 3: input is a directory containing DICOM files
+        %% Option 3: input is a directory containing DICOM files (to be deprecated)
         sepia_addpath('MEDI');
         
         [~,voxelSize,matrixSize,CF,delta_TE,TE,B0_dir]=Read_DICOM(input);
@@ -181,8 +193,9 @@ if isempty(delta_TE)
 end
 
 %% save header
-save([outputDir filesep prefix 'header.mat'],'voxelSize','matrixSize','CF','delta_TE',...
-        'TE','B0_dir','B0');
+save(fullfile(outputDir, [prefix 'header.mat']),'voxelSize','matrixSize','CF','delta_TE','TE','B0_dir','B0');
+if ~isempty(FA); save(fullfile(outputDir, [prefix 'header.mat']),'FA', '-append'); end
+if ~isempty(TR); save(fullfile(outputDir, [prefix 'header.mat']),'TR', '-append'); end
 
 end
 
@@ -236,4 +249,17 @@ function str=get_str(list_info)
     k_b = strfind(list_info,': ');
     % account for two chars ':' and ' '
     str=(list_info(k_b(1)+2:end));
+end
+
+%% get value from JSON
+function [FA, TR, B0, CF] = get_sequence_parameters_from_json(jsonFile)
+
+json_str    = fileread(jsonFile); 
+data        = jsondecode(json_str);
+
+if isfield(data, 'FlipAngle');              FA = data.FlipAngle;                else; FA = []; end
+if isfield(data, 'RepetitionTime');         TR = data.RepetitionTime;           else; TR = []; end
+if isfield(data, 'MagneticFieldStrength');  B0 = data.MagneticFieldStrength;	else; B0 = []; end
+if isfield(data, 'ImagingFrequency');       CF = data.ImagingFrequency * 1e6;	else; CF = []; end
+
 end

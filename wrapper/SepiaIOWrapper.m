@@ -88,40 +88,18 @@ if isstruct(input)
 else
     
     % Option 2: input is a directory
-    disp('Searching input directory...');
-    inputDir        = input; 
+    inputDir = input; 
     
     % check and get filenames
-    inputNiftiList = struct();
+    disp('Searching input directory based on SEPIA default naming structure...');
     filePattern = {'ph','mag','weights','header'}; % don't change the order
-    for  k = 1:length(filePattern)
-        % get filename
-        if k ~= 4   % NIFTI image input
-            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
-        else        % SEPIA header
-            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
-        end
-        
-        % actions given the number of files detected
-        if numFiles == 1        % only one file -> get the name
-            
-            fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
-            inputNiftiList(k).name = file.name;
-            
-        elseif numFiles == 0     % no file -> error
-            
-            if k ~= 3 % essential files 'ph', 'mag' and 'header, corresponding to k = 1,2&4
-                error(['No file with name containing string ''' filePattern{k} ''' is detected.']);
-            else
-                disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
-            end
-            
-        else % multiple files -> fatal error
-            
-            error(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
-            
-        end
+    [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
+    
+    if ~isLoadSuccessful
+        disp('Searching input directory based on BIDS...');
+        inputNiftiList = read_bids_to_filelist(inputDir,fullfile(outputDir,prefix));
     end
+    
 end
 
 %%%%%% Step 2: load data
