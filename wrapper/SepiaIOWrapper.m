@@ -27,6 +27,7 @@
 % Date modified: 27 Feb 2020 (v0.8.0)
 % Date modified: 21 Jan 2020 (v0.8.1)
 % Date modified: 6 May 2021 (v0.8.1.1)
+% Date modified: 11 August 2021 (v1.0)
 %
 %
 function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
@@ -38,8 +39,6 @@ sepia_universal_variables;
 %% define variables
 prefix = 'sepia_';
 % set up indicator to check if certain input are loaded
-isMagnLoad      = false;
-isPhaseLoad     = false;
 isWeightLoad    = false;
 
 %% Check if output directory exists 
@@ -77,38 +76,17 @@ disp('Load data');
 disp('---------');
 
 %%%%%% Step 1: get all required filenames
-if isstruct(input)
-    
-    % Option 1: input are files
-    inputNiftiList  = input;
-    
-    % take the phase data directory as reference input directory 
-    [inputDir,~,~] = fileparts(inputNiftiList(1).name);
-    
-else
-    
-    % Option 2: input is a directory
-    inputDir = input; 
-    
-    % check and get filenames
-    disp('Searching input directory based on SEPIA default naming structure...');
-    filePattern = {'ph','mag','weights','header'}; % don't change the order
-    [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
-    
-    if ~isLoadSuccessful
-        disp('Searching input directory based on BIDS...');
-        inputNiftiList = read_bids_to_filelist(inputDir,fullfile(outputDir,prefix));
-    end
-    
-end
+% input         : can be input directory or structure contains input filenames
+% inputDir      : intput directory of phase image
+% inputNiftiList: structure contains all input filenames
+[inputDir, inputNiftiList] = io_01_get_input_file_list(input);
 
-%%%%%% Step 2: load data
+%%%%% Step 2: load data
 % 2.1 phase data 
 if ~isempty(inputNiftiList(1).name)
     
     % load true value from NIfTI
     fieldMap    = load_nii_img_only([inputNiftiList(1).name]); 
-    isPhaseLoad = true;
     disp('Phase data is loaded.')
     
 else
@@ -123,7 +101,6 @@ if ~isempty(inputNiftiList(2).name)
 
     % load true value from NIfTI
     magn            = load_nii_img_only([inputNiftiList(2).name]);
-    isMagnLoad      = true;
     disp('Magnitude data is loaded.');
     
 else
@@ -460,3 +437,39 @@ if matrixSize_magn(4) ~= length(TE)
 end
 
 end
+
+%% I/O Step 1: get input file list
+function [inputDir, inputNiftiList] = io_01_get_input_file_list(input)
+
+if isstruct(input)
+    
+    % Option 1: input are files
+    inputNiftiList  = input;
+    
+    % take the phase data directory as reference input directory 
+    [inputDir,~,~] = fileparts(inputNiftiList(1).name);
+    
+else
+    
+    % Option 2: input is a directory
+    inputDir = input; 
+    
+    % First check with SEPIA default naming structure
+    disp('Searching input directory based on SEPIA default naming structure...');
+    filePattern = {'ph','mag','weights','header'}; % don't change the order
+    [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
+    
+    % If it doesn't work then check BIDS compatibility
+    if ~isLoadSuccessful
+        disp('Searching input directory based on BIDS...');
+        inputNiftiList = read_bids_to_filelist(inputDir,fullfile(outputDir,prefix));
+    end
+    
+end
+
+end
+
+% %% I/O Step 2: load input data
+% function [] = io_02_load_nifti_input(inputNiftiList)
+% 
+% end

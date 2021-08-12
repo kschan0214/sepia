@@ -43,7 +43,18 @@ pattern = 'part-mag';
 ext     = 'json';
 [jsonFile,jsonNumFiles] = get_filename_in_directory(inputDir,pattern,ext);
 
+% error if one of the required files cannot be found
+if magNumFiles == 0 
+    error('No magnitude file is found. \nFor BIDS compatibility, make sure the magnitude NIFTI has the key ''part-mag''.');
+end
+if phaseNumFiles == 0 
+    error('No phase file is found. \nFor BIDS compatibility, make sure the phase NIFTI has the key ''part-phase''.');
+end
+if jsonNumFiles == 0 
+    error('No JSON file is found. \nFor BIDS compatibility, make sure the JSON has the key ''part-mag''.');
+end
 
+% preprocess files
 if magNumFiles == 1 && phaseNumFiles == 1 && jsonNumFiles == 1
     
     % Single-echo or single 4D volume route
