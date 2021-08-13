@@ -20,19 +20,17 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 22 June 2021 (v1.0)
-% Date modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_MEDInonlinearfit(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
-
+% get extra data such as magnitude/weights/B0 direction/TE/etc.
+headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 % get some data from headerAndExtraData
-magn	= double(headerAndExtraData.magn);
-TE      = headerAndExtraData.te;
-dt      = headerAndExtraData.delta_TE;
-
-% find the centre of mass
-pos     = round(centerofmass(magn(:,:,:,1)));
+TE      = headerAndExtraData.sepia_header.TE;
+dt      = headerAndExtraData.sepia_header.delta_TE;
+magn    = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize);
 
 sepia_addpath('MEDI');
 if numel(TE)>3 && ((TE(2)-TE(1))-(TE(3)-TE(2))>1e-5)
@@ -46,10 +44,13 @@ else
 end
 
 % temporary usage
-headerAndExtraData.magn = sqrt(sum(abs(magn).^2,4));
+headerAndExtraData_tmp      = headerAndExtraData;
+headerAndExtraData_tmp.magn = sqrt(sum(abs(magn).^2,4));
+clear fieldMap magn % release memory
+% headerAndExtraData.magn = sqrt(sum(abs(magn).^2,4));
 
 % Spatial phase unwrapping
-totalField = UnwrapPhaseMacro(iFreq_raw,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+totalField = UnwrapPhaseMacro(iFreq_raw,mask,matrixSize,voxelSize,algorParam,headerAndExtraData_tmp);
 
 % use the centre of mass as reference phase
 % totalField = totalField-round(totalField(pos(1),pos(2),pos(3))/(2*pi))*2*pi;
@@ -58,8 +59,8 @@ totalField = totalField-round(mean(totalField( mask == 1))/(2*pi))*2*pi;
 % convert rad to radHz
 totalField = totalField / dt;
         
-% return the original data
-headerAndExtraData.magn = magn;
+% % return the original data
+% headerAndExtraData.magn = magn;
 
 % apply mask
 totalField	= bsxfun(@times,totalField,mask);

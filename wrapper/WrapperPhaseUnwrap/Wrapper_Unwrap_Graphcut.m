@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020 (v0.8.0)
-% Date last modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [unwrappedField] = Wrapper_Unwrap_Graphcut(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -31,7 +31,7 @@ subsampling    	= algorParam.unwrap.subsampling;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-magn    = headerAndExtraData.magn;
+magn = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize);
 
 if isempty(magn)
     disp('Running this algorithm without magnitude image could be problematic');

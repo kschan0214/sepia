@@ -13,7 +13,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 28 Feb 2020
-% Date last modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function headerAndExtraData2 = check_and_set_SEPIA_header_data(headerAndExtraData)
@@ -36,7 +36,7 @@ try headerAndExtraData2.magn        = headerAndExtraData.magn;      catch; heade
 try headerAndExtraData2.phase       = headerAndExtraData.phase;     catch; headerAndExtraData2.phase     = []; end
 try headerAndExtraData2.mask_ref    = headerAndExtraData.mask_ref; 	catch; headerAndExtraData2.mask_ref  = []; end
 try headerAndExtraData2.initGuess   = headerAndExtraData.initGuess;	catch; headerAndExtraData2.initGuess = []; end
-try headerAndExtraData2.N_std       = headerAndExtraData.N_std;     catch; headerAndExtraData2.N_std     = []; end
+try headerAndExtraData2.fieldmapSD 	= headerAndExtraData.fieldmapSD;     catch; headerAndExtraData2.fieldmapSD     = []; end
 
 try headerAndExtraData2.availableFileList.phase = headerAndExtraData.availableFileList.phase;           catch; headerAndExtraData2.availableFileList.phase = []; end
 try headerAndExtraData2.availableFileList.magnitude = headerAndExtraData.availableFileList.magnitude;   catch; headerAndExtraData2.availableFileList.magnitude = []; end

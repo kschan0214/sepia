@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date last modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_STISuiteiLSQRv3(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -35,9 +35,9 @@ params.padsize      = algorParam.qsm.padsize;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-params.H            = headerAndExtraData.b0dir(:).';
-params.TE           = headerAndExtraData.delta_TE*1e3;
-params.B0           = headerAndExtraData.b0;
+params.H            = headerAndExtraData.sepia_header.B0_dir(:).';
+params.TE           = headerAndExtraData.sepia_header.delta_TE*1e3;
+params.B0           = headerAndExtraData.sepia_header.B0;
 params.voxelsize    = double(voxelSize(:).');
 
 % add path

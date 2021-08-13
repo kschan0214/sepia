@@ -19,6 +19,7 @@
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
 % Date modified: 19 Jan 2021
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_MEDI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -41,12 +42,12 @@ wGrad       = 1;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-B0_dir      = headerAndExtraData.b0dir;
-delta_TE    = headerAndExtraData.delta_TE;
-TE          = headerAndExtraData.te;
-CF          = headerAndExtraData.CF;
-iMag        = headerAndExtraData.magn;
-N_std       = headerAndExtraData.weights;   % contrast of N_std is inverse of weights
+B0_dir      = headerAndExtraData.sepia_header.B0_dir;
+delta_TE    = headerAndExtraData.sepia_header.delta_TE;
+TE          = headerAndExtraData.sepia_header.TE;
+CF          = headerAndExtraData.sepia_header.CF;
+N_std       = get_variable_from_headerAndExtraData(headerAndExtraData, 'weights', matrixSize); % contrast of N_std is inverse of weights, still need processing
+iMag        = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize);
 
 matrix_size = matrixSize;
 voxel_size  = voxelSize;

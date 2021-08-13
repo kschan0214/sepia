@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date last modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_FANSI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -42,10 +42,10 @@ solver          = algorParam.qsm.solver;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-b0dir = headerAndExtraData.b0dir;
-b0    = headerAndExtraData.b0;
-wmap  = headerAndExtraData.weights;
-magn  = headerAndExtraData.magn;
+b0dir = headerAndExtraData.sepia_header.B0_dir;
+b0    = headerAndExtraData.sepia_header.B0;
+wmap  = get_variable_from_headerAndExtraData(headerAndExtraData, 'weights', matrixSize);
+magn  = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize);
 
 % add path
 sepia_addpath('FANSI');
@@ -79,12 +79,17 @@ end
 if ~isempty(magn) && ~isempty(wmap)
     disp('Both weighting map and magnitude images are loaded.');
     disp('Only the weighing map will be used.');
+    
+    clear magn
 end
 % if only magnitude images are loaded
 if ~isempty(magn) && isempty(wmap)
     disp('The normalised RMS in time dimension of magnitude image will be used as the weighting map.');
+    
     tmp     = sqrt(mean(magn.^2,4));
     wmap    = (tmp./max(tmp(:))) .* (mask); 
+    
+    clear magn tmp
 end
 % if nothing is loaded
 if ~isempty(magn) && isempty(wmap)

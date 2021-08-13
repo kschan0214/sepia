@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date last modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_StarQSM(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -31,9 +31,9 @@ padSize    = algorParam.qsm.padsize;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-b0dir = headerAndExtraData.b0dir;
-b0    = headerAndExtraData.b0;
-te    = headerAndExtraData.delta_TE;
+b0dir = headerAndExtraData.sepia_header.B0_dir;
+b0    = headerAndExtraData.sepia_header.B0;
+te    = headerAndExtraData.sepia_header.delta_TE;
 
 % add path
 sepia_addpath('STISuite');

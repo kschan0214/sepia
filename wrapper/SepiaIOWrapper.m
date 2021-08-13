@@ -137,6 +137,10 @@ availableFileList           = io_06_get_signal_mask(maskFullName, inputDir, sepi
 % header
 create_header_structure_4wrapper;
 
+matrixSize  = double(sepia_header.matrixSize);
+voxelSize   = double(sepia_header.voxelSize);
+TE          = double(sepia_header.TE);
+
 %% Main QSM processing - Step 1: total field and phase unwrap
 
 %%%%%%%%%% Step 0: Eddy current correction for bipolar readout %%%%%%%%%%
@@ -148,10 +152,6 @@ create_header_structure_4wrapper;
 availableFileList          = tf_00_bipolar_correction(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
 %%%%%%%%%% Step 1: Phase unwrapping and echo phase combination %%%%%%%%%%
-matrixSize  = double(sepia_header.matrixSize);
-voxelSize   = double(sepia_header.voxelSize);
-TE          = double(sepia_header.TE);
-
 fieldMap    = load_nii_img_only(availableFileList.phase);
 mask        = load_nii_img_only(availableFileList.mask);
 
@@ -226,7 +226,7 @@ end
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  outputFileList.fieldmapSD);
 save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField); 
 
-availableFileList.relativeResidual  = outputFileList.fieldmapSD;
+availableFileList.fieldmapSD        = outputFileList.fieldmapSD;
 availableFileList.maskLocalField    = outputFileList.maskLocalField;
 
 fprintf('Done!\n');
@@ -245,29 +245,14 @@ weights = weights .* and(mask>0,maskReliable);
 save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
 availableFileList.weights = outputFileList.weights;
              
-% save the output                           
-% fprintf('Saving unwrapped field map...');
-
-% if ~isWeightLoad
-%     save_nii_quick(outputNiftiTemplate,weights,	[outputDir filesep prefix 'weights.nii.gz']);
-% end
-
-
-% fprintf('Done!\n');
-
-% % store some output to extradata
-% headerAndExtraData.N_std    = double(fieldmapSD);
-% headerAndExtraData.weights  = double(weights);
-
 % clear variable that no longer be needed
 clear fieldMap fieldmapSD weights maskReliable mask
 
 %% Background field removal
-% make sure all variables are double
-totalField  = double(totalField);
-mask       	= double(mask);
+totalField   	= double(load_nii_img_only(availableFileList.totalField));
+maskLocalfield	= double(load_nii_img_only(availableFileList.maskLocalField));
 
-localField = BackgroundRemovalMacro(totalField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+localField = BackgroundRemovalMacro(totalField,maskLocalfield,matrixSize,voxelSize,algorParam,headerAndExtraData);
   
 % generate new mask based on backgroudn field removal result
 maskFinal = double(localField ~=0);

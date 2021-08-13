@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020 (v0.8.0)
-% Date last modified:
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [RDF] = Wrapper_BFR_PDF(totalField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -33,9 +33,10 @@ padSize   	= algorParam.bfr.padSize;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-B0_dir  = headerAndExtraData.b0dir;
-N_std   = headerAndExtraData.N_std;
+B0_dir  = headerAndExtraData.sepia_header.B0_dir;
+N_std   = get_variable_from_headerAndExtraData(headerAndExtraData, 'fieldmapSD', matrixSize);
 
+% if no fieldmapSD variable provided in any formats
 if isempty(N_std)
     N_std = ones(matrixSize)*1e-4;
 end
