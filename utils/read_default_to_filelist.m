@@ -27,37 +27,39 @@ isLoadSuccessful = false;
 
 for  k = 1:length(filePattern)
     % get filename
-    if k ~= 4   % NIFTI image input
-        [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
-    else        % SEPIA header
-        [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
-    end
-
-    % actions given the number of files detected
-    if numFiles == 1        % only one file -> get the name
-
-        fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
-        inputNIFTIList(k).name = file.name;
-
-    elseif numFiles == 0     % no file -> error
-
-        if k ~= 3 % essential files 'ph', 'mag' and 'header, corresponding to k = 1,2&4
-            warning(['No file with name containing string ''' filePattern{k} ''' is detected.']);
-            disp('Reading input directory based on default format failed.');
-            
-            return
-            
-        else
-            disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+    if ~isempty(filePattern{k})
+        if k ~= 4   % NIFTI image input
+            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.nii');
+        else        % SEPIA header
+            [file,numFiles] = get_filename_in_directory(inputDir,filePattern{k},'.mat');
         end
 
-    else % multiple files -> fatal error
+        % actions given the number of files detected
+        if numFiles == 1        % only one file -> get the name
 
-        warning(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
-        disp('Reading input directory based on default format failed.');
-        
-        return
-        
+            fprintf('One ''%s'' file is found: %s\n',filePattern{k},file.name);
+            inputNIFTIList(k).name = file.name;
+
+        elseif numFiles == 0     % no file -> error
+
+            if k == 1 || k ==4 % essential files: always the 1st and 4th fields 
+                warning(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+                disp('Reading input directory based on default format failed.');
+
+                return
+
+            else
+                disp(['No file with name containing string ''' filePattern{k} ''' is detected.']);
+            end
+
+        else % multiple files -> fatal error
+
+            warning(['Multiple files with name containing string ''' filePattern{k} ''' are detected. Make sure the input directory should contain only one file with string ''' filePattern{k} '''.']);
+            disp('Reading input directory based on default format failed.');
+
+            return
+
+        end
     end
 end
 

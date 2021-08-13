@@ -27,7 +27,7 @@
 % Date modified: 27 Feb 2020 (v0.8.0)
 % Date modified: 21 Jan 2020 (v0.8.1)
 % Date modified: 6 May 2021 (v0.8.1.1)
-% Date modified: 11 August 2021 (v1.0)
+% Date modified: 13 August 2021 (v1.0)
 %
 %
 function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
@@ -38,8 +38,6 @@ sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';
-% set up indicator to check if certain input are loaded
-isWeightLoad    = false;
 
 %% Check if output directory exists 
 output_index    = strfind(output, filesep);
@@ -58,15 +56,10 @@ fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
 outputFileList = construct_output_filename(outputDir, prefix);
+
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 % generl algorithm parameters
-% isInvert            = algorParam.general.isInvert;
-% isBET               = algorParam.general.isBET;
-% fractional_threshold= algorParam.general.fractional_threshold;
-% gradient_threshold  = algorParam.general.gradient_threshold;
-% phase unwrap algorithm parameters
-% isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
@@ -95,7 +88,7 @@ availableFileList           = io_02_validate_nifti_input(inputFileList);
 % outputNiftiTemplate   : nifti header with empty 'img' field
 outputNiftiTemplate         = io_03_get_nifti_template(availableFileList);
 
-% 2.1 load and validate SEPIA header 
+% 3.2 load and validate SEPIA header 
 if ~isempty(inputFileList(4).name)
     sepia_header = load([inputFileList(4).name]);
     disp('SEPIA header data is loaded.');
@@ -141,6 +134,8 @@ matrixSize  = double(sepia_header.matrixSize);
 voxelSize   = double(sepia_header.voxelSize);
 TE          = double(sepia_header.TE);
 
+headerAndExtraData.availableFileList = availableFileList;
+
 %% Main QSM processing - Step 1: total field and phase unwrap
 
 %%%%%%%%%% Step 0: Eddy current correction for bipolar readout %%%%%%%%%%
@@ -178,7 +173,6 @@ fprintf('Done.\n');
 availableFileList.totalField = outputFileList.totalField;
 
 %%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
-fprintf('Computing weighting map...');
 % only work with multi-echo data
 if length(TE) == 1 && ~isinf(exclude_threshold)
     warning('\nExcluding unreliable voxels can only work with multi-echo data.')
@@ -229,9 +223,8 @@ save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField);
 availableFileList.fieldmapSD        = outputFileList.fieldmapSD;
 availableFileList.maskLocalField    = outputFileList.maskLocalField;
 
-fprintf('Done!\n');
-
 % create weighting map 
+fprintf('Computing weighting map...');
 % for weighting map: higher SNR -> higher weighting
 % if ~isWeightLoad
 if ~isfield(availableFileList, 'weights')
@@ -244,80 +237,65 @@ weights = weights .* and(mask>0,maskReliable);
 
 save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
 availableFileList.weights = outputFileList.weights;
+
+fprintf('Done!\n');
              
 % clear variable that no longer be needed
 clear fieldMap fieldmapSD weights maskReliable mask
+
+% update availableFileList
+headerAndExtraData.availableFileList = availableFileList;
 
 %% Background field removal
 totalField   	= double(load_nii_img_only(availableFileList.totalField));
 maskLocalfield	= double(load_nii_img_only(availableFileList.maskLocalField));
 
 localField = BackgroundRemovalMacro(totalField,maskLocalfield,matrixSize,voxelSize,algorParam,headerAndExtraData);
-  
+clear totalField maskLocalfield % clear variables that no longer be needed
+
 % generate new mask based on backgroudn field removal result
-maskFinal = double(localField ~=0);
-  
-% save results
+mask_QSM = localField ~=0;
+
 fprintf('Saving local field map...');
-
-save_nii_quick(outputNiftiTemplate,localField,  [outputDir filesep prefix 'local-field.nii.gz']);
-save_nii_quick(outputNiftiTemplate,maskFinal,	[outputDir filesep prefix 'mask-qsm.nii.gz']);
+save_nii_quick(outputNiftiTemplate,localField, outputFileList.localField);
 fprintf('done!\n');
+availableFileList.localField = outputFileList.localField;
+clear localField
 
-% clear variables that no longer be needed
-clear totalField mask
+% save results
+fprintf('Saving mask for chi mapping...');
+save_nii_quick(outputNiftiTemplate,mask_QSM, outputFileList.maskQSM);
+fprintf('done!\n');
+availableFileList.maskQSM = outputFileList.maskQSM;
+clear mask_QSM
+
+% update availableFileList
+headerAndExtraData.availableFileList = availableFileList;
 
 %% QSM
 % make sure all variables are double
-localField	= double(localField);
-maskFinal   = double(maskFinal);
+localField   	= double(load_nii_img_only(availableFileList.localField));
+mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
 
 % Apply final mask to weights
-headerAndExtraData.weights = headerAndExtraData.weights .* maskFinal;
+% headerAndExtraData.weights = headerAndExtraData.weights .* mask_QSM;
 
 % core of QSM
-[chi,mask_ref] = QSMMacro(localField,maskFinal,matrixSize,voxelSize,algorParam,headerAndExtraData);
-  
+[chi,mask_ref] = QSMMacro(localField,mask_QSM,matrixSize,voxelSize,algorParam,headerAndExtraData);
+clear localField mask_QSM
+
 % save results
 fprintf('Saving susceptibility map...');
-save_nii_quick(outputNiftiTemplate, chi, [outputDir filesep prefix 'QSM.nii.gz']);
+save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
+clear chi
+
 if ~isempty(mask_ref)
-    save_nii_quick(outputNiftiTemplate, mask_ref, [outputDir filesep prefix 'mask_reference_region.nii.gz']);
+    save_nii_quick(outputNiftiTemplate, mask_ref, outputFileList.maskRef);
 end
 fprintf('done!\n');
 
 disp('Processing pipeline is completed!');
           
-end
-
-%% Validate input data dimension
-function check_input_dimension(magn,phase,matrixSize,TE)
-
-matrixSize_magn     = size(magn);
-matrixSize_phase    = size(phase);
-
-if ndims(magn) == 3
-    matrixSize_magn(4) = 1;
-end
-if ndims(phase) == 3
-    matrixSize_phase(4) = 1;
-end
-
-% check matrix size between magnitude data and phase data
-if ~isequal(matrixSize_magn,matrixSize_phase)
-    error('Input phase and magnitude data do not have the same (3D/4D) matrix size. Please check the NIfTi files.');
-end
-
-% check matrix size between NIfTi input and SEPIA header
-if ~isequal(matrixSize_magn(1:3),matrixSize)
-    erro('Input NIfTI data and SEPIA header do not have the same matrix size. Please check these files and/or remove the ''matrixSize'' variable from the SEPIA header.')
-end
-
-% check echo dimension 
-if matrixSize_magn(4) ~= length(TE)
-    error('Input NIfTI data and SEPIA header do not have the same number of echoes.  Please check these files.');
-end
-
 end
 
 %% I/O Step 1: get input file list

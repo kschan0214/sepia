@@ -52,8 +52,8 @@ fprintf('Zero-padding data if the input images have odd number matrix size...');
 totalField  = double(zeropad_odd_dimension(totalField,'pre'));
 mask        = double(zeropad_odd_dimension(mask,'pre'));
 % additional input
-if ~isempty(headerAndExtraData.N_std)
-    headerAndExtraData.N_std = double(zeropad_odd_dimension(headerAndExtraData.N_std,'pre'));
+if ~isempty(headerAndExtraData.fieldmapSD)
+    headerAndExtraData.fieldmapSD = double(zeropad_odd_dimension(headerAndExtraData.fieldmapSD,'pre'));
 end
 if ~isempty(headerAndExtraData.phase)
     headerAndExtraData.phase = double(zeropad_odd_dimension(headerAndExtraData.phase,'pre'));

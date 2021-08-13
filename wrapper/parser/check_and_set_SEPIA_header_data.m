@@ -32,7 +32,7 @@ try headerAndExtraData2.sepia_header.delta_TE    = headerAndExtraData.sepia_head
 try headerAndExtraData2.sepia_header.CF          = headerAndExtraData.sepia_header.CF;   	catch; headerAndExtraData2.sepia_header.CF       = headerAndExtraData2.sepia_header.b0*gyro*1e6; end
 
 try headerAndExtraData2.weights     = headerAndExtraData.weights;   catch; headerAndExtraData2.weights   = []; end
-try headerAndExtraData2.magn        = headerAndExtraData.magn;      catch; headerAndExtraData2.magn      = []; end
+try headerAndExtraData2.magnitude 	= headerAndExtraData.magnitude;	catch; headerAndExtraData2.magnitude = []; end
 try headerAndExtraData2.phase       = headerAndExtraData.phase;     catch; headerAndExtraData2.phase     = []; end
 try headerAndExtraData2.mask_ref    = headerAndExtraData.mask_ref; 	catch; headerAndExtraData2.mask_ref  = []; end
 try headerAndExtraData2.initGuess   = headerAndExtraData.initGuess;	catch; headerAndExtraData2.initGuess = []; end
@@ -41,6 +41,7 @@ try headerAndExtraData2.fieldmapSD 	= headerAndExtraData.fieldmapSD;     catch; 
 try headerAndExtraData2.availableFileList.phase = headerAndExtraData.availableFileList.phase;           catch; headerAndExtraData2.availableFileList.phase = []; end
 try headerAndExtraData2.availableFileList.magnitude = headerAndExtraData.availableFileList.magnitude;   catch; headerAndExtraData2.availableFileList.magnitude = []; end
 try headerAndExtraData2.availableFileList.mask = headerAndExtraData.availableFileList.mask;             catch; headerAndExtraData2.availableFileList.mask = []; end
-% try headerAndExtraData2.availableFileList.phase = headerAndExtraData.availableFileList.phase; catch; headerAndExtraData2.availableFileList.phase = []; end
+try headerAndExtraData2.availableFileList.fieldmapSD = headerAndExtraData.availableFileList.fieldmapSD; catch; headerAndExtraData2.availableFileList.fieldmapSD = []; end
+try headerAndExtraData2.availableFileList.weights = headerAndExtraData.availableFileList.weights; catch; headerAndExtraData2.availableFileList.weights = []; end
 
 end

@@ -22,6 +22,7 @@
 % Date modified: 27 May 2018
 % Date modified: 24 May 2019
 % Date modified: 9 March 2020 (v0.8.0)
+% Date modified: 13 August 2021 (v1.0)
 %
 function unwrappedField = UnwrapPhaseMacro(wrappedField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
@@ -46,9 +47,9 @@ if isempty(mask)
     warning('Running algorithm without brain mask could be problematic');
 end
 
-if isempty(headerAndExtraData.magn)
+if isempty(headerAndExtraData.magnitude) && isempty(headerAndExtraData.availableFileList.magnitude) 
     warning('Running algorithm without magnitude image could be problematic');
-    headerAndExtraData.magn = ones(matrixSize,'like',matrixSize);
+%     headerAndExtraData.magnitude = ones(matrixSize,'like',matrixSize);
 end
 
 %% Laplacian based method required prior zero padding for odd number dimension
@@ -59,7 +60,9 @@ if strcmpi(method,methodUnwrapName{1}) || strcmpi(method,methodUnwrapName{2})
     wrappedField    = double(zeropad_odd_dimension(wrappedField,'pre'));
     mask            = double(zeropad_odd_dimension(mask,'pre'));
     % additional input
-    headerAndExtraData.magn = double(zeropad_odd_dimension(headerAndExtraData.magn,'pre'));
+    if ~isempty(headerAndExtraData.magnitude)
+        headerAndExtraData.magnitude = double(zeropad_odd_dimension(headerAndExtraData.magnitude,'pre'));
+    end
 end
 matrixSize_new = size(wrappedField);
 

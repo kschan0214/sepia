@@ -68,7 +68,7 @@ if isMultiecho
     %     fieldMap = cat(4,tmp,fieldMap(:,:,:,2:end) + tmp);
     % fieldmapUnwrapAllEchoes = cat(4,tmp,phaseShiftUnwrapAllEchoes + tmp);
     fieldMap = cat(4,tmp,phaseShiftUnwrapAllEchoes + tmp);
-    clear tmp % release memory
+    clear tmp phaseShiftUnwrapAllEchoes % release memory
 
     %%%%%%%%%%%%%%%%%%%%%%%% Step 2: Compute weights %%%%%%%%%%%%%%%%%%%%%%%%
     % Robinson et al. 2017 NMR Biomed Appendix A2
@@ -87,8 +87,8 @@ if isMultiecho
     totalField = zeros(dims(1:3), 'like',fieldMap);
     for k = 1:dims(4)
         % Weighted average of unwrapped phase shift
-        totalField = totalField + weight(:,:,:,k).*(phaseShiftUnwrapAllEchoes(:,:,:,k)/(TE(k+1)-TE(1)));
-    %     totalField = totalField + weight(:,:,:,k).*((fieldMap(:,:,:,k+1) - fieldMap(:,:,:,1))/(TE(k+1)-TE(1)));
+%         totalField = totalField + weight(:,:,:,k).*(phaseShiftUnwrapAllEchoes(:,:,:,k)/(TE(k+1)-TE(1)));
+        totalField = totalField + weight(:,:,:,k).*((fieldMap(:,:,:,k+1) - fieldMap(:,:,:,1))/(TE(k+1)-TE(1)));
     end
     totalField(isnan(totalField)) = 0;
     totalField(isinf(totalField)) = 0;
