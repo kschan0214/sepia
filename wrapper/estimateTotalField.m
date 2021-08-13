@@ -41,9 +41,9 @@ echoCombine	= algorParam.unwrap.echoCombMethod;
 unit        = algorParam.unwrap.unit;
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-dt = headerAndExtraData.delta_TE;
+dt = headerAndExtraData.sepia_header.delta_TE;
 
-if isempty(headerAndExtraData.magn)
+if isempty(headerAndExtraData.availableFileList.magnitude) && isempty(headerAndExtraData.magn)
     headerAndExtraData.magn = repmat(mask,1,1,1,size(fieldMap,4));
 end
 

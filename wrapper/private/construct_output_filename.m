@@ -18,7 +18,8 @@
 function outputFileList = construct_output_filename(outputDir, ouputPrefix)
 
 % phase related
-outputFileList.phase            = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
+outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad.nii.gz']);
+outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_reverse.nii.gz']);
 outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_bipolarcorr.nii.gz']);
 outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_unwrapped.nii.gz']);
 
@@ -29,7 +30,7 @@ outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap.nii.g
 
 % use for regularisation
 outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights.nii.gz']);
-outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd.gz']);
+outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd.nii.gz']);
 outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual.nii.gz']);
 
 % derived masks

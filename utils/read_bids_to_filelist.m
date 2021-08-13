@@ -14,7 +14,7 @@
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 11 August 2021
+% Date created: 11 August 2021 (v1.0)
 % Date modified:
 %
 %
@@ -103,11 +103,15 @@ else
     end
 
     % phase 
+    fprintf('Saving multi-echo phase data into a single volume...')
     isPhase = true;
     save_nifti_as_4d(phaseFile, inputNIFTIList(1).name, isPhase);
+    fprintf('Done.\n')
     % magnitude 
+    fprintf('Saving multi-echo magnitude data into a single volume...')
     isPhase = false;
     save_nifti_as_4d(magFile, inputNIFTIList(2).name, isPhase);
+    fprintf('Done.\n')
     
 end
 

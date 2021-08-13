@@ -25,9 +25,22 @@
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_EchoCombine_OptimumWeight(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
-% make a virtual copy from headerAndExtraData
-magn	= double(headerAndExtraData.magn);
-TE      = headerAndExtraData.te;
+% get magnitude data for processing
+if isfield(headerAndExtraData,' magn') && ~isempty(headerAndExtraData.magn)
+    
+    % if magn is already available in headerAndExtraData then make a virtual copy from headerAndExtraData
+    magn            = double(headerAndExtraData.magn);
+    isRemoveMagn    = false;
+    
+elseif isfield(headerAndExtraData.availableFileList, 'magnitude') && ~isempty(headerAndExtraData.availableFileList.magnitude)
+    
+    % if magn is not available in headerAndExtraData then load it now
+    magn                    = double(load_nii_img_only(headerAndExtraData.availableFileList.magnitude));
+    headerAndExtraData.magn = magn;
+    isRemoveMagn            = true;
+    
+end
+TE      = headerAndExtraData.sepia_header.TE;
 
 % % initiate empty variable
 % fieldmapUnwrapAllEchoes = [];
@@ -107,6 +120,10 @@ N_std               = N_std./norm(N_std(mask~=0));
 %     totalFieldSD                        = totalFieldSD./norm(rmoutliers(totalFieldSD(mask~=0)));
 end
 
+% stop passing magn back if it wasn't available before
+if isRemoveMagn
+    headerAndExtraData = rmfield(headerAndExtraData, 'magn');
+end
 
 % apply mask
 totalField              = bsxfun(@times,totalField,mask);

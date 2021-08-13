@@ -24,12 +24,12 @@ headerAndExtraData2 = headerAndExtraData;
 
 % try to get the data from input, if not then set a default value
 % default: B0 align to z-direction
-try headerAndExtraData2.b0dir       = headerAndExtraData.b0dir./norm(headerAndExtraData.b0dir);     catch; headerAndExtraData2.b0dir    = [0,0,1]; end 
+try headerAndExtraData2.sepia_header.B0_dir    	= headerAndExtraData.sepia_header.B0_dir./norm(headerAndExtraData.sepia_header.B0_dir);     catch; headerAndExtraData2.sepia_header.B0_dir    = [0,0,1]; end 
 % default 3 T
-try headerAndExtraData2.b0          = headerAndExtraData.b0;        catch; headerAndExtraData2.b0       = 3; end
-try headerAndExtraData2.te          = headerAndExtraData.te;        catch; headerAndExtraData2.te       = 40e-3; end
-try headerAndExtraData2.delta_TE    = headerAndExtraData.delta_TE; 	catch; headerAndExtraData2.delta_TE = 40e-3; end
-try headerAndExtraData2.CF          = headerAndExtraData.CF;        catch; headerAndExtraData2.CF       = headerAndExtraData2.b0*gyro*1e6; end
+try headerAndExtraData2.sepia_header.B0          = headerAndExtraData.sepia_header.B0;      catch; headerAndExtraData2.sepia_header.B0       = 3; end
+try headerAndExtraData2.sepia_header.TE          = headerAndExtraData.sepia_header.TE;      catch; headerAndExtraData2.sepia_header.TE       = 40e-3; end
+try headerAndExtraData2.sepia_header.delta_TE    = headerAndExtraData.sepia_header.delta_TE;catch; headerAndExtraData2.sepia_header.delta_TE = 40e-3; end
+try headerAndExtraData2.sepia_header.CF          = headerAndExtraData.sepia_header.CF;   	catch; headerAndExtraData2.sepia_header.CF       = headerAndExtraData2.sepia_header.b0*gyro*1e6; end
 
 try headerAndExtraData2.weights     = headerAndExtraData.weights;   catch; headerAndExtraData2.weights   = []; end
 try headerAndExtraData2.magn        = headerAndExtraData.magn;      catch; headerAndExtraData2.magn      = []; end
@@ -38,5 +38,9 @@ try headerAndExtraData2.mask_ref    = headerAndExtraData.mask_ref; 	catch; heade
 try headerAndExtraData2.initGuess   = headerAndExtraData.initGuess;	catch; headerAndExtraData2.initGuess = []; end
 try headerAndExtraData2.N_std       = headerAndExtraData.N_std;     catch; headerAndExtraData2.N_std     = []; end
 
+try headerAndExtraData2.availableFileList.phase = headerAndExtraData.availableFileList.phase;           catch; headerAndExtraData2.availableFileList.phase = []; end
+try headerAndExtraData2.availableFileList.magnitude = headerAndExtraData.availableFileList.magnitude;   catch; headerAndExtraData2.availableFileList.magnitude = []; end
+try headerAndExtraData2.availableFileList.mask = headerAndExtraData.availableFileList.mask;             catch; headerAndExtraData2.availableFileList.mask = []; end
+% try headerAndExtraData2.availableFileList.phase = headerAndExtraData.availableFileList.phase; catch; headerAndExtraData2.availableFileList.phase = []; end
 
 end

@@ -57,15 +57,16 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
+outputFileList = construct_output_filename(outputDir, prefix);
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 % generl algorithm parameters
-isInvert            = algorParam.general.isInvert;
-isBET               = algorParam.general.isBET;
-fractional_threshold= algorParam.general.fractional_threshold;
-gradient_threshold  = algorParam.general.gradient_threshold;
+% isInvert            = algorParam.general.isInvert;
+% isBET               = algorParam.general.isBET;
+% fractional_threshold= algorParam.general.fractional_threshold;
+% gradient_threshold  = algorParam.general.gradient_threshold;
 % phase unwrap algorithm parameters
-isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
+% isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
@@ -77,207 +78,85 @@ disp('---------');
 
 %%%%%% Step 1: get all required filenames
 % input         : can be input directory or structure contains input filenames
+% outputDir     : output directory (only for BIDS)
+% prefix        : output basename (only for BIDS)
 % inputDir      : intput directory of phase image
-% inputNiftiList: structure contains all input filenames
-[inputDir, inputNiftiList] = io_01_get_input_file_list(input);
+% inputFileList : structure contains all input filenames
+[inputDir, inputFileList]	= io_01_get_input_file_list(input, outputDir, prefix);
 
-%%%%% Step 2: load data
-% 2.1 phase data 
-if ~isempty(inputNiftiList(1).name)
-    
-    % load true value from NIfTI
-    fieldMap    = load_nii_img_only([inputNiftiList(1).name]); 
-    disp('Phase data is loaded.')
-    
-else
-    error('Please specify a single-echo/multi-echo phase data.');
-end
+%%%%% Step 2: validate input files
+% 2.2 validate nifti files
+% inputFileList         : structure contains all input filenames
+% availableFileList     : data that is already available and validated
+availableFileList           = io_02_validate_nifti_input(inputFileList);
 
-% 2.2 magnitude data 
-if ~isempty(inputNiftiList(2).name)
-    
-    % load nifti structure for output template
-    inputMagnNifti  = load_untouch_nii([inputNiftiList(2).name]);
+%%%%% Step 3: get nifti template header for exporting output data
+% availableFileList   	: structure contains all data filenames that are already available and validated
+% outputNiftiTemplate   : nifti header with empty 'img' field
+outputNiftiTemplate         = io_03_get_nifti_template(availableFileList);
 
-    % load true value from NIfTI
-    magn            = load_nii_img_only([inputNiftiList(2).name]);
-    disp('Magnitude data is loaded.');
-    
-else
-    error('Please specify a single-echo/multi-echo magnitude data.');
-end
+% 2.1 load and validate SEPIA header 
+if ~isempty(inputFileList(4).name)
+    sepia_header = load([inputFileList(4).name]);
+    disp('SEPIA header data is loaded.');
+    % Validate header information
+    sepia_header = validate_sepia_header_4wrapper(sepia_header, outputNiftiTemplate);
 
-% 2.3 Weights data 
-if ~isempty(inputNiftiList(3).name)
-    
-    % load true value from NIfTI
-    weights         = load_nii_img_only([inputNiftiList(3).name]);
-    isWeightLoad    = true;
-    
-else
-    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
-end
-
-% 2.4 SEPIA header 
-if ~isempty(inputNiftiList(4).name)
-    load([inputNiftiList(4).name]);
-    disp('Header data is loaded.');
 else
     error('Please specify a header required by SEPIA.');
 end
 
-% store the header of the NIfTI files, all following results will have
-% the same header
-outputNiftiTemplate = inputMagnNifti;
+%%%%%% Step 4: Check whether phase data contains DICOM values or wrapped phase value
+% availableFileList	: structure contains all data filenames that are already available and validated
+% outputFileList  	: structure contains default output filenames
+availableFileList           = io_04_true_phase_value(availableFileList, outputFileList);
 
-%%%%%% Step 3: validate input
-% 3.1 Validate header information
-validate_sepia_header_4wrapper;
-
-% 3.2 Validate NIfTI input
-disp('Validating input NIfTI files...')
-
-% make sure the dimension of input data is consistent
-check_input_dimension(magn,fieldMap,matrixSize,TE);
-% check dimension of weights
-if exist('weights','var')
-    if ndims(weights) > 3
-        error('Input weighting map is 4D. SEPIA accepts weighting map to be 3D only.');
-    end
-end
-disp('Input NIfTI files are valid.')
-
-%%%%%% Step 4: Basic correction
-% 4.1: check whether phase data contains DICOM values or wrapped phase value
-if abs(max(fieldMap(:))-pi)>1e-4 || abs(min(fieldMap(:))-(-pi))>1e-4 % allow small differences possibly due to data stype conversion
-
-    disp('Values of input phase map exceed the range of [-pi,pi]. DICOM value is assumed.')
-    fprintf('Rescaling phase data from DICOM image value to wrapped radian unit...')
-    inputPhaseNifti = load_untouch_nii([inputNiftiList(1).name]);
-    fieldMap        = DICOM2Phase(inputPhaseNifti);
-    fprintf('Done.\n')
-
-    fprintf('Saving phase images in unit of radian...');
-    save_nii_quick(inputPhaseNifti,fieldMap, [outputDir filesep prefix 'phase.nii.gz']);
-    fprintf('Done.\n')
-    
-    clearvars inputPhaseNifti
-    
-end
-
-% 4.2: in case user want to reverse the frequency shift direction
-if isInvert
-    disp('Phase data is reversed.')
-    fieldMap = -fieldMap;
-end
+%%%%%% Step 5: in case user want to reverse the frequency shift direction
+% availableFileList	: structure contains all data filenames that are already available and validated
+% outputFileList  	: structure contains default output filenames
+% algorParam        : structure contains all pipeline parameters
+availableFileList           = io_05_reverse_phase(availableFileList, outputFileList, algorParam);
 
 % display some header info
 display_sepia_header_info_4wrapper;
 
-% ensure variables are double
-magn        = double(magn);
-fieldMap    = double(fieldMap);
-TE          = double(TE);
-matrixSize  = double(matrixSize);  
-voxelSize   = double(voxelSize);  
-if exist('weights','var'); weights = double(weights); end
+%%%%%% Step 6: get signal mask
+disp('-----------');
+disp('Signal mask');
+disp('-----------');
+% maskFullName          : mask filename
+% inputDir              : intput directory of phase image
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+availableFileList           = io_06_get_signal_mask(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
 %%%%%% Step 5: store some data to headerAndExtraData
 % header
 create_header_structure_4wrapper;
 
-headerAndExtraData.magn     = magn;
-headerAndExtraData.phase    = fieldMap;
-if exist('weights','var'); headerAndExtraData.weights  = weights; end
-
-clearvars inputMagnNifti 
-
-%% get brain mask
-disp('-----------');
-disp('Signal mask');
-disp('-----------');
-
-mask        = [];
-maskList    = dir(fullfile(inputDir,'*mask*nii*'));
-
-% Scenario: No specified mask file + No check BET + there is a file called mask in the input directory
-if isempty(maskFullName) && ~isempty(maskList) && ~isBET
-    
-    fprintf('No mask file is specified but a mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
-    disp('Trying to load the file as signal mask');
-    
-    maskFullName = fullfile(inputDir, maskList(1).name);
-end
-
-% Scenario: User provided a mask file or above scenario was satified
-if ~isempty(maskFullName)
-    
-    % load mask file
-    mask = load_nii_img_only(maskFullName) > 0;
-    
-    % make sure the mask has the same dimension as other input data
-    if ~isequal(size(mask),matrixSize)
-        disp('The file does not have the same dimension as other images.')
-        mask = [];
-    else
-        disp('Mask file is loaded.');
-    end
-end
-
-% if no mask is found then display the following message
-if isempty(mask) && ~isBET
-    disp('No mask data is loaded. Using FSL BET to obtain brain mask.');
-end
-    
-% if BET is checked or no mask is found, run FSL's bet
-if isempty(mask) || isBET
-    
-    sepia_addpath('MEDI');
-    
-    disp('Performing FSL BET...');
-    % Here uses MEDI toolboxes MEX implementation
-    mask = BET(magn(:,:,:,1),matrixSize,voxelSize,fractional_threshold,gradient_threshold);
-    disp('Signal mask is obtained.');
-    
-    fprintf('Saving signal mask...')
-    save_nii_quick(outputNiftiTemplate,mask, [outputDir filesep prefix 'mask.nii.gz']);
-    fprintf('done!\n');
-
-end
-
-% put the mask to headerAndExtraData
-headerAndExtraData.mask = mask;
-
 %% Main QSM processing - Step 1: total field and phase unwrap
 
 %%%%%%%%%% Step 0: Eddy current correction for bipolar readout %%%%%%%%%%
-if numel(TE) < 4 && isEddyCorrect
-    
-    warning('Bipolar readout correction requires data with at least 4 echoes.');
-    disp('Bipolar readout correction is  not performed.');
-    isEddyCorrect = false;
-    
-end
-
-if isEddyCorrect
-
-    % BipolarEddyCorrect requries complex-valued input
-    imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
-    fieldMap    = double(angle(imgCplx));
-    
-    % save the eddy current corrected output
-    fprintf('Saving eddy current corrected phase data...');
-    save_nii_quick(outputNiftiTemplate,fieldMap,    [outputDir filesep prefix 'phase_eddy-correct.nii.gz']);
-    fprintf('Done!\n');
-    
-    % update phase in headerAndExtraData
-    headerAndExtraData.phase    = fieldMap;
-    
-    clearvars imgCplx
-    
-end
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+availableFileList          = tf_00_bipolar_correction(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
 %%%%%%%%%% Step 1: Phase unwrapping and echo phase combination %%%%%%%%%%
+matrixSize  = double(sepia_header.matrixSize);
+voxelSize   = double(sepia_header.voxelSize);
+TE          = double(sepia_header.TE);
+
+fieldMap    = load_nii_img_only(availableFileList.phase);
+mask        = load_nii_img_only(availableFileList.mask);
+
+headerAndExtraData.availableFileList = availableFileList;
+
 % core of temporo-spatial phase unwrapping
 [totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
@@ -285,30 +164,50 @@ end
 if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
     % save the output                           
     fprintf('Saving unwrapped echo phase...');
-    save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes,[outputDir filesep prefix 'unwrapped-phase.nii.gz']);
+    save_nii_quick(outputNiftiTemplate,fieldmapUnwrapAllEchoes, outputFileList.unwrappedPhase);
     fprintf('Done!\n');
     
-    clear fieldmapUnwrapAllEchoes
+    availableFileList.unwrappedPhase = outputFileList.unwrappedPhase;
 end
+clear fieldmapUnwrapAllEchoes
+
+% save the total fieldmap                       
+fprintf('Saving unwrapped fieldmap...');
+save_nii_quick(outputNiftiTemplate,totalField,  outputFileList.totalField);
+fprintf('Done.\n');
+availableFileList.totalField = outputFileList.totalField;
 
 %%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 fprintf('Computing weighting map...');
 % only work with multi-echo data
 if length(TE) == 1 && ~isinf(exclude_threshold)
-    fprintf('\n');
-    warning('Excluding unreliable voxels can only work with multi-echo data.')
+    warning('\nExcluding unreliable voxels can only work with multi-echo data.')
     disp('No voxels are excluded');
     exclude_threshold = inf;
 end
     
     
 if ~isinf(exclude_threshold)
+    
+    magn = double(load_nii_img_only(availableFileList.magnitude));
+    
     % multi-echo data
     r2s                 = R2star_trapezoidal(magn,TE);
     relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
     maskReliable        = relativeResidual < exclude_threshold;
     
-    clear r2s
+    clear r2s magn 
+    
+    fprintf('Saving other output...');
+    save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
+    save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
+    fprintf('Done.\n');
+    
+    clear relativeResidual
+    
+    availableFileList.maskReliable      = outputFileList.maskReliable;
+    availableFileList.relativeResidual  = outputFileList.relativeResidual;
+    
 else
     % single-echo & no threshold
     maskReliable = ones(size(totalField),'like',totalField);
@@ -324,46 +223,44 @@ switch exclude_method
         mask = mask .* maskReliable;
         
 end
+save_nii_quick(outputNiftiTemplate,fieldmapSD,  outputFileList.fieldmapSD);
+save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField); 
+
+availableFileList.relativeResidual  = outputFileList.fieldmapSD;
+availableFileList.maskLocalField    = outputFileList.maskLocalField;
+
 fprintf('Done!\n');
 
 % create weighting map 
 % for weighting map: higher SNR -> higher weighting
-if ~isWeightLoad
+% if ~isWeightLoad
+if ~isfield(availableFileList, 'weights')
     weights                 = 1./fieldmapSD;
     weights(isinf(weights)) = 0;
     weights(isnan(weights)) = 0;
     weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
 end
 weights = weights .* and(mask>0,maskReliable);
+
+save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
+availableFileList.weights = outputFileList.weights;
              
 % save the output                           
-fprintf('Saving unwrapped field map...');
+% fprintf('Saving unwrapped field map...');
 
-save_nii_quick(outputNiftiTemplate,totalField,  [outputDir filesep prefix 'total-field.nii.gz']);
-save_nii_quick(outputNiftiTemplate,fieldmapSD,  [outputDir filesep prefix 'noise-sd.nii.gz']);
-if ~isWeightLoad
-    save_nii_quick(outputNiftiTemplate,weights,	[outputDir filesep prefix 'weights.nii.gz']);
-end
+% if ~isWeightLoad
+%     save_nii_quick(outputNiftiTemplate,weights,	[outputDir filesep prefix 'weights.nii.gz']);
+% end
 
-if ~isinf(exclude_threshold)
-    
-    save_nii_quick(outputNiftiTemplate,maskReliable,   	[outputDir filesep prefix 'mask-reliable.nii.gz']);
-    save_nii_quick(outputNiftiTemplate,relativeResidual,[outputDir filesep prefix 'relative-residual.nii.gz']);
-    
-    if strcmpi(exclude_method,'Brain mask')
-       save_nii_quick(outputNiftiTemplate,mask,         [outputDir filesep prefix 'mask-local_field.nii.gz']); 
-    end
-    
-    clear relativeResidual
-end
-fprintf('Done!\n');
 
-% store some output to extradata
-headerAndExtraData.N_std    = double(fieldmapSD);
-headerAndExtraData.weights  = double(weights);
+% fprintf('Done!\n');
+
+% % store some output to extradata
+% headerAndExtraData.N_std    = double(fieldmapSD);
+% headerAndExtraData.weights  = double(weights);
 
 % clear variable that no longer be needed
-clear fieldMap magn fieldmapSD weights maskReliable
+clear fieldMap fieldmapSD weights maskReliable mask
 
 %% Background field removal
 % make sure all variables are double
@@ -439,7 +336,7 @@ end
 end
 
 %% I/O Step 1: get input file list
-function [inputDir, inputNiftiList] = io_01_get_input_file_list(input)
+function [inputDir, inputNiftiList] = io_01_get_input_file_list(input,outputDir,prefix)
 
 if isstruct(input)
     
@@ -469,7 +366,232 @@ end
 
 end
 
-% %% I/O Step 2: load input data
-% function [] = io_02_load_nifti_input(inputNiftiList)
-% 
-% end
+%% I/O Step 2: validate input data
+function availableFileList          = io_02_validate_nifti_input(inputFileList)
+
+availableFileList = struct();
+
+% load NIFTI header for validating input images
+% 2.2 phase data 
+if ~isempty(inputFileList(1).name)
+    
+    fprintf('Loading phase header files...')
+    
+    % get header info from NIFTI for validation
+    phaseNIFTIHeader = load_untouch_header_only(inputFileList(1).name);
+    
+    % store the filename in the availableFileList structure
+    availableFileList.phase = inputFileList(1).name;
+    
+    fprintf('Done.\n');
+    
+else
+    error('Fail! \nPlease specify a single-echo(3D0/multi-echo(4D) phase data.');
+end
+
+% 2.2 magnitude data 
+if ~isempty(inputFileList(2).name)
+    
+    fprintf('Loading magnitude header files...')
+    
+    % get header info from NIFTI for validation
+    magnitudeNIFTIHeader = load_untouch_header_only(inputFileList(2).name);
+    
+    % store the filename in the availableFileList structure
+    availableFileList.magnitude = inputFileList(2).name;
+    
+    fprintf('Done.\n');
+    
+else
+    error('Fail! \nPlease specify a single-echo(3D0/multi-echo(4D) magnitude data.');
+end
+
+fprintf('Validating input phase and magnitude images...')
+% make sure input phase and magnitude have the same dimension
+matrixSize_magn     = magnitudeNIFTIHeader.dime.dim(2:5);
+matrixSize_phase    = phaseNIFTIHeader.dime.dim(2:5);
+% check matrix size between magnitude data and phase data
+if ~isequal(matrixSize_magn,matrixSize_phase)
+    error('Fail! \nInput phase and magnitude data do not have the same (3D/4D) matrix size. Please check the NIfTi files.');
+else
+    fprintf('Passed.\n');
+end
+
+
+% 2.3 Weights data 
+if ~isempty(inputFileList(3).name)
+    
+    % get header info from NIFTI for validation
+    weightsNIFTIHeader = load_untouch_header_only(inputFileList(2).name);
+    
+    availableFileList.weights = inputFileList(3).name;
+   
+else
+    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
+end
+
+% check dimension of weights
+if exist('weightsNIFTIHeader','var')
+    if weightsNIFTIHeader.dime.dim(1) > 3
+        error('Input weighting map is 4D. SEPIA accepts weighting map to be 3D only.');
+    end
+end
+
+disp('Input files are valid.')
+
+end
+
+%% I/O Step 3: get nifti template for nifti output
+function outputNiftiTemplate        = io_03_get_nifti_template(availableFileList)
+
+outputNiftiTemplate     = load_untouch_nii(availableFileList.magnitude);
+outputNiftiTemplate.img = [];
+
+end
+
+%% I/O Step 4: convert phase to radian unit if required
+function availableFileList          = io_04_true_phase_value(availableFileList, outputFileList)
+
+% load phase image to check if the 
+phaseNIFTI = load_untouch_nii(availableFileList.phase);
+
+if abs(max(phaseNIFTI.img(:))-pi)>0.1 || abs(min(phaseNIFTI.img(:))-(-pi))>0.1 % allow small differences possibly due to data stype conversion or DICOM digitisation
+
+    disp('Values of input phase map exceed the range of [-pi,pi]. DICOM value is assumed.')
+    fprintf('Rescaling phase data from DICOM image value to wrapped radian unit...')
+    phase = DICOM2Phase(phaseNIFTI);
+    fprintf('Done.\n')
+
+    fprintf('Saving phase images in unit of radian...');
+    save_nii_quick(phaseNIFTI, phase, outputFileList.phaseRadian);
+    fprintf('Done.\n')
+    
+    % update the phase data for QSM processing
+    availableFileList.phase = outputFileList.phaseRadian;
+    
+end
+
+end
+
+%% I/O Step 5: reverse phase rotation if required
+function availableFileList          = io_05_reverse_phase(availableFileList, outputFileList, algorParam)
+
+if algorParam.general.isInvert
+    
+    phaseNIFTI = load_untouch_nii(availableFileList.phase);
+    phaseNIFTI.img = -phaseNIFTI.img;
+    
+    disp('Phase data is reversed.')
+    
+    fprintf('Saving reversed phase images...');
+    save_nii_quick(phaseNIFTI, phaseNIFTI.img, outputFileList.phaseReversed);
+    fprintf('Done.\n')
+    
+    % update the phase data for QSM processing
+    availableFileList.phase = outputFileList.outputFileList;
+    
+end
+    
+end
+
+%% I/O Step 6: loading signal mask
+function availableFileList          = io_06_get_signal_mask(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+isBET               = algorParam.general.isBET;
+fractional_threshold= algorParam.general.fractional_threshold;
+gradient_threshold  = algorParam.general.gradient_threshold;
+
+matrixSize  = sepia_header.matrixSize;
+voxelSize   = sepia_header.voxelSize;
+
+mask        = [];
+maskList    = dir(fullfile(inputDir,'*mask*nii*'));
+
+% Scenario: No specified mask file + No check BET + there is a file called mask in the input directory
+if isempty(maskFullName) && ~isempty(maskList) && ~isBET
+    
+    fprintf('No mask file is specified but a mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
+    disp('Trying to load the file as signal mask');
+    
+    maskFullName = fullfile(inputDir, maskList(1).name);
+end
+
+% Scenario: User provided a mask file or above scenario was satified
+if ~isempty(maskFullName)
+    
+    % load mask file
+    mask = load_nii_img_only(maskFullName) > 0;
+    
+    % make sure the mask has the same dimension as other input data
+    if ~isequal(size(mask),matrixSize)
+        disp('The file does not have the same dimension as other images.')
+        mask = [];
+    else
+        availableFileList.mask = maskFullName;
+        disp('Mask file is checked.');
+    end
+end
+
+% if no mask is found then display the following message
+if isempty(mask) && ~isBET
+    disp('No mask data is loaded. Using FSL BET to obtain brain mask.');
+end
+    
+% if BET is checked or no mask is found, run FSL's bet
+if isempty(mask) || isBET
+    
+    magn = load_nii_img_only(availableFileList.magnitude);
+    
+    sepia_addpath('MEDI');
+    
+    disp('Performing FSL BET...');
+    % Here uses MEDI toolboxes MEX implementation
+    mask = BET(magn(:,:,:,1),matrixSize,voxelSize,fractional_threshold,gradient_threshold);
+    disp('Signal mask is obtained.');
+    
+    fprintf('Saving signal mask...')
+    save_nii_quick(outputNiftiTemplate,mask, outputFileList.maskBrain);
+    fprintf('Done!\n');
+    
+    availableFileList.mask = outputFileList.maskBrain;
+end
+
+end
+
+%% TF Step 0: bipolar readout phase correction
+function availableFileList          = tf_00_bipolar_correction(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+isEddyCorrect   = algorParam.unwrap.isEddyCorrect;
+
+TE              = sepia_header.TE;
+
+if numel(TE) < 4 && isEddyCorrect
+    
+    warning('Bipolar readout correction requires data with at least 4 echoes.');
+    disp('Bipolar readout correction is  not performed.');
+    isEddyCorrect = false;
+    
+end
+
+if isEddyCorrect
+    
+    % load data
+    magn        = double(load_nii_img_only(availableFileList.magnitude));
+    fieldMap    = double(load_nii_img_only(availableFileList.phase));
+    mask        = double(load_nii_img_only(availableFileList.mask));
+
+    % BipolarEddyCorrect requries complex-valued input
+    imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    fieldMap    = double(angle(imgCplx));
+    
+    % save the eddy current corrected output
+    fprintf('Saving eddy current corrected phase data...');
+    save_nii_quick(outputNiftiTemplate, fieldMap, outputFileList.phaseEddyCorr);
+    fprintf('Done!\n');
+    
+    % update availableFileList
+    availableFileList.phase = outputFileList.phaseEddyCorr;
+    
+end
+
+end
