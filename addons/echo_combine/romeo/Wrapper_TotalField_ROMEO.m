@@ -20,7 +20,7 @@
 % Korbinian Eckstein @ HFMR Vienna
 % korbinian90@gmail.com
 % Date created: 15 Juni 2021
-% Date last modified:
+% Date modified: 16 August 2021 (KC, v1.0)
 %
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_TotalField_ROMEO(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -41,7 +41,7 @@ mkdir(parameters.output_dir);
 [fieldmapUnwrapAllEchoes, totalField] = ROMEO(wrappedField, parameters);
 
 if parameters.use_romeo_mask
-   headerAndExtraData.mask = load_nii_img_only(fullfile(parameters.output_dir, 'Mask.nii'));
+   headerAndExtraData.mask = load_nii_img_only(fullfile(parameters.output_dir, 'Mask.nii'), matrixSize);
 end
 
 % Remove all temp output files and the temp folder
@@ -51,8 +51,8 @@ rmdir(parameters.output_dir, 's')
 if algorParam.unwrap.isSaveUnwrappedEcho
     headerAndExtraData.fieldmapUnwrapAllEchoes = fieldmapUnwrapAllEchoes;
 end
-TEs = reshape(headerAndExtraData.te, 1,1,1,length(headerAndExtraData.te));
-mag = headerAndExtraData.magn;
+TEs = reshape(headerAndExtraData.sepia_header.TE, 1,1,1,length(headerAndExtraData.sepia_header.TE));
+mag = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize); % KC 20210816: v1.0; headerAndExtraData.magn;
 N_std = sqrt(sum(mag .* mag .* (TEs .* TEs), 4)); % TODO compare with SEPIA version
 
 % KC 20210803: N_std is the SD of noise, similar to inverse of SNR map
@@ -73,10 +73,10 @@ function parameters = check_and_set_algorithm_default(algorParam, headerAndExtra
 
 parameters.use_romeo_mask = algorParam.unwrap.useRomeoMask;
 % 20210803 KC: convert TE from s to ms
-parameters.TE = headerAndExtraData.te * 1e3;
+parameters.TE = headerAndExtraData.sepia_header.TE * 1e3;
 parameters.no_unwrapped_output = ~algorParam.unwrap.isSaveUnwrappedEcho;
 parameters.calculate_B0 = true;
-parameters.mag = headerAndExtraData.magn;
+parameters.mag = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', size(mask)); % KC 20210816: v1.0;headerAndExtraData.magn;
 
 if contains(lower(algorParam.unwrap.offsetCorrect), 'bipolar')
     parameters.phase_offset_correction = 'bipolar';

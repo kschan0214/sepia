@@ -23,7 +23,7 @@
 % Date modified: 1 April 2019
 % Date modified: 5 June 2019
 % Date modified: 27 Feb 2020 (v0.8.0)
-% Date modified: 13 August 2021 (v1.0)
+% Date modified: 16 August 2021 (v1.0)
 %
 function [chi,mask_ref] = QSMMacro(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
@@ -72,18 +72,26 @@ switch reference_tissue
         mask_ref = mask;
         
     case 'CSF'
-        if( isempty(headerAndExtraData.magnitude) && isempty(headerAndExtraData.availableFileList.magnitud)) || size(headerAndExtraData.magn,4) < 3
+        if( isempty(headerAndExtraData.magnitude) && isempty(headerAndExtraData.availableFileList.magnitude))
             warning('Please specify a magnitude data (at least 3 echoes) if you want to use CSF as reference.');
             warning('No normalisation will be done on the susceptibility map in this instance.');
             mask_ref = [];
         else
             sepia_addpath('MEDI');
-            magn        = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude');
-            r2s         = arlo(headerAndExtraData.sepia_header.TE, magn);
-            clear magn
-            
-            mask_ref    = extract_CSF(r2s,mask,voxelSize)>0;
-            clear r2s
+            magn        = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize_new);
+            if size(magn,4) < 3
+                warning('Please specify a magnitude data (at least 3 echoes) if you want to use CSF as reference.');
+                warning('No normalisation will be done on the susceptibility map in this instance.');
+                mask_ref = [];
+                clear magn
+                
+            else
+                r2s         = arlo(headerAndExtraData.sepia_header.TE, magn);
+                clear magn
+
+                mask_ref    = extract_CSF(r2s,mask,voxelSize)>0;
+                clear r2s
+            end
         end
 end
     

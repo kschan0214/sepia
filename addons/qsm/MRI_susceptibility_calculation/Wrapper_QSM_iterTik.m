@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 4 August 2020
-% Date modified:
+% Date modified: 16 August 2021
 %
 % You can change the name of the function but DO NOT change the input/output variables
 function [chi] = Wrapper_QSM_iterTik(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
@@ -34,9 +34,9 @@ tolerance  = algorParam.qsm.tolerance;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
-b0dir = headerAndExtraData.b0dir;
-b0    = headerAndExtraData.b0;
-weights = headerAndExtraData.weights;
+b0dir = headerAndExtraData.sepia_header.B0_dir;
+b0    = headerAndExtraData.sepia_header.B0;
+weights = get_variable_from_headerAndExtraData(headerAndExtraData,'weights', matrixSize); % headerAndExtraData.weights;
 % magn  = headerAndExtraData.magn;  % you can access the magnitude and/or other data from the 'headerAndExtraData' variable
 
 % add path

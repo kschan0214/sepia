@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020 (v0.8.0)
-% Date last modified:
+% Date modified: 16 August 2021 (v1.0, KC)
 %
 %
 function [unwrappedField] = Wrapper_Unwrap_ROMEO_singleEcho(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -48,10 +48,12 @@ end
 %% set parameters
 function parameters = check_and_set_algorithm_default(headerAndExtraData, mask)
 
+magn = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', size(mask));
+
 parameters.TE = false;
 parameters.no_unwrapped_output = false;
 parameters.calculate_B0 = false;
-parameters.mag = headerAndExtraData.magn(:,:,:,1); % use first magnitude
+parameters.mag = magn(:,:,:,1); % headerAndExtraData.magn(:,:,:,1); % use first magnitude
 parameters.phase_offset_correction = 'off';
 parameters.mask = mask;
 
