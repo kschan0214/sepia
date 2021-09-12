@@ -19,6 +19,7 @@
 % k.chan@donders.ru.nl
 % Date created: 4 August 2020
 % Date modified: 16 August 2021
+% Date modified: 12 September 2021
 %
 % You can change the name of the function but DO NOT change the input/output variables
 function [chi] = Wrapper_QSM_iterTik(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
@@ -37,7 +38,11 @@ headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 b0dir = headerAndExtraData.sepia_header.B0_dir;
 b0    = headerAndExtraData.sepia_header.B0;
 weights = get_variable_from_headerAndExtraData(headerAndExtraData,'weights', matrixSize); % headerAndExtraData.weights;
-% magn  = headerAndExtraData.magn;  % you can access the magnitude and/or other data from the 'headerAndExtraData' variable
+if isempty(weights)
+    magn  = get_variable_from_headerAndExtraData(headerAndExtraData,'magnitude', matrixSize);  % you can access the magnitude and/or other data from the 'headerAndExtraData' variable
+    weights = sum(magn.^2,4);
+    clear magn
+end
 
 % add path
 % sepia_addpath(fullfile(SEPIA_HOME,'external','MRI_susceptibility_calculation','MATLAB'));
@@ -70,8 +75,10 @@ switch solver
         disp(['Conjugate gradient stopping threshold  = ' num2str(tolerance)]);
         
         Parameters.Noise = 1./weights; % up to a scaling factor
-        Parameters.Alpha = alpha; % delfault = 0.05
-        Parameters.StoppingThreshold = 0.03; % delfault = 0.03
+        Parameters.Noise(isnan(Parameters.Noise)) = 0; % avoid NaN
+        Parameters.Noise(ininf(Parameters.Noise)) = 0; % avoid inf
+        Parameters.Alpha                = alpha; % delfault = 0.05
+        Parameters.StoppingThreshold    = tolerance; % delfault = 0.03
 
         chi = iterTik(Parameters);
         
