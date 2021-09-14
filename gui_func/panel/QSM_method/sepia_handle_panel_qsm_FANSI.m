@@ -16,16 +16,17 @@
 % k.chan@donders.ru.nl
 % Date created: 1 June 2018
 % Date modified: 4 April 2020 (v0.8.0)
+% Date modified: 16 August 2021 (v1.0)
 %
 %
 function h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
 
 %% set default values
-defaultTol      = 1;
+defaultTol      = 0.1;  % update v2
 defaultLambda   = 3e-5;
-defaultMu       = 5e-5;
+defaultMu       = 5e-5; % update v2
 defaultMu2      = 1;
-defaultMaxIter  = 50;
+defaultMaxIter  = 150;  % update v2
 
 defaultBeta = 1;
 defaultMuh  = 1;

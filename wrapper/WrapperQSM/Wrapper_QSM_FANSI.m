@@ -27,14 +27,14 @@ sepia_universal_variables;
 % get algorithm parameters
 algorParam = check_and_set_algorithm_default(algorParam);
 method     = algorParam.qsm.method;
-options.tol_update      = algorParam.qsm.tol;
-options.maxOuterIter    = algorParam.qsm.maxiter;
+options.update          = algorParam.qsm.tol;       % updated v2
+options.iterations      = algorParam.qsm.maxiter;   % updated v2
 options.mu2             = algorParam.qsm.mu2;
 options.isWeakHarmonic  = algorParam.qsm.isWeakHarmonic;
 options.beta            = algorParam.qsm.beta;
 options.muh             = algorParam.qsm.muh;
 alpha1                  = algorParam.qsm.lambda;
-mu1                     = algorParam.qsm.mu1;
+options.mu            	= algorParam.qsm.mu1;       % updated v2
 % need further decision
 gradient_mode   = algorParam.qsm.gradient_mode;
 constraint     	= algorParam.qsm.constraint;
@@ -98,11 +98,11 @@ end
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');
-disp(['Tolerance            = ' num2str(options.tol_update)]);
-disp(['Max. iteration       = ' num2str(options.maxOuterIter)]);
+disp(['Tolerance            = ' num2str(options.update)]);      % updated v2
+disp(['Max. iteration       = ' num2str(options.iterations)]);  % updated v2
 disp(['Fidelity consistancy	= ' num2str(options.mu2)]);
 disp(['Gradient L1 penalty	= ' num2str(alpha1)]);
-disp(['Gradient consistancy	= ' num2str(mu1)]);
+disp(['Gradient consistancy	= ' num2str(options.mu)]);          % updated v2
 disp(['Gradient mode        = ' algorParam.qsm.gradient_mode]);
 disp(['Constraint           = ' algorParam.qsm.constraint]);
 disp(['Solver               = ' algorParam.qsm.solver]);
@@ -119,8 +119,9 @@ localField = localField/(b0*gyro);
 
 noise = 0;
 
-chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
-chi = chi .* mask;
+% chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
+chi = FANSI( localField, wmap, voxelSize, alpha1, noise, options, b0dir );
+chi = chi.x .* mask;
 
 
 end
