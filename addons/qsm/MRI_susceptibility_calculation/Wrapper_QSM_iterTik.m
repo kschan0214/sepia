@@ -76,7 +76,7 @@ switch solver
         
         Parameters.Noise = 1./weights; % up to a scaling factor
         Parameters.Noise(isnan(Parameters.Noise)) = 0; % avoid NaN
-        Parameters.Noise(ininf(Parameters.Noise)) = 0; % avoid inf
+        Parameters.Noise(isinf(Parameters.Noise)) = 0; % avoid inf
         Parameters.Alpha                = alpha; % delfault = 0.05
         Parameters.StoppingThreshold    = tolerance; % delfault = 0.03
 
