@@ -52,10 +52,16 @@ if ~isempty(magn) && isempty(wmap)
     disp('The normalised RMS in time dimension of magnitude image will be used as the weighting map.');
     tmp     = sqrt(mean(magn.^2,4));
     wmap    = (tmp./max(tmp(:))) .* (mask); 
+    
+    clear tmp
 end
 % if nothing is loaded
 if ~isempty(magn) && isempty(wmap)
     warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+end
+
+if ~isempty(magn)
+    clear magn
 end
 
 %% Display algorithm parameters

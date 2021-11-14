@@ -80,7 +80,6 @@ if ~isempty(magn) && ~isempty(wmap)
     disp('Both weighting map and magnitude images are loaded.');
     disp('Only the weighing map will be used.');
     
-    clear magn
 end
 % if only magnitude images are loaded
 if ~isempty(magn) && isempty(wmap)
@@ -89,11 +88,15 @@ if ~isempty(magn) && isempty(wmap)
     tmp     = sqrt(mean(magn.^2,4));
     wmap    = (tmp./max(tmp(:))) .* (mask); 
     
-    clear magn tmp
+    clear tmp
 end
 % if nothing is loaded
 if ~isempty(magn) && isempty(wmap)
     warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+end
+
+if ~isempty(magn)
+    clear magn
 end
 
 %% Display algorithm parameters
