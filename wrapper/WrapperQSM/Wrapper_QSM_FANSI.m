@@ -122,9 +122,9 @@ localField = localField/(b0*gyro);
 
 noise = 0;
 
-% chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
-chi = FANSI( localField, wmap, voxelSize, alpha1, noise, options, b0dir );
-chi = chi.x .* mask;
+chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,noise,options,b0dir);
+% chi = FANSI( localField, wmap, voxelSize, alpha1, noise, options, b0dir );
+% chi = chi.x .* mask;
 
 
 end

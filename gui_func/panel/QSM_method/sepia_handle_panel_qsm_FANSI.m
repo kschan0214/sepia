@@ -24,12 +24,12 @@ function h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
 %% set default values
 defaultTol      = 0.1;  % update v2
 defaultLambda   = 3e-5;
-defaultMu       = 5e-5; % update v2
+defaultMu       = 5e-3; % update v2
 defaultMu2      = 1;
 defaultMaxIter  = 150;  % update v2
 
-defaultBeta = 1;
-defaultMuh  = 1;
+defaultBeta = 150;
+defaultMuh  = 5;
 
 menuSolver       = {'Linear','Non-linear'};
 menuConstraints  = {'TV','TGV'};
