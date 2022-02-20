@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date modified: 13 August 2021 (v1.0)
+% Date modified: 20 Feb 2022 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_FANSI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -27,14 +27,15 @@ sepia_universal_variables;
 % get algorithm parameters
 algorParam = check_and_set_algorithm_default(algorParam);
 method     = algorParam.qsm.method;
-options.update          = algorParam.qsm.tol;       % updated v2
-options.iterations      = algorParam.qsm.maxiter;   % updated v2
+options.tol_update      = algorParam.qsm.tol;
+options.maxOuterIter    = algorParam.qsm.maxiter;
 options.mu2             = algorParam.qsm.mu2;
 options.isWeakHarmonic  = algorParam.qsm.isWeakHarmonic;
 options.beta            = algorParam.qsm.beta;
 options.muh             = algorParam.qsm.muh;
 alpha1                  = algorParam.qsm.lambda;
-options.mu            	= algorParam.qsm.mu1;       % updated v2
+mu1                     = algorParam.qsm.mu1;
+
 % need further decision
 gradient_mode   = algorParam.qsm.gradient_mode;
 constraint     	= algorParam.qsm.constraint;
@@ -60,6 +61,8 @@ switch lower(gradient_mode)
         options.gradient_mode = 1;
     case 'l2 norm'
         options.gradient_mode = 2;
+    case 'none'
+        % no gradient_mode
 end
 
 if strcmpi(constraint, 'tv')
@@ -91,8 +94,10 @@ if ~isempty(magn) && isempty(wmap)
     clear tmp
 end
 % if nothing is loaded
-if ~isempty(magn) && isempty(wmap)
+if isempty(magn) && isempty(wmap)
     warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+    wmap = mask;
+    options = rmfield(options, 'gradient_mode');
 end
 
 if ~isempty(magn)
@@ -101,30 +106,61 @@ end
 
 %% Display algorithm parameters
 disp('The following parameters are being used...');
-disp(['Tolerance            = ' num2str(options.update)]);      % updated v2
-disp(['Max. iteration       = ' num2str(options.iterations)]);  % updated v2
-disp(['Fidelity consistancy	= ' num2str(options.mu2)]);
-disp(['Gradient L1 penalty	= ' num2str(alpha1)]);
-disp(['Gradient consistancy	= ' num2str(options.mu)]);          % updated v2
-disp(['Gradient mode        = ' algorParam.qsm.gradient_mode]);
-disp(['Constraint           = ' algorParam.qsm.constraint]);
-disp(['Solver               = ' algorParam.qsm.solver]);
+disp(['Tolerance                    = ' num2str(options.tol_update)]);      
+disp(['Max. iteration               = ' num2str(options.maxOuterIter)]);    
+disp(['Fidelity consistancy (mu2)	= ' num2str(options.mu2)]);
+disp(['Gradient L1 penalty (alpha1) = ' num2str(alpha1)]);
+disp(['Gradient consistancy	(mu)    = ' num2str(mu1)]);          
+if isfield(options,'gradient_mode'); disp(['Gradient mode           = ' options.gradient_mode]); end
+disp(['Constraint                   = ' algorParam.qsm.constraint]);
+disp(['Solver                       = ' algorParam.qsm.solver]);
 
 disp(['Use weak-harmonic field regularisation?	= ' num2str(options.isWeakHarmonic)]);
 if options.isWeakHarmonic
-    disp(['Harmonic constraint	= ' num2str(options.beta)]);
-    disp(['Harmonic consistancy	= ' num2str(options.muh)]);
+    disp(['Harmonic constraint          = ' num2str(options.beta)]);
+    disp(['Harmonic consistancy         = ' num2str(options.muh)]);
 end
 
 %% main
 % FANSI default parameters are optimised for ppm
 localField = localField/(b0*gyro);
 
-noise = 0;
+SNR     = 1000;     % Assume high SNR, mainly for avoiding division by zeros if regweight is used
+noise   = 1/SNR;    % mainly to avoid division of zero
+try
+    % FANSI v1
+%     noise   = 0;
+    chi = FANSI_4sepia_v1(localField,wmap,voxelSize,alpha1,mu1,noise,options,b0dir);
+    
+catch
+    % TODO 20220217: v2 need further testing!!
+    
+    % FANSI v3: scale of local field makes substantial differences with TGV
+    % constraint
+    % convert ppm to radian, similar to the demo scripts of FANSI
+    phase_scale = 2*pi*gyro*b0 * headerAndExtraData.sepia_header.TE(end);
+    localField = localField * phase_scale;
+    
+    % account for variable name changes
+    if isfield(options,'gradient_mode'); options.gradientMode    = options.gradient_mode; end
+    options.update          = options.tol_update;       options = rmfield(options, 'tol_update');       
+    options.iterations      = options.maxOuterIter;     options = rmfield(options, 'maxOuterIter'); 
+    options.voxelSize       = voxelSize;
+    options.B0_dir          = b0dir;
+    options.mu            	= mu1;       % updated v2
+    options.noise           = noise; 
+    % options.kernelMode   % SEPIA does not provide option of kernalMode    
+    
+    chi = FANSI_4sepia_v3( localField, wmap.*mask, alpha1, options );
+    % chi = FANSI_4sepia(localField,wmap.*mask,voxelSize,alpha1,noise,options,b0dir);
+    chi = chi.x;
+    chi = chi / phase_scale; % radian to ppm
+    
+end
 
-chi = FANSI_4sepia(localField,wmap,voxelSize,alpha1,noise,options,b0dir);
 % chi = FANSI( localField, wmap, voxelSize, alpha1, noise, options, b0dir );
-% chi = chi.x .* mask;
+
+chi = chi .* mask;
 
 
 end
@@ -134,16 +170,16 @@ function algorParam2 = check_and_set_algorithm_default(algorParam)
 
 algorParam2 = algorParam;
 
-try algorParam2.qsm.tol             = algorParam.qsm.tol;           catch; algorParam2.qsm.tol              = 1; end
-try algorParam2.qsm.maxiter         = algorParam.qsm.maxiter;       catch; algorParam2.qsm.maxiter          = 50; end
+try algorParam2.qsm.tol             = algorParam.qsm.tol;           catch; algorParam2.qsm.tol              = 0.1; end
+try algorParam2.qsm.maxiter         = algorParam.qsm.maxiter;       catch; algorParam2.qsm.maxiter          = 150; end
 try algorParam2.qsm.mu2             = algorParam.qsm.mu2;           catch; algorParam2.qsm.mu2              = 1; end
-try algorParam2.qsm.lambda          = algorParam.qsm.lambda;        catch; algorParam2.qsm.lambda           = 3e-5; end
-try algorParam2.qsm.mu1             = algorParam.qsm.mu1;           catch; algorParam2.qsm.mu1              = 5e-5; end
-try algorParam2.qsm.solver          = algorParam.qsm.solver;        catch; algorParam2.qsm.solver           = 'linear'; end
+try algorParam2.qsm.lambda          = algorParam.qsm.lambda;        catch; algorParam2.qsm.lambda           = 4e-4; end
+try algorParam2.qsm.mu1             = algorParam.qsm.mu1;           catch; algorParam2.qsm.mu1              = 4e-2; end
+try algorParam2.qsm.solver          = algorParam.qsm.solver;        catch; algorParam2.qsm.solver           = 'Non-linear'; end
 try algorParam2.qsm.constraint      = algorParam.qsm.constraint;	catch; algorParam2.qsm.constraint       = 'tv'; end
 try algorParam2.qsm.gradient_mode   = algorParam.qsm.gradient_mode;	catch; algorParam2.qsm.gradient_mode	= 'Vector field'; end
 try algorParam2.qsm.isWeakHarmonic  = algorParam.qsm.isWeakHarmonic;catch; algorParam2.qsm.isWeakHarmonic	= 0; end
-try algorParam2.qsm.beta            = algorParam.qsm.beta;          catch; algorParam2.qsm.beta             = 1; end
-try algorParam2.qsm.muh             = algorParam.qsm.muh;           catch; algorParam2.qsm.muh              = 1; end
+try algorParam2.qsm.beta            = algorParam.qsm.beta;          catch; algorParam2.qsm.beta             = 150; end
+try algorParam2.qsm.muh             = algorParam.qsm.muh;           catch; algorParam2.qsm.muh              = 3; end
 
 end

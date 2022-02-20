@@ -16,30 +16,40 @@
 % k.chan@donders.ru.nl
 % Date created: 1 June 2018
 % Date modified: 4 April 2020 (v0.8.0)
-% Date modified: 16 August 2021 (v1.0)
+% Date modified: 20 Feb 2022 (v1.0)
 %
 %
 function h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
 
 %% set default values
-defaultTol      = 0.1;  % update v2
-defaultLambda   = 3e-5;
-defaultMu       = 5e-3; % update v2
+% defaultTol      = 1;  
+% defaultLambda   = 3e-5;
+% defaultMu       = 5e-5; 
+% defaultMaxIter  = 50;  
+% defaultBeta = 1;
+% defaultMuh  = 1;
+
 defaultMu2      = 1;
-defaultMaxIter  = 150;  % update v2
+defaultLambda   = 4e-4;              % update v3
+defaultTol      = 0.1;               % update v3
+defaultMu       = defaultLambda*100; % update v3
+defaultMaxIter  = 150;               % update v3
+defaultBeta = 150;                   % update v3
+defaultMuh  = 3;                     % update v3
 
-defaultBeta = 150;
-defaultMuh  = 5;
-
-menuSolver       = {'Linear','Non-linear'};
-menuConstraints  = {'TV','TGV'};
-menuGradientMode = {'Vector field','L1 norm','L2 norm'};
+menuSolver       = {'Non-linear','Linear'};
+menuConstraints  = {'TGV','TV'};
+menuGradientMode = {'Vector field','L1 norm','L2 norm','None'};
 
 %% Tooltips
-tooltip.qsm.fansi.tol            = 'Convergence limit, change rate in the solution';
-tooltip.qsm.fansi.MaxIter        = 'Maximum iterations allowed';
-tooltip.qsm.fansi.lambda         = 'Regularisation rate';
-tooltip.qsm.fansi.isWeakHarmonic = 'Weak-harmonic regularization for quantitative susceptibility mapping';
+tooltip.qsm.fansi.tol            = 'Convergence limit, change rate in the solution, adpated for FANSI v3';
+tooltip.qsm.fansi.MaxIter        = 'Maximum iterations allowed, adpated for FANSI v3';
+tooltip.qsm.fansi.lambda         = 'i.e. alpha1, adpated for FANSI v3';
+tooltip.qsm.fansi.mu             = 'i.e. mu1, adpated for FANSI v3; recommended value=100*alpha0';
+tooltip.qsm.fansi.mu2            = 'i.e. mu2; recommended value=1';
+tooltip.qsm.fansi.isWeakHarmonic = 'Check to us weak-harmonic regularization algorithms';
+tooltip.qsm.fansi.beta           = 'i.e. beta, adpated for FANSI v3';
+tooltip.qsm.fansi.muh            = 'i.e. muh, adpated for FANSI v3; recommended value=beta/50';
 
 %% layout of the panel
 nrow        = 4;
@@ -128,9 +138,14 @@ set(h.qsm.FANSI.text.tol,               'Tooltip',tooltip.qsm.fansi.tol);
 set(h.qsm.FANSI.text.maxIter,           'Tooltip',tooltip.qsm.fansi.MaxIter);
 set(h.qsm.FANSI.text.lambda,            'Tooltip',tooltip.qsm.fansi.lambda);
 set(h.qsm.FANSI.checkbox.isWeakHarmonic,'Tooltip',tooltip.qsm.fansi.isWeakHarmonic);
+set(h.qsm.FANSI.text.mu,                'Tooltip',tooltip.qsm.fansi.mu);
+set(h.qsm.FANSI.text.beta,              'Tooltip',tooltip.qsm.fansi.beta);
+set(h.qsm.FANSI.text.muh,               'Tooltip',tooltip.qsm.fansi.muh);
+set(h.qsm.FANSI.text.mu2,               'Tooltip',tooltip.qsm.fansi.mu2);
 
 %% set callbacks
-set(h.qsm.FANSI.edit.lambda,	'Callback', {@EditInputMinMax_Callback,defaultLambda,   0,0});
+% set(h.qsm.FANSI.edit.lambda,	'Callback', {@EditInputMinMax_Callback,defaultLambda,   0,0});
+set(h.qsm.FANSI.edit.lambda,	'Callback', {@EditInputMinMax_lambda2mu_Callback,defaultLambda,   0,0,[],h});
 set(h.qsm.FANSI.edit.maxIter,	'Callback', {@EditInputMinMax_Callback,defaultMaxIter,  1,1});
 set(h.qsm.FANSI.edit.mu,     	'Callback', {@EditInputMinMax_Callback,defaultMu,       0,0});
 set(h.qsm.FANSI.edit.mu2,     	'Callback', {@EditInputMinMax_Callback,defaultMu2,      0,0});
@@ -140,4 +155,36 @@ set(h.qsm.FANSI.edit.muh,     	'Callback', {@EditInputMinMax_Callback,defaultMuh
 
 set(h.qsm.FANSI.checkbox.isWeakHarmonic,	'Callback', {@CheckboxEditPair_Callback,{h.qsm.FANSI.edit.beta,h.qsm.FANSI.edit.muh},1});
 
+end
+
+function EditInputMinMax_lambda2mu_Callback(source,eventdata,defaultValue,isIntegerInput,lb,ub,h)
+% set the min/max input allowed in edit fields
+
+    % check input is numeric
+    if isnan(str2double(source.String)) || ~isreal(str2double(source.String))
+        warndlg('Please enter a valid real number');
+        source.String = num2str(defaultValue);
+    end
+
+    % check minimum
+    if str2double(source.String)<lb
+        source.String = num2str(lb);
+        warndlg(['The minimium value allowed is ' num2str(lb)]);
+    end
+    
+    % if maximum is set then check maximum
+    if ~isempty(ub)
+        if str2double(source.String)>ub
+            source.String = num2str(ub);
+            warndlg(['The maximum value allowed is ' num2str(ub)]);
+        end
+    end
+    
+    % make sure the input is interger for some fields
+    if isIntegerInput
+        source.String = num2str(round(str2double(source.String)));
+    end
+    
+    set_non_nan_value(h.qsm.FANSI.edit.mu,'String',num2str(100*str2double(source.String)))
+    
 end

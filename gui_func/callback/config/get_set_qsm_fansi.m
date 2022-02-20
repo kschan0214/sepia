@@ -80,9 +80,9 @@ switch lower(mode)
         val             = get_string_as_string(config_txt, pattern_curr);
         switch lower(val)
             case 'linear'
-                set_non_nan_value(action_handle{k},'Value',1)
-            case 'non-linear'
                 set_non_nan_value(action_handle{k},'Value',2)
+            case 'non-linear'
+                set_non_nan_value(action_handle{k},'Value',1)
         end
 
         % constraint
@@ -91,9 +91,9 @@ switch lower(mode)
         val             = get_string_as_string(config_txt, pattern_curr);
         switch lower(val)
             case 'tv'
-                set_non_nan_value(action_handle{k},'Value',1)
-            case 'tgv'
                 set_non_nan_value(action_handle{k},'Value',2)
+            case 'tgv'
+                set_non_nan_value(action_handle{k},'Value',1)
         end
 
         % gradient mode
@@ -107,6 +107,8 @@ switch lower(mode)
                 set_non_nan_value(action_handle{k},'Value',2)
             case 'l2 norm'
                 set_non_nan_value(action_handle{k},'Value',3)
+            case 'none'
+                set_non_nan_value(action_handle{k},'Value',4)
         end
 
         % weak field harmonic
