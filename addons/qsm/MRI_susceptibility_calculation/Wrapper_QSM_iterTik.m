@@ -20,6 +20,7 @@
 % Date created: 4 August 2020
 % Date modified: 16 August 2021
 % Date modified: 12 September 2021
+% Date modified: 20 Feb 2022 (v1.0)
 %
 % You can change the name of the function but DO NOT change the input/output variables
 function [chi] = Wrapper_QSM_iterTik(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
@@ -43,6 +44,8 @@ if isempty(weights)
     weights = sum(magn.^2,4);
     clear magn
 end
+% masking weights
+weights = weights.*mask;
 
 % add path
 % sepia_addpath(fullfile(SEPIA_HOME,'external','MRI_susceptibility_calculation','MATLAB'));

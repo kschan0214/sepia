@@ -101,15 +101,15 @@ if options.isWeakHarmonic
     params.beta = options.beta;
     params.muh  = options.muh;
     
-    if options.nonlinear
-        if options.tgv
+    if isNonlinear
+        if isTGV
             out = WH_nlTGV_4sepia_v3(params);
         else
             out = WH_nlTV(params);
         end
 
     else
-        if options.tgv
+        if isTGV
             out = WH_wTGV(params);
         else
             out = WH_wTV(params);

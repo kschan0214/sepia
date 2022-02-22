@@ -224,22 +224,33 @@ availableFileList.fieldmapSD        = outputFileList.fieldmapSD;
 availableFileList.maskLocalField    = outputFileList.maskLocalField;
 
 % create weighting map 
-fprintf('Computing weighting map...');
 % for weighting map: higher SNR -> higher weighting
-% if ~isWeightLoad
 if ~isfield(availableFileList, 'weights')
-    weights                 = 1./fieldmapSD;
-    weights(isinf(weights)) = 0;
-    weights(isnan(weights)) = 0;
-    weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
+    
+    fprintf('Computing weighting map...');
+    % weights = sepia_utils_compute_weights_v0p8(fieldmapSD,and(mask>0,maskReliable>0));
+    weights = sepia_utils_compute_weights_v1(fieldmapSD,and(mask>0,maskReliable>0));
+
+    weights = weights .* and(mask>0,maskReliable);
+
+    save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
+    availableFileList.weights = outputFileList.weights;
+    
+    fprintf('Done!\n');
+else
+    if ~isinf(exclude_threshold) % if user select thresholding their own weight
+        % load user weights
+        weights = double(load_nii_img_only(availableFileList.weights));
+        
+        % mask out unreliable voxel
+        weights = weights .* and(mask>0,maskReliable);
+        
+        % export modified weights and update filelist
+        save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
+        availableFileList.weights = outputFileList.weights;
+    end
 end
-weights = weights .* and(mask>0,maskReliable);
 
-save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
-availableFileList.weights = outputFileList.weights;
-
-fprintf('Done!\n');
-             
 % clear variable that no longer be needed
 clear fieldMap fieldmapSD weights maskReliable mask
 

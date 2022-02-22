@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date modified: 13 August 2021 (v1.0)
+% Date modified: 22 Feb 2021 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_iLSQR(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -45,6 +45,9 @@ end
 if isempty(initGuess)
     initGuess = zeros(matrixSize);
 end
+
+% masking weights
+wmap = wmap.*mask;
 
 % add path
 sepia_addpath;

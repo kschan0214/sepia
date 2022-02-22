@@ -64,9 +64,9 @@ sepia_universal_variables;
 %% create basic GUI
 % set GUI window size
 screenSize  = get(0,'ScreenSize');
-posLeft     = round(screenSize(3)/4);
+posLeft     = round(screenSize(3)/5);
 posBottom   = round(screenSize(4)/8);
-guiSizeHori = round(screenSize(3)/3);
+guiSizeHori = round(screenSize(3)/1.5);
 guiSizeVert = round(screenSize(4)*3/4);
 if guiSizeHori < 1000
     guiSizeHori = 1000;

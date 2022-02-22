@@ -100,6 +100,11 @@ if isempty(magn) && isempty(wmap)
     options = rmfield(options, 'gradient_mode');
 end
 
+% masking weights
+% wmap_min = min(wmap(wmap>0));
+% wmap(wmap<wmap_min) = wmap_min;
+wmap = wmap.*mask;
+
 if ~isempty(magn)
     clear magn
 end
@@ -111,7 +116,8 @@ disp(['Max. iteration               = ' num2str(options.maxOuterIter)]);
 disp(['Fidelity consistancy (mu2)	= ' num2str(options.mu2)]);
 disp(['Gradient L1 penalty (alpha1) = ' num2str(alpha1)]);
 disp(['Gradient consistancy	(mu)    = ' num2str(mu1)]);          
-if isfield(options,'gradient_mode'); disp(['Gradient mode           = ' options.gradient_mode]); end
+% if isfield(options,'gradient_mode'); disp(['Gradient mode           = ' options.gradient_mode]); end
+disp(['Gradient mode                = ' gradient_mode]);
 disp(['Constraint                   = ' algorParam.qsm.constraint]);
 disp(['Solver                       = ' algorParam.qsm.solver]);
 
@@ -149,9 +155,11 @@ catch
     options.B0_dir          = b0dir;
     options.mu            	= mu1;       % updated v2
     options.noise           = noise; 
+    options.isNonlinear     = options.nonlinear; 
+    options.isTGV           = options.tgv; 
     % options.kernelMode   % SEPIA does not provide option of kernalMode    
     
-    chi = FANSI_4sepia_v3( localField, wmap.*mask, alpha1, options );
+    chi = FANSI_4sepia_v3( localField, wmap, alpha1, options );
     % chi = FANSI_4sepia(localField,wmap.*mask,voxelSize,alpha1,noise,options,b0dir);
     chi = chi.x;
     chi = chi / phase_scale; % radian to ppm

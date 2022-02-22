@@ -19,6 +19,7 @@
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
 % Date modified: 16 August 2021
+% Date modified: 20 Feb 2022 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_NDI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -56,9 +57,13 @@ if ~isempty(magn) && isempty(wmap)
     clear tmp
 end
 % if nothing is loaded
-if ~isempty(magn) && isempty(wmap)
+if isempty(magn) && isempty(wmap)
     warning('Providing a weighing map or magnitude images can potentially improve the QSM map quality.');
+    wmap = mask;
 end
+
+% masking weights
+wmap = wmap.*mask;
 
 if ~isempty(magn)
     clear magn

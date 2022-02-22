@@ -228,11 +228,9 @@ availableFileList.maskLocalField    = outputFileList.maskLocalField;
 
 % computing weights
 fprintf('Computing weighting map...');
-weights                 = 1./fieldmapSD;
-weights(isinf(weights))	= 0;
-weights(isnan(weights))	= 0;
-weights                 = weights./max(weights(and(mask>0,maskReliable>0)));
-weights                 = weights .* and(mask>0,maskReliable);
+% weights = sepia_utils_compute_weights_v0p8(fieldmapSD,and(mask>0,maskReliable>0));
+weights = sepia_utils_compute_weights_v1(fieldmapSD,and(mask>0,maskReliable>0));
+weights = weights .* and(mask>0,maskReliable);
              
 save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
 availableFileList.weights = outputFileList.weights;
