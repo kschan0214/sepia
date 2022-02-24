@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 8 March 2020
-% Date modified: 22 Feb 2021 (v1.0)
+% Date modified: 24 Feb 2021 (v1.0)
 %
 %
 function [chi] = Wrapper_QSM_iLSQR(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -37,14 +37,16 @@ headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 b0dir       = headerAndExtraData.sepia_header.B0_dir;
 b0          = headerAndExtraData.sepia_header.B0;
 wmap        = get_variable_from_headerAndExtraData(headerAndExtraData, 'weights', matrixSize);
-initGuess   = get_variable_from_headerAndExtraData(headerAndExtraData, 'initGuess', matrixSize);
+% bug fix 20220224: deprecated no initial guess option in SEPIA
+% initGuess   = get_variable_from_headerAndExtraData(headerAndExtraData, 'initGuess', matrixSize);
+initGuess   = zeros(matrixSize);
 
 if isempty(wmap)
     wmap = ones(matrixSize);
 end
-if isempty(initGuess)
-    initGuess = zeros(matrixSize);
-end
+% if isempty(initGuess)
+%     initGuess = zeros(matrixSize);
+% end
 
 % masking weights
 wmap = wmap.*mask;

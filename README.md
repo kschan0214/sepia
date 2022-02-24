@@ -6,18 +6,20 @@
 
 **SEPIA** is a tool providing a graphical user interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
 
-This GUI is built to access the following toolboxes:
-[MEDI](http://weill.cornell.edu/mri/pages/qsm.html), 
-[STI Suite](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
-[FANSI](https://gitlab.com/cmilovic/FANSI-toolbox),  
+The current GUI version is built to access the following toolboxes:
+[MEDI (updated Jan 15, 2020)](http://weill.cornell.edu/mri/pages/qsm.html), 
+[STI Suite (v3.0)](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
+[FANSI (v3.0, released on 2021.10.15, i.e., commit b6ac1c9e)](https://gitlab.com/cmilovic/FANSI-toolbox/-/tree/b6ac1c9ea03380722ebe25a6dbef33fff4ea3700),  
 [SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
-[nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox).
+[nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
+[ROMEO (v3.2.4)](https://github.com/korbinian90/ROMEO/releases),
+[MRI Susceptibility Calculation Methods](https://xip.uclb.com/product/mri_qsm_tkd).
 
 SEPIA provides two key features for QSM processing:  
 1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline,
 2. graphical user interface to easily adjust parameters of different algorithms.
 
-SEPIA is designed to provide a platform for easy access to different QSM processing methods in the field. To achieve this, most of the codes were written for data flow and algorithm parameter control. Through SEPIA, I hope researchers who are not expert in QSM will also be able to use QSM for their research.
+SEPIA is designed to provide a platform for easy access to different QSM processing methods in the field. To achieve this, most of the codes were written for data flow and algorithm parameter control. Through SEPIA, we hope researchers who are not expert in QSM will also be able to use QSM for their research.
 
 **For better readability, the documentation of SEPIA has moved to https://sepia-documentation.readthedocs.io/.**  
 
@@ -30,19 +32,24 @@ If you use SEPIA in your research, please cite the following article:
 
 As well as any related papers in your processing pipeline. 
 
-If you have any question or you would like to provide suggestion to improve this toolbox/report bug(s) please raise an issue in the [github page](https://github.com/kschan0214/sepia/issues).
+If you encounter a bug in SEPIA, please report to [github page](https://github.com/kschan0214/sepia/issues). 
+
+If you have a more general question reagrding the usgae of SEPIA and/or other QSM questions, please make use of [github page](https://github.com/kschan0214/sepia/discussions).
 
 
 ## Update notes  
 
-For full update log, please visit https://sepia-documentation.readthedocs.io/.
+For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### Future release
-* Support FANSI v2.0
-* Support [iterative Tikhonov regularisation for QSM dipole inversion](https://xip.uclb.com/i/software/mri_qsm_tkd.html) 
-* Better compartibility with BIDS format data
+### 1.0.0 (current master)
+* Support ROMEO as total field computation and phase unwrapping method
+* Support MRI susceptibility calculation methods for QSM dipole field inversion
+* Support FANSI v3.0 (note that the algorithm parameters are adapted for this version)
+* Improve BIDS compartibility with SEPIA
+* Update output filenames in accordance with BIDS format 
+* Improve the comparability of weighting maps across different datasets and methods
 
-### 0.8.1.1 (current master)
+### 0.8.1.1 (current 52dd20b)
 * Fixed bug when using single-echo dataset
 * Fixed bug when input phase data in unit of radian with single datatype
 

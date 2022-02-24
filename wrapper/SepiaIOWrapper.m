@@ -396,7 +396,7 @@ end
 if ~isempty(inputFileList(3).name)
     
     % get header info from NIFTI for validation
-    weightsNIFTIHeader = load_untouch_header_only(inputFileList(2).name);
+    weightsNIFTIHeader = load_untouch_header_only(inputFileList(3).name);
     
     availableFileList.weights = inputFileList(3).name;
    

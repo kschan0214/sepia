@@ -30,7 +30,7 @@ function h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
 % defaultMuh  = 1;
 
 defaultMu2      = 1;
-defaultLambda   = 4e-4;              % update v3
+defaultLambda   = 2e-4;              % update v3
 defaultTol      = 0.1;               % update v3
 defaultMu       = defaultLambda*100; % update v3
 defaultMaxIter  = 150;               % update v3

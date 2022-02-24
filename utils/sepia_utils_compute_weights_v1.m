@@ -48,21 +48,22 @@ weights_1d = weights_1d - median(weights_1d) + 1;
 % put the normalised weights back to image
 weights(mask>0) = weights_1d;
 
-%% TODO 20220223: could provide this as option in the future
-% %% Step 4: Handle outliers on the right hand side of the histogram
-% iqr_mask    = iqr(weights_1d);
-% median_mask = median(weights_1d);
-% threshold   = median_mask + 3*iqr_mask;
-% 
-% % use median to filter outliers
-% % weights_filter = medfilt3(weights.*mask,[3, 3, 3]);
+%% Step 4: Handle outliers on the right hand side of the histogram
+% TODO 20220223: could provide this as option in the future
+iqr_mask    = iqr(weights_1d);
+median_mask = median(weights_1d);
+threshold   = median_mask + 3*iqr_mask;
+
+% use median to filter outliers
+% weights_filter = medfilt3(weights.*mask,[3, 3, 3]);
 % weights_filter = imgaussfilt3(weights.*mask);
-% % avoid introducing zero on the boundary, better to be a bit conservative here
-% weights_filter(weights_filter == 0) = weights(weights_filter == 0);
-% weights_final = weights;
-% % replace outliers by median
-% weights_final(weights>threshold) = weights_filter(weights>threshold);
-% 
-% weights = weights_final;
+weights_filter = smooth3(weights.*mask); % 3x3x3 smoothing
+% avoid introducing zero on the boundary, better to be a bit conservative here
+weights_filter(weights_filter == 0) = weights(weights_filter == 0);
+weights_final = weights;
+% replace outliers by median
+weights_final(weights>threshold) = weights_filter(weights>threshold);
+
+weights = weights_final;
 
 end
