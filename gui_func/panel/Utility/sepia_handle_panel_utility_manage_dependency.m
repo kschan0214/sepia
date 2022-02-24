@@ -117,6 +117,7 @@ function PushbuttonSave_Utility_magageDependency_Callback(source,eventdata,h)
 dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','ROMEO_HOME','MRISC_HOME'};
 gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'ROMEODir'  ,'MRISuscCalcDir'};
 
+sepia_universal_variables;
 SpecifyToolboxesDirectory;
 
 % get all the text from SpecifyToolboxesDirectory.m 
