@@ -428,8 +428,10 @@ function availableFileList          = io_04_true_phase_value(availableFileList, 
 
 % load phase image to check if the 
 phaseNIFTI = load_untouch_nii(availableFileList.phase);
+phaseIMG    = load_nii_img_only(availableFileList.phase);
 
-if abs(max(phaseNIFTI.img(:))-pi)>0.1 || abs(min(phaseNIFTI.img(:))-(-pi))>0.1 % allow small differences possibly due to data stype conversion or DICOM digitisation
+if abs(max(phaseIMG(:))-pi)>0.1 || abs(min(phaseIMG(:))-(-pi))>0.1 % allow small differences possibly due to data stype conversion or DICOM digitisation
+% if abs(max(phaseNIFTI.img(:))-pi)>0.1 || abs(min(phaseNIFTI.img(:))-(-pi))>0.1 % allow small differences possibly due to data stype conversion or DICOM digitisation
 
     disp('Values of input phase map exceed the range of [-pi,pi]. DICOM value is assumed.')
     fprintf('Rescaling phase data from DICOM image value to wrapped radian unit...')
