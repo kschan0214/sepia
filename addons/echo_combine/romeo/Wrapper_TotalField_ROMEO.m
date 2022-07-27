@@ -73,7 +73,7 @@ function parameters = check_and_set_algorithm_default(algorParam, headerAndExtra
 
 parameters.use_romeo_mask = algorParam.unwrap.useRomeoMask;
 % 20210803 KC: convert TE from s to ms
-parameters.TE = headerAndExtraData.sepia_header.TE * 1e3;
+parameters.TE = headerAndExtraData.sepia_header.TE(:).' * 1e3;  % KC 20220727: in case 'TE' is incorrectly stored as a nTEx*1 array instead of 1*nTE
 parameters.no_unwrapped_output = ~algorParam.unwrap.isSaveUnwrappedEcho;
 parameters.calculate_B0 = true;
 parameters.mag = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', size(mask)); % KC 20210816: v1.0;headerAndExtraData.magn;
