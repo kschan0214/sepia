@@ -7,6 +7,7 @@
 % k.chan@donders.ru.nl
 % Date created: 27 June 2020
 % Date modified: 12 June 2021
+% Date modified: 3 August 2022 (v1.1)
 %
 % DO NOT change the variable name
 % DO NOT change the order of the entities, add a new one at the end instead
@@ -17,6 +18,7 @@ addons_unwrap_dir       = fullfile(addons_dir,'phase_unwrap');
 addons_echo_combine_dir	= fullfile(addons_dir,'echo_combine');
 addons_bfr_dir          = fullfile(addons_dir,'bfr');
 addons_qsm_dir          = fullfile(addons_dir,'qsm');
+addons_swismwi_dir   	= fullfile(addons_dir,'swi_smwi');
 
 %% Phase unwrapping addons
 listing = dir(addons_unwrap_dir);
@@ -91,6 +93,27 @@ for klist = 3:length(listing)
             end
             if ~isempty(addons.config_function)
                 config_QSM_function{end+1} = addons.config_function;
+            end
+        end
+    end
+
+end
+
+%% SWI/SMWI addons
+listing = dir(addons_swismwi_dir);
+
+for klist = 3:length(listing)
+    if listing(klist).isdir 
+        curr_dir = fullfile(addons_swismwi_dir,listing(klist).name);
+        if exist(fullfile(curr_dir,'addon_config.m'),'file')
+            run(fullfile(curr_dir,'addon_config.m'))
+            methodSWISMWIName{end+1}        = addons.method;
+            wrapper_SWISMWI_function{end+1} = addons.wrapper_function;
+            if ~isempty(addons.gui_method_panel)
+                function_SWISMWI_method_panel{end+1} = addons.gui_method_panel;
+            end
+            if ~isempty(addons.config_function)
+                config_SWISMWI_function{end+1} = addons.config_function;
             end
         end
     end
