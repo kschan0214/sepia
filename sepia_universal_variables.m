@@ -8,12 +8,13 @@
 % Date created: 6 March 2020
 % Date modified: 6 May 2021 (v0.8.1.1)
 % Date modified: 7 June 2021 (v1.0)
+% Date modified: 2 August 2022 (v1.1)
 %
 % DO NOT change the variable name
 % DO NOT change the order of the entities, add a new one at the end instead
 %
 %% Version
-SEPIA_version = 'v1.0';
+SEPIA_version = 'v1.1 testing';
 
 %% PATH
 SEPIA_HOME = fileparts(mfilename('fullpath'));
@@ -49,6 +50,9 @@ sepia_configuration_QSM
 tissueName              = {'None',...
                            'Brain mask',...
                            'CSF'};
+
+%% SWI/SMWI realted parameters
+sepia_configuration_SWISMWI
 
 %% add-ons capability
 sepia_load_addons

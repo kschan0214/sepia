@@ -10,6 +10,7 @@
 % Date modified: 5 June 2019
 % Date modified: 9 June 2020 (v0.8.0)
 % Date modified: 22 Feb 2022 (v1.0)
+% Date modified: 3 August 2022 (v1.1)
 %
 function sepia_addpath(method, isStartCheck)
 
@@ -67,7 +68,7 @@ addpath(genpath(fullfile(SEPIA_HOME, 'addons')));
 misc_dir                = fullfile(SEPIA_HOME,  'misc');
 misc_swi_smwi_dir       = fullfile(misc_dir,    'swi_smwi');
 
-addpath(misc_swi_smwi_dir);
+addpath(genpath( misc_swi_smwi_dir));
 
 % if method is given then add them to PATH
 sepia_universal_variables;
