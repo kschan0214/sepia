@@ -1,4 +1,4 @@
-%% get_set_swismwi_swi_2dhamming(h,mode,input)
+%% get_set_swismwi_smwi(h,mode,input)
 %
 % Input
 % --------------

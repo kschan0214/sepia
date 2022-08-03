@@ -25,16 +25,6 @@ sepia_universal_variables;
 
 %% Tooltips
 
-% %% layout of the panel
-% % define maximum level of options and spacing between options
-% ncol    = 2; % 2 columns in the panel
-% rspacing = 0.01;
-% width   = (1-(ncol+1)*rspacing)/ncol;
-% left    = (rspacing:width+rspacing:(width+rspacing)*ncol);
-
-% % set up method name displayed on GUI
-% methodName = {'SWI','SMWI'};
-
 %% layout of the panel
 % define maximum level of options and spacing between options
 ncol    = 2; % 2 columns in the panel
@@ -73,14 +63,6 @@ for k = 1:length(function_SWISMWI_method_panel)
     h = feval(function_SWISMWI_method_panel{k},h.StepsPanel.swismwi,h,position_child);
 end
 
-%     % SWI    
-%     h = sepia_handle_panel_swi_SWI(h.StepsPanel.swi,h,position_child);
-% 
-%     % SMWI
-%     h = sepia_handle_panel_swi_SMWI(h.StepsPanel.swi,h,position_child);
-    
-    % in future, add panel of new method here
-    
 %% set tooltip
 set(h.swismwi.text.method,     'Tooltip','Select a SWI or SMWI method');
 
@@ -111,18 +93,6 @@ for k = 1:length(methodSWISMWIName)
         break
     end
 end
-
-% % switch on target panel
-% switch method
-%     case 'SWI'
-%         set(h.swi.panel.SWI,        'Visible','on');
-% 
-%     case 'SMWI'
-%         set(h.swi.panel.SMWI,       'Visible','on');
-% 
-%     % in the future, add new method here
-% 
-% end
 
 end
 
@@ -162,15 +132,7 @@ while exist(configFilename,'file') == 2
     identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
     configFilename = fullfile(outputDir, ['sepia_config_' identifier '.m']);
 end
-% configFilename = [outputDir filesep 'sepia_config.m'];
-% if exist(configFilename,'file') == 2
-%     counter = 1;
-%     while exist(configFilename,'file') == 2
-%         suffix = ['_' num2str(counter)];
-%         configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
-%         counter = counter + 1;
-%     end
-% end
+
 fid = fopen(configFilename,'w');
 
 %%%%%%%%%%%% Step 2: Write config file %%%%%%%%%%%% 
@@ -196,53 +158,12 @@ print_method_popup_and_eval(fid, '.swismwi.method', h.swismwi.popup.method, meth
 % Determine application based on Tab
 fprintf(fid,'\nSWISMWIIOWrapper(input,output_basename,algorParam);\n');
 
-% % write algorithm parameters
-% switch h.swismwi.popup.swi.String{h.swismwi.popup.swi.Value,1}
-%     case 'SWI'
-%         fprintf(fid,'algorParam.swi.m = %s ;\n'                 ,get(h.swi.SWI.edit.m,  'String'));
-%         fprintf(fid,'algorParam.swi.threshold = %s ;\n'         ,get(h.swi.SWI.edit.threshold,  'String'));
-%         fprintf(fid,'algorParam.swi.filterSize = %s ;\n'        ,get(h.swi.SWI.edit.filterSize,  'String'));
-%         switch h.swi.SWI.popup.method.String{h.swi.SWI.popup.method.Value,1}
-%             case 'default'
-%                 fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'default');
-%             case 'multi-echo (testing)'
-%                 fprintf(fid,'algorParam.swi.method = ''%s'' ;\n'    ,'multiecho (testing)');
-%         end
-%         fprintf(fid,'algorParam.swi.isPositive = %i ;\n'        ,get(h.swi.SWI.checkbox.positive,'Value'));
-%         fprintf(fid,'algorParam.swi.isNegative = %i ;\n'        ,get(h.swi.SWI.checkbox.negative,'Value'));
-%         fprintf(fid,'algorParam.swi.ismIP = %i ;\n'             ,get(h.swi.SWI.checkbox.mIP,'Value'));
-%         if get(h.swi.SWI.checkbox.mIP,'Value')
-%             fprintf(fid,'algorParam.swi.slice_mIP = %s ;\n' ,get(h.swi.SWI.edit.mIP,  'String'));
-%         end
-%         
-%         fprintf(fid,'\nSWIIOWrapper(input,output_basename,algorParam);\n');
-%         
-%     case 'SMWI'
-%         fprintf(fid,'algorParam.smwi.m = %s ;\n'                ,get(h.swi.SMWI.edit.m,  'String'));
-%         fprintf(fid,'algorParam.smwi.threshold = %s ;\n'        ,get(h.swi.SMWI.edit.threshold,  'String'));
-%         fprintf(fid,'algorParam.smwi.isParamagnetic = %i ;\n'   ,get(h.swi.SMWI.checkbox.paramagnetic,'Value'));
-%         fprintf(fid,'algorParam.smwi.isDiamagnetic = %i ;\n'    ,get(h.swi.SMWI.checkbox.diamagnetic,'Value'));
-%         fprintf(fid,'algorParam.smwi.ismIP = %i ;\n'            ,get(h.swi.SMWI.checkbox.mIP,'Value'));
-%         if get(h.swi.SMWI.checkbox.mIP,'Value')
-%             fprintf(fid,'algorParam.smwi.slice_mIP = %s ;\n' ,get(h.swi.SMWI.edit.mIP,  'String'));
-%         end
-%         
-%         fprintf(fid,'\nSMWIIOWrapper(input,output_basename,algorParam);\n');
-% end
-
 fclose(fid);
 
 % log command window display to a text file
-% logFilename = fullfile(outputDir, 'run_sepia.log'); 
+
 logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
-% if exist(logFilename,'file') == 2
-%     counter = 1;
-%     while exist(logFilename,'file') == 2
-%         suffix = ['_' num2str(counter)];
-%         logFilename = [outputDir filesep 'run_sepia' suffix '.log'];
-%         counter = counter + 1;
-%     end
-% end
+
 diary(logFilename)
     
 try
@@ -266,15 +187,7 @@ catch ME
     
     % open a new text file for error message
     errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
-%     errorMessageFilename = [outputDir filesep 'run_sepia.error'];
-%     if exist(errorMessageFilename,'file') == 2
-%         counter = 1;
-%         while exist(errorMessageFilename,'file') == 2
-%             suffix = ['_' num2str(counter)];
-%             errorMessageFilename = [outputDir filesep 'run_sepia' suffix '.error'];
-%             counter = counter + 1;
-%         end
-%     end
+
     fid = fopen(errorMessageFilename,'w');
     fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
     fprintf(fid,'The message was:\n\n');

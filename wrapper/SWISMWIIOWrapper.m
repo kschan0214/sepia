@@ -1,28 +1,20 @@
-%% chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
+%% SWISMWIIOWrapper(input,output,algorParam)
 %
 % Input
 % --------------
-% input         :   input directory contains NIfTI (*localfield*, *magn* and
-%                   *fieldmapsd*) files or structure containing filenames  
-% output        :   output directory that stores the output (susceptibility map)
-% maskFullName  :   mask filename
+% input         :   input structure containing filenames  
+% output        :   output directory that stores the output 
 % algorParam    :   structure contains method and method specific parameters
 %
 % Output
 % --------------
-% chi           : magnetic susceptibility map (in ppm)
 %
-% Description: This is a wrapper of QSMMacro.m which for NIfTI input/output
+% Description: This is a wrapper of unified SWM/SMWI operation
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
-% Date created: 17 April 2018
-% Date modified: 26 August 2018
-% Date modified: 29 March 2019
-% Date modified: 5 June 2019
-% Date modified: 8 March 2020 (v0.8.0)
-% Date modified: 21 Jan 2020 (v0.8.1)
-% Date modified: 13 August 2021 (v1.0)
+% Date created: 3 August 2022
+% Date modified: 
 %
 %
 function SWISMWIIOWrapper(input,output,algorParam)
@@ -89,8 +81,8 @@ if numel(inputFileList) > 2 && ~isempty(inputFileList(3).name)
 else
     
     warning('No SEPIA header is provided. Some method may require additional header info from the SEPIA header file. Initiate header with default values.');
-    sepia_header.B0 = 3;
-    sepia_header.TE = 15e-3;
+    sepia_header.B0 = 3;        % just some random number to avoid error
+    sepia_header.TE = 15e-3;    % just some random number to avoid error
     sepia_header = validate_sepia_header_4wrapper(sepia_header, outputNiftiTemplate);
 end
 
@@ -115,9 +107,9 @@ output_structure.outputNiftiTemplate    = outputNiftiTemplate;
 % inside the wrapper function
 
 % General steps as follow in the wrapper function:
-% 1. get the required input from 
-% 2. main QSM algorithm
-% 3. convert output unit to ppm
+% 1. load input
+% 2. main algorithm
+% 3. export result as NIFTI
 method = algorParam.swismwi.method;
 for k = 1:length(wrapper_SWISMWI_function)
     if strcmpi(method,methodSWISMWIName{k})
@@ -125,24 +117,6 @@ for k = 1:length(wrapper_SWISMWI_function)
     end
 end
 
-
-% localField   	= double(load_nii_img_only(availableFileList.localField));
-% mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
-
-% % core of QSM
-% [chi,mask_ref] = QSMMacro(localField,mask_QSM,matrixSize,voxelSize,algorParam,headerAndExtraData);
-% clear localField mask_QSM
-% 
-% % save results
-% fprintf('Saving susceptibility map...');
-% save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
-% clear chi
-% 
-% if ~isempty(mask_ref)
-%     save_nii_quick(outputNiftiTemplate, mask_ref, outputFileList.maskRef);
-% end
-% 
-% fprintf('Done!\n');
 
 disp('Processing pipeline is completed!');
 

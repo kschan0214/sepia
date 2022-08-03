@@ -9,7 +9,7 @@
 % Output
 % --------------
 %
-% Description: Compute susceptibility-weighted images
+% Description: deprecated, for backward compartibility (v1.0. or earlier)
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl

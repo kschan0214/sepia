@@ -1,4 +1,4 @@
-%% h = sepia_handle_panel_bkgRemoval_SHARP(hParent,h,position)
+%% h = sepia_handle_panel_swismwi_SMWI(hParent,h,position)
 %
 % Input
 % --------------

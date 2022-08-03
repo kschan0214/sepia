@@ -1,4 +1,4 @@
-%% h = sepia_handle_panel_qsm_FANSI(hParent,h,position)
+%% h = sepia_handle_panel_swismwi_SWI_2DHamming(hParent,h,position)
 %
 % Input
 % --------------
@@ -61,7 +61,7 @@ h.swismwi.panel.swi2dhamming = uipanel(hParent,...
     % row 3, col 1
     % text|edit field pair: filter size
     [h.swismwi.swi2dhamming.text.filterSize ,h.swismwi.swi2dhamming.edit.filterSize] = sepia_construct_text_edit(...
-        panelParent,'Filter size:', defaultFilterSize, [left(1) bottom(3) width height], wratio);
+        panelParent,'Filter size (voxel):', defaultFilterSize, [left(1) bottom(3) width height], wratio);
     
     % row 4, col 1
     % text|popup field pair: method
