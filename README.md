@@ -41,7 +41,12 @@ If you have a more general question reagrding the usgae of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.0.0 (current master)
+### 1.0.1 (current master)
+* Fixed bug when phase NIfTI is in wrapped range with non-unity rescale slope (e.g. from Philips' scanners)
+* Updated function performing phase conversion from arbitary DICOM values to radian (could result in minor numerical differences compared to previous versions if the input phase NIfTI not in radian)
+* Several other minor bugs fixed
+
+### 1.0.0 (commit 8e35aee)
 * Support ROMEO as total field computation and phase unwrapping method
 * Support MRI susceptibility calculation methods for QSM dipole field inversion
 * Support FANSI v3.0 (note that the algorithm parameters are adapted for this version)
@@ -49,7 +54,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * Update output filenames in accordance with BIDS format 
 * Improve the comparability of weighting maps across different datasets and methods
 
-### 0.8.1.1 (current 52dd20b)
+### 0.8.1.1 (commit 52dd20b)
 * Fixed bug when using single-echo dataset
 * Fixed bug when input phase data in unit of radian with single datatype
 
