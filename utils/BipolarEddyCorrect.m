@@ -59,12 +59,12 @@ te=1:dims(4);
 algorParam.unwrap.unit 	= 'radHz';
 algorParam.unwrap.echoCombMethod = methodEchoCombineName{1}; 
 
-headerAndExtraData.te   = te(4)-te(2);
-headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4));
+headerAndExtraData.sepia_header.TE	= te(4)-te(2);
+headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4));
 [fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
 
-headerAndExtraData.te   = te(3)-te(1);
-headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4));
+headerAndExtraData.sepia_header.TE 	= te(3)-te(1);
+headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4));
 [fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
 
 % [fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4)),dims(1:3),[1 1 1],...
@@ -88,8 +88,8 @@ headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4));
 
 
 % the last echo to be taken into account has to be even
-headerAndExtraData.te   = te(1:2);
-headerAndExtraData.magn	= double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4));
+headerAndExtraData.sepia_header.TE	= te(1:2);
+headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4));
 [fieldMapOddEven,~] = estimateTotalField(double(PhaseDiffEvensMinusOdds),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
 
 % [fieldMapOddEven,~] = estimateTotalField(double(PhaseDiffEvensMinusOdds),double(mean(abs(bipolarCplxME(:,:,:,1:2:to)),4)),dims(1:3),[1 1 1],...

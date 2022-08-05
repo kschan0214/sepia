@@ -29,7 +29,7 @@ try headerAndExtraData2.sepia_header.B0_dir    	= headerAndExtraData.sepia_heade
 try headerAndExtraData2.sepia_header.B0          = headerAndExtraData.sepia_header.B0;      catch; headerAndExtraData2.sepia_header.B0       = 3; end
 try headerAndExtraData2.sepia_header.TE          = headerAndExtraData.sepia_header.TE;      catch; headerAndExtraData2.sepia_header.TE       = 40e-3; end
 try headerAndExtraData2.sepia_header.delta_TE    = headerAndExtraData.sepia_header.delta_TE;catch; headerAndExtraData2.sepia_header.delta_TE = 40e-3; end
-try headerAndExtraData2.sepia_header.CF          = headerAndExtraData.sepia_header.CF;   	catch; headerAndExtraData2.sepia_header.CF       = headerAndExtraData2.sepia_header.b0*gyro*1e6; end
+try headerAndExtraData2.sepia_header.CF          = headerAndExtraData.sepia_header.CF;   	catch; headerAndExtraData2.sepia_header.CF       = headerAndExtraData2.sepia_header.B0*gyro*1e6; end
 
 try headerAndExtraData2.weights     = headerAndExtraData.weights;   catch; headerAndExtraData2.weights   = []; end
 try headerAndExtraData2.magnitude 	= headerAndExtraData.magnitude;	catch; headerAndExtraData2.magnitude = []; end
