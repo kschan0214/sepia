@@ -464,7 +464,7 @@ if algorParam.general.isInvert
     fprintf('Done.\n')
     
     % update the phase data for QSM processing
-    availableFileList.phase = outputFileList.outputFileList;
+    availableFileList.phase = outputFileList.phaseReversed;
     
 end
     
