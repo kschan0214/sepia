@@ -14,6 +14,7 @@
 % k.chan@donders.ru.nl
 % Date created: 28 Feb 2020
 % Date modified: 13 June 2020 (v0.8.0)
+% Date modified: 12 September 2022 (v1.1.0)
 %
 %
 function algorParam2 = check_and_set_SEPIA_algorithm_default(algorParam)
@@ -49,5 +50,9 @@ try algorParam2.bfr.refine_order   	= algorParam.bfr.refine_order;	catch; algorP
 % default background field removal method is TKD
 try algorParam2.qsm.method              = algorParam.qsm.method;            catch; algorParam2.qsm.method           = methodQSMName{1};	end
 try algorParam2.qsm.reference_tissue	= algorParam.qsm.reference_tissue;	catch; algorParam2.qsm.reference_tissue	= 'None';      	end
+
+if strcmp(algorParam2.unwrap.echoCombMethod ,'ROMEO total field calculation')
+    algorParam2.unwrap.unwrapMethod = 'ROMEO';
+end
 
 end
