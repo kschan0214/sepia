@@ -488,12 +488,13 @@ if isEddyCorrect
     mask        = double(load_nii_img_only(availableFileList.mask));
 
     % BipolarEddyCorrect requries complex-valued input
-    imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
-    fieldMap    = double(angle(imgCplx));
+    [imgCplx,bipolar_phase]	= BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    fieldMap                = double(angle(imgCplx));
     
     % save the eddy current corrected output
     fprintf('Saving eddy current corrected phase data...');
     save_nii_quick(outputNiftiTemplate, fieldMap, outputFileList.phaseEddyCorr);
+    save_nii_quick(outputNiftiTemplate, bipolar_phase, outputFileList.phase_bipolar);
     fprintf('Done!\n');
     
     % update availableFileList

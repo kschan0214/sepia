@@ -8,6 +8,7 @@
 % Output
 % --------------
 % bipolarCorr   : eddy current corrected data
+% FIT3D         : bipolar readout induced phase
 %
 % Description: correct the inconsistent phase between odd and even echoes
 % due to bipolar greadout
@@ -16,10 +17,11 @@
 % Modified by Kwok-Shing Chan
 % k.chan@donders.ru.nl
 % Date created: 13 April 2018
-% Date last modified: 5 June 2019
+% Date modified: 5 June 2019
+% Date modified: 12 September 2021
 %
 %
-function bipolarCorr = BipolarEddyCorrect(bipolarCplxME,mask,algorParam)
+function [bipolarCorr,FIT3D] = BipolarEddyCorrect(bipolarCplxME,mask,algorParam)
 
 sepia_universal_variables;
 
@@ -123,5 +125,7 @@ bipolarCorr = zeros(dims);
 for echo=1:dims(4)
     bipolarCorr(:,:,:,echo)=bipolarCplxME(:,:,:,echo).*exp(-1i *(-1)^echo * 0.5 * FIT3D);
 end
+
+FIT3D = FIT3D.* mask;
 
 end
