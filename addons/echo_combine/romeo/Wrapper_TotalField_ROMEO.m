@@ -21,7 +21,7 @@
 % korbinian90@gmail.com
 % Date created: 15 Juni 2021
 % Date modified: 16 August 2021 (KC, v1.0)
-%
+% Date modified: 12 September 2022 (KC, v1.1)
 %
 function [totalField, N_std, headerAndExtraData] = Wrapper_TotalField_ROMEO(wrappedField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
 sepia_universal_variables;
@@ -34,14 +34,19 @@ sepia_addpath('ROMEO');
 parameters = check_and_set_algorithm_default(algorParam, headerAndExtraData, mask);
 parameters.voxel_size = voxelSize; % for MCPC-3D-S phase offset smoothing
 % Should create a suitable temporary directory on every machine
-parameters.output_dir = fullfile(tempdir, 'romeo_tmp');
+% Suggestion 20220912 KC: can use the output directory as temporary
+% directory for ROMEO output, this should work for SEPIA v1.1
+parameters.output_dir = fullfile(headerAndExtraData.outputDirectory,'romeo_tmp');
+% parameters.output_dir = fullfile(tempdir, 'romeo_tmp');
 mkdir(parameters.output_dir);
 
 %% main
 [fieldmapUnwrapAllEchoes, totalField] = ROMEO(wrappedField, parameters);
 
 if parameters.use_romeo_mask
-   headerAndExtraData.mask = load_nii_img_only(fullfile(parameters.output_dir, 'Mask.nii'), matrixSize);
+    % KC 20220912: bug fix 
+    headerAndExtraData.mask = load_nii_img_only(fullfile(parameters.output_dir, 'mask.nii'));
+%    headerAndExtraData.mask = load_nii_img_only(fullfile(parameters.output_dir, 'Mask.nii'), matrixSize);
 end
 
 % Remove all temp output files and the temp folder

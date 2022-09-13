@@ -33,7 +33,13 @@ parameters = check_and_set_algorithm_default(headerAndExtraData, mask);
 
 %% create tmp directory
 % Should create a suitable temporary directory on every machine
-parameters.output_dir = fullfile(tempdir, 'romeo_tmp');
+% Suggestion 20220912 KC: can use the output directory as temporary
+% directory for ROMEO output, this should work for SEPIA v1.1
+if isfield(headerAndExtraData, 'outputDirectory')
+    parameters.output_dir = fullfile(headerAndExtraData.outputDirectory,'romeo_tmp');
+else
+    parameters.output_dir = fullfile(tempdir, 'romeo_tmp');
+end
 mkdir(parameters.output_dir);
 
 %% main

@@ -28,7 +28,7 @@
 % Date modified: 21 Jan 2020 (v0.8.1)
 % Date modified: 6 May 2021 (v0.8.1.1)
 % Date modified: 13 August 2021 (v1.0)
-%
+% Date modified: 12 September 2022 (v1.1)
 %
 function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path and universal variables
@@ -135,6 +135,7 @@ voxelSize   = double(sepia_header.voxelSize);
 TE          = double(sepia_header.TE);
 
 headerAndExtraData.availableFileList = availableFileList;
+headerAndExtraData.outputDirectory   = outputDir; 
 
 %% Main QSM processing - Step 1: total field and phase unwrap
 
@@ -153,7 +154,7 @@ mask        = load_nii_img_only(availableFileList.mask);
 headerAndExtraData.availableFileList = availableFileList;
 
 % core of temporo-spatial phase unwrapping
-[totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+[totalField,fieldmapSD,fieldmapUnwrapAllEchoes,mask] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
 % save unwrapped phase if chosen
 if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
@@ -557,12 +558,13 @@ if isEddyCorrect
     mask        = double(load_nii_img_only(availableFileList.mask));
 
     % BipolarEddyCorrect requries complex-valued input
-    imgCplx     = BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
-    fieldMap    = double(angle(imgCplx));
+    [imgCplx,bipolar_phase]	= BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    fieldMap            	= double(angle(imgCplx));
     
     % save the eddy current corrected output
     fprintf('Saving eddy current corrected phase data...');
     save_nii_quick(outputNiftiTemplate, fieldMap, outputFileList.phaseEddyCorr);
+    save_nii_quick(outputNiftiTemplate, bipolar_phase, outputFileList.phase_bipolar);
     fprintf('Done!\n');
     
     % update availableFileList

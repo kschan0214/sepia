@@ -153,10 +153,11 @@ fieldMap    = load_nii_img_only(availableFileList.phase);
 mask        = load_nii_img_only(availableFileList.mask);
 
 headerAndExtraData.availableFileList = availableFileList;
+headerAndExtraData.outputDirectory   = outputDir; 
 
 % Step 1: Phase unwrapping and echo phase combination
 % core of temporo-spatial phase unwrapping
-[totalField,fieldmapSD,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+[totalField,fieldmapSD,fieldmapUnwrapAllEchoes,mask] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
 % save unwrapped phase if chosen
 if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho

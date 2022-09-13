@@ -13,7 +13,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 12 June 2021 (v1.0)
-% Date modified:
+% Date modified: 13 September 2022 (v1.1)
 %
 %
 function get_set_TotalField_ROMEO(h,mode,input)
@@ -80,18 +80,43 @@ switch lower(mode)
         config_txt = input;
         
         % spatial phase unwrapping popup | popup
-        for k = 1:2
-            % change popup to the selected method
-            sepia_read_popup_value(config_txt, str_pattern{k}, action_handle{k}, methodUnwrapName);
-            % trigger popup callback to switch method panel
-            % the input has to be matched with the callback function in the
-            % sepia_handle_panel_EchoCombine_XXX.m
-            feval(action_handle{k}.Callback{1},action_handle{k},[],h);
-        end
+        % 20220913 KC: bug fix
+        k = 1;
+        methodOffsetCorrect = {'Off', 'On', 'Bipolar (>= 3 echoes)'};
+        sepia_read_popup_value(config_txt, str_pattern{k}, action_handle{k}, methodOffsetCorrect);
+        % trigger popup callback to switch method panel
+        % the input has to be matched with the callback function in the
+        % sepia_handle_panel_EchoCombine_XXX.m
+%         feval(action_handle{k}.Callback{1},action_handle{k},[],h);
         
-        for k = 2:3
+        k = 2;
+        methodMask = {'SEPIA mask', 'ROMEO robustmask', 'ROMEO qualitymask', 'No Mask'};
+        sepia_read_popup_value(config_txt, str_pattern{k}, action_handle{k}, methodMask);
+        feval(action_handle{k}.Callback{1},action_handle{k},[],h);
+        
+        k = 3;
+        % modifiy edit field value
+        pattern_curr    = str_pattern{k};
+        val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+        set_non_nan_value(action_handle{k}, 'String', val);
+        
+        for k = 4:6
+            % modifiy edit field value
             sepia_read_checkbox_value(config_txt, str_pattern{k}, action_handle{k});
-        end
+        end        
+        
+%         for k = 1:2
+%             % change popup to the selected method
+%             sepia_read_popup_value(config_txt, str_pattern{k}, action_handle{k}, methodUnwrapName);
+%             % trigger popup callback to switch method panel
+%             % the input has to be matched with the callback function in the
+%             % sepia_handle_panel_EchoCombine_XXX.m
+%             feval(action_handle{k}.Callback{1},action_handle{k},[],h);
+%         end
+        
+%         for k = 2:3
+%             sepia_read_checkbox_value(config_txt, str_pattern{k}, action_handle{k});
+%         end
         
         % exclusion method | 'checkbox + edit + popup' combo
         % check for exclusion threshold

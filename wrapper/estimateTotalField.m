@@ -28,8 +28,9 @@
 % Date modified: 24 may 2019
 % Date modified: 9 March 2020 (v0.8.0)
 % Date modified: 5 June 2021 (v1.0)
+% Date modified: 12 September 2022 (v1.1)
 %
-function [totalField,N_std,fieldmapUnwrapAllEchoes] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
+function [totalField,N_std,fieldmapUnwrapAllEchoes,mask] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 sepia_universal_variables;
 
 matrixSize  = double(matrixSize(:).');
@@ -73,6 +74,11 @@ end
 if isfield(headerAndExtraData,'fieldmapUnwrapAllEchoes')
     fieldmapUnwrapAllEchoes = headerAndExtraData.fieldmapUnwrapAllEchoes;
     headerAndExtraData = rmfield(headerAndExtraData,'fieldmapUnwrapAllEchoes');
+end
+
+% in case the echo combine algorithm returns a different mask, e.g., ROMEO
+if isfield(headerAndExtraData, 'mask')
+    mask = headerAndExtraData.mask;
 end
 
 disp(['The resulting field map with the following unit: ' unit]);

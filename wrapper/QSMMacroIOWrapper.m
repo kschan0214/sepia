@@ -112,6 +112,7 @@ matrixSize  = double(sepia_header.matrixSize);
 voxelSize   = double(sepia_header.voxelSize);
 
 headerAndExtraData.availableFileList = availableFileList;
+headerAndExtraData.outputDirectory   = outputDir;
 
 %% Dipole inversion
 localField   	= double(load_nii_img_only(availableFileList.localField));
