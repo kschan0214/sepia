@@ -262,6 +262,12 @@ else
     filePattern = {'ph','mag','','header'}; % don't change the order
     [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
     
+    % If it doesn't work then check again for 'phase' instead of 'ph'
+    if ~isLoadSuccessful
+        filePattern = {'phase','mag','weights','header'}; % don't change the order
+        [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
+    end
+    
     % If it doesn't work then check BIDS compatibility
     if ~isLoadSuccessful
         disp('Searching input directory based on BIDS...');
@@ -489,7 +495,8 @@ if isEddyCorrect
     mask        = double(load_nii_img_only(availableFileList.mask));
 
     % BipolarEddyCorrect requries complex-valued input
-    [imgCplx,bipolar_phase]	= BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+%     [imgCplx,bipolar_phase]	= BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    [imgCplx,bipolar_phase]	= FastBipolarCorrect(magn.*exp(1i*fieldMap),mask);
     fieldMap                = double(angle(imgCplx));
     
     % save the eddy current corrected output

@@ -45,13 +45,13 @@ ext     = 'json';
 
 % error if one of the required files cannot be found
 if magNumFiles == 0 
-    error('No magnitude file is found. \nFor BIDS compatibility, make sure the magnitude NIFTI has the key ''part-mag''.');
+    error('No magnitude file is found. For BIDS compatibility, make sure the magnitude NIFTI has the key ''part-mag''.');
 end
 if phaseNumFiles == 0 
-    error('No phase file is found. \nFor BIDS compatibility, make sure the phase NIFTI has the key ''part-phase''.');
+    error('No phase file is found. For BIDS compatibility, make sure the phase NIFTI has the key ''part-phase''.');
 end
 if jsonNumFiles == 0 
-    error('No JSON file is found. \nFor BIDS compatibility, make sure the JSON has the key ''part-mag''.');
+    error('No JSON file is found. For BIDS compatibility, make sure the JSON has the key ''part-mag''.');
 end
 
 % preprocess files

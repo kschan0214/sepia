@@ -331,6 +331,12 @@ else
     filePattern = {'ph','mag','weights','header'}; % don't change the order
     [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
     
+    % If it doesn't work then check again for 'phase' instead of 'ph'
+    if ~isLoadSuccessful
+        filePattern = {'phase','mag','weights','header'}; % don't change the order
+        [isLoadSuccessful, inputNiftiList] = read_default_to_filelist(inputDir, filePattern);
+    end
+    
     % If it doesn't work then check BIDS compatibility
     if ~isLoadSuccessful
         disp('Searching input directory based on BIDS...');
@@ -378,7 +384,7 @@ if ~isempty(inputFileList(2).name)
     fprintf('Done.\n');
     
 else
-    error('Fail! \nPlease specify a single-echo(3D0/multi-echo(4D) magnitude data.');
+    error('Fail! \nPlease specify a single-echo(3D-/multi-echo(4D) magnitude data.');
 end
 
 fprintf('Validating input phase and magnitude images...')

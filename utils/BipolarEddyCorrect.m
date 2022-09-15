@@ -51,6 +51,9 @@ PhaseDiffEvens  = angle(mean(bipolarCplxME(:,:,:,4:2:end)./bipolarCplxME(:,:,:,2
 PhaseDiffOdds   = angle(mean(bipolarCplxME(:,:,:,3:2:end)./bipolarCplxME(:,:,:,1:2:end-2),4));
 PhaseDiffEvens(isnan(PhaseDiffEvens))=0;
 PhaseDiffOdds(isnan(PhaseDiffOdds))=0;
+
+PhaseDiff = angle(exp(1i * PhaseDiffEvens) + exp(1i * PhaseDiffOdds));
+
 % BipolarOddvsEven=mean(abs(bipolarCplxME(:,:,:,1:2:end)),4)-mean(abs(bipolarCplxME(:,:,:,2:2:end-1)),4);
 % this has no unwrapping done to it - but it is a good first estimate
 % meanEddycurrent = PhaseDiffEvensMinusOdds-0.25*(PhaseDiffEvens+PhaseDiffOdds);
@@ -61,13 +64,17 @@ te=1:dims(4);
 algorParam.unwrap.unit 	= 'radHz';
 algorParam.unwrap.echoCombMethod = methodEchoCombineName{1}; 
 
-headerAndExtraData.sepia_header.TE	= te(4)-te(2);
-headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4));
-[fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
+% headerAndExtraData.sepia_header.TE	= te(4)-te(2);
+% headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4));
+% [fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
+% 
+% headerAndExtraData.sepia_header.TE 	= te(3)-te(1);
+% headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4));
+% [fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
 
 headerAndExtraData.sepia_header.TE 	= te(3)-te(1);
 headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,1:2:end-2)),4));
-[fieldMapOdd,~] = estimateTotalField(double(PhaseDiffOdds),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
+[fieldMap,~] = estimateTotalField(double(PhaseDiff),mask,dims(1:3),[1 1 1],algorParam,headerAndExtraData);
 
 % [fieldMapEven,~] = estimateTotalField(double(PhaseDiffEvens),double(mean(abs(bipolarCplxME(:,:,:,2:2:end-2)),4)),dims(1:3),[1 1 1],...
 %                         'Unwrap',unwrap,'TE',te(4)-te(2),'unit','radHz','mask',mask);
@@ -103,7 +110,8 @@ headerAndExtraData.magnitude        = double(mean(abs(bipolarCplxME(:,:,:,1:2:to
 %                         'Unwrap',unwrap,'TE',te(1:2),'unit','radHz','mask',mask);
 % [fieldMapOddEven, ~, ~, ConfidenceOdd]=T2starAndFieldCalc(abs(OddEven),angle(OddEven),te(1:2));
 
-meanEddycurrent2 = fieldMapOddEven-0.5*(fieldMapOdd+fieldMapEven);
+% meanEddycurrent2 = fieldMapOddEven-0.5*(fieldMapOdd+fieldMapEven);
+meanEddycurrent2 = fieldMapOddEven-fieldMap;
 
 % EddycurrentVariations=angle(...
 %     bsxfun(@times,bsxfun(@times,bipolarCplxME(:,:,:,2:2:end-1) , ...
