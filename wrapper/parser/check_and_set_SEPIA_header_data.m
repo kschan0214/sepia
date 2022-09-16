@@ -44,4 +44,7 @@ try headerAndExtraData2.availableFileList.mask = headerAndExtraData.availableFil
 try headerAndExtraData2.availableFileList.fieldmapSD = headerAndExtraData.availableFileList.fieldmapSD; catch; headerAndExtraData2.availableFileList.fieldmapSD = []; end
 try headerAndExtraData2.availableFileList.weights = headerAndExtraData.availableFileList.weights; catch; headerAndExtraData2.availableFileList.weights = []; end
 
+try headerAndExtraData2.phasechi 	= headerAndExtraData.phasechi;      catch; headerAndExtraData2.phasechi     = []; end
+try headerAndExtraData2.availableFileList.phasechi 	= headerAndExtraData.availableFileList.phasechi;     catch; headerAndExtraData2.availableFileList.phasechi     = []; end
+
 end

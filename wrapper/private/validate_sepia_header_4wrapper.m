@@ -24,12 +24,15 @@ end
 % In case some parameters are missing in the header file try to get as
 % much information as possible from NIfTI
 if ~isfield(sepia_header, 'matrixSize')
+    disp('Variable ''matrixSize'' is missing in the SEPIA header. NIfTI header info will be used.')
     sepia_header.matrixSize = outputNiftiTemplate.hdr.dime.dim(2:4);
 end
 if ~isfield(sepia_header, 'voxelSize')
+    disp('Variable ''voxelSize'' is missing in the SEPIA header. NIfTI header info will be used.')
     sepia_header.voxelSize = outputNiftiTemplate.hdr.dime.pixdim(2:4);
 end
 if ~isfield(sepia_header, 'B0_dir')
+    disp('Variable ''B0_dir'' is missing in the SEPIA header. NIfTI header info will be used.')
     sepia_header.B0_dir = get_B0_dir_from_nifti(outputNiftiTemplate);
 end
 if ~isfield(sepia_header, 'CF')

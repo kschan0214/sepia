@@ -43,6 +43,7 @@
 % Date modified: 2 March 2020 (v0.8.0)
 % Date modified: 27 Jan 2020 (v0.8.1)
 % Date modified: 12 June 2021 (v1.0)
+% Date modified: 3 August 2022 (v1.1)
 %
 function sepia 
 
@@ -104,9 +105,9 @@ h = sepia_handle_panel_qsm(parent_curr,       	h,[0.01 0.07]);
 %% SWI/SMWI tab
 parent_curr = h.Tabs.swismwi;
 % I/O
-h = sepia_handle_panel_swi_dataIO(parent_curr,	h,[0.01 0.8]);
+h = sepia_handle_panel_swismwi_dataIO(parent_curr,	h,[0.01 0.8]);
 % Method
-h = sepia_handle_panel_swi(parent_curr,       	h,[0.01 0.44]);
+h = sepia_handle_panel_swismwi(parent_curr,       	h,[0.01 0.44]);
 
 %% utility tab
 h = sepia_handle_panel_Utility(h.Tabs.utility,	h,[0.01 0.39]);
