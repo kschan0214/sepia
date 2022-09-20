@@ -32,6 +32,7 @@ outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap.nii.g
 outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights.nii.gz']);
 outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd.nii.gz']);
 outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual.nii.gz']);
+outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights.nii.gz']);
 
 % derived masks
 outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain.nii.gz']);

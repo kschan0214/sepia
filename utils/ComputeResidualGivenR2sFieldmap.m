@@ -4,7 +4,8 @@ magn = abs(s_cplx);
 phase = angle(s_cplx);
 
 % estimated T1w signal S0
-s0 = s_cplx(:,:,:,1).*exp(r2s*te(1));
+% s0 = s_cplx(:,:,:,1).*exp(r2s*te(1));
+s0 = magn(:,:,:,1).*exp(r2s*te(1)); % bug fix 20220920
 
 % compute simulated signal
 shat = zeros(size(magn));

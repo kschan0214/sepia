@@ -190,18 +190,26 @@ if ~isinf(exclude_threshold)
     r2s                 = R2star_trapezoidal(magn,TE);
     relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
     maskReliable        = relativeResidual < exclude_threshold;
+    % v1.1: 20220919
+    relativeResidualWeights = relativeResidual;
+    % clipping
+    relativeResidualWeights(relativeResidualWeights>exclude_threshold) = exclude_threshold;
+    % weightsRelativeResidual should be between [0,1]
+    relativeResidualWeights = (exclude_threshold - relativeResidualWeights) ./ exclude_threshold;
     
     clear r2s magn 
     
     fprintf('Saving other output...');
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
+    save_nii_quick(outputNiftiTemplate,relativeResidualWeights,outputFileList.relativeResidualWeights);
     fprintf('Done.\n');
     
     clear relativeResidual
     
-    availableFileList.maskReliable      = outputFileList.maskReliable;
-    availableFileList.relativeResidual  = outputFileList.relativeResidual;
+    availableFileList.maskReliable              = outputFileList.maskReliable;
+    availableFileList.relativeResidual          = outputFileList.relativeResidual;
+    availableFileList.relativeResidualWeights   = outputFileList.relativeResidualWeights;
     
 else
     % single-echo & no threshold
@@ -230,9 +238,13 @@ if ~isfield(availableFileList, 'weights')
     
     fprintf('Computing weighting map...');
     % weights = sepia_utils_compute_weights_v0p8(fieldmapSD,and(mask>0,maskReliable>0));
-    weights = sepia_utils_compute_weights_v1(fieldmapSD,and(mask>0,maskReliable>0));
+    weights = sepia_utils_compute_weights_v1(fieldmapSD,mask);
+    weights = weights .* mask;
 
-    weights = weights .* and(mask>0,maskReliable);
+    % modulate weighting map by relativa residual
+    if ~isinf(exclude_threshold) && strcmp(exclude_method,'Weighting map')
+        weights = weights .* relativeResidualWeights;
+    end
 
     save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
     availableFileList.weights = outputFileList.weights;
@@ -244,7 +256,13 @@ else
         weights = double(load_nii_img_only(availableFileList.weights));
         
         % mask out unreliable voxel
-        weights = weights .* and(mask>0,maskReliable);
+        weights = weights .* mask;
+%         weights = weights .* and(mask>0,maskReliable);
+
+        % modulate weighting map by relativa residual
+        if ~isinf(exclude_threshold) && strcmp(exclude_method,'Weighting map')
+            weights = weights .* relativeResidualWeights;
+        end
         
         % export modified weights and update filelist
         save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
@@ -253,7 +271,7 @@ else
 end
 
 % clear variable that no longer be needed
-clear fieldMap fieldmapSD weights maskReliable mask
+clear fieldMap fieldmapSD weights maskReliable mask relativeResidualWeights
 
 % update availableFileList
 headerAndExtraData.availableFileList = availableFileList;
