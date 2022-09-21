@@ -14,10 +14,12 @@ for kt=1:length(te)
 end
 
 % simulated signal, get rid of the initial phase term
-shat = bsxfun(@times,shat,conj(shat(:,:,:,1)));
+% shat = bsxfun(@times,shat,conj(shat(:,:,:,1)));
+shat = bsxfun(@times,shat,conj(exp(1i*angle(shat(:,:,:,1)))));
 
 % measurement, get rid of the initial phase term
-s = bsxfun(@times,magn.*exp(1i*phase),conj(magn(:,:,:,1).*exp(1i*phase(:,:,:,1))));
+% s = bsxfun(@times,magn.*exp(1i*phase),conj(magn(:,:,:,1).*exp(1i*phase(:,:,:,1))));
+s = bsxfun(@times,magn.*exp(1i*phase),conj(exp(1i*phase(:,:,:,1))));
 
 %% compute relative residual
 % this formulation emphasises the difference of each echo
