@@ -22,7 +22,7 @@
 function h = sepia_handle_panel_Utility(hParent,h,position)
 
 % set up method name displayed on GUI
-utilityName = {'Get header info','Get lateral ventricle mask','Manage Dependency'};
+utilityName = {'Get header info','Get lateral ventricle mask','Manage Dependency','Convert GE real/imaginary images to phase image (experimental)'};
 
 % % set default value
 % defaultThreshold = 0.5;
@@ -62,6 +62,9 @@ position_child = [0.01 0.05 0.98 0.75];
 
     h = sepia_handle_panel_utility_manage_dependency(h.StepsPanel.Utility,...
                                                     h,position_child);
+                                                
+    h = sepia_handle_panel_utility_convert_realImaginary2phase(h.StepsPanel.Utility,...
+                                                    h,position_child);
 
 
 % %% set callback functions
@@ -90,6 +93,9 @@ switch method
         
     case 'Manage Dependency'
         set(h.Utility.panel.magageDependency,	'Visible','on');
+        
+    case 'Convert GE real/imaginary images to phase image (experimental)'
+        set(h.Utility.panel.realimag2phase,     'Visible','on');
 
     % in the future, add new method here
 end
