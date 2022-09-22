@@ -13,7 +13,7 @@ The current GUI version is built to access the following toolboxes:
 [SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
 [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
 [ROMEO (v3.2.4)](https://github.com/korbinian90/ROMEO/releases),
-[MRI Susceptibility Calculation Methods](https://xip.uclb.com/product/mri_qsm_tkd).
+[MRI Susceptibility Calculation Methods, accessed 12 September 2019](https://xip.uclb.com/product/mri_qsm_tkd).
 
 SEPIA provides two key features for QSM processing:  
 1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline,
@@ -41,7 +41,15 @@ If you have a more general question reagrding the usgae of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.0.1 (current master)
+### 1.1.0 (current master)
+* New backend architecture for SWI/SMWI algorithms which supports add-on feature like QSM processing 
+* Better compatibility with ROMEO
+* New implementation of bipolar readout phase offset correction (from which no phase unwrapping is required)
+* Provide bipolar readout phase offset estimation as an output
+* New implementation on incorporating mono-exponential fitting residual to weighting map generation
+* Experimental support to export GE real|imaginary image to phase image
+
+### 1.0.1 (commit 3a2b387)
 * Fixed bug when phase NIfTI is in wrapped range with non-unity rescale slope (e.g. from Philips' scanners)
 * Updated function performing phase conversion from arbitary DICOM values to radian (could result in minor numerical differences compared to previous versions if the input phase NIfTI not in radian)
 * Several other minor bugs fixed
