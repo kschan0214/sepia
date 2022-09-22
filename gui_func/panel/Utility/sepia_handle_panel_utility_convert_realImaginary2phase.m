@@ -50,12 +50,12 @@ h.Utility.panel.realimag2phase = uipanel(hParent,'Title','Convert GE real/imagin
     % real file input
     pos = [left(1) bottom(2) width height];
     [h.Utility.realimag2phase.text.realInput,h.Utility.realimag2phase.edit.realInput,h.Utility.realimag2phase.button.realInput] = sepia_construct_text_edit_button(panelParent,...
-        'or (Option 2) Real NIfTI images:',[],open_icon,pos,wratio);
+        'or (Option 2) Real NIfTI image:',[],open_icon,pos,wratio);
     
     % imaginary file
     pos = [left(1) bottom(3) width height];
     [h.Utility.realimag2phase.text.imagInput,h.Utility.realimag2phase.edit.imagInput,h.Utility.realimag2phase.button.imagInput] = sepia_construct_text_edit_button(panelParent,...
-        'and Imaginary NIfTI images:',[],open_icon,pos,wratio);
+        'and Imaginary NIfTI image:',[],open_icon,pos,wratio);
     
     pos = [left(1) bottom(4) width height];
     h.Utility.realimag2phase.checkbox.isCorrectInterslice = uicontrol('Parent',h.Utility.panel.realimag2phase ,...
