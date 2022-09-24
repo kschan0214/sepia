@@ -12,3 +12,6 @@ addons/bfr/sandbox
 addons/qsm/sandbox
 
 *.asv
+
+# testing QSMnet
+addons/qsm/QSMnet
