@@ -21,7 +21,9 @@ function h = sepia_handle_panel_clearswi(hParent,h,position)
 
 %% set default values
 defaultPhaseScalingStrength = 4;
-defaultFilterSize   = [4,4,0];
+defaultFilterSize   = '[4,4,0]';
+defaultEchoes = ':';
+defaultEchoCombineMethodAdd = 1;
 defaultmIP          = 4;
 
 %% layout of the panel
@@ -52,7 +54,7 @@ h.swismwi.panel.clearswi = uipanel(hParent,...
    
     % row 2, col 1
     % text|edit field pair: Contrast
-    [h.swismwi.clearswi.textphaseScalingStrength ,h.swismwi.clearswi.editphaseScalingStrength] = sepia_construct_text_edit(...
+    [h.swismwi.clearswi.text.phaseScalingStrength ,h.swismwi.clearswi.edit.phaseScalingStrength] = sepia_construct_text_edit(...
         panelParent,'Phase Contrast:', defaultPhaseScalingStrength, [left(1) bottom(2) width height], wratio);
 
     
@@ -74,12 +76,12 @@ h.swismwi.panel.clearswi = uipanel(hParent,...
     % row 2, col 2/1
     % text|edit field pair: Echoes to include
     [h.swismwi.clearswi.text.echoes ,h.swismwi.clearswi.edit.echoes] = sepia_construct_text_edit(...
-        panelParent,'Echoes to include:', defaultFilterSize, [left(2) bottom(2) width/2 height], wratio);
+        panelParent,'Echoes to include:', defaultEchoes, [left(2) bottom(2) width/2 height], wratio);
     
     % row 2, col 2/2
     % text|edit field pair: Additional Echo Combine Parameter
-    [h.swismwi.clearswi.text.filterSize ,h.swismwi.clearswi.edit.filterSize] = sepia_construct_text_edit(...
-        panelParent,'echonumber/echotime:', defaultFilterSize, [left(2) bottom(2)+width/2 width/2 height], wratio);    
+    [h.swismwi.clearswi.text.echoCombineMethodAdd ,h.swismwi.clearswi.edit.echoCombineMethodAdd] = sepia_construct_text_edit(...
+        panelParent,'echonumber/echotime:', defaultEchoCombineMethodAdd, [left(2)+width/2 bottom(2) width/2 height], wratio);    
     
     % row 3, col 2/1
     % checkbox: Softplus Magnitude Scaling
@@ -87,14 +89,14 @@ h.swismwi.panel.clearswi = uipanel(hParent,...
         'String','Softplus Magnitude Scaling',...
         'units','normalized','position',[left(2) bottom(3) width/2 height],...
         'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'),'Value',true');
+        'backgroundcolor',get(h.fig,'color'),'Value',true);
     % row 3, col 2/2
     % checkbox: Sensitivity Correction
-    h.swismwi.clearswi.checkbox.sensivityCorrection = uicontrol('Parent',h.swismwi.panel.clearswi,'Style','checkbox',...
+    h.swismwi.clearswi.checkbox.sensitivityCorrection = uicontrol('Parent',h.swismwi.panel.clearswi,'Style','checkbox',...
         'String','Sensitivity Correction',...
-        'units','normalized','position',[left(2) bottom(3)+width/2 width/2 height],...
+        'units','normalized','position',[left(2)+width/2 bottom(3) width/2 height],...
         'HorizontalAlignment','left',...
-        'backgroundcolor',get(h.fig,'color'));
+        'backgroundcolor',get(h.fig,'color'),'Value',true);
     % row 4, col 2
     % checkbox: save minimum intensity projection image
     [h.swismwi.clearswi.checkbox.mIP,h.swismwi.clearswi.edit.mIP] = sepia_construct_checkbox_edit(...
@@ -104,8 +106,19 @@ h.swismwi.panel.clearswi = uipanel(hParent,...
     
 
 %% set callbacks
-set(h.swismwi.clearswi.editphaseScalingStrength,       	'Callback', {@EditInputMinMax_Callback,defaultPhaseScalingStrength,   1,0});
-set(h.swismwi.clearswi.edit.threshold,	'Callback', {@EditInputMinMax_Callback,str2double(defaultthreshold),  0,0});
-set(h.swismwi.clearswi.edit.filterSize,	'Callback', {@EditInputMinMax_Callback,defaultFilterSize,       1,1});
+set(h.swismwi.clearswi.edit.phaseScalingStrength,       	'Callback', {@EditInputMinMax_Callback,defaultPhaseScalingStrength,   0,10});
 set(h.swismwi.clearswi.checkbox.mIP,  	'Callback', {@CheckboxEditPair_Callback,h.swismwi.clearswi.edit.mIP,1});
+
+set(h.swismwi.clearswi.edit.echoCombineMethodAdd, 'Enable', 'off'); % default: off
+set(h.swismwi.clearswi.popup.echoCombineMethod,               'Callback', {@clearswi_echo_combine_selection_Callback,h});
+
+%% Callback functions
+function clearswi_echo_combine_selection_Callback(source,eventdata,h)
+    if strcmp(source.String{source.Value,1}, 'echo') || strcmp(source.String{source.Value,1}, 'simulated echo')
+        set(h.swismwi.clearswi.edit.echoCombineMethodAdd, 'Enable', 'on');
+    else
+        set(h.swismwi.clearswi.edit.echoCombineMethodAdd, 'Enable', 'off');
+    end
+end
+
 end

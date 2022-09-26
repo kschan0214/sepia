@@ -27,6 +27,8 @@ str_pattern = {'.swismwi.phaseScalingType',...
                '.swismwi.echoes',...
                '.swismwi.softplusScaling',...
                '.swismwi.sensitivityCorrection',...
+               '.swismwi.ismIP',...
+               '.swismwi.slice_mIP',...
                };
 
 action_handle = {h.swismwi.clearswi.popup.phaseScalingType,...
@@ -34,7 +36,7 @@ action_handle = {h.swismwi.clearswi.popup.phaseScalingType,...
                  h.swismwi.clearswi.edit.filterSize,...
                  h.swismwi.clearswi.popup.unwrappingAlgorithm,...
                  h.swismwi.clearswi.popup.echoCombineMethod,...
-                 h.swismwi.clearswi.popup.echoCombineMethodAdd,...
+                 h.swismwi.clearswi.edit.echoCombineMethodAdd,...
                  h.swismwi.clearswi.edit.echoes...
                  h.swismwi.clearswi.checkbox.softplusScaling,...
                  h.swismwi.clearswi.checkbox.sensitivityCorrection,...
@@ -46,38 +48,21 @@ switch lower(mode)
     case 'set'
         fid = input;
         
-        for k = 1:3
+        % Number
+        for k = [2 6 11]
             fprintf(fid,'algorParam%s = %s ;\n'         ,str_pattern{k},get(action_handle{k},	'String'));
         end
-        
-        for k = 4:6
+        % String
+        for k = [3 7]
+            fprintf(fid,'algorParam%s = ''%s'' ;\n'         ,str_pattern{k},get(action_handle{k},	'String'));
+        end
+        % Checkbox
+        for k = [8 9 10]
             fprintf(fid,'algorParam%s = %i ;\n'         ,str_pattern{k},get(action_handle{k},	'Value'));
         end
-        if get(action_handle{k},	'Value')
-            for kk = k+1
-                fprintf(fid,'algorParam%s = %s ;\n'    	,str_pattern{kk},get(action_handle{kk},	'String'));
-            end
+        % Popup
+        for k = [1 4 5]
+            fprintf(fid,'algorParam%s = ''%s'' ;\n'     ,str_pattern{k},action_handle{k}.String{action_handle{k}.Value,1});
         end
-        
-        fprintf(fid,'algorParam%s = ''%s'' ;\n'     ,str_pattern{end},action_handle{end}.String{action_handle{end}.Value,1});
-        
-      % no load config operation supported at the moment
-%     case 'get'
-%         
-%         config_txt = input;
-%         
-%         % Lambda
-%         k = 1;
-%         pattern_curr    = str_pattern{k};
-%         val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
-%         set_non_nan_value(action_handle{k},'String',val)
-% 
-%         % L-curve optimisation
-%         k = k+1;
-%         pattern_curr    = str_pattern{k};
-%         val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
-%         set_non_nan_value(action_handle{k}, 'Value', str2double(val))
-%         % trigger popup callback to switch method panel
-%         feval(action_handle{k}.Callback{1},action_handle{k},[],action_handle{k-1},0);
 
 end

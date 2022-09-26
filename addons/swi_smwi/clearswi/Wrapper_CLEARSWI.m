@@ -25,6 +25,9 @@ sepia_addpath('MRITOOLS');
 
 % get algorithm parameters
 algorParam = check_and_set_algorithm_default(algorParam);
+
+parameters.TE = headerAndExtraData.sepia_header.TE;
+
 parameters.phase_scaling_type = algorParam.swismwi.phaseScalingType;
 parameters.phase_scaling_strength = algorParam.swismwi.phaseScalingStrength;
 parameters.filter_size = algorParam.swismwi.filterSize;
@@ -59,18 +62,23 @@ magn  = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude');
 
 outputNiftiTemplate     = output_structure.outputNiftiTemplate;
 outputFileFullPrefix    = output_structure.outputFileFullPrefix;
-% add path
-% sepia_addpath;
+
+parameters.output_dir = [output_structure.outputFileFullPrefix, 'clearswi_tmp'];
+mkdir(parameters.output_dir);
+
 
 %% SWI
 disp('Computing CLEARSWI...');
 
 [swi, ~] = CLEARSWI(magn,phase,parameters);
 
+% Remove all temp output files and the temp folder
+rmdir(parameters.output_dir, 's')
+
 % minimum intensity projection
 if ismIP
-    mIP = zeros(size(swi_phase));
-    for kz = 1:size(swi_phase,3) - slice_mIP
+    mIP = zeros(size(swi));
+    for kz = 1:size(swi,3) - slice_mIP
         mIP(:,:,kz,:) = min(swi(:,:,kz:kz+slice_mIP-1,:),[],3);
     end
 end
@@ -98,7 +106,7 @@ try algorParam2.swismwi.unwrappingAlgorithm = algorParam.swismwi.unwrappingAlgor
 
 try algorParam2.swismwi.echoCombineMethod = algorParam.swismwi.echoCombineMethod; catch; algorParam.swismwi.echoCombineMethod = 'SNR'; end
 try algorParam2.swismwi.echoCombineMethodAdd = algorParam.swismwi.echoCombineMethodAdd; catch; algorParam.swismwi.echoCombineMethodAdd = ''; end
-try algorParam2.swismwi.echoes = algorParam.swismwi.echoes; catch; algorParam.swismwi.echoes = 'all'; end
+try algorParam2.swismwi.echoes = algorParam.swismwi.echoes; catch; algorParam.swismwi.echoes = ':'; end
 try algorParam2.swismwi.softplusScaling = algorParam.swismwi.softplusScaling; catch; algorParam.swismwi.softplusScaling = true; end
 try algorParam2.swismwi.sensitivityCorrection = algorParam.swismwi.sensitivityCorrection; catch; algorParam.swismwi.sensitivityCorrection = true; end
 
