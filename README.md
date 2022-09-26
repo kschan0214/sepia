@@ -12,7 +12,7 @@ The current GUI version is built to access the following toolboxes:
 [FANSI (v3.0, released on 2021.10.15, i.e., commit b6ac1c9e)](https://gitlab.com/cmilovic/FANSI-toolbox/-/tree/b6ac1c9ea03380722ebe25a6dbef33fff4ea3700),  
 [SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
 [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
-[mritools (ROMEO/CLEARSWI) (v3.5.4)](https://github.com/korbinian90/CompileMRI.jl/releases),
+[mritools (ROMEO/CLEARSWI) (v3.5.5)](https://github.com/korbinian90/CompileMRI.jl/releases),
 [MRI Susceptibility Calculation Methods, accessed 12 September 2019](https://xip.uclb.com/product/mri_qsm_tkd).
 
 SEPIA provides two key features for QSM processing:  

@@ -106,7 +106,6 @@ h.swismwi.panel.clearswi = uipanel(hParent,...
     
 
 %% set callbacks
-set(h.swismwi.clearswi.edit.phaseScalingStrength,       	'Callback', {@EditInputMinMax_Callback,defaultPhaseScalingStrength,   0,10});
 set(h.swismwi.clearswi.checkbox.mIP,  	'Callback', {@CheckboxEditPair_Callback,h.swismwi.clearswi.edit.mIP,1});
 
 set(h.swismwi.clearswi.edit.echoCombineMethodAdd, 'Enable', 'off'); % default: off

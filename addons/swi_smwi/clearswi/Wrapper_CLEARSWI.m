@@ -27,6 +27,7 @@ sepia_addpath('MRITOOLS');
 algorParam = check_and_set_algorithm_default(algorParam);
 
 parameters.TE = headerAndExtraData.sepia_header.TE;
+parameters.additional_flags = '--no-phase-rescale';
 
 parameters.phase_scaling_type = algorParam.swismwi.phaseScalingType;
 parameters.phase_scaling_strength = algorParam.swismwi.phaseScalingStrength;
@@ -34,7 +35,10 @@ parameters.filter_size = algorParam.swismwi.filterSize;
 parameters.unwrapping_algorithm = algorParam.swismwi.unwrappingAlgorithm;
 
 parameters.mag_combine = algorParam.swismwi.echoCombineMethod;
-if ~isempty(algorParam.swismwi.echoCombineMethodAdd)
+if strcmp(parameters.mag_combine, 'simulated echo')
+    parameters.mag_combine = 'SE';
+end
+if strcmp(parameters.mag_combine, 'SE') || strcmp(parameters.mag_combine, 'echo')
     parameters.mag_combine = [parameters.mag_combine " " algorParam.swismwi.echoCombineMethodAdd];
 end
 parameters.echoes = algorParam.swismwi.echoes;
