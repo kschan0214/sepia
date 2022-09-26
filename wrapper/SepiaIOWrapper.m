@@ -582,7 +582,8 @@ if isEddyCorrect
     mask        = double(load_nii_img_only(availableFileList.mask));
 
     % BipolarEddyCorrect requries complex-valued input
-    [imgCplx,bipolar_phase]	= BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+%     [imgCplx,bipolar_phase]	= BipolarEddyCorrect(magn.*exp(1i*fieldMap),mask,algorParam);
+    [imgCplx,bipolar_phase]	= FastBipolarCorrect(magn.*exp(1i*fieldMap),mask);
     fieldMap            	= double(angle(imgCplx));
     
     % save the eddy current corrected output
