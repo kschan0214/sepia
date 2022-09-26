@@ -12,7 +12,7 @@
 %% main
 
 % This name will be used thorough the SEPIA framework for usage
-addons.method = 'ROMEO';
+addons.method = 'MRITOOLS';
 
 % Specify the filename of the wrapper function (without extension)
 addons.wrapper_function	= 'Wrapper_Unwrap_ROMEO_singleEcho';

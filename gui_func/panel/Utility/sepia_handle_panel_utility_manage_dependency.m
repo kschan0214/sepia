@@ -37,7 +37,7 @@ FANSI_HOME      = [];
 MEDI_HOME       = [];
 STISuite_HOME  	= [];
 SEGUE_HOME      = [];
-ROMEO_HOME      = [];
+MRITOOLS_HOME   = [];
 MRISC_HOME      = [];
 
 SpecifyToolboxesDirectory;
@@ -73,9 +73,9 @@ wratio = [0.2,0.75,0.05];
         'SEGUE Home:',SEGUE_HOME,open_icon,[left bottom(4) width height],wratio);
     
     % Dependency 5: ROMEO directory input
-    [h.Utility.magageDependency.text.ROMEODir,h.Utility.magageDependency.edit.ROMEODir,h.Utility.magageDependency.button.ROMEODir] = ...
+    [h.Utility.magageDependency.text.MRITOOLSDir,h.Utility.magageDependency.edit.MRITOOLSDir,h.Utility.magageDependency.button.MRITOOLSDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
-        'ROMEO Home:',ROMEO_HOME,open_icon,[left bottom(5) width height],wratio);
+        'ROMEO Home:',MRITOOLS_HOME,open_icon,[left bottom(5) width height],wratio);
 
     % Dependency 6: ROMEO directory input
     [h.Utility.magageDependency.text.MRISuscCalcDir,h.Utility.magageDependency.edit.MRISuscCalcDir,h.Utility.magageDependency.button.MRISuscCalcDir] = ...
@@ -93,7 +93,7 @@ set(h.Utility.magageDependency.button.FANSIDir,         'Callback', {@open_direc
 set(h.Utility.magageDependency.button.MEDIDir,          'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MEDIDir});
 set(h.Utility.magageDependency.button.STISuiteDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.STISuiteDir});
 set(h.Utility.magageDependency.button.SEGUEDir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.SEGUEDir});
-set(h.Utility.magageDependency.button.ROMEODir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ROMEODir});
+set(h.Utility.magageDependency.button.MRITOOLSDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRITOOLSDir});
 set(h.Utility.magageDependency.button.MRISuscCalcDir,   'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRISuscCalcDir});
 set(h.Utility.magageDependency.button.save,             'Callback', {@PushbuttonSave_Utility_magageDependency_Callback,h});
 end
@@ -114,8 +114,8 @@ end
 
 function PushbuttonSave_Utility_magageDependency_Callback(source,eventdata,h)
 
-dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','ROMEO_HOME','MRISC_HOME'};
-gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'ROMEODir'  ,'MRISuscCalcDir'};
+dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME'};
+gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir'};
 
 sepia_universal_variables;
 SpecifyToolboxesDirectory;

@@ -36,14 +36,14 @@ if isStartCheck
     if ~exist('SEGUE_HOME','var')
         SEGUE_HOME = [];
     end
-    if ~exist('ROMEO_HOME','var')
-        ROMEO_HOME = [];
+    if ~exist('MRITOOLS_HOME','var')
+        MRITOOLS_HOME = [];
     end
     if ~exist('MRISC_HOME','var')
         MRISC_HOME = [];
     end
         
-    CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,ROMEO_HOME,MRISC_HOME);
+    CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,MRITOOLS_HOME,MRISC_HOME);
 end
 
 % get SEPIA_HOME from this file 
@@ -87,8 +87,8 @@ switch lower(method)
     case 'fansi'
         addpath(genpath(FANSI_HOME));
         
-    case 'romeo'
-        addpath(genpath(ROMEO_HOME));
+    case 'mritools'
+        addpath(genpath(MRITOOLS_HOME));
         
     case 'mrisc'
         addpath(genpath(MRISC_HOME));
@@ -98,7 +98,7 @@ end
 end
 
 %% check the following paths exist or not
-function CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,ROMEO_HOME,MRISC_HOME)
+function CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,MRITOOLS_HOME,MRISC_HOME)
 
 if exist(MEDI_HOME,'dir')~=7
 %     warning('Please specify a correct path for MEDI toolbox in SpecifyToolboxesDirectory.m');
@@ -124,10 +124,10 @@ if exist(SEGUE_HOME,'dir')~=7
     warning('All functions related to SEGUE cannot be used.');
 end
    
-if exist(ROMEO_HOME,'dir')~=7
+if exist(MRITOOLS_HOME,'dir')~=7
 %     warning('Please specify a correct path for ROMEO in SpecifyToolboxesDirectory.m');
-    disp('The directory to ROMEO toolbox does not exist.')
-    warning('All functions related to ROMEO cannot be used.');
+    disp('The directory to mritools does not exist.')
+    warning('All functions related to ROMEO/CLEARSWI cannot be used.');
 end
 
 if exist(MRISC_HOME,'dir')~=7
