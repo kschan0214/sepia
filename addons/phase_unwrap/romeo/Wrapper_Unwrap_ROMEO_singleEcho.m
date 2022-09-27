@@ -26,7 +26,7 @@ sepia_universal_variables;
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 
 % add path
-sepia_addpath('ROMEO');
+sepia_addpath('MRITOOLS');
 
 % get algorithm parameters
 parameters = check_and_set_algorithm_default(headerAndExtraData, mask);

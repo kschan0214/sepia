@@ -18,7 +18,7 @@ MEDI_HOME       = '/path/to/MEDI/Toolboxes/';
 STISuite_HOME   = '/path/to/STI/Suite/';
 FANSI_HOME      = '/path/to/FANSI/Toolboxes/';
 SEGUE_HOME      = '/path/to/SEGUE/Toolboxes/';
-ROMEO_HOME      = '/path/to/ROMEO/Toolboxes/';
+MRITOOLS_HOME   = '/path/to/ROMEO/Toolboxes/';
 MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolboxes/';
 
 %% if you have any missing toolbox, then specify it as empty array
@@ -26,5 +26,5 @@ MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolboxes/';
 % STISuite_HOME  = [];
 % FANSI_HOME     = [];
 % SEGUE_HOME     = [];
-% ROMEO_HOME     = [];
+% MRITOOLS_HOME  = [];
 % MRISC_HOME     = [];
