@@ -33,7 +33,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 5 June 2019
-% Date modified:
+% Date modified: 29 September 2022 (v1.1.1) add gpu compatibility
 %
 %
 function chi = NDI(localField,mask,voxelSize,varargin)
@@ -64,6 +64,19 @@ dipoleKernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 chi = zeros(matrixSize, 'like',localField);
 grad_prev = zeros(matrixSize, 'like',localField);
 
+try
+    % add gpu compatibility
+    weight          = gpuArray(weight);
+    dipoleKernel    = gpuArray(dipoleKernel);
+    chi             = gpuArray(chi);
+    localField      = gpuArray(localField);
+    grad_prev       = gpuArray(grad_prev);
+    mask            = gpuArray(mask);
+    isGPU           = true;
+catch
+    isGPU = false;
+end
+
 % case of one B0 direction
 tic
 for t = 1:iteration
@@ -93,5 +106,8 @@ toc
 % masking output
 chi = chi .* mask;
 
+if isGPU
+    chi = gather(chi);
+end
 
 end
