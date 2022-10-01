@@ -57,6 +57,9 @@ if isempty(weight)
     weight = mask;
 end
 
+% 20220930 KC: the difference is minor weight vs weight^2
+% weight = weight .^2;
+
 % create dipole kernel
 dipoleKernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 
