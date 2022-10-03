@@ -43,10 +43,11 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 
 ### 1.1.1 (current master)
 * ROMEO is now packaged together with CLEAR-SWI. To accompany these changes, ROMEO_HOME is renamed to MRITOOLS_HOME
-* Support CLEAR-SWI
-* Fixed bug for using bipolar readout correction in full processing pipeline
-* Add GPU compatibility of NDI
+* Supported CLEAR-SWI
+* Fixed bug: bipolar readout correction implementation in full processing pipeline is different from the one in Phase unwrapping standalone 
+* Added GPU compatibility of NDI
 * Fixed bug for NDI (M^2 is now used instead of M as weights)
+* Added functionality to remove brain mask edge **before** backfround field removal step.
 
 ### 1.1.0 (commit 9ffe02e)
 * New backend architecture for SWI/SMWI algorithms which supports add-on feature like QSM processing 
