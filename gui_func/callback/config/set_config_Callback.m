@@ -75,6 +75,11 @@ if str2double(val)
     
 end
 
+% refine brain mask
+str_pattern     = '.general.isRefineBrainMask';
+action_handle   = h.dataIO.checkbox.refineBrainMask;
+val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
+
 end
 
 %% Panel: Total field

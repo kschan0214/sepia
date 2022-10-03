@@ -42,6 +42,7 @@ tooltip.dataIO.SEPIA.invertPhase= 'Reverse the direction of frequency shift. Thi
 tooltip.dataIO.SEPIA.BET        = 'Use FSL bet for brain extraction';
 tooltip.dataIO.SEPIA.fractThres = 'Fractional intensity threshold (0->1); default=0.5; smaller values give larger brain outline estimates';
 tooltip.dataIO.SEPIA.gradThres  = 'Vertical gradient in fractional intensity threshold (-1->1); default=0; positive values give larger brain outline at bottom, smaller at top';
+tooltip.dataIO.SEPIA.refineBrainMask = 'Thresholding fast R2* voxels on brain edges';
 
 %% layout of the panel
 nrow        = 5;
@@ -101,34 +102,40 @@ h.StepsPanel.dataIO = uipanel(hParent,'Title','I/O',...
     pos = [left(1) bottom(5) width height];
     [h.dataIO.text.inputHeader,h.dataIO.edit.inputHeader,h.dataIO.button.inputHeader] = sepia_construct_text_edit_button(panelParent,...
         '    SEPIA header:',[],open_icon,pos,wratio);
-
-    % row 4, col 2
-    % invert pahse
-    h.dataIO.checkbox.invertPhase = uicontrol('Parent',h.StepsPanel.dataIO,...
-        'Style','checkbox','String','Invert phase data',...
-        'units','normalized','Position',[left(2) bottom(4) width height],...
-        'backgroundcolor',get(h.fig,'color'));
-    
-    % row 5, col 2
+ 
+    % row 3, col 2
     % brain extraction
     h.dataIO.checkbox.brainExtraction = uicontrol('Parent',h.StepsPanel.dataIO,...
         'Style','checkbox','String','FSL brain extraction (bet),',...
-        'units','normalized','Position',[left(2) bottom(5) width*0.5 height],...
+        'units','normalized','Position',[left(2) bottom(3) width*0.5 height],...
         'backgroundcolor',get(h.fig,'color'));
     
     % fractional threshold
     wratio = 0.5;
     [h.dataIO.text.fractionalThres,h.dataIO.edit.fractionalThres] = sepia_construct_text_edit(panelParent,...
-        '-f',defaultFractionalThres,[left(2)+width*0.5 bottom(5) width*0.25 height],wratio);
+        '-f',defaultFractionalThres,[left(2)+width*0.5 bottom(3) width*0.25 height],wratio);
     set(h.dataIO.text.fractionalThres, 'HorizontalAlignment','right');
     set(h.dataIO.edit.fractionalThres, 'Enable','off');
     
     % gradient threshold
     wratio = 0.5;
     [h.dataIO.text.gradientThres,h.dataIO.edit.gradientThres] = sepia_construct_text_edit(panelParent,...
-        '-g',defaultGradientThres,[left(2)+width*0.75 bottom(5) width*0.25 height],wratio);
+        '-g',defaultGradientThres,[left(2)+width*0.75 bottom(3) width*0.25 height],wratio);
     set(h.dataIO.text.gradientThres, 'HorizontalAlignment','right');
     set(h.dataIO.edit.gradientThres, 'Enable','off');
+
+    % Refine brain mask using R2*
+    h.dataIO.checkbox.refineBrainMask = uicontrol('Parent',h.StepsPanel.dataIO,...
+        'Style','checkbox','String','Refine brain mask using R2* (Multi-echo data only)',...
+        'units','normalized','Position',[left(2) bottom(4) width height],...
+        'backgroundcolor',get(h.fig,'color'));
+
+    % row 5, col 2
+    % invert pahse
+    h.dataIO.checkbox.invertPhase = uicontrol('Parent',h.StepsPanel.dataIO,...
+        'Style','checkbox','String','Invert phase data',...
+        'units','normalized','Position',[left(2) bottom(5) width height],...
+        'backgroundcolor',get(h.fig,'color'));
 
     
 %% set tooltips
@@ -143,6 +150,7 @@ set(h.dataIO.checkbox.invertPhase,      'Tooltip',tooltip.dataIO.SEPIA.invertPha
 set(h.dataIO.checkbox.brainExtraction,	'Tooltip',tooltip.dataIO.SEPIA.BET);
 set(h.dataIO.text.fractionalThres,      'Tooltip',tooltip.dataIO.SEPIA.fractThres);
 set(h.dataIO.text.gradientThres,        'Tooltip',tooltip.dataIO.SEPIA.gradThres);
+set(h.dataIO.checkbox.refineBrainMask,  'Tooltip',tooltip.dataIO.SEPIA.refineBrainMask);
 
 %% set callback function
 % checkbox/edit pair

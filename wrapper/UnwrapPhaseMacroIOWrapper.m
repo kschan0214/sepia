@@ -130,7 +130,16 @@ disp('-----------');
 % outputNiftiTemplate   : nifti header with empty 'img' field
 availableFileList           = io_06_get_signal_mask(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
-%%%%%% Step 5: store some data to headerAndExtraData
+%%%%%% Step 7: refine signal mask
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+availableFileList           = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
+
+
+%%%%%% store some data to headerAndExtraData
 % header
 create_header_structure_4wrapper;
 
@@ -481,6 +490,37 @@ if isempty(mask) || isBET
     fprintf('Done!\n');
     
     availableFileList.mask = outputFileList.maskBrain;
+end
+
+end
+
+%% I/O Step 7: refine brain mask
+function availableFileList          = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+TE          = sepia_header.TE;
+voxelSize   = sepia_header.voxelSize;
+isMultiEcho         = numel(TE)>1;
+isRefineBrainMask   = algorParam.general.isRefineBrainMask;
+
+if ~isMultiEcho
+    isRefineBrainMask = 0;
+    disp('Refine brain mask only works with multi-echo data');
+end
+
+if isRefineBrainMask
+    disp('Refine brain using R2* info');
+    magn        = double(load_nii_img_only(availableFileList.magnitude));
+    mask        = double(load_nii_img_only(availableFileList.mask));
+    r2s         = R2star_trapezoidal(magn, TE);
+    mask_refine = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
+
+    % save the eddy current corrected output
+    fprintf('Saving refined brain mask...');
+    save_nii_quick(outputNiftiTemplate, mask_refine, outputFileList.maskRefine);
+    fprintf('Done!\n');
+
+    % update availableFileList
+    availableFileList.mask = outputFileList.maskRefine;
 end
 
 end

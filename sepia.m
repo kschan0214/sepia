@@ -206,6 +206,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
         set(h.dataIO.edit.inputData3,           'Enable','on');
         set(h.dataIO.button.inputData3,         'Enable','on');
+        % refine brain mask is supported with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
             
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
@@ -235,6 +237,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
         set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
         set(h.dataIO.button.inputData3,         'Enable','off');
+        % refine brain mask is supported with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
 
         % phase unwrap
         set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
@@ -262,6 +266,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{2});
         set(h.dataIO.edit.inputData3,           'Enable','on');
         set(h.dataIO.button.inputData3,         'Enable','on');
+        % no refine brain mask with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
 
         % background field
         set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
@@ -290,6 +296,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
         set(h.dataIO.edit.inputData3,           'Enable','on');
         set(h.dataIO.button.inputData3,         'Enable','on');
+        % no refine brain mask with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
         
@@ -379,6 +387,9 @@ if isbet
     sepia_print_edit_as_string(fid,'.general.gradient_threshold',h.dataIO.edit.gradientThres);
 end
 sepia_print_checkbox_value(fid,'.general.isInvert',h.dataIO.checkbox.invertPhase);
+
+% refine brain mask
+sepia_print_checkbox_value(fid,'.general.isRefineBrainMask',h.dataIO.checkbox.refineBrainMask);
 
 % phase unwrap algorithm parameters
 if strcmpi(tab,'SEPIA') || strcmpi(tab,'Phase unwrapping')
@@ -477,6 +488,8 @@ switch tab
         % input data 3
         set(h.dataIO.edit.inputData3,           'Enable','on');
         set(h.dataIO.button.inputData3,         'Enable','on');
+        % refine brain mask is supported with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
             
         
     % Phase unwrapping tab
@@ -495,6 +508,8 @@ switch tab
         % input data 3
         set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
         set(h.dataIO.button.inputData3,         'Enable','off');
+        % refine brain mask is supported with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
 
         
     % background field removal tab    
@@ -514,6 +529,8 @@ switch tab
         % input data 3
         set(h.dataIO.edit.inputData3,           'Enable','on');
         set(h.dataIO.button.inputData3,         'Enable','on');
+        % no refine brain mask with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
 
     % qsm tab    
     case 'QSM'
@@ -532,6 +549,8 @@ switch tab
         % input data 3
         set(h.dataIO.edit.inputData3,           'Enable','on');
         set(h.dataIO.button.inputData3,         'Enable','on');
+        % no refine brain mask with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
         
 end
 

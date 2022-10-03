@@ -40,6 +40,7 @@ outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliabl
 outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield.nii.gz']);
 outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM.nii.gz']);
 outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion.nii.gz']);
+outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine.nii.gz']);
 
 % misc
 outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase.nii.gz']);
