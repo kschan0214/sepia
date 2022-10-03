@@ -7,13 +7,13 @@
 **SEPIA** is a tool providing a graphical user interface to build data processing pipeline of quantitative susceptibility mapping (QSM) in Matlab.
 
 The current GUI version is built to access the following toolboxes:
-[MEDI (updated Jan 15, 2020)](http://weill.cornell.edu/mri/pages/qsm.html), 
-[STI Suite (v3.0)](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
-[FANSI (v3.0, released on 2021.10.15, i.e., commit b6ac1c9e)](https://gitlab.com/cmilovic/FANSI-toolbox/-/tree/b6ac1c9ea03380722ebe25a6dbef33fff4ea3700),  
-[SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
-[nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
-[mritools (ROMEO/CLEARSWI) (v3.5.5)](https://github.com/korbinian90/CompileMRI.jl/releases),
-[MRI Susceptibility Calculation Methods, accessed 12 September 2019](https://xip.uclb.com/product/mri_qsm_tkd).
+- [MEDI (updated Jan 15, 2020)](http://weill.cornell.edu/mri/pages/qsm.html), 
+- [STI Suite (v3.0)](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
+- [FANSI (v3.0, released on 2021.10.15, i.e., commit b6ac1c9e)](https://gitlab.com/cmilovic/FANSI-toolbox/-/tree/b6ac1c9ea03380722ebe25a6dbef33fff4ea3700),  
+- [SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
+- [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
+- [mritools (ROMEO/CLEARSWI) (v3.5.5)](https://github.com/korbinian90/CompileMRI.jl/releases),
+- [MRI Susceptibility Calculation Methods, accessed 12 September 2019](https://xip.uclb.com/product/mri_qsm_tkd).
 
 SEPIA provides two key features for QSM processing:  
 1. mix-and-match methods from different toolboxes to build your own QSM processing pipeline,
@@ -41,7 +41,14 @@ If you have a more general question reagrding the usgae of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.1.0 (current master)
+### 1.1.1 (current master)
+* ROMEO is now packaged together with CLEAR-SWI. To accompany these changes, ROMEO_HOME is renamed to MRITOOLS_HOME
+* Support CLEAR-SWI
+* Fixed bug for using bipolar readout correction in full processing pipeline
+* Add GPU compatibility of NDI
+* Fixed bug for NDI (M^2 is now used instead of M as weights)
+
+### 1.1.0 (commit 9ffe02e)
 * New backend architecture for SWI/SMWI algorithms which supports add-on feature like QSM processing 
 * Better compatibility with ROMEO
 * New implementation of bipolar readout phase offset correction (from which no phase unwrapping is required)
