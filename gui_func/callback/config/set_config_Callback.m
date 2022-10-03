@@ -110,6 +110,14 @@ str_pattern     = '.bfr.erode_radius';
 action_handle   = h.bkgRemoval.edit.imerode;
 sepia_read_edit_string(config_txt, str_pattern, action_handle);
 
+% Erosion radius before BFR
+try % backward compatible
+str_pattern     = '.bfr.erode_before_radius';
+action_handle   = h.bkgRemoval.edit.imerodebefore;
+sepia_read_edit_string(config_txt, str_pattern, action_handle);
+catch
+end
+
 % background field removal method
 str_pattern      = '.bfr.method';
 action_handle    = h.bkgRemoval.popup.bkgRemoval;

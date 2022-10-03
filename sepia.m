@@ -399,6 +399,8 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'Background field removal')
     sepia_print_edit_as_string(fid,'.bfr.refine_order',h.bkgRemoval.edit.order);
     % Erode local field
     sepia_print_edit_as_string(fid,'.bfr.erode_radius',h.bkgRemoval.edit.imerode);
+    % Erode mask before BFR
+    sepia_print_edit_as_string(fid,'.bfr.erode_before_radius',h.bkgRemoval.edit.imerodebefore);
     
     % set parameters for selected method
     print_method_popup_and_eval(fid, '.bfr.method', h.bkgRemoval.popup.bkgRemoval, methodBFRName, config_BFR_function, h);

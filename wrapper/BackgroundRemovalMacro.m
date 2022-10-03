@@ -33,12 +33,13 @@ methodBFRName = lower(methodBFRName);
 voxelSize       = double(voxelSize(:).');
 matrixSize      = double(matrixSize(:).');
 
-algorParam  	= check_and_set_SEPIA_algorithm_default(algorParam);
-method          = algorParam.bfr.method;
-erode_radius	= algorParam.bfr.erode_radius;
+algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
+method              = algorParam.bfr.method;
+erode_radius        = algorParam.bfr.erode_radius;
+erode_before_radius = algorParam.bfr.erode_before_radius;
 % refine          = algorParam.bfr.refine;
-refine_method   = algorParam.bfr.refine_method;
-refine_order    = algorParam.bfr.refine_order;
+refine_method       = algorParam.bfr.refine_method;
+refine_order        = algorParam.bfr.refine_order;
 
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
@@ -61,6 +62,22 @@ end
 matrixSize_new = size(totalField);
 
 fprintf('Done!\n');
+
+%% erode mask before BFR
+if erode_before_radius > 0
+    fprintf(['Eroding ' num2str(erode_before_radius) ' voxel(s) from edges before background field removal...']);
+     
+    mask = imfill(mask,'holes');
+    mask = imerode(mask,strel('sphere',erode_before_radius));
+    % also remove the mask on the edges
+    mask(:,:,end-erode_before_radius:end) = 0;
+    mask(:,:,1:erode_before_radius)       = 0;
+    mask(:,end-erode_before_radius:end,:) = 0;
+    mask(:,1:erode_before_radius,:)       = 0;
+    mask(end-erode_before_radius:end,:,:) = 0;
+    mask(1:erode_before_radius,:,:)       = 0;
+    fprintf('Done!\n')
+end
 
 %% core of background field removal
 disp('Removing background field...');

@@ -28,11 +28,13 @@ sepia_universal_variables;
 
 % default value
 defaultRadius       = 0;
+defaultRadiusBefore = 0;
 defaultRefineOrder  = 4;
 
 tooltip.BFR.panel.method    = 'Select a background field removal method';
 tooltip.BFR.panel.polyfit   = 'Remove residual B1 field using a 3D polynomial/spherical harmonic fitting';
-tooltip.BFR.panel.erode     = 'Remove edge voxels from the local field. Might improve the final QSM result';
+tooltip.BFR.panel.erode_before = 'Remove edge voxels before background field removal. Might improve the final local field result';
+tooltip.BFR.panel.erode     = 'Remove edge voxels from the local field after background field removal. Might improve the final QSM result';
 
 %% layout of the panel
 nrow        = 5;
@@ -43,7 +45,7 @@ cspacing    = 0.01;
 
 % Set parent of background removal panel
 h.StepsPanel.bkgRemoval = uipanel(hParent,...
-    'Title','Background field removal',...
+    'Title','Background field removal (BFR)',...
     'fontweight', 'bold',...
     'position',[position(1) position(2) 0.95 0.25],...
     'backgroundcolor',get(h.fig,'color'));
@@ -90,8 +92,11 @@ h.StepsPanel.bkgRemoval = uipanel(hParent,...
     
     % col 2
     % text|field pair: utility function related to erode local field ROI
+    [h.bkgRemoval.text.imerodebefore,h.bkgRemoval.edit.imerodebefore] = sepia_construct_text_edit(...
+        h.StepsPanel.bkgRemoval,'Erode edge voxel(s) before BFR:', defaultRadiusBefore, [left(2) 0.85 width height], wratio);
+    % text|field pair: utility function related to erode local field ROI
     [h.bkgRemoval.text.imerode,h.bkgRemoval.edit.imerode] = sepia_construct_text_edit(...
-        h.StepsPanel.bkgRemoval,'Erode edge voxel(s):', defaultRadius, [left(2) 0.03 width height], wratio);
+        h.StepsPanel.bkgRemoval,'Erode edge voxel(s) after BFR:', defaultRadius, [left(2) 0.03 width height], wratio);
 
     
 %% create control panel
@@ -107,10 +112,12 @@ end
 set(h.bkgRemoval.text.bkgRemoval,       'Tooltip',tooltip.BFR.panel.method);
 set(h.bkgRemoval.text.refine,           'Tooltip',tooltip.BFR.panel.polyfit);
 set(h.bkgRemoval.text.imerode,          'Tooltip',tooltip.BFR.panel.erode);
+set(h.bkgRemoval.text.imerodebefore,   	'Tooltip',tooltip.BFR.panel.erode_before);
 
 %% set callback function
 set(h.bkgRemoval.popup.bkgRemoval, 'Callback', {@PopupBkgRemoval_Callback,h});
 set(h.bkgRemoval.edit.imerode,     'Callback', {@EditInputMinMax_Callback,defaultRadius,1,0});
+set(h.bkgRemoval.edit.imerodebefore,	'Callback', {@EditInputMinMax_Callback,defaultRadius,1,0});
 % set(h.bkgRemoval.checkbox.refine,  'Callback', {@CheckboxEditPair_Callback,{h.bkgRemoval.popup.refine,h.bkgRemoval.edit.refine,h.bkgRemoval.slider.refine},1});
 set(h.bkgRemoval.edit.order,      'Callback', {@EditInputMinMax_Callback,defaultRefineOrder,1,0,4});
 set(h.bkgRemoval.slider.order,    'Callback', {@SliderBkgRemoval_Callback,h});
