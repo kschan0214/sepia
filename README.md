@@ -49,7 +49,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * Fixed bug for NDI (M^2 is now used instead of M as weights)
 * Added functionality to remove brain mask edge **before** backfround field removal step.
 
-### 1.1.0 (commit 9ffe02e)
+### 1.1.0 (commit 9ffe0e2)
 * New backend architecture for SWI/SMWI algorithms which supports add-on feature like QSM processing 
 * Better compatibility with ROMEO
 * New implementation of bipolar readout phase offset correction (from which no phase unwrapping is required)
