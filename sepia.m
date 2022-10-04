@@ -133,15 +133,15 @@ h.pushbutton_loadConfig = uicontrol('Parent',h.Tabs.Sepia,...
     'units','normalized','Position',[0.01 0.01 0.1 0.05],...
     'backgroundcolor',get(h.fig,'color'));
 
-% GPU checkbox
-h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
-    'Style','checkbox',...
-    'String','Enable GPU computation',...
-    'units','normalized','Position',[0.01 0.01 0.4 0.05],...
-    'backgroundcolor',get(h.fig,'color'), ...
-    'Enable','off','Visible','off',...
-    'TooltipString',['Enable to use GPU for some of the algorithms in SEPIA. ' ...
-                     'Your GPU has to be detectable in Matlab in order to use this feature.']);
+% % GPU checkbox
+% h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
+%     'Style','checkbox',...
+%     'String','Enable GPU computation',...
+%     'units','normalized','Position',[0.01 0.01 0.4 0.05],...
+%     'backgroundcolor',get(h.fig,'color'), ...
+%     'Enable','off','Visible','off',...
+%     'TooltipString',['Enable to use GPU for some of the algorithms in SEPIA. ' ...
+%                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
                  
 %%% deprecated
 % if gpuDeviceCount > 0
@@ -161,13 +161,13 @@ end
 function SwitchTab_Callback(source,eventdata)
 % switch parent handle of StepsPanel based on current tab
 
-global h
+global h tooltip fieldString
 
 % global uicontrol for all tabs
 universial_handle = {h.StepsPanel.dataIO,...
                      h.pushbutton_start,...         % Start pushbutton
                      h.pushbutton_loadConfig,...    % load config pushbutton
-                     h.checkbox_gpu};               % GPU checkbox
+                     };               % GPU checkbox
 
 % Tab specific strings and tooltips
 tooltip.input_dir{1} = 'Directory contains phase (*ph*.nii*), magnitude (*mag*.nii) & header (*header*.mat) (& mask, *mask*nii*) files';
@@ -193,147 +193,22 @@ switch eventdata.NewValue.Title
     
     % QSM one-stop station tab
     case 'SEPIA'
-        % I/O
-        % Change essential files if input is a directory
-        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
-        % BET is supported with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        % phase invert is supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
-        % input data 1
-        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
-        set(h.dataIO.edit.inputData1,           'Enable','on');
-        set(h.dataIO.button.inputData1,         'Enable','on');
-        % input data 2
-%             set(h.dataIO.text.inputData2,'String','Magn. data:');
-        set(h.dataIO.edit.inputData2,           'Enable','on');
-        set(h.dataIO.button.inputData2,         'Enable','on');
-        % input data 3
-        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
-        set(h.dataIO.edit.inputData3,           'Enable','on');
-        set(h.dataIO.button.inputData3,         'Enable','on');
-        % refine brain mask is supported with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
-            
-        % phase unwrap
-        set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
-        % background field
-        set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.Sepia,'Position',[0.01 0.33 0.95 0.25]);
-        % QSM
-        set(h.StepsPanel.qsm,           'Parent',h.Tabs.Sepia,'Position',[0.01 0.07 0.95 0.25]);
-        
+        switch_tab_to_SEPIA;
+
     % Phase unwrapping tab
     case 'Phase unwrapping'
-        % I/O
-        % This tab supports both DICOM and NIfTI files
-        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
-        % BET is supported with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        % phase invert is supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
-        % input data 1
-        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
-        set(h.dataIO.edit.inputData1,           'Enable','on');
-        set(h.dataIO.button.inputData1,         'Enable','on');
-        % input data 2
-%           set(h.dataIO.text.inputData2,'String','Magn. data:');
-        set(h.dataIO.edit.inputData2,           'Enable','on');
-        set(h.dataIO.button.inputData2,         'Enable','on');
-        % input data 3
-        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
-        set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
-        set(h.dataIO.button.inputData3,         'Enable','off');
-        % refine brain mask is supported with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
-
-        % phase unwrap
-        set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
+        switch_tab_to_phase_unwrapping;
         
     % background field removal tab    
     case 'Background field removal'
-        % I/O
-        % This tab supports only NIfTI files
-        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{2});
-        % no BET support with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        set(h.dataIO.edit.maskdir,              'Enable','on');
-        set(h.dataIO.button.maskdir,            'Enable','on');
-        % phase invert is not supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-        % input data 1
-        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{2});
-        set(h.dataIO.edit.inputData1,           'Enable','on');
-        set(h.dataIO.button.inputData1,         'Enable','on');
-        % input data 2
-%             set(h.dataIO.text.inputData2,'String','Magn. data:');
-        set(h.dataIO.edit.inputData2,           'Enable','off','String',[]);
-        set(h.dataIO.button.inputData2,         'Enable','off');
-        % input data 3
-        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{2});
-        set(h.dataIO.edit.inputData3,           'Enable','on');
-        set(h.dataIO.button.inputData3,         'Enable','on');
-        % no refine brain mask with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
-
-        % background field
-        set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
-
-
+        switch_tab_to_BRF;
+        
     % qsm tab    
     case 'QSM'
-        % I/O
-        % This tab supports only NIfTI files
-        set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
-        % no BET support with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        set(h.dataIO.edit.maskdir,              'Enable','on');
-        set(h.dataIO.button.maskdir,            'Enable','on');
-        % phase invert is not supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-        % input data 1
-        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{3});
-        set(h.dataIO.edit.inputData1,           'Enable','on');
-        set(h.dataIO.button.inputData1,         'Enable','on');
-        % input data 2
-%             set(h.dataIO.text.inputData2,'String','Magn. data:');
-        set(h.dataIO.edit.inputData2,           'Enable','on');
-        set(h.dataIO.button.inputData2,         'Enable','on');
-        % input data 3
-        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
-        set(h.dataIO.edit.inputData3,           'Enable','on');
-        set(h.dataIO.button.inputData3,         'Enable','on');
-        % no refine brain mask with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
-        % QSM
-        set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
+        switch_tab_to_QSM;
 
     case 'R2* mapping'
-        % BET is not supported with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        set(h.dataIO.edit.maskdir,              'Enable','on');
-        set(h.dataIO.button.maskdir,            'Enable','on');
-        % phase invert is not supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-        % no refine brain mask with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
-        % input data 1
-        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
-        set(h.dataIO.edit.inputData1,           'Enable','off','String',[]);
-        set(h.dataIO.button.inputData1,         'Enable','off');
-        % input data 3
-        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
-        set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
-        set(h.dataIO.button.inputData3,         'Enable','off');
+        switch_tab_to_R2s;
 
 end
 
@@ -464,6 +339,15 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
 
 end
 
+% R2* algorithm parameters
+if strcmpi(tab,'R2* mapping')
+    fprintf(fid,'%% R2* algorithm parameters\n');
+    
+    % set parameters for selected method
+    print_method_popup_and_eval(fid, '.r2s.method', h.r2s.popup.r2sMethod, methodR2sName, config_R2s_function, h);
+
+end
+
 % Determine application based on Tab
 fprintf(fid,'\nsepiaIO(input,output_basename,mask_filename,algorParam);\n');
 
@@ -509,82 +393,21 @@ switch tab
     
     % QSM one-stop station tab
     case 'SEPIA'
-        % I/O
-        % BET is supported with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        % phase invert is supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
-        % input data 1
-        set(h.dataIO.edit.inputData2,           'Enable','on');
-        set(h.dataIO.button.inputData2,         'Enable','on');
-        % input data 3
-        set(h.dataIO.edit.inputData3,           'Enable','on');
-        set(h.dataIO.button.inputData3,         'Enable','on');
-        % refine brain mask is supported with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
-            
+        switch_tab_to_SEPIA;
         
     % Phase unwrapping tab
     case 'Phase unwrapping'
-        % I/O
-        % BET is supported with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        % phase invert is supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','on');
-        % input data 2
-%           set(h.dataIO.text.inputData2,'String','Magn. data:');
-        set(h.dataIO.edit.inputData2,           'Enable','on');
-        set(h.dataIO.button.inputData2,         'Enable','on');
-        % input data 3
-        set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
-        set(h.dataIO.button.inputData3,         'Enable','off');
-        % refine brain mask is supported with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
-
+        switch_tab_to_phase_unwrapping;
         
     % background field removal tab    
     case 'Background field removal'
-        % no BET support with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        set(h.dataIO.edit.maskdir,              'Enable','on');
-        set(h.dataIO.button.maskdir,            'Enable','on');
-        % phase invert is not supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-        % input data 2
-%             set(h.dataIO.text.inputData2,'String','Magn. data:');
-        set(h.dataIO.edit.inputData2,           'Enable','off','String',[]);
-        set(h.dataIO.button.inputData2,         'Enable','off');
-        % input data 3
-        set(h.dataIO.edit.inputData3,           'Enable','on');
-        set(h.dataIO.button.inputData3,         'Enable','on');
-        % no refine brain mask with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
-
+        switch_tab_to_BRF;
     % qsm tab    
     case 'QSM'
-        
-        % no BET support with this tab
-        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
-            % trigger followup callback to switch method panel
-            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
-        set(h.dataIO.edit.maskdir,              'Enable','on');
-        set(h.dataIO.button.maskdir,            'Enable','on');
-        % phase invert is not supported with this tab
-        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
-       
-        set(h.dataIO.edit.inputData2,           'Enable','on');
-        set(h.dataIO.button.inputData2,         'Enable','on');
-        % input data 3
-        set(h.dataIO.edit.inputData3,           'Enable','on');
-        set(h.dataIO.button.inputData3,         'Enable','on');
-        % no refine brain mask with this tab
-        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+        switch_tab_to_QSM
+
+    case 'R2* mapping'
+        switch_tab_to_R2s
         
 end
 
@@ -600,4 +423,156 @@ for k = 1:length(popup_list)
     end
 end
     
+end
+
+function switch_tab_to_SEPIA
+    global h tooltip fieldString
+    % I/O
+    % Change essential files if input is a directory
+    set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
+    % BET is supported with this tab
+    set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+        % trigger followup callback to switch method panel
+        feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+    % phase invert is supported with this tab
+    set(h.dataIO.checkbox.invertPhase,      'Enable','on');
+    % input data 1
+    set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+    set(h.dataIO.edit.inputData1,           'Enable','on');
+    set(h.dataIO.button.inputData1,         'Enable','on');
+    % input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+    set(h.dataIO.edit.inputData2,           'Enable','on');
+    set(h.dataIO.button.inputData2,         'Enable','on');
+    % input data 3
+    set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+    set(h.dataIO.edit.inputData3,           'Enable','on');
+    set(h.dataIO.button.inputData3,         'Enable','on');
+    % refine brain mask is supported with this tab
+    set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
+
+    % phase unwrap
+    set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
+    % background field
+    set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.Sepia,'Position',[0.01 0.33 0.95 0.25]);
+    % QSM
+    set(h.StepsPanel.qsm,           'Parent',h.Tabs.Sepia,'Position',[0.01 0.07 0.95 0.25]);
+end
+
+function switch_tab_to_phase_unwrapping
+global h tooltip fieldString
+
+% I/O
+% This tab supports both DICOM and NIfTI files
+set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
+% BET is supported with this tab
+set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+% phase invert is supported with this tab
+set(h.dataIO.checkbox.invertPhase,      'Enable','on');
+% input data 1
+set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+set(h.dataIO.edit.inputData1,           'Enable','on');
+set(h.dataIO.button.inputData1,         'Enable','on');
+% input data 2
+%           set(h.dataIO.text.inputData2,'String','Magn. data:');
+set(h.dataIO.edit.inputData2,           'Enable','on');
+set(h.dataIO.button.inputData2,         'Enable','on');
+% input data 3
+set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
+set(h.dataIO.button.inputData3,         'Enable','off');
+% refine brain mask is supported with this tab
+set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
+
+% phase unwrap
+set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
+end
+
+function switch_tab_to_BRF
+global h tooltip fieldString
+
+% I/O
+% This tab supports only NIfTI files
+set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{2});
+% no BET support with this tab
+set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+set(h.dataIO.edit.maskdir,              'Enable','on');
+set(h.dataIO.button.maskdir,            'Enable','on');
+% phase invert is not supported with this tab
+set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+% input data 1
+set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{2});
+set(h.dataIO.edit.inputData1,           'Enable','on');
+set(h.dataIO.button.inputData1,         'Enable','on');
+% input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+set(h.dataIO.edit.inputData2,           'Enable','off','String',[]);
+set(h.dataIO.button.inputData2,         'Enable','off');
+% input data 3
+set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{2});
+set(h.dataIO.edit.inputData3,           'Enable','on');
+set(h.dataIO.button.inputData3,         'Enable','on');
+% no refine brain mask with this tab
+set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+
+% background field
+set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
+
+end
+
+function switch_tab_to_QSM
+global h tooltip fieldString
+% I/O
+% This tab supports only NIfTI files
+set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
+% no BET support with this tab
+set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+set(h.dataIO.edit.maskdir,              'Enable','on');
+set(h.dataIO.button.maskdir,            'Enable','on');
+% phase invert is not supported with this tab
+set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+% input data 1
+set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{3});
+set(h.dataIO.edit.inputData1,           'Enable','on');
+set(h.dataIO.button.inputData1,         'Enable','on');
+% input data 2
+%             set(h.dataIO.text.inputData2,'String','Magn. data:');
+set(h.dataIO.edit.inputData2,           'Enable','on');
+set(h.dataIO.button.inputData2,         'Enable','on');
+% input data 3
+set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+set(h.dataIO.edit.inputData3,           'Enable','on');
+set(h.dataIO.button.inputData3,         'Enable','on');
+% no refine brain mask with this tab
+set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+% QSM
+set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
+end
+
+function switch_tab_to_R2s
+global h tooltip fieldString
+% BET is not supported with this tab
+set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+set(h.dataIO.edit.maskdir,              'Enable','on');
+set(h.dataIO.button.maskdir,            'Enable','on');
+% phase invert is not supported with this tab
+set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+% no refine brain mask with this tab
+set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+% input data 1
+set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+set(h.dataIO.edit.inputData1,           'Enable','off','String',[]);
+set(h.dataIO.button.inputData1,         'Enable','off');
+% input data 3
+set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
+set(h.dataIO.button.inputData3,         'Enable','off');
 end

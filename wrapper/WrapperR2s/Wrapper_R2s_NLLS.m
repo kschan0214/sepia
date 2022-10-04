@@ -28,7 +28,7 @@ sepia_universal_variables;
 algorParam  = check_and_set_algorithm_default(algorParam);
 method      = algorParam.r2s.method;
 isParallel  = algorParam.r2s.isParallel;
-NUM_MAGN    = algorParam.r2s.NUM_MAGN;
+% NUM_MAGN    = algorParam.r2s.NUM_MAGN;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 % headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
@@ -42,9 +42,9 @@ sepia_addpath;
 % disp(['Regularisation lambda = ' num2str(lambda)]);
 
 %% main
-if isempty(NUM_MAGN)
-    NUM_MAGN = length(te);
-end
+% if isempty(NUM_MAGN)
+NUM_MAGN = length(te);
+% end
 
 [r2s,t2s,m0] = R2star_NLLS(magn,te,mask,isParallel,NUM_MAGN);
         
@@ -60,6 +60,6 @@ function algorParam2 = check_and_set_algorithm_default(algorParam)
 algorParam2 = algorParam;
 
 try algorParam2.r2s.isParallel      = algorParam.r2s.isParallel;    catch; algorParam2.r2s.isParallel = false; end
-try algorParam2.r2s.NUM_MAGN        = algorParam.r2s.NUM_MAGN;      catch; algorParam2.r2s.NUM_MAGN   = []; end
+% try algorParam2.r2s.NUM_MAGN        = algorParam.r2s.NUM_MAGN;      catch; algorParam2.r2s.NUM_MAGN   = []; end
 
 end

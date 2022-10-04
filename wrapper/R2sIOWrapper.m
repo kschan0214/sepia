@@ -123,7 +123,7 @@ else
 end
 
 % core of QSM
-[r2s,t2s,s0] = R2starMacro(magnitude,TE,algorParam,mask,headerAndExtraData);
+[r2s,t2s,s0] = R2sMacro(magnitude,TE,algorParam,mask,headerAndExtraData);
 
 
 % save results
@@ -199,7 +199,7 @@ end
 %% I/O Step 3: get nifti template for nifti output
 function outputNiftiTemplate        = io_03_get_nifti_template(availableFileList)
 
-outputNiftiTemplate     = load_untouch_nii(availableFileList.localField);
+outputNiftiTemplate     = load_untouch_nii(availableFileList.magnitude);
 outputNiftiTemplate.img = [];
 
 end

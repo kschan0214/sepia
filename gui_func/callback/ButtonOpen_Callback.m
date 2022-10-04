@@ -49,7 +49,9 @@ switch field
             % set input edit field for display
             set(h.dataIO.edit.inputData1,    'String',fullfile(pathDir,fileName));
             % automatically set default output field
-            set(h.dataIO.edit.output,   'String', fullfile(pathDir,'output',prefix));
+            if isempty(h.dataIO.edit.output.String)
+                set(h.dataIO.edit.output,   'String', fullfile(pathDir,'output',prefix));
+            end
             % set input directory field empty
             set(h.dataIO.edit.input,    'String',[]);
         end
@@ -61,7 +63,10 @@ switch field
         if pathDir ~= 0
             % set input edit field for display
             set(h.dataIO.edit.inputData2,    'String',fullfile(pathDir,fileName));
-            
+            % automatically set default output field
+            if isempty(h.dataIO.edit.output.String)
+                set(h.dataIO.edit.output,   'String', fullfile(pathDir,'output',prefix));
+            end
             % set input directory field empty
             set(h.dataIO.edit.input,    'String',[]);
 

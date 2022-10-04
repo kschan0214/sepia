@@ -25,12 +25,12 @@ matrixSize = size(img);
 ndim = ndims(img);
 
 switch lower(method)
-    case '1stecho'
+    case '1st echo'
         m0 = img(1:(numel(img)/matrixSize(end)))'.*exp(r2s(:)*te(1));
         if numel(m0) ~=1
             m0 = reshape(m0,matrixSize(1:end-1));
         end
-    case 'weighted'
+    case 'weighted sum'
         % calculate weighting for each echo for combination
         total_M = sum(img,ndim);
         w = bsxfun(@rdivide,img,total_M);
@@ -40,7 +40,7 @@ switch lower(method)
         m0tmp = img.*exp(r2sMat);
         % weighted cimbination based on signal intensity
         m0 = sum(w.*m0tmp,ndim);
-    case 'average'
+    case 'averaging'
         teMat = permute(repmat(te(:),[1,matrixSize(1:end-1)]),[2:ndim,1]);
         r2sMat = bsxfun(@times,r2s,teMat);
         m0tmp = img.*exp(r2sMat);

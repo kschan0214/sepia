@@ -58,9 +58,10 @@ try
 isUnwrapParam   =  isfield(algorParam,'unwrap');
 isBRFParam      =  isfield(algorParam,'bfr');
 isQSMParam      =  isfield(algorParam,'qsm');
+isR2sParam      =  isfield(algorParam,'r2s');
 
 % input algorithm parameters must have at least one specific task
-isValid = or(or(isUnwrapParam,isBRFParam),isQSMParam);
+isValid = or(or(or(isUnwrapParam,isBRFParam),isQSMParam),isR2sParam);
 if ~isValid
     error(['Input ''algorParam'' contains no parameter for any tasks in SEPIA.',...
            'Please check your pipeline configuration file.']);
@@ -94,6 +95,9 @@ else
         elseif isQSMParam
             disp('Running QSM dipole inversion processing pipeline...');
             QSMMacroIOWrapper(input,output,maskFullName,algorParam);
+        elseif isR2sParam
+            disp('Running R2* mapping processing pipeline...');
+            R2sIOWrapper(input,output,maskFullName,algorParam);
         end
     end
 end

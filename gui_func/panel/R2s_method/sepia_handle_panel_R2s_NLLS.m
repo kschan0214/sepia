@@ -21,7 +21,7 @@
 function h = sepia_handle_panel_R2s_NLLS(hParent,h,position)
 
 %% set default values
-menuFitType = {'Magnitude','Complex','Mixed'};
+% menuFitType = {'Magnitude','Complex','Mixed'};
 
 %% Tooltips
 
@@ -35,7 +35,7 @@ cspacing    = 0.01;
 %% Parent handle of CFS panel children
 
 h.r2s.panel.nlls = uipanel(hParent,...
-    'Title','Trapezoidal',...
+    'Title','Non-linear least square (NLLS)',...
     'position',position,...
     'backgroundcolor',get(h.fig,'color'),'Visible','off');
         
@@ -47,14 +47,14 @@ h.r2s.panel.nlls = uipanel(hParent,...
     wratio = 0.5;
     
     % row 1, col 1
-    % text|edit field pair: S0 parameter
-    [h.r2s.nlls.text.fit,h.r2s.nlls.popup.fit] = sepia_construct_text_popup(...
-        panelParent,'Fitting type:', menuFitType, [left(1) bottom(1) width height], wratio);
+%     % text|edit field pair: S0 parameter
+%     [h.r2s.nlls.text.fit,h.r2s.nlls.popup.fit] = sepia_construct_text_popup(...
+%         panelParent,'Fitting type:', menuFitType, [left(1) bottom(1) width height], wratio);
 
     h.r2s.nlls.checkbox.isParallel = uicontrol('Parent',panelParent,...
         'Style','checkbox',...
         'String','Enable parallel computing (parfor)',...
-        'units','normalized','position',[left(1) bottom(2) width height]);
+        'units','normalized','position',[left(1) bottom(1) width height]);
 
 %% set tooltips
 % set(h.r2s.trapezoidal.text.s0,      'Tooltip',tooltip.r2s.trapezoidal.s0);
