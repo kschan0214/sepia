@@ -28,6 +28,7 @@ try algorParam2.general.isGPU       = algorParam.general.isGPU;     catch; algor
 try algorParam2.general.isBET   	= algorParam.general.isBET; 	catch; algorParam2.general.isBET   	= false;	end
 try algorParam2.general.fractional_threshold   	= algorParam.general.fractional_threshold; 	catch; algorParam2.general.fractional_threshold   	= 0.5;	end
 try algorParam2.general.gradient_threshold   	= algorParam.general.gradient_threshold; 	catch; algorParam2.general.gradient_threshold   	= 0;	end
+try algorParam2.general.isRefineBrainMask   	= algorParam.general.isRefineBrainMask; 	catch; algorParam2.general.isRefineBrainMask   	= 0;	end
 
 % default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
 try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = methodEchoCombineName{2};	end
