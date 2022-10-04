@@ -67,8 +67,10 @@ addpath(genpath(fullfile(SEPIA_HOME, 'addons')));
 % misc directory accommodates some non-toolbox specific algorithms
 misc_dir                = fullfile(SEPIA_HOME,  'misc');
 misc_swi_smwi_dir       = fullfile(misc_dir,    'swi_smwi');
+misc_r2s_dir            = fullfile(misc_dir,    'r2s_mapping');
 
 addpath(genpath( misc_swi_smwi_dir));
+addpath(genpath( misc_r2s_dir));
 
 % if method is given then add them to PATH
 sepia_universal_variables;

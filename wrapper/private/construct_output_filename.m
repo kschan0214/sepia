@@ -42,6 +42,11 @@ outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM.nii
 outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion.nii.gz']);
 outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine.nii.gz']);
 
+% R2*
+outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap.nii.gz']);
+outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap.nii.gz']);
+outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map.nii.gz']);
+
 % misc
 outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase.nii.gz']);
 

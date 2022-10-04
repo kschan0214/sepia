@@ -88,6 +88,7 @@ h.Tabs.phaseUnwrap  = uitab(h.TabGroup,'Title','Phase unwrapping');
 h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
 h.Tabs.swismwi      = uitab(h.TabGroup,'Title','SWI/SMWI');
+h.Tabs.r2star       = uitab(h.TabGroup,'Title','R2* mapping');
 h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
 %% GUI with QSM one-stop station tab
@@ -108,6 +109,11 @@ parent_curr = h.Tabs.swismwi;
 h = sepia_handle_panel_swismwi_dataIO(parent_curr,	h,[0.01 0.8]);
 % Method
 h = sepia_handle_panel_swismwi(parent_curr,       	h,[0.01 0.44]);
+
+%% R2* mapping tab
+parent_curr = h.Tabs.r2star;
+% R2*
+h = sepia_handle_panel_r2s(parent_curr,	h,[0.01 0.55]);
 
 %% utility tab
 h = sepia_handle_panel_Utility(h.Tabs.utility,	h,[0.01 0.39]);
@@ -198,6 +204,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.checkbox.invertPhase,      'Enable','on');
         % input data 1
         set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+        set(h.dataIO.edit.inputData1,           'Enable','on');
+        set(h.dataIO.button.inputData1,         'Enable','on');
         % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
         set(h.dataIO.edit.inputData2,           'Enable','on');
@@ -229,6 +237,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.checkbox.invertPhase,      'Enable','on');
         % input data 1
         set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+        set(h.dataIO.edit.inputData1,           'Enable','on');
+        set(h.dataIO.button.inputData1,         'Enable','on');
         % input data 2
 %           set(h.dataIO.text.inputData2,'String','Magn. data:');
         set(h.dataIO.edit.inputData2,           'Enable','on');
@@ -258,6 +268,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
         % input data 1
         set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{2});
+        set(h.dataIO.edit.inputData1,           'Enable','on');
+        set(h.dataIO.button.inputData1,         'Enable','on');
         % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
         set(h.dataIO.edit.inputData2,           'Enable','off','String',[]);
@@ -288,6 +300,8 @@ switch eventdata.NewValue.Title
         set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
         % input data 1
         set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{3});
+        set(h.dataIO.edit.inputData1,           'Enable','on');
+        set(h.dataIO.button.inputData1,         'Enable','on');
         % input data 2
 %             set(h.dataIO.text.inputData2,'String','Magn. data:');
         set(h.dataIO.edit.inputData2,           'Enable','on');
@@ -300,7 +314,27 @@ switch eventdata.NewValue.Title
         set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
         % QSM
         set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
-        
+
+    case 'R2* mapping'
+        % BET is not supported with this tab
+        set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+            % trigger followup callback to switch method panel
+            feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
+        set(h.dataIO.edit.maskdir,              'Enable','on');
+        set(h.dataIO.button.maskdir,            'Enable','on');
+        % phase invert is not supported with this tab
+        set(h.dataIO.checkbox.invertPhase,      'Enable','off','Value',0);
+        % no refine brain mask with this tab
+        set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+        % input data 1
+        set(h.dataIO.text.inputData1,           'String',fieldString.inputData1{1});
+        set(h.dataIO.edit.inputData1,           'Enable','off','String',[]);
+        set(h.dataIO.button.inputData1,         'Enable','off');
+        % input data 3
+        set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
+        set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
+        set(h.dataIO.button.inputData3,         'Enable','off');
+
 end
 
 end

@@ -51,8 +51,11 @@ tissueName              = {'None',...
                            'Brain mask',...
                            'CSF'};
 
-%% SWI/SMWI realted parameters
+%% SWI/SMWI related parameters
 sepia_configuration_SWISMWI
+
+%% R2* related parameters
+sepia_configuration_R2s 
 
 %% add-ons capability
 sepia_load_addons
