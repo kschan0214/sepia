@@ -30,7 +30,7 @@ ranger2s = [1/maxT2s, 1/minT2s];
 
 % set m0 extrapolation method
 if nargin < 3
-    s0mode = '1stecho';
+    s0mode = '1st echo';
 end
 
 if nargin < 4
@@ -43,7 +43,7 @@ te = double(te);
 
 [nx, ny, nz, nt] = size(img);
 %% Main
-if strcmpi(method,'1stecho')
+if strcmpi(method,'1st echo')
     tmp = img(:,:,:,2:end)./img(:,:,:,1);
 	dt_sum = sum(te(2:end)-te(1));
 else

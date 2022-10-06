@@ -52,7 +52,11 @@ end
 if ~isempty(magn) && isempty(wmap)
     disp('The normalised RMS in time dimension of magnitude image will be used as the weighting map.');
     tmp     = sqrt(mean(magn.^2,4));
-    wmap    = (tmp./max(tmp(:))) .* (mask); 
+    % update 05 Oct 2022: avoid using maximum intensity which subject to
+    % more variation
+%     wmap    = (tmp./max(tmp(:))) .* (mask); 
+    wmap = (tmp./prctile(tmp(:),99)) .* mask;
+    wmap(wmap>1) = 1;
     
     clear tmp
 end

@@ -31,7 +31,7 @@ ranger2s = [1/maxT2s, 1/minT2s];
 
 % set m0 extrapolation method
 if nargin < 3
-    s0mode = '1stecho';
+    s0mode = '1st echo';
 end
 
 % disgard phase information

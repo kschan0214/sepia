@@ -19,7 +19,8 @@
 % k.chan@donders.ru.nl
 % Date created: 13 October 2016
 % Date modified: 24 September 2017
-% Date last modified: 21 April 2018
+% Date modified: 21 April 2018
+% Date modified: 5 October 202
 %
 function [r2s,t2s,s0] = R2star_trapezoidal(img,te,s0mode)
 
@@ -31,7 +32,7 @@ ranger2s = [1/maxT2s, 1/minT2s];
 
 % set m0 extrapolation method
 if nargin < 3
-    s0mode = '1stecho';
+    s0mode = '1st echo';
 end
 
 % disgard phase information
