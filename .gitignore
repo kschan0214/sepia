@@ -18,3 +18,6 @@ addons/qsm/QSMnet
 addons/qsm/xQSM
 addons/bfr/BFRnet
 addons/qsm/LPCNN
+
+# atlas
+atlas/
