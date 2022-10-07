@@ -58,7 +58,7 @@ mkdir -p $output_dir
 # Step 1. GRE to MNI 2009c
 if [ $mode -eq 1 ]  # mode 1: registration is required
 then
-sh ${SEPIA_ANALYSIS_SEGMENTATION_dir}ANTs_gre_2_mni2009c.sh ${output_dir} ${gre_nii} ${gre_mask_nii} ${t1w_nii} ${t1w_mask_nii} ${isBiasCorr}
+sh ${SEPIA_ANALYSIS_SEGMENTATION_dir}ANTs_gre_2_CIT168RLMNI2009c.sh ${output_dir} ${gre_nii} ${gre_mask_nii} ${t1w_nii} ${t1w_mask_nii} ${isBiasCorr}
 fi
 
 ###############################################################################

@@ -50,4 +50,4 @@ t1w_nii=${t1w_biascorr_nii}
 isBiasCorr=0 #already corrected in Step 1
 fi
 
-sh ${SEPIA_ANALYSIS_SEGMENTATION_dir}ANTs_t1w_2_mni2009c.sh ${output_dir} ${t1w_nii} ${t1w_mask_nii} ${isBiasCorr}
+sh ${SEPIA_ANALYSIS_SEGMENTATION_dir}ANTs_t1w_2_CIT168RLMNI2009c.sh ${output_dir} ${t1w_nii} ${t1w_mask_nii} ${isBiasCorr}
