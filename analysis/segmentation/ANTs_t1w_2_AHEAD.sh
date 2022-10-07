@@ -53,26 +53,45 @@ MultiplyImages 3 ${t1w_nii} ${t1w_mask_nii} ${t1w_brain_nii}
 export ref_vol=${ahead_nii}
 export in_vol=${t1w_brain_nii}
 
-antsRegistration \
-        --dimensionality 3 --float 0 \
-        --output [${t1_2_AHEAD_vol},${t1_2_AHEAD_nii}] \
-        --interpolation Linear \
-        --winsorize-image-intensities [0.005,0.995] \
-        --use-histogram-matching 0 \
-        --initial-moving-transform [${ref_vol},${in_vol},1] \
-        --transform Rigid[0.1] \
-        --metric MI[${ref_vol},${in_vol},1,32,Regular,0.1] \
-        --convergence [1000x500x250x100,1e-6,10] \
-        --shrink-factors 4x3x2x1 \
-        --smoothing-sigmas 3x2x1x0vox \
-        --transform Affine[0.1] \
-        --metric MI[${ref_vol},${in_vol},1,32,Regular,0.1] \
-        --convergence [500x250,1e-6,10] \
-        --shrink-factors 2x1 \
-        --smoothing-sigmas 1x0vox \
-        --transform SyN[0.1,3,0] \
-        --metric CC[${ref_vol},${in_vol},1,2] \
-        --convergence [500x500x250,1e-6,10] \
-        --shrink-factors 4x2x1 \
-        --smoothing-sigmas 2x1x0vox \
-        --verbose 1 
+# antsRegistration \
+#         --dimensionality 3 --float 0 \
+#         --output [${t1_2_AHEAD_vol},${t1_2_AHEAD_nii}] \
+#         --interpolation Linear \
+#         --winsorize-image-intensities [0.005,0.995] \
+#         --use-histogram-matching 0 \
+#         --initial-moving-transform [${ref_vol},${in_vol},1] \
+#         --transform Rigid[0.1] \
+#         --metric MI[${ref_vol},${in_vol},1,32,Regular,0.1] \
+#         --convergence [1000x500x250x100,1e-6,10] \
+#         --shrink-factors 4x3x2x1 \
+#         --smoothing-sigmas 3x2x1x0vox \
+#         --transform Affine[0.1] \
+#         --metric MI[${ref_vol},${in_vol},1,32,Regular,0.1] \
+#         --convergence [500x250,1e-6,10] \
+#         --shrink-factors 2x1 \
+#         --smoothing-sigmas 1x0vox \
+#         --transform SyN[0.1,3,0] \
+#         --metric CC[${ref_vol},${in_vol},1,2] \
+#         --convergence [500x500x250,1e-6,10] \
+#         --shrink-factors 4x2x1 \
+#         --smoothing-sigmas 2x1x0vox \
+#         --verbose 1 
+
+# antsRegistration \
+#         --dimensionality 3 --float 0 \
+#         --output [${t1_2_AHEAD_vol},${t1_2_AHEAD_nii}] \
+#         --interpolation Linear \
+#         --winsorize-image-intensities [0.005,0.995] \
+#         --use-histogram-matching 0 \
+#         --initial-moving-transform [${ref_vol},${in_vol},1] \
+#         --transform Rigid[0.1] \
+#         --metric MI[${ref_vol},${in_vol},1,32,Regular,0.1] \
+#         --convergence [1000x500x250x100,1e-6,10] \
+#         --shrink-factors 4x3x2x1 \
+#         --smoothing-sigmas 3x2x1x0vox \
+#         --transform Affine[0.1] \
+#         --metric MI[${ref_vol},${in_vol},1,32,Regular,0.1] \
+#         --convergence [500x250,1e-6,10] \
+#         --shrink-factors 2x1 \
+#         --smoothing-sigmas 1x0vox \
+#         --verbose 1 
