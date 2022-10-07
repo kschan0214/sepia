@@ -13,11 +13,5 @@ addons/qsm/sandbox
 
 *.asv
 
-# testing QSMnet
-addons/qsm/QSMnet
-addons/qsm/xQSM
-addons/bfr/BFRnet
-addons/qsm/LPCNN
-
-# atlas
+# testing segmentation
 atlas/
