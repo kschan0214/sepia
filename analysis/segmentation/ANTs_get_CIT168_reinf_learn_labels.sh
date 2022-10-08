@@ -17,6 +17,11 @@ SEPIA_ATLAS_dir=${SEPIA_HOME}/atlas/
 SEPIA_ANALYSIS_SEGMENTATION_dir=${SEPIA_HOME}analysis/segmentation/
 CIT168_reinf_learn_dir=${SEPIA_ATLAS_dir}CIT168_Reinf_Learn_v1.1.0/
 
+# MNI 2009c asym T1w
+CIT168_t1_template=CIT168toMNI152-2009c_T1w_brain
+# mni09c_nii=${CIT168_reinf_learn_dir}MNI152-Nonlin-Asym-2009c/CIT168toMNI152-2009c_T1w_brain.nii.gz
+
+
 ### user input
 mode=$1
 if [ $mode -eq 1 ]  # mode 1: registration is required
@@ -28,8 +33,8 @@ t1w_nii=$5
 t1w_mask_nii=$6
 isBiasCorr=$7
 
-t1_2_mni2009c_inverseWrap_nii=${output_dir}T1w_2_mni09cAsym_1InverseWarp.nii.gz
-t1_2_mni2009c_mat=${output_dir}T1w_2_mni09cAsym_0GenericAffine.mat
+t1_2_mni2009c_inverseWrap_nii=${output_dir}T1w_2_${CIT168_t1_template}_1InverseWarp.nii.gz
+t1_2_mni2009c_mat=${output_dir}T1w_2_${CIT168_t1_template}_0GenericAffine.mat
 gre_2_t1w_mat=${output_dir}GRE_2_T1w_0GenericAffine.mat
 
 elif [ $mode -eq 2 ] # mode 2: transformation is available
@@ -40,9 +45,6 @@ t1_2_mni2009c_mat=$4
 t1_2_mni2009c_inverseWrap_nii=$5
 t1w_nii=$5
 fi
-
-# MNI 2009c asym T1w
-mni09c_nii=${CIT168_reinf_learn_dir}MNI152-Nonlin-Asym-2009c/CIT168toMNI152-2009c_T1w_brain.nii.gz
 
 # derived output
 gre_biascorr_nii=${output_dir}GRE_biascorr.nii.gz

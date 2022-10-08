@@ -39,7 +39,7 @@ end
 SEPIA_ANALYSIS_SEGMENTATION_dir = fullfile(SEPIA_HOME,'analysis','segmentation');
 shell_script = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_get_CIT168_reinf_learn_labels.sh');
 
-output_tmp_dir = fullfile(output_dir,'intermediate_files',filesep);
+output_tmp_dir = fullfile(output_dir,'CIT168_reinf_learn_intermediate_files',filesep);
 if ~exist(output_dir,'dir')
     mkdir(output_dir);
     mkdir(output_tmp_dir);

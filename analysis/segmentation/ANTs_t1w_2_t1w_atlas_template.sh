@@ -9,7 +9,7 @@
 # Date created: 6 October 2022
 # Date edit:
 ############################################################
-
+# get SEPIA_HOME and atlas dir
 script_dir=`readlink -f "$0"`
 SEPIA_HOME=`dirname "$script_dir"`
 SEPIA_HOME=${SEPIA_HOME}/../../
@@ -19,14 +19,21 @@ SEPIA_ATLAS_dir=${SEPIA_HOME}/atlas/
 output_dir=$1
 t1w_nii=$2
 t1w_mask_nii=$3
-ahead_nii=$4
+atlas_template_nii=$4
 isBiasCorr=$5
 
-# derived output
-t1w_brain_nii=${output_dir}Hybrid_image_brain.nii.gz
+# get some basenames from input
+t1w_basename=$(basename -- "$t1w_nii")
+t1w_basename="${t1w_basename%%.*}"
+atlas_basename=$(basename -- "$atlas_template_nii")
+atlas_basename="${atlas_basename%%.*}"
 
-t1_2_AHEAD_vol=${output_dir}T1w_2_AHEAD_
-t1_2_AHEAD_nii=${output_dir}T1w_2_AHEAD_SyN.nii.gz
+# derived output
+t1w_brain_nii=${output_dir}${t1w_basename}_brain.nii.gz
+t1w_biascorr_nii=${output_dir}${t1w_basename}_biascorr.nii.gz
+t1w_biasField_nii=${output_dir}${t1w_basename}_biasField.nii.gz
+t1_2_atlas_vol=${output_dir}T1w_2_${atlas_basename}_
+t1_2_atlas_template_nii=${output_dir}T1w_2_${atlas_basename}_SyN.nii.gz
 
 mkdir -p $output_dir
 
@@ -48,14 +55,14 @@ fi
 MultiplyImages 3 ${t1w_nii} ${t1w_mask_nii} ${t1w_brain_nii}
 
 ################################################################################
-## 3. T1w to MNI2009casym space, nonlinear
+## 3. T1w to T1w atlas template space, nonlinear
 
-export ref_vol=${ahead_nii}
+export ref_vol=${atlas_template_nii}
 export in_vol=${t1w_brain_nii}
 
 antsRegistration \
         --dimensionality 3 --float 0 \
-        --output [${t1_2_AHEAD_vol},${t1_2_AHEAD_nii}] \
+        --output [${t1_2_atlas_vol},${t1_2_atlas_template_nii}] \
         --interpolation Linear \
         --winsorize-image-intensities [0.005,0.995] \
         --use-histogram-matching 0 \
