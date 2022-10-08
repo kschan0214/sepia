@@ -57,11 +57,20 @@ t1w_brain_nii=${output_dir}T1w_brain.nii.gz
 mkdir -p $output_dir
 
 ###############################################################################
-# Step 1. GRE to MNI 2009c
-if [ $mode -eq 1 ]  # mode 1: registration is required
-then
-sh ${SEPIA_ANALYSIS_SEGMENTATION_dir}ANTs_gre_2_CIT168RLMNI2009c.sh ${output_dir} ${gre_nii} ${gre_mask_nii} ${t1w_nii} ${t1w_mask_nii} ${isBiasCorr}
-fi
+# Display input
+echo "Output directory: ${output_dir}"
+echo "GRE image: ${gre_nii}"
+echo "GRE mask: ${gre_mask_nii}"
+echo "T1 image: ${t1w_nii}"
+echo "T1 mask: ${t1w_mask_nii}"
+echo "Bias field correction (0:false; 1:true): ${isBiasCorr}"
+
+# ###############################################################################
+# # Step 1. GRE to MNI 2009c
+# if [ $mode -eq 1 ]  # mode 1: registration is required
+# then
+# sh ${SEPIA_ANALYSIS_SEGMENTATION_dir}ANTs_gre_2_CIT168RLMNI2009c.sh ${output_dir} ${gre_nii} ${gre_mask_nii} ${t1w_nii} ${t1w_mask_nii} ${isBiasCorr}
+# fi
 
 ###############################################################################
 # Step 2: Apply transforms to label
@@ -73,7 +82,7 @@ in_nii=${in_dir}${in_vol}.nii.gz
 out_nii=${output_dir}${in_vol}_2gre.nii.gz
 antsApplyTransforms --interpolation linear --verbose 1 \
         -d 3 -e 3 -i ${in_nii} \
-        -r ${t1w_nii} \
+        -r ${gre_nii} \
         -t [${gre_2_t1w_mat},1] \
         -t [${t1_2_mni2009c_mat},1] \
         -t ${t1_2_mni2009c_inverseWrap_nii} \
@@ -85,7 +94,7 @@ in_nii=${in_dir}${in_vol}.nii.gz
 out_nii=${output_dir}${in_vol}_2gre.nii.gz
 antsApplyTransforms --interpolation GenericLabel --verbose 1 \
         -d 3 -e 0 -i ${in_nii} \
-        -r ${t1w_nii} \
+        -r ${gre_nii} \
         -t [${gre_2_t1w_mat},1] \
         -t [${t1_2_mni2009c_mat},1] \
         -t ${t1_2_mni2009c_inverseWrap_nii} \

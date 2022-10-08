@@ -21,7 +21,7 @@
 % Date last modified:
 %
 %
-function get_CIT168_reinf_learn_labels_in_native_space(input,output_dir,algorParam)
+function get_CIT168_reinf_learn_labels(input,output_dir,algorParam)
 
 sepia_universal_variables;
 

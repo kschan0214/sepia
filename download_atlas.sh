@@ -23,12 +23,21 @@ CIT168_reinf_learn_link='https://files.osf.io/v1/resources/jkzwp/providers/osfst
 mkdir -p ${CIT168_reinf_learn_dir}
 
 # download atlas from online source
-wget -O ${SEPIA_ATLAS_dir}${CIT168_reinf_learn_file} --no-check-certificate ${CIT168_reinf_learn_link}
+# wget -O ${SEPIA_ATLAS_dir}${CIT168_reinf_learn_file} --no-check-certificate ${CIT168_reinf_learn_link}
+curl ${CIT168_reinf_learn_link} -k -o ${SEPIA_ATLAS_dir}${CIT168_reinf_learn_file}
 # unzip the file
 unzip ${SEPIA_ATLAS_dir}${CIT168_reinf_learn_file} -d ${CIT168_reinf_learn_dir}
 # delete the zip file
 rm ${SEPIA_ATLAS_dir}${CIT168_reinf_learn_file}
 ############################################################
+
+############ MuSus-100 atlas ############
+MuSus100_dir=${SEPIA_ATLAS_dir}MuSus-100_Atlas/
+
+# download atlas from online source
+git clone https://github.com/SMILE-Lab-ShanghaiTech/MuSus-100_Atlas.git $MuSus100_dir
+
+# ############################################################
 
 ######################## AHEAD atlas ########################
 AHEAD_atlas_dir=${SEPIA_ATLAS_dir}AHEAD_atlas/
@@ -41,8 +50,10 @@ AHEAD_atlas_link2='https://uvaauas.figshare.com/ndownloader/files/21209235'
 mkdir -p ${AHEAD_atlas_dir}
 
 # download atlas from online source
-wget -O ${SEPIA_ATLAS_dir}${AHEAD_atlas_file1} --no-check-certificate ${AHEAD_atlas_link1}
-wget -O ${SEPIA_ATLAS_dir}${AHEAD_atlas_file2} --no-check-certificate ${AHEAD_atlas_link2}
+# wget -O ${SEPIA_ATLAS_dir}${AHEAD_atlas_file1} --no-check-certificate ${AHEAD_atlas_link1}
+# wget -O ${SEPIA_ATLAS_dir}${AHEAD_atlas_file2} --no-check-certificate ${AHEAD_atlas_link2}
+curl ${AHEAD_atlas_link1} -L -k -o ${SEPIA_ATLAS_dir}${AHEAD_atlas_file1} 
+curl ${AHEAD_atlas_link2} -L -k -o ${SEPIA_ATLAS_dir}${AHEAD_atlas_file2} 
 # untar the file
 tar -xvzf ${SEPIA_ATLAS_dir}${AHEAD_atlas_file1} -C ${AHEAD_atlas_dir}
 tar -xvzf ${SEPIA_ATLAS_dir}${AHEAD_atlas_file2} -C ${AHEAD_atlas_dir}
@@ -50,4 +61,4 @@ tar -xvzf ${SEPIA_ATLAS_dir}${AHEAD_atlas_file2} -C ${AHEAD_atlas_dir}
 rm ${SEPIA_ATLAS_dir}${AHEAD_atlas_file1}
 rm ${SEPIA_ATLAS_dir}${AHEAD_atlas_file2}
 
-############################################################
+# ############################################################
