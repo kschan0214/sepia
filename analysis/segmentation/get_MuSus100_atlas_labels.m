@@ -93,8 +93,9 @@ switch mode
         t1_2_t1wTemplate_inverseWrap_nii    = fullfile(output_tmp_dir, 'T1w_2_hybrid_1InverseWarp.nii.gz');
 
         mode_interp = 1; % 1=GenericLabel; 2=linear
+        mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
         label_nii   = fullfile(MuSus100_ATLAS_dir,'label','mixed.nii.gz');
-        cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
+        cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
         system(cmd);
 
     case 2      % transformation is provided
@@ -106,8 +107,9 @@ switch mode
         % Step 1: Apply tranformation
         shell_script = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_gre_2_t1wAtlas_applyTransform.sh');
         mode_interp = 1; % 1=GenericLabel; 2=linear
+        mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
         label_nii   = fullfile(MuSus100_ATLAS_dir,'label','mixed.nii.gz');
-        cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
+        cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
         system(cmd);
 
 end

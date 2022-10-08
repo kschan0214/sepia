@@ -96,22 +96,24 @@ switch mode
         % Step 5: Apply tranformation
         shell_script = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_gre_2_t1wAtlas_applyTransform.sh');
         gre_2_T1w_mat                       = fullfile(output_tmp_dir, 'GRE_2_T1w_0GenericAffine.mat');
-        t1_2_t1wTemplate_mat                = fullfile(output_tmp_dir, 'T1w_2_hybrid_0GenericAffine.mat');
-        t1_2_t1wTemplate_inverseWrap_nii    = fullfile(output_tmp_dir, 'T1w_2_hybrid_1InverseWarp.nii.gz');
+        t1_2_t1wTemplate_mat                = fullfile(output_tmp_dir, 'T1w_2_Template_hybrid_image_0GenericAffine.mat');
+        t1_2_t1wTemplate_inverseWrap_nii    = fullfile(output_tmp_dir, 'T1w_2_Template_hybrid_image_1InverseWarp.nii.gz');
         
         mask_list = dir(fullfile(AHEAD_ATLAS_dir,'structures_mni09b','*_mask-*nii*'));
         mode_interp = 1; % 1=GenericLabel; 2=linear
+        mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
         for k = 1:numel(mask_list)
             label_nii   = fullfile(AHEAD_ATLAS_dir,'structures_mni09b',mask_list(k).name);
-            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
+            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
             system(cmd);
         end
 
         prob_list = dir(fullfile(AHEAD_ATLAS_dir,'structures_mni09b','*_proba-*nii*'));
         mode_interp = 2; % 1=GenericLabel; 2=linear
+        mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
         for k = 1:numel(prob_list)
             label_nii   = fullfile(AHEAD_ATLAS_dir,'structures_mni09b',prob_list(k).name);
-            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
+            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
             system(cmd);
         end
 
@@ -126,17 +128,19 @@ switch mode
 
         mask_list = dir(fullfile(AHEAD_ATLAS_dir,'structures_mni09b','*_mask-*nii*'));
         mode_interp = 1; % 1=GenericLabel; 2=linear
+        mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
         for k = 1:numel(mask_list)
             label_nii   = fullfile(AHEAD_ATLAS_dir,'structures_mni09b',mask_list(k).name);
-            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
+            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
             system(cmd);
         end
 
         prob_list = dir(fullfile(AHEAD_ATLAS_dir,'structures_mni09b','*_proba-*nii*'));
+        mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
         mode_interp = 2; % 1=GenericLabel; 2=linear
         for k = 1:numel(prob_list)
             label_nii   = fullfile(AHEAD_ATLAS_dir,'structures_mni09b',prob_list(k).name);
-            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
+            cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
             system(cmd);
         end
 
