@@ -14,7 +14,7 @@
 % DO NOT change the order of the entities, add a new one at the end instead
 %
 %% Version
-SEPIA_version = 'v1.1.2dev';
+SEPIA_version = 'v1.2dev';
 
 %% PATH
 SEPIA_HOME = fileparts(mfilename('fullpath'));
@@ -25,9 +25,6 @@ gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
 %% Total field recovery related parameters
 % Echo combination method available in SEPIA
 sepia_configuration_EchoCombine;
-% methodEchoCombineName   = {'Optimum weights',...
-%                            'MEDI nonlinear fit',...
-%                            'MEDI nonlinear fit (Bipolar, testing)'};
 
 % Methods to exclude unreliable voxels                       
 methodExcludedName      = {'Weighting map',...
