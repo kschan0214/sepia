@@ -39,6 +39,7 @@ STISuite_HOME  	= [];
 SEGUE_HOME      = [];
 MRITOOLS_HOME   = [];
 MRISC_HOME      = [];
+ANTS_HOME       = [];
 
 SpecifyToolboxesDirectory;
 
