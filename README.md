@@ -41,7 +41,16 @@ If you have a more general question reagrding the usgae of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.1.1 (current master)
+### 1.2 (current master)
+* Support several deep learning based methods (BFRnet, xQSM, QSMnet+ and LP-CNN) on Linux
+* Support atlas-based subcortical structure segmentation (CIT168 Reinforcement learning atlas, MuSus-100 and AHEAD) on Linux and Mac
+* Integrate R2* mapping toolbox into SEPIA
+* New function to further refine brain mask by thresholding high R2* voxels on brain edges
+* When magnitude image is used for NDI, the image will be weighted by the intensity of the 99th percentile of the masked voxels instead of the maximum to improve robustness
+
+Please visit the documentation website for more info regarding the newly supported methods and functions.
+
+### 1.1.1 (current a7680bb)
 * ROMEO is now packaged together with CLEAR-SWI. To accompany these changes, ROMEO_HOME is renamed to MRITOOLS_HOME
 * Supported CLEAR-SWI
 * Fixed bug: bipolar readout correction implementation in full processing pipeline is different from the one in Phase unwrapping standalone 
