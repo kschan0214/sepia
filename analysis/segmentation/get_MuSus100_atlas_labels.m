@@ -48,11 +48,13 @@ end
 
 switch mode
     case 1      % registration is required
-        GRE_nii      = input(1).name;
-        GRE_mask_nii = input(2).name;
-        T1w_nii      = input(3).name;
-        T1w_mask_nii = input(4).name;
-        Chi_nii      = input(5).name;
+        GRE_nii      = input.gre;
+        GRE_mask_nii = input.greMask;
+        T1w_nii      = input.t1w;
+        T1w_mask_nii = input.t1wMask;
+        Chi_nii      = input.chi;
+        
+        % TODO: chi only registration
         
         % get Chimap basename (just in case is compressed file)
         [~,Chi_t1w_nii,~] = fileparts(Chi_nii);
@@ -99,10 +101,10 @@ switch mode
         system(cmd);
 
     case 2      % transformation is provided
-        gre_2_T1w_mat                       = input(1).name;
-        t1_2_t1wTemplate_mat                = input(2).name;
-        t1_2_t1wTemplate_inverseWrap_nii    = input(3).name;
-        GRE_nii                             = input(4).name;
+        gre_2_T1w_mat                       = input.gre2T1wMat;
+        t1_2_t1wTemplate_mat                = input.t1w2TemplateMat;
+        t1_2_t1wTemplate_inverseWrap_nii    = input.t1w2TemplateiWrap;
+        GRE_nii                             = input.gre;
         
         % Step 1: Apply tranformation
         shell_script = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_gre_2_t1wAtlas_applyTransform.sh');

@@ -89,6 +89,7 @@ h.Tabs.bkgRemoval   = uitab(h.TabGroup,'Title','Background field removal');
 h.Tabs.qsm          = uitab(h.TabGroup,'Title','QSM');
 h.Tabs.swismwi      = uitab(h.TabGroup,'Title','SWI/SMWI');
 h.Tabs.r2star       = uitab(h.TabGroup,'Title','R2* mapping');
+h.Tabs.analysis   	= uitab(h.TabGroup,'Title','Analysis');
 h.Tabs.utility      = uitab(h.TabGroup,'Title','Utility');
 
 %% GUI with QSM one-stop station tab
@@ -115,8 +116,11 @@ parent_curr = h.Tabs.r2star;
 % R2*
 h = sepia_handle_panel_r2s(parent_curr,	h,[0.01 0.55]);
 
+%% analysis tab
+h = sepia_handle_panel_Analysis(h.Tabs.analysis,	h,[0.01 0.01]);
+
 %% utility tab
-h = sepia_handle_panel_Utility(h.Tabs.utility,	h,[0.01 0.39]);
+h = sepia_handle_panel_Utility(h.Tabs.utility,      h,[0.01 0.39]);
 
 %% extra content
 % Start button
@@ -133,21 +137,6 @@ h.pushbutton_loadConfig = uicontrol('Parent',h.Tabs.Sepia,...
     'units','normalized','Position',[0.01 0.01 0.1 0.05],...
     'backgroundcolor',get(h.fig,'color'));
 
-% % GPU checkbox
-% h.checkbox_gpu = uicontrol('Parent',h.Tabs.Sepia,...
-%     'Style','checkbox',...
-%     'String','Enable GPU computation',...
-%     'units','normalized','Position',[0.01 0.01 0.4 0.05],...
-%     'backgroundcolor',get(h.fig,'color'), ...
-%     'Enable','off','Visible','off',...
-%     'TooltipString',['Enable to use GPU for some of the algorithms in SEPIA. ' ...
-%                      'Your GPU has to be detectable in Matlab in order to use this feature.']);
-                 
-%%% deprecated
-% if gpuDeviceCount > 0
-%     set(h.checkbox_gpu, 'Enable', 'on');
-% end
-
 %% Set Callback functions
 set(h.TabGroup,                 'SelectionChangedFcn', {@SwitchTab_Callback})
 set(h.pushbutton_start,         'Callback',            {@PushbuttonStart_Callback});
@@ -163,7 +152,7 @@ function SwitchTab_Callback(source,eventdata)
 
 global h tooltip fieldString
 
-% global uicontrol for all tabs
+% global uicontrol for most of the tabs
 universial_handle = {h.StepsPanel.dataIO,...
                      h.pushbutton_start,...         % Start pushbutton
                      h.pushbutton_loadConfig,...    % load config pushbutton
@@ -182,7 +171,7 @@ fieldString.inputData3{1}= '    Weights:';
 fieldString.inputData3{2}= '    Noise SD:';
 
 % change universal elements' parent except 'SWI/SMWI' tab and 'Utility' tab
-if ~strcmpi(eventdata.NewValue.Title,'SWI/SMWI') && ~strcmpi(eventdata.NewValue.Title,'Utility')
+if ~strcmpi(eventdata.NewValue.Title,'SWI/SMWI') && ~strcmpi(eventdata.NewValue.Title,'Utility') && ~strcmpi(eventdata.NewValue.Title,'Analysis')
     for k = 1:length(universial_handle)
         set(universial_handle{k}, 'Parent', source.SelectedTab);
     end
