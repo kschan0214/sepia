@@ -198,6 +198,9 @@ switch eventdata.NewValue.Title
 
     case 'R2* mapping'
         switch_tab_to_R2s;
+        
+    case 'Analysis'
+        switch_tab_to_Analysis;
 
 end
 
@@ -564,4 +567,20 @@ set(h.dataIO.button.inputData1,         'Enable','off');
 set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
 set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
 set(h.dataIO.button.inputData3,         'Enable','off');
+end
+
+function switch_tab_to_Analysis
+% test if the directory exist
+try 
+    SpecifyToolboxesDirectory;
+    if exist('ANTS_HOME', 'var')
+        if ~exist(ANTS_HOME,'dir')
+            warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+        end
+    else
+            warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+    end
+catch
+    warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+end
 end

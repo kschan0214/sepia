@@ -12,6 +12,7 @@
 % Date modified: 9 November 2019
 % Date modified: 18 July 2020 (v0.8.0)
 % Date modified: 25 Feb 2022 (v1.0)
+% Date modified: 25 Feb 2022 (v1.2)
 %
 %% Specify the directories of the toolbox here
 MEDI_HOME       = '/path/to/MEDI/Toolboxes/';
@@ -20,11 +21,13 @@ FANSI_HOME      = '/path/to/FANSI/Toolboxes/';
 SEGUE_HOME      = '/path/to/SEGUE/Toolboxes/';
 MRITOOLS_HOME   = '/path/to/ROMEO/Toolboxes/';
 MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolboxes/';
+ANTS_HOME       = '/path/to/ANTs/bin/';
 
-%% if you have any missing toolbox, then specify it as empty array
+%% if you have any missing toolboxes, then specify it as empty array
 % MEDI_HOME      = [];
 % STISuite_HOME  = [];
 % FANSI_HOME     = [];
 % SEGUE_HOME     = [];
 % MRITOOLS_HOME  = [];
 % MRISC_HOME     = [];
+% ANTS_HOME     = [];

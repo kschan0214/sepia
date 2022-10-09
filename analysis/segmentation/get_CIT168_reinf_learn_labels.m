@@ -30,11 +30,11 @@ isBiasFieldCorr = algorParam.isBiasFieldCorr;
 mode            = algorParam.mode;
 
 % setup ANTs in environment
-setup_ANTs;
+SpecifyToolboxesDirectory;
 % test if antsRegistration exists
 [status,~] = system('antsRegistration');
 if status == 127
-    setenv('PATH', [getenv('PATH') ':' ANTs_HOME]);
+    setenv('PATH', [getenv('PATH') ':' ANTS_HOME]);
 end
 SEPIA_ANALYSIS_SEGMENTATION_dir = fullfile(SEPIA_HOME,'analysis','segmentation');
 SEPIA_ATLAS_dir                 = fullfile(SEPIA_HOME,'atlas');

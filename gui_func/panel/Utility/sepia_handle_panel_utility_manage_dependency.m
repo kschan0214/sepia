@@ -82,6 +82,11 @@ wratio = [0.2,0.75,0.05];
         sepia_construct_text_edit_button(parent_panel,...
         'MRI susc. calc. Home:',MRISC_HOME,open_icon,[left bottom(6) width height],wratio);
     
+    % Dependency ANTs
+    [h.Utility.magageDependency.text.ANTsDir,h.Utility.magageDependency.edit.ANTsDir,h.Utility.magageDependency.button.ANTsDir] = ...
+        sepia_construct_text_edit_button(parent_panel,...
+        'ANTs Home:',ANTS_HOME,open_icon,[left bottom(7) width height],wratio);
+    
     % run
     h.Utility.magageDependency.button.save = uicontrol('Parent',parent_panel,...
         'Style','pushbutton','String','Save',...
@@ -95,6 +100,7 @@ set(h.Utility.magageDependency.button.STISuiteDir,      'Callback', {@open_direc
 set(h.Utility.magageDependency.button.SEGUEDir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.SEGUEDir});
 set(h.Utility.magageDependency.button.MRITOOLSDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRITOOLSDir});
 set(h.Utility.magageDependency.button.MRISuscCalcDir,   'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRISuscCalcDir});
+set(h.Utility.magageDependency.button.ANTsDir,       	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ANTsDir});
 set(h.Utility.magageDependency.button.save,             'Callback', {@PushbuttonSave_Utility_magageDependency_Callback,h});
 end
 
@@ -114,8 +120,8 @@ end
 
 function PushbuttonSave_Utility_magageDependency_Callback(source,eventdata,h)
 
-dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME'};
-gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir'};
+dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME', 'ANTS_HOME'};
+gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir', 'ANTsDir'};
 
 sepia_universal_variables;
 SpecifyToolboxesDirectory;
