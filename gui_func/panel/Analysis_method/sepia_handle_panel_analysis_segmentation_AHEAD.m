@@ -112,7 +112,7 @@ h.Analysis.panel.Segmentation_AHEAD = uipanel(hParent,'Title','Segmentation - AH
         'String','Correct bias field on input images','Position',pos);
   
     % run
-    pos = [0.79 bottom(end) 0.2 height];
+    pos = [0.79 bottom(end) 0.2 height*2];
     h.Analysis.segmentation.AHEAD.button.start = uicontrol('Parent',panelParent,'Style','pushbutton','backgroundcolor','white','units','normalized',...
         'String','Start', 'position',pos);
 %     
