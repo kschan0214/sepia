@@ -12,7 +12,7 @@ The current GUI version is built to access the following toolboxes:
 - [FANSI (v3.0, released on 2021.10.15, i.e., commit b6ac1c9e)](https://gitlab.com/cmilovic/FANSI-toolbox/-/tree/b6ac1c9ea03380722ebe25a6dbef33fff4ea3700),  
 - [SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
 - [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
-- [mritools (ROMEO/CLEARSWI) (v3.5.5)](https://github.com/korbinian90/CompileMRI.jl/releases),
+- [mritools (ROMEO/CLEARSWI) (v3.5.5)](https://github.com/korbinian90/CompileMRI.jl/releases) (2022-Oct-11: v3.5.6 also passed),
 - [MRI Susceptibility Calculation Methods, accessed 12 September 2019](https://xip.uclb.com/product/mri_qsm_tkd).
 
 SEPIA provides two key features for QSM processing:  
@@ -34,7 +34,7 @@ As well as any related papers in your processing pipeline.
 
 If you encounter a bug in SEPIA, please report to [github page](https://github.com/kschan0214/sepia/issues). 
 
-If you have a more general question reagrding the usgae of SEPIA and/or other QSM questions, please make use of [github page](https://github.com/kschan0214/sepia/discussions).
+If you have a more general question regarding the usage of SEPIA and/or other QSM questions, please make use of [github page](https://github.com/kschan0214/sepia/discussions).
 
 
 ## Update notes  
@@ -46,7 +46,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * Support atlas-based subcortical structure segmentation (CIT168 Reinforcement learning atlas, MuSus-100 and AHEAD) on Linux and Mac
 * Integrate R2* mapping toolbox into SEPIA
 * New function to further refine brain mask by thresholding high R2* voxels on brain edges
-* When magnitude image is used for NDI, the image will be weighted by the intensity of the 99th percentile of the masked voxels instead of the maximum to improve robustness
+* When magnitude image is used for NDI, the image will be normalised by the intensity of the 99th percentile of the masked voxels instead of the maximum to improve robustness
 
 Please visit the documentation website for more info regarding the newly supported methods and functions.
 
