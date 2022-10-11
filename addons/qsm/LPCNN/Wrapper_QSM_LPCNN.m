@@ -69,13 +69,18 @@ if dims(2) > dims(1)
     zeropad_line = (dims(2) - dims(1))/2;
     localField_pad = zeros(dims(2),dims(2),dims(3));
     localField_pad(1+zeropad_line:end-zeropad_line,:,:) = localField;
+    mask_pad = localField_pad ~=0;
 elseif dims(2) < dims(1)
     zeropad_line = (dims(1) - dims(2))/2;
     localField_pad = zeros(dims(1),dims(1),dims(3));
     localField_pad(:,1+zeropad_line:end-zeropad_line,:) = localField;
+    mask_pad = localField_pad ~=0;
+else
+    localField_pad  = localField;
+    mask_pad        = mask;
 end
 
-mask_pad = localField_pad ~=0;
+
 [C,~] = DipoleKernel(size(localField_pad),voxelSize,b0dir);
 
 % export files for LPCNN
