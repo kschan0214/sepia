@@ -21,6 +21,11 @@
 %
 function [img_cplx_corr,FIT3D_weights]  = FastBipolarCorrect(img_cplx,mask)
 
+disp('--------------------------');
+disp('Bipolar readout correction');
+disp('--------------------------');
+fprintf('Correcting eddy current effect on bipolar readout data...');
+
 % get image size
 dims = size(img_cplx);
 % This is to ensure the same number of even and odd echos are used in the estimation
@@ -130,6 +135,8 @@ Indices         = find(ones(dim));
 model_1storder  = Create_1st_order_model(x1,y1,z1,dim);
 Fit             = model_1storder*b;
 fit3D_1st    	= reshape(Fit,dim);
+
+fprintf('Done!\n');
 
 end
 
