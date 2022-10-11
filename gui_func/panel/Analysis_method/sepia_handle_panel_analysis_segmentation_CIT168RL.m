@@ -99,7 +99,7 @@ h.Analysis.panel.Segmentation_CIT168RL = uipanel(hParent,'Title','Segmentation -
     [h.Analysis.segmentation.CIT168RL.text.outputDir,...
      h.Analysis.segmentation.CIT168RL.edit.outputDir,...
      h.Analysis.segmentation.CIT168RL.button.outputDir] = sepia_construct_text_edit_button(panelParent,...
-        'Ourpur directory:',[],open_icon,pos,wratio);
+        'Ourpur directory:',pwd,open_icon,pos,wratio);
     % correct bias field option
     pos = [left(1) bottom(13) width height];
     h.Analysis.segmentation.CIT168RL.checkbox.biasCorr = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
@@ -208,6 +208,7 @@ end
 % output
 outputDir       = get(h.Analysis.segmentation.CIT168RL.edit.outputDir,       	'String');
 % if the output directory does not exist then create the directory
+if isempty(outputDir); outputDir = fullfile(pwd,'segmentation_sepia');end
 if exist(outputDir,'dir') ~= 7; mkdir(outputDir); end
 
 % create a new m file
