@@ -262,6 +262,7 @@ fprintf(fid,'%% add general Path\n');
 fprintf(fid,'sepia_addpath;\n\n');
 
 fprintf(fid,'%% Input/Output filenames\n');
+fprintf(fid,'input = struct();\n');
 % input data
 if isstruct(input)
     fprintf(fid,'input(1).name = ''%s'' ;\n',input(1).name);
