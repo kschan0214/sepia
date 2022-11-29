@@ -102,7 +102,9 @@ N_std = real(N_std);
 % remove zero padding 
 totalField              = double(zeropad_odd_dimension(totalField,'post',matrixSize));
 N_std                   = double(zeropad_odd_dimension(N_std,'post',matrixSize));
-fieldmapUnwrapAllEchoes = double(zeropad_odd_dimension(fieldmapUnwrapAllEchoes,'post',matrixSize));
 mask                    = double(zeropad_odd_dimension(mask,'post',matrixSize));
+if ~isempty(fieldmapUnwrapAllEchoes)
+    fieldmapUnwrapAllEchoes = double(zeropad_odd_dimension(fieldmapUnwrapAllEchoes,'post',matrixSize));
+end
 
 end
