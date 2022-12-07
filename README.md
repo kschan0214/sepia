@@ -41,7 +41,11 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2 (current master)
+### 1.2.1 (current master)
+* Fix bug for data with odd-number matrix size
+* Fix bug for missing file when using R2* mapping with NLLS algorithm
+
+### 1.2 (current d2f54a3)
 * Support several deep learning based methods (BFRnet, xQSM, QSMnet+ and LP-CNN) on Linux
 * Support atlas-based subcortical structure segmentation (CIT168 Reinforcement learning atlas, MuSus-100 and AHEAD) on Linux and Mac
 * Integrate R2* mapping toolbox into SEPIA

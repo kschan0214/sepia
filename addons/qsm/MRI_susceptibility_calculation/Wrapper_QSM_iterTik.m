@@ -41,8 +41,12 @@ b0    = headerAndExtraData.sepia_header.B0;
 weights = get_variable_from_headerAndExtraData(headerAndExtraData,'weights', matrixSize); % headerAndExtraData.weights;
 if isempty(weights)
     magn  = get_variable_from_headerAndExtraData(headerAndExtraData,'magnitude', matrixSize);  % you can access the magnitude and/or other data from the 'headerAndExtraData' variable
-    weights = sum(magn.^2,4);
-    clear magn
+    if ~isempty(magn)
+        weights = sum(magn.^2,4);
+        clear magn
+    else
+        weights = mask; % no weight and magnitude input
+    end
 end
 % masking weights
 weights = weights.*mask;
