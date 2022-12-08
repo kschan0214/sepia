@@ -20,6 +20,7 @@
 % Date created: 8 March 2020
 % Date modified: 16 August 2021
 % Date modified: 20 Feb 2022 (v1.0)
+% Date modified: 8 Dec 2022 (v1.2.2)
 %
 %
 function [chi] = Wrapper_QSM_NDI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)
@@ -31,6 +32,7 @@ method      = algorParam.qsm.method;
 tol         = algorParam.qsm.tol;
 stepSize    = algorParam.qsm.stepSize;
 maxiter     = algorParam.qsm.maxiter;
+isGPU       = algorParam.qsm.isGPU;
 
 % get extra data such as magnitude/weights/B0 direction/TE/etc.
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
@@ -84,7 +86,7 @@ disp(['Step size        = ' num2str(stepSize)]);
 localField = localField/(b0*gyro);
 
 chi = NDI(localField,mask,voxelSize,'b0dir',b0dir,'weight',wmap,...
-          'iteration',maxiter,'stepsize',stepSize,'tol',tol);
+          'iteration',maxiter,'stepsize',stepSize,'tol',tol,'isGPU',isGPU);
 
 end
 
@@ -96,5 +98,6 @@ algorParam2 = algorParam;
 try algorParam2.qsm.tol         = algorParam.qsm.tol;       catch; algorParam2.qsm.tol      = 1; end
 try algorParam2.qsm.stepSize    = algorParam.qsm.stepSize;  catch; algorParam2.qsm.stepSize = 1; end
 try algorParam2.qsm.maxiter     = algorParam.qsm.maxiter;   catch; algorParam2.qsm.maxiter  = 200; end
+try algorParam2.qsm.isGPU       = algorParam.qsm.isGPU;     catch; algorParam2.qsm.isGPU    = false; end
 
 end

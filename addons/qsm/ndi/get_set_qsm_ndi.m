@@ -20,20 +20,26 @@ function get_set_qsm_ndi(h,mode,input)
 
 str_pattern = {'.qsm.tol',...
                '.qsm.maxiter',...
-               '.qsm.stepSize'};
+               '.qsm.stepSize',...
+               '.qsm.isGPU'};
 
 action_handle = {h.qsm.NDI.edit.tol,...
                  h.qsm.NDI.edit.maxIter,...
-                 h.qsm.NDI.edit.stepSize};
+                 h.qsm.NDI.edit.stepSize,...
+                 h.qsm.NDI.checkbox.isGPU};
            
 
 switch lower(mode)
     case 'set'
         fid = input;
         
-        for k = 1:length(action_handle)
+        for k = 1:3
             fprintf(fid,'algorParam%s = %s ;\n'	,str_pattern{k},get(action_handle{k},	'String'));
         end
+        
+        % is GPU
+        k = k+1;
+        fprintf(fid,'algorParam%s = %i ;\n'             ,str_pattern{k},get(action_handle{k},	'Value'));
         
     case 'get'
         
@@ -45,5 +51,11 @@ switch lower(mode)
             val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
             set_non_nan_value(action_handle{k},'String',val)
         end
+        
+        % isGPU
+        k = k+1;
+        pattern_curr    = str_pattern{k};
+        val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+        set_non_nan_value(action_handle{k}, 'Value', str2double(val))
 
 end

@@ -35,6 +35,7 @@ options.beta            = algorParam.qsm.beta;
 options.muh             = algorParam.qsm.muh;
 alpha1                  = algorParam.qsm.lambda;
 mu1                     = algorParam.qsm.mu1;
+isGPU                   = algorParam.qsm.isGPU;
 
 % need further decision
 gradient_mode   = algorParam.qsm.gradient_mode;
@@ -76,6 +77,8 @@ if strcmpi(solver,'linear')
 else
     options.nonlinear = true;   % non-linear
 end
+
+options.isGPU = logical(isGPU);
 
 % data 
 % if both data are loaded
@@ -189,5 +192,6 @@ try algorParam2.qsm.gradient_mode   = algorParam.qsm.gradient_mode;	catch; algor
 try algorParam2.qsm.isWeakHarmonic  = algorParam.qsm.isWeakHarmonic;catch; algorParam2.qsm.isWeakHarmonic	= 0; end
 try algorParam2.qsm.beta            = algorParam.qsm.beta;          catch; algorParam2.qsm.beta             = 150; end
 try algorParam2.qsm.muh             = algorParam.qsm.muh;           catch; algorParam2.qsm.muh              = 3; end
+try algorParam2.qsm.isGPU        	= algorParam.qsm.isGPU;       	catch; algorParam2.qsm.isGPU            = false; end
 
 end
