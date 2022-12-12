@@ -41,11 +41,14 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.1 (current master)
+### 1.2.1.1 (current master)
+* Enable option of GPU processing for FANSI and NDI
+
+### 1.2.1 (current 190dd44)
 * Fix bug for data with odd-number matrix size
 * Fix bug for missing file when using R2* mapping with NLLS algorithm
 
-### 1.2 (current d2f54a3)
+### 1.2 (commit d2f54a3)
 * Support several deep learning based methods (BFRnet, xQSM, QSMnet+ and LP-CNN) on Linux
 * Support atlas-based subcortical structure segmentation (CIT168 Reinforcement learning atlas, MuSus-100 and AHEAD) on Linux and Mac
 * Integrate R2* mapping toolbox into SEPIA
@@ -54,7 +57,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 
 Please visit the documentation website for more info regarding the newly supported methods and functions.
 
-### 1.1.1 (current a7680bb)
+### 1.1.1 (commit a7680bb)
 * ROMEO is now packaged together with CLEAR-SWI. To accompany these changes, ROMEO_HOME is renamed to MRITOOLS_HOME
 * Supported CLEAR-SWI
 * Fixed bug: bipolar readout correction implementation in full processing pipeline is different from the one in Phase unwrapping standalone 

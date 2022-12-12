@@ -7,7 +7,7 @@
 % Date created: 5 June 2019
 % Date last modified: 27 Feb 2020 (v0.8.0)
 %
-function [tolerance,stepSize,iteration,weight,b0dir] = parse_varargin_NDI(arg)
+function [tolerance,stepSize,iteration,weight,b0dir,isGPU] = parse_varargin_NDI(arg)
 
 % predefine parameters
 tolerance   = 1;
@@ -15,6 +15,7 @@ stepSize    = 1;
 iteration   = 200;
 b0dir       = [0,0,1];
 weight      = [];
+isGPU       = false;
 
 % use user defined input if any
 if ~isempty(arg)
@@ -33,6 +34,9 @@ if ~isempty(arg)
         end
         if strcmpi(arg{kvar},'b0dir')
             b0dir = arg{kvar+1};
+        end
+        if strcmpi(arg{kvar},'isGPU')
+            isGPU = arg{kvar+1};
         end
     end
 end

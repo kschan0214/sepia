@@ -85,6 +85,9 @@ end
 if isfield(options,'update')
     params.tolUpdate = options.update; % This variable was renamed in release 3.0
 end
+if isfield(options,'isGPU')
+    params.isGPU = options.isGPU; % This variable available in release 3.0
+end
 
 % Launch the desired solver
 isNonlinear = true; % This variable was renamed in release 3.0

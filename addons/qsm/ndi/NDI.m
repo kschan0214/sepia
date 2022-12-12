@@ -42,7 +42,7 @@ function chi = NDI(localField,mask,voxelSize,varargin)
 matrixSize = size(mask);
 
 % check optional input and set default
-[tolerance,stepSize,iteration,weight,b0dir] = parse_varargin_NDI(varargin);
+[tolerance,stepSize,iteration,weight,b0dir,isGPU] = parse_varargin_NDI(varargin);
 
 % verbose
 disp('Non-linear Dipole Inversion (NDI)');
@@ -67,6 +67,7 @@ dipoleKernel = DipoleKernel(matrixSize,voxelSize,b0dir);
 chi = zeros(matrixSize, 'like',localField);
 grad_prev = zeros(matrixSize, 'like',localField);
 
+if isGPU
 try
     % add gpu compatibility
     weight          = gpuArray(weight);
@@ -78,6 +79,7 @@ try
     isGPU           = true;
 catch
     isGPU = false;
+end
 end
 
 % case of one B0 direction

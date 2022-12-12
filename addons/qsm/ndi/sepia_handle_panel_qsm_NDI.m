@@ -24,6 +24,7 @@ function h = sepia_handle_panel_qsm_NDI(hParent,h,position)
 defaultTol      = 1;
 defaultMaxIter  = 200;
 defaultStepSize = 1;
+defaultIsGPU    = 0;
 
 %% Tooltips
 tooltip.qsm.NDI.tol   	 = 'Relative tolerance to stop NDI iteration.';
@@ -65,6 +66,14 @@ h.qsm.panel.NDI = uipanel(hParent,...
     % text|edit field pair: gradient step size
     [h.qsm.NDI.text.stepSize,h.qsm.NDI.edit.stepSize] = sepia_construct_text_edit(...
         panelParent,'Step size:',       defaultStepSize, [left(1) bottom(3) width height], wratio);
+
+    % col 1, row 4
+    % checkbox field pair: isGPU
+    h.qsm.NDI.checkbox.isGPU = uicontrol('Parent',h.qsm.panel.NDI,'Style','checkbox',...
+        'String','Enable GPU',...
+        'units','normalized','position',[left(1) bottom(4) width height],...
+        'HorizontalAlignment','left',...
+        'backgroundcolor',get(h.fig,'color'));
     
     
 %% set tooltips

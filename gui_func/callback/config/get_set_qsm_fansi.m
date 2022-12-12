@@ -26,6 +26,7 @@ str_pattern = {'.qsm.tol',...
                '.qsm.solver',...
                '.qsm.constraint',...
                '.qsm.gradient_mode',...
+               '.qsm.isGPU',...
                '.qsm.isWeakHarmonic',...
                '.qsm.beta',...
                '.qsm.muh'};
@@ -38,6 +39,7 @@ action_handle = {h.qsm.FANSI.edit.tol,...
                  h.qsm.FANSI.popup.solver,...
                  h.qsm.FANSI.popup.constraints,...
                  h.qsm.FANSI.popup.gradientMode,...
+                 h.qsm.FANSI.checkbox.isGPU,...
                  h.qsm.FANSI.checkbox.isWeakHarmonic,...
                  h.qsm.FANSI.edit.beta,...
                  h.qsm.FANSI.edit.muh};
@@ -54,6 +56,10 @@ switch lower(mode)
         for k = 6:8
             fprintf(fid,'algorParam%s = ''%s'' ;\n'     ,str_pattern{k},action_handle{k}.String{action_handle{k}.Value,1});
         end
+        
+        % is GPU
+        k = k+1;
+        fprintf(fid,'algorParam%s = %i ;\n'             ,str_pattern{k},get(action_handle{k},	'Value'));
        
         k = k+1;
         fprintf(fid,'algorParam%s = %i ;\n'             ,str_pattern{k},get(action_handle{k},	'Value'));
@@ -110,6 +116,12 @@ switch lower(mode)
             case 'none'
                 set_non_nan_value(action_handle{k},'Value',4)
         end
+        
+        % isGPU
+        k = k+1;
+        pattern_curr    = str_pattern{k};
+        val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+        set_non_nan_value(action_handle{k}, 'Value', str2double(val))
 
         % weak field harmonic
         k = k+1;
@@ -124,5 +136,5 @@ switch lower(mode)
             val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
             set_non_nan_value(action_handle{k},'String',val);
         end
-
+        
 end
