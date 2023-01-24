@@ -48,12 +48,12 @@ close_radius_mm = max(min_close, max(voxelSize));
 open_radius_voxel   = min(round(open_radius_mm ./ voxelSize));
 close_radius_voxel  = min(round(close_radius_mm ./ voxelSize));
 
-% remove disconnected voxels
-mask_r2s_morph = imopen(mask_r2s, strel('sphere', open_radius_voxel));
+% remove disconnected voxels, 20230124 v1.2.2: second input of strel has to be double
+mask_r2s_morph = imopen(mask_r2s, strel('sphere', double(open_radius_voxel)));
 % get the largest single object
 mask_r2s_morph = getLargestObject(mask_r2s_morph);
-% reconnect voxels
-mask_r2s_morph = imclose(mask_r2s_morph, strel('sphere', close_radius_voxel));
+% reconnect voxels, 20230124 v1.2.2: second input of strel has to be double
+mask_r2s_morph = imclose(mask_r2s_morph, strel('sphere', double(close_radius_voxel)));
 % make sure no holes in the centre of the brain
 mask_r2s_morph = imfill(mask_r2s_morph,'holes');
 
