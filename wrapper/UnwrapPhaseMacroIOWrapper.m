@@ -168,6 +168,9 @@ headerAndExtraData.outputDirectory   = outputDir;
 % core of temporo-spatial phase unwrapping
 [totalField,fieldmapSD,fieldmapUnwrapAllEchoes,mask] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
+% 20230124 v1.2.2: apply mask on derived map
+totalField = totalField .* double(mask);
+
 % save unwrapped phase if chosen
 if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
     % save the output                           

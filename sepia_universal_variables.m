@@ -14,7 +14,7 @@
 % DO NOT change the order of the entities, add a new one at the end instead
 %
 %% Version
-SEPIA_version = 'v1.2.1.1';
+SEPIA_version = 'v1.2.2';
 
 %% PATH
 SEPIA_HOME = fileparts(mfilename('fullpath'));

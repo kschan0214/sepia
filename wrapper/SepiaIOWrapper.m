@@ -164,6 +164,9 @@ headerAndExtraData.availableFileList = availableFileList;
 % core of temporo-spatial phase unwrapping
 [totalField,fieldmapSD,fieldmapUnwrapAllEchoes,mask] = estimateTotalField(fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
 
+% 20230124 v1.2.2: apply mask on derived map
+totalField = totalField .* double(mask);
+
 % save unwrapped phase if chosen
 if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
     % save the output                           
@@ -292,7 +295,9 @@ localField = BackgroundRemovalMacro(totalField,maskLocalfield,matrixSize,voxelSi
 clear totalField maskLocalfield % clear variables that no longer be needed
 
 % generate new mask based on backgroudn field removal result
-mask_QSM = localField ~=0;
+% mask_QSM = localField ~=0;
+% 20230124 v1.2.2: make sure no holes inide ROIs
+mask_QSM = imfill(localField ~= 0, 'holes');
 
 fprintf('Saving local field map...');
 save_nii_quick(outputNiftiTemplate,localField, outputFileList.localField);

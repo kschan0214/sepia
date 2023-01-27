@@ -41,7 +41,12 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.1.1 (current master)
+### 1.2.2 (current master)
+* Fix bug for non-double type input for MATLAB's strel function
+* Make sure all holes inside the ROI mask are filled after the background field removal step
+* ROI (brain) mask is applied on the fieldmap regardless of what method is chosen
+
+### 1.2.1.1 (current 941cd5b)
 * Enable option of GPU processing for FANSI and NDI
 
 ### 1.2.1 (current 190dd44)
