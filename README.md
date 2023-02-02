@@ -41,7 +41,10 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.2 (current master)
+### 1.2.2.1 (current master)
+* Fix bug when using optimum weight total field computation with odd matrix size data
+
+### 1.2.2 (current d6bb60e)
 * Fix bug for non-double type input for MATLAB's strel function
 * Make sure all holes inside the ROI mask are filled after the background field removal step
 * ROI (brain) mask is applied on the fieldmap regardless of what method is chosen

@@ -52,6 +52,9 @@ end
 fieldMap	= double(zeropad_odd_dimension(fieldMap,'pre'));
 mask       	= double(zeropad_odd_dimension(mask,'pre'));
 
+% v1.2.2.1 fix odd matrix issue
+matrixSize_tmp = size(mask);
+
 disp('--------------------');
 disp('Total field recovery');
 disp('--------------------');
@@ -67,7 +70,7 @@ fprintf('Temporal phase unwrapping: %s \n',echoCombine);
 %% Core
 for k = 1:length(wrapper_EchoCombine_function)
     if strcmpi(echoCombine,methodEchoCombineName{k})
-        [totalField, N_std, headerAndExtraData] = feval(wrapper_EchoCombine_function{k},fieldMap,mask,matrixSize,voxelSize,algorParam,headerAndExtraData);
+        [totalField, N_std, headerAndExtraData] = feval(wrapper_EchoCombine_function{k},fieldMap,mask,matrixSize_tmp,voxelSize,algorParam,headerAndExtraData);
     end
 end
 
