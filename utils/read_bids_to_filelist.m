@@ -15,7 +15,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 11 August 2021 (v1.0)
-% Date modified:
+% Date modified: 9 February 2023 (v1.2.2.2)
 %
 %
 function inputNIFTIList = read_bids_to_filelist(inputDir,outputPrefix)
@@ -182,7 +182,9 @@ while numFileLoaded ~= NumFiles
             if (abs(max(nii.img(:))-pi)>1e-4 || abs(min(nii.img(:))-(-pi))>1e-4) && isPhase % allow small differences possibly due to data stype conversion
                 img	= cat(4, img, DICOM2Phase(nii));
             else
-                img = cat(4, img, nii.img);
+%                 img = cat(4, img, nii.img);
+                % 20230209: bug fix applying rescale slope and intercept
+                img = cat(4, img, load_nii_img_only(fileList(k).name));
             end
             
             numFileLoaded = numFileLoaded + 1;
