@@ -41,7 +41,10 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.2.1 (current master)
+### 1.2.2.2 (current master)
+* Fix bug when using BIDS compatible directory input where magnitude images did not utilise the rescale slope and intercept to obtain the true values
+
+### 1.2.2.1 (current 1f04298)
 * Fix bug when using optimum weight total field computation with odd matrix size data
 
 ### 1.2.2 (current d6bb60e)
