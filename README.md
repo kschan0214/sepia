@@ -44,7 +44,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 ### 1.2.2.3 (current master)
 * Fix bug when using BIDS compatible directory input where magnitude images did not utilise the rescale slope and intercept to obtain the true values for R2* mapping
 
-### 1.2.2.2 (current master)
+### 1.2.2.2 (current e53fd99)
 * Fix bug when using BIDS compatible directory input where magnitude images did not utilise the rescale slope and intercept to obtain the true values for QSM
 
 ### 1.2.2.1 (current 1f04298)
