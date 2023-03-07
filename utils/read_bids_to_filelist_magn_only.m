@@ -154,7 +154,9 @@ while numFileLoaded ~= NumFiles
             if (abs(max(nii.img(:))-pi)>1e-4 || abs(min(nii.img(:))-(-pi))>1e-4) && isPhase % allow small differences possibly due to data stype conversion
                 img	= cat(4, img, DICOM2Phase(nii));
             else
-                img = cat(4, img, nii.img);
+%                 img = cat(4, img, nii.img);
+                % 20230307: bug fix applying rescale slope and intercept
+                img = cat(4, img, load_nii_img_only(fileList(k).name));
             end
             
             numFileLoaded = numFileLoaded + 1;
