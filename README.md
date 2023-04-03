@@ -41,7 +41,10 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.2.3 (current master)
+### 1.2.2.4 (current master)
+* Fix bug when importing SEPIA pipeline configuration files (sepia_config.m) to the GUI for using VSHARP and FANSI
+
+### 1.2.2.3 (current efde35b)
 * Fix bug when using BIDS compatible directory input where magnitude images did not utilise the rescale slope and intercept to obtain the true values for R2* mapping
 
 ### 1.2.2.2 (current e53fd99)
