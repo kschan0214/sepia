@@ -43,7 +43,8 @@ if ~isempty(str_end_idx)
     indicatorE_idx 	= regexp(A,end_indicator);
 
     % get all characters between the indicators
-    str = A(indicatorS_idx(find(indicatorS_idx > str_end_idx, 1 ))+1:indicatorE_idx(find(indicatorE_idx > str_end_idx, 1 ))-1);
+    % 20230329 KC: fixed bug when the value/string is separated by white  space
+    str = A(indicatorS_idx(find(indicatorS_idx > str_end_idx, 1 ))+1:indicatorE_idx(find(indicatorE_idx > indicatorS_idx(find(indicatorS_idx > str_end_idx, 1 ))+1, 1 ))-1);
 
     % remove all white space for scalar quantity
     if isScalarString

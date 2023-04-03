@@ -44,6 +44,7 @@
 % Date modified: 27 Jan 2020 (v0.8.1)
 % Date modified: 12 June 2021 (v1.0)
 % Date modified: 3 August 2022 (v1.1)
+% Date modified: 3 April 2023 (v1.2.2.4)
 %
 function sepia 
 
@@ -370,7 +371,7 @@ end
 
 function PushbuttonLoadConfig_Callback(source,eventdata)
 
-global h
+global h tooltip fieldString
 
 % only read m file
 [config_filename,pathDir] = uigetfile({'*.m'},'Select a SEPIA config file');
@@ -381,6 +382,18 @@ if exist(fullfile(pathDir,config_filename),'file')
 end
 
 tab = h.StepsPanel.dataIO.Parent.Title;
+
+% Tab specific strings and tooltips
+tooltip.input_dir{1} = 'Directory contains phase (*ph*.nii*), magnitude (*mag*.nii) & header (*header*.mat) (& mask, *mask*nii*) files';
+tooltip.input_dir{2} = 'Directory contains the total field map (*fieldmap*.nii*) and SEPIA header (*header*.mat)';
+tooltip.input_dir{3} = 'Directory contains the local field map (*localfield*.nii*) (depending on QSM algorithm, additional file(s) may also be needed, e.g. *mag*.nii* and *weights*.nii*)';
+
+fieldString.inputData1{1}= 'or Phase:';
+fieldString.inputData1{2}= 'or Fieldmap:';
+fieldString.inputData1{3}= 'or Local field:';
+
+fieldString.inputData3{1}= '    Weights:';
+fieldString.inputData3{2}= '    Noise SD:';
 
 switch tab
     

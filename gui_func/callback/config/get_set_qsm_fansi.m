@@ -131,7 +131,7 @@ switch lower(mode)
         % trigger popup callback to switch method panel
         feval(action_handle{k}.Callback{1},action_handle{k},[],{action_handle{k+1},action_handle{k+2}},1);
 
-        for k = 10:11
+        for k = 11:12
             pattern_curr    = str_pattern{k};
             val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
             set_non_nan_value(action_handle{k},'String',val);
