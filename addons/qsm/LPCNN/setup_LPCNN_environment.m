@@ -3,9 +3,9 @@
 % dir_net             = fullfile(qsmnet_dir,'Checkpoints/');
 
 % Specify LPCNN_HOME corresponding to the code from Github
-LPCNN_HOME          = '/project/3015069.05/bids/code/LPCNN/';
+LPCNN_HOME          = '/home/common/matlab/sepia/external/LPCNN/LPCNN_v1.0';
 % Specify the Python environment that has QSMnet+ installed
-python_interpreter  = '/project/3015069.05/bids/code/LPCNN/lpcnn-env/bin/python';
+python_interpreter  = '/home/common/matlab/sepia/external/LPCNN/LPCNN_v1.0/lpcnn-env/bin/python';
 % Specify the directory that contains the training parameters
 checkpoint_fn       = fullfile(LPCNN_HOME,'checkpoints','lpcnn_test_Bmodel.pkl');
 % checkpoint_fn       = '/project/3015069.05/bids/code/LPCNN/checkpoints/lpcnn_test_Bmodel.pkl';
