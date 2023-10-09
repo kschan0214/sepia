@@ -18,7 +18,7 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 October 2022
-% Date last modified:
+% Date modified: 9 October 2023
 %
 %
 function get_MuSus100_atlas_labels(input,output_dir,algorParam)
@@ -36,9 +36,11 @@ SpecifyToolboxesDirectory;
 if status == 127
     setenv('PATH', [getenv('PATH') ':' ANTS_HOME]);
 end
-SEPIA_ANALYSIS_SEGMENTATION_dir = fullfile(SEPIA_HOME,'analysis','segmentation');
-SEPIA_ATLAS_dir                 = fullfile(SEPIA_HOME,'atlas');
-MuSus100_ATLAS_dir              = fullfile(SEPIA_ATLAS_dir,'MuSus-100_Atlas');
+% get atlas directory
+SpecifyAtlasDirectory;
+% SEPIA_ANALYSIS_SEGMENTATION_dir = fullfile(SEPIA_HOME,'analysis','segmentation');
+% SEPIA_ATLAS_dir                 = fullfile(SEPIA_HOME,'atlas');
+% MuSus100_ATLAS_HOME             = fullfile(SEPIA_ATLAS_dir,'MuSus-100_Atlas');
 
 output_tmp_dir = fullfile(output_dir,'MuSus100_intermediate_files',filesep);
 if ~exist(output_dir,'dir')
@@ -74,7 +76,7 @@ switch mode
         % Step 3: create hybrid T1w+QSM image on the provided data
         Chi_t1w_nii         = fullfile(output_tmp_dir,[Chi_t1w_nii '_2T1w.nii.gz']);
         img_hybrid_nii      = fullfile(output_tmp_dir,'Hybrid_image.nii.gz');
-        template_hybrid_nii = fullfile(MuSus100_ATLAS_dir,'atlas','hybrid.nii.gz');
+        template_hybrid_nii = fullfile(MuSus100_ATLAS_HOME,'atlas','hybrid.nii.gz');
         
         t1w         = load_nii_img_only(T1w_nii); 
         mask_t1     = load_nii_img_only(T1w_mask_nii);
@@ -96,7 +98,7 @@ switch mode
 
         mode_interp = 1; % 1=GenericLabel; 2=linear
         mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
-        label_nii   = fullfile(MuSus100_ATLAS_dir,'label','mixed.nii.gz');
+        label_nii   = fullfile(MuSus100_ATLAS_HOME,'label','mixed.nii.gz');
         cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' Chi_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
         system(cmd);
 
@@ -110,14 +112,14 @@ switch mode
         shell_script = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_gre_2_t1wAtlas_applyTransform.sh');
         mode_interp = 1; % 1=GenericLabel; 2=linear
         mode_4D     = 0; % 0=3D; 3=4D; equivalent to option -e in antsApplyTransforms see ANTs doc
-        label_nii   = fullfile(MuSus100_ATLAS_dir,'label','mixed.nii.gz');
+        label_nii   = fullfile(MuSus100_ATLAS_HOME,'label','mixed.nii.gz');
         cmd = ['sh ' shell_script ' ' output_tmp_dir ' ' num2str(mode_interp) ' ' num2str(mode_4D) ' ' label_nii ' ' GRE_nii ' ' gre_2_T1w_mat ' ' t1_2_t1wTemplate_mat ' ' t1_2_t1wTemplate_inverseWrap_nii];
         system(cmd);
 
 end
  
 copyfile(fullfile(output_tmp_dir, 'mixed_2gre.nii.gz'),fullfile(output_dir));
-copyfile(fullfile(MuSus100_ATLAS_dir,'label','mixed.txt'),fullfile(output_dir,'MuSus100_mixed.txt'));
+copyfile(fullfile(MuSus100_ATLAS_HOME,'label','mixed.txt'),fullfile(output_dir,'MuSus100_mixed.txt'));
 
 disp('Segmentation is done!')
 
