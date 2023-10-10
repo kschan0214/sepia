@@ -42,6 +42,17 @@ else
 end
 mkdir(parameters.output_dir);
 
+%% check shared library
+% 20231009: KC for latest Matlab versions
+if ~ispc
+    filepath = fileparts( which('ROMEO.m'));
+    libunwind_file = fullfile(filepath,'..','lib','julia','libunwind.so');
+    path = getenv('LD_PRELOAD');
+    if ~contains(path,libunwind_file)
+        setenv('LD_PRELOAD',strcat(path,':',libunwind_file));
+    end
+end
+
 %% main
 [unwrappedField, ~] = ROMEO(wrappedField, parameters);
 

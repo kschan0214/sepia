@@ -8,7 +8,7 @@
 
 The current GUI version is built to access the following toolboxes:
 - [MEDI (updated Jan 15, 2020)](http://weill.cornell.edu/mri/pages/qsm.html), 
-- [STI Suite (v3.0)](https://people.eecs.berkeley.edu/~chunlei.liu/software.html),
+- [STI Suite (v3.0)](https://chunleiliulab.github.io/software.html),
 - [FANSI (v3.0, released on 2021.10.15, i.e., commit b6ac1c9e)](https://gitlab.com/cmilovic/FANSI-toolbox/-/tree/b6ac1c9ea03380722ebe25a6dbef33fff4ea3700),  
 - [SEGUE](https://xip.uclb.com/i/software/SEGUE.html), and 
 - [nonlinear dipole inversion (NDI)](https://github.com/polakd/NDI_Toolbox),
@@ -41,27 +41,32 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.2.4 (current master)
+### 1.2.2.5 (current master)
+* Fix the mismatch between SEPIA defined B0 direction and LPCNN when it is not along the z-direction
+* Fix the shared library issue when using ROMEO with latest versions of Matlab on Linux (see [here](https://github.com/korbinian90/ROMEO))
+* Allow user to define atlases' directory paths
+
+### 1.2.2.4 (commit 9083249)
 * Fix bug when importing SEPIA pipeline configuration files (sepia_config.m) to the GUI for using VSHARP and FANSI
 
-### 1.2.2.3 (current efde35b)
+### 1.2.2.3 (commit efde35b)
 * Fix bug when using BIDS compatible directory input where magnitude images did not utilise the rescale slope and intercept to obtain the true values for R2* mapping
 
-### 1.2.2.2 (current e53fd99)
+### 1.2.2.2 (commit e53fd99)
 * Fix bug when using BIDS compatible directory input where magnitude images did not utilise the rescale slope and intercept to obtain the true values for QSM
 
-### 1.2.2.1 (current 1f04298)
+### 1.2.2.1 (commit 1f04298)
 * Fix bug when using optimum weight total field computation with odd matrix size data
 
-### 1.2.2 (current d6bb60e)
+### 1.2.2 (commit d6bb60e)
 * Fix bug for non-double type input for MATLAB's strel function
 * Make sure all holes inside the ROI mask are filled after the background field removal step
 * ROI (brain) mask is applied on the fieldmap regardless of what method is chosen
 
-### 1.2.1.1 (current 941cd5b)
+### 1.2.1.1 (commit 941cd5b)
 * Enable option of GPU processing for FANSI and NDI
 
-### 1.2.1 (current 190dd44)
+### 1.2.1 (commit 190dd44)
 * Fix bug for data with odd-number matrix size
 * Fix bug for missing file when using R2* mapping with NLLS algorithm
 
