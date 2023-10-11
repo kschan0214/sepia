@@ -43,13 +43,24 @@ end
 mkdir(parameters.output_dir);
 
 %% check shared library
-% 20231009: KC for latest Matlab versions
+% 20231009: KC libraries with potential known issue
 if ~ispc
     filepath = fileparts( which('ROMEO.m'));
-    libunwind_file = fullfile(filepath,'..','lib','julia','libunwind.so');
-    path = getenv('LD_PRELOAD');
-    if ~contains(path,libunwind_file)
-        setenv('LD_PRELOAD',strcat(path,':',libunwind_file));
+    libunwind_file  = fullfile(filepath,'..','lib','julia','libunwind.so');
+    libstdcpp_file  = fullfile(filepath,'..','lib','julia','libstdc++.so.6');
+    libgccs_file    = fullfile(filepath,'..','lib','julia','libgcc_s.so.1');
+    LD_PRELOAD_path = getenv('LD_PRELOAD');
+    LD_PRELOAD_path_original = LD_PRELOAD_path;
+    if ~contains(LD_PRELOAD_path,libunwind_file)
+        setenv('LD_PRELOAD',strcat(LD_PRELOAD_path,':',libunwind_file));
+        LD_PRELOAD_path = getenv('LD_PRELOAD');
+    end
+    if ~contains(LD_PRELOAD_path,libstdcpp_file)
+        setenv('LD_PRELOAD',strcat(LD_PRELOAD_path,':',libstdcpp_file));
+        LD_PRELOAD_path = getenv('LD_PRELOAD');
+    end
+    if ~contains(LD_PRELOAD_path,libgccs_file)
+        setenv('LD_PRELOAD',strcat(LD_PRELOAD_path,':',libgccs_file));
     end
 end
 
@@ -59,6 +70,11 @@ end
 %% Delete tmp directory
 % Remove all temp output files and the temp folder
 rmdir(parameters.output_dir, 's')
+
+% restore LD_PRELOAD environment
+if ~ispc
+    setenv('LD_PRELOAD',LD_PRELOAD_path_original);
+end
        
 end
 
