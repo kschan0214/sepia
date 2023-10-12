@@ -42,25 +42,7 @@ mkdir(parameters.output_dir);
 
 %% check shared library
 % 20231009: KC libraries with potential known issue
-if ~ispc
-    filepath = fileparts( which('ROMEO.m'));
-    libunwind_file  = fullfile(filepath,'..','lib','julia','libunwind.so');
-    libstdcpp_file  = fullfile(filepath,'..','lib','julia','libstdc++.so.6');
-    libgccs_file    = fullfile(filepath,'..','lib','julia','libgcc_s.so.1');
-    LD_PRELOAD_path = getenv('LD_PRELOAD');
-    LD_PRELOAD_path_original = LD_PRELOAD_path;
-    if ~contains(LD_PRELOAD_path,libunwind_file)
-        setenv('LD_PRELOAD',strcat(LD_PRELOAD_path,':',libunwind_file));
-        LD_PRELOAD_path = getenv('LD_PRELOAD');
-    end
-    if ~contains(LD_PRELOAD_path,libstdcpp_file)
-        setenv('LD_PRELOAD',strcat(LD_PRELOAD_path,':',libstdcpp_file));
-        LD_PRELOAD_path = getenv('LD_PRELOAD');
-    end
-    if ~contains(LD_PRELOAD_path,libgccs_file)
-        setenv('LD_PRELOAD',strcat(LD_PRELOAD_path,':',libgccs_file));
-    end
-end
+if isunix; paths = getenv('LD_LIBRARY_PATH'); setenv('LD_LIBRARY_PATH'); end
 
 %% main
 [fieldmapUnwrapAllEchoes, totalField] = ROMEO(wrappedField, parameters);
@@ -93,10 +75,8 @@ totalField                      = totalField *2*pi;
 totalField(isnan(totalField))   = 0;
 totalField(isinf(totalField))   = 0;
 
-% restore LD_PRELOAD environment
-if ~ispc
-    setenv('LD_PRELOAD',LD_PRELOAD_path_original);
-end
+% restore LD_LIBRARY_PATH environment
+if isunix; setenv('LD_LIBRARY_PATH', paths); end
        
 end
 
