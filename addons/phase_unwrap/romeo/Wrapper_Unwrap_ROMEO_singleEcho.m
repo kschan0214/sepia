@@ -42,12 +42,19 @@ else
 end
 mkdir(parameters.output_dir);
 
+%% check shared library
+% 20231009: KC libraries with potential known issue
+if isunix; paths = getenv('LD_LIBRARY_PATH'); setenv('LD_LIBRARY_PATH'); end
+
 %% main
 [unwrappedField, ~] = ROMEO(wrappedField, parameters);
 
 %% Delete tmp directory
 % Remove all temp output files and the temp folder
 rmdir(parameters.output_dir, 's')
+
+% restore LD_LIBRARY_PATH environment
+if isunix; setenv('LD_LIBRARY_PATH', paths); end
        
 end
 

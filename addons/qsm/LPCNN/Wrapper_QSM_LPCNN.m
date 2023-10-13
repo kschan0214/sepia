@@ -80,6 +80,8 @@ else
     mask_pad        = mask;
 end
 
+% 20231009: fix mismatch of B0dir between SEPIA and LPCNN
+b0dir = [b0dir(2), -b0dir(1), b0dir(3)];
 
 [C,~] = DipoleKernel(size(localField_pad),voxelSize,b0dir);
 

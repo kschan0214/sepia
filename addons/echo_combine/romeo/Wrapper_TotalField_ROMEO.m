@@ -40,6 +40,10 @@ parameters.output_dir = fullfile(headerAndExtraData.outputDirectory,'romeo_tmp')
 % parameters.output_dir = fullfile(tempdir, 'romeo_tmp');
 mkdir(parameters.output_dir);
 
+%% check shared library
+% 20231009: KC libraries with potential known issue
+if isunix; paths = getenv('LD_LIBRARY_PATH'); setenv('LD_LIBRARY_PATH'); end
+
 %% main
 [fieldmapUnwrapAllEchoes, totalField] = ROMEO(wrappedField, parameters);
 
@@ -70,6 +74,9 @@ N_std(isinf(N_std)) = 0;
 totalField                      = totalField *2*pi;
 totalField(isnan(totalField))   = 0;
 totalField(isinf(totalField))   = 0;
+
+% restore LD_LIBRARY_PATH environment
+if isunix; setenv('LD_LIBRARY_PATH', paths); end
        
 end
 
