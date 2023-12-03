@@ -66,6 +66,8 @@ isAllInputEmpty = (isempty(input_action_handle.String) .* isempty(input1_action_
                   isempty(input2_action_handle.String).* isempty(input3_action_handle.String) .* ...
                   isempty(header_action_handle.String))>0;
 
+isModifyOutput = true;
+
 % check which input method was used in the config file
 ind = regexp(config_txt, regexptranslate('wildcard','input(*).name'), 'once');
 if ~isempty(ind)
@@ -82,8 +84,10 @@ if isAllInputEmpty && ~isFileIO     % only modify the field if all IO fields are
     indicator_idx   = regexp(config_txt,'''');
     str = config_txt(indicator_idx(find(indicator_idx > str_end_idx(1), 1 ))+1:indicator_idx(find(indicator_idx > str_end_idx(1), 1 )+1)-1);
 
-    if ~isnan(str)
+    if prod(~isnan(str)) && isfolder(str)
         set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
     end
 end
 
@@ -93,8 +97,10 @@ action_handle = input1_action_handle;
 if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
     str_pattern     = 'input\(1).name';
     str = get_string_as_string(config_txt, str_pattern);
-    if ~isnan(str)
+    if prod(~isnan(str)) && isfile(str)
         set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
     end
 end
 
@@ -103,8 +109,10 @@ action_handle = input2_action_handle;
 if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
     str_pattern     = 'input\(2).name';
     str = get_string_as_string(config_txt, str_pattern);
-    if ~isnan(str)
+    if prod(~isnan(str)) && isfile(str)
         set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
     end
 end
 
@@ -113,8 +121,10 @@ action_handle = input3_action_handle;
 if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
     str_pattern     = 'input\(3).name';
     str = get_string_as_string(config_txt, str_pattern);
-    if ~isnan(str)
+    if prod(~isnan(str)) && isfile(str)
         set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
     end
 end
 
@@ -123,8 +133,10 @@ action_handle = header_action_handle;
 if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
     str_pattern     = 'input\(4).name';
     str = get_string_as_string(config_txt, str_pattern);
-    if ~isnan(str)
+    if prod(~isnan(str)) && isfile(str)
         set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
     end
 end
 
@@ -133,7 +145,7 @@ action_handle = mask_action_handle;
 if isempty(get(action_handle,'String'))
     str_pattern     = 'mask_filename = ';
     str = get_string_as_string(config_txt, str_pattern);
-    if ~isnan(str)
+    if prod(~isnan(str))
         set(action_handle,'String',str);
     end
 end
@@ -143,7 +155,7 @@ action_handle = output_action_handle;
 if isempty(get(action_handle,'String'))
     str_pattern     = 'output_basename = ';
     str = get_string_as_string(config_txt, str_pattern);
-    if ~isnan(str)
+    if prod(~isnan(str)) && isModifyOutput
         set(action_handle,'String',str);
     end
 end
