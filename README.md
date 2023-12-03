@@ -43,6 +43,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 
 ### 1.2.2.6 (current master)
 * Support read Input/Output information from sepia_config.m 
+* Phase DICOM values are rescaled using the max/min values in the data instead of rescale slope/intercept of the NIFTI
 
 ### 1.2.2.5 (commit 8630efe)
 * Fix the mismatch between SEPIA defined B0 direction and LPCNN when it is not along the z-direction
