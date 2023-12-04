@@ -24,7 +24,13 @@ isModifyGeneral = false;
 isModifyUnwrap  = false;
 isModifyBFR     = false;
 isModifyQSM     = false;
+isModifyIO      = false;
 
+str_pattern	= 'input';
+idx         = regexp(config_txt,str_pattern,'once');
+if ~isempty(idx)
+    isModifyIO = true;
+end
 str_pattern	= '.general.';
 idx         = regexp(config_txt,str_pattern,'once');
 if ~isempty(idx)
@@ -47,6 +53,116 @@ if ~isempty(idx)
 end 
 
 %% Panel: I/O
+if isModifyIO
+input_action_handle  = h.dataIO.edit.input;
+input1_action_handle = h.dataIO.edit.inputData1;
+input2_action_handle = h.dataIO.edit.inputData2;
+input3_action_handle = h.dataIO.edit.inputData3;
+header_action_handle = h.dataIO.edit.inputHeader;
+mask_action_handle   = h.dataIO.edit.maskdir;
+output_action_handle = h.dataIO.edit.output;
+
+isAllInputEmpty = (isempty(input_action_handle.String) .* isempty(input1_action_handle.String) .* ...
+                  isempty(input2_action_handle.String).* isempty(input3_action_handle.String) .* ...
+                  isempty(header_action_handle.String))>0;
+
+isModifyOutput = true;
+
+% check which input method was used in the config file
+ind = regexp(config_txt, regexptranslate('wildcard','input(*).name'), 'once');
+if ~isempty(ind)
+    isFileIO = true;
+else
+    isFileIO = false;
+end
+
+% Directory input method
+action_handle = input_action_handle;
+if isAllInputEmpty && ~isFileIO     % only modify the field if all IO fields are empty
+    str_pattern     = 'input';
+    str_end_idx     = regexp(config_txt,str_pattern,'end');
+    indicator_idx   = regexp(config_txt,'''');
+    str = config_txt(indicator_idx(find(indicator_idx > str_end_idx(1), 1 ))+1:indicator_idx(find(indicator_idx > str_end_idx(1), 1 )+1)-1);
+
+    if prod(~isnan(str)) && isfolder(str)
+        set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
+    end
+end
+
+% File input method
+% input 1
+action_handle = input1_action_handle;
+if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
+    str_pattern     = 'input\(1).name';
+    str = get_string_as_string(config_txt, str_pattern);
+    if prod(~isnan(str)) && isfile(str)
+        set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
+    end
+end
+
+% input 2
+action_handle = input2_action_handle;
+if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
+    str_pattern     = 'input\(2).name';
+    str = get_string_as_string(config_txt, str_pattern);
+    if prod(~isnan(str)) && isfile(str)
+        set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
+    end
+end
+
+% input 3
+action_handle = input3_action_handle;
+if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
+    str_pattern     = 'input\(3).name';
+    str = get_string_as_string(config_txt, str_pattern);
+    if prod(~isnan(str)) && isfile(str)
+        set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
+    end
+end
+
+% header input
+action_handle = header_action_handle;
+if and(isempty(input_action_handle.String),isempty(get(action_handle,'String')))
+    str_pattern     = 'input\(4).name';
+    str = get_string_as_string(config_txt, str_pattern);
+    if prod(~isnan(str)) && isfile(str)
+        set(action_handle,'String',str);
+    else
+        isModifyOutput = false;
+    end
+end
+
+% mask 
+action_handle = mask_action_handle;
+if isempty(get(action_handle,'String'))
+    str_pattern     = 'mask_filename = ';
+    str = get_string_as_string(config_txt, str_pattern);
+    if prod(~isnan(str))
+        set(action_handle,'String',str);
+    end
+end
+
+% output 
+action_handle = output_action_handle;
+if isempty(get(action_handle,'String'))
+    str_pattern     = 'output_basename = ';
+    str = get_string_as_string(config_txt, str_pattern);
+    if prod(~isnan(str)) && isModifyOutput
+        set(action_handle,'String',str);
+    end
+end
+
+
+end
+
 if isModifyGeneral
     
 % invert phase data

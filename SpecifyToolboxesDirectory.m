@@ -15,12 +15,12 @@
 % Date modified: 25 Feb 2022 (v1.2)
 %
 %% Specify the directories of the toolbox here
-MEDI_HOME       = '/path/to/MEDI/Toolboxes/';
+MEDI_HOME       = '/path/to/MEDI/Toolbox/';
 STISuite_HOME   = '/path/to/STI/Suite/';
-FANSI_HOME      = '/path/to/FANSI/Toolboxes/';
-SEGUE_HOME      = '/path/to/SEGUE/Toolboxes/';
-MRITOOLS_HOME   = '/path/to/ROMEO/Toolboxes/';
-MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolboxes/';
+FANSI_HOME      = '/path/to/FANSI/Toolbox/';
+SEGUE_HOME      = '/path/to/SEGUE/Toolbox/';
+MRITOOLS_HOME   = '/path/to/MRITOOLS/mritools_ubuntu-20.04_3.6.6/';
+MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolbox/';
 ANTS_HOME       = '/path/to/ANTs/bin/';
 
 %% if you have any missing toolboxes, then specify it as empty array

@@ -32,8 +32,8 @@ file        = struct();
 numFiles    = 0;    
 
 % check all files in the list
-for klist = 1:length(fileList)
-    if ContainName(fileList(klist).name,pattern)
+for klist = 1:length(fileList)                      % ignore hidden file
+    if ContainName(fileList(klist).name,pattern) && ~strcmp(fileList(klist).name(1),'.')
         numFiles = numFiles + 1;
         file(numFiles).name = fullfile(fileList(klist).folder,fileList(klist).name);
     end

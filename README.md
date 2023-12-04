@@ -41,7 +41,11 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.2.5 (current master)
+### 1.2.2.6 (current master)
+* Support read Input/Output information from sepia_config.m 
+* Phase DICOM values are rescaled using the max/min values in the data instead of rescale slope/intercept of the NIFTI
+
+### 1.2.2.5 (commit 8630efe)
 * Fix the mismatch between SEPIA defined B0 direction and LPCNN when it is not along the z-direction
 * Fix the shared library issue when using ROMEO with latest versions of Matlab on Linux (see [here](https://github.com/korbinian90/ROMEO))
 * Allow user to define atlases' directory paths
