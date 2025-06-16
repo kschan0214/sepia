@@ -7,8 +7,10 @@
 # Creator: Kwok-shing Chan @DCCN
 # kwokshing.chan@donders.ru.nl
 # Date created: 6 October 2022
-# Date edit:
+# Date edit: 15 June 2025
 ############################################################
+
+# export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=8
 
 script_dir=`readlink -f "$0"`
 SEPIA_HOME=`dirname "$script_dir"`
