@@ -44,13 +44,13 @@ h.Analysis.panel.Segmentation_MuSus100 = uipanel(hParent,'Title','Segmentation -
     wratio = [0.3,0.65,0.05];
     % Option 1: NIfTI file input
     h.Analysis.segmentation.MuSus100.text.Option1 = uicontrol('Parent',panelParent ,'Style','text','units','normalized', 'HorizontalAlignment','left', 'backgroundcolor',get(gcf,'color'),'FontWeight','bold',...
-        'String','Input Option 1','position',[left(1) bottom(1) width height]);
+        'String','Input Option 1: Run non-linear registration','position',[left(1) bottom(1) width height]);
     
     pos = [left(1) bottom(2) width height];
     [h.Analysis.segmentation.MuSus100.text.greInput,...
      h.Analysis.segmentation.MuSus100.edit.greInput,...
      h.Analysis.segmentation.MuSus100.button.greInput] = sepia_construct_text_edit_button(panelParent,...
-        'Select a 3D GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
+        'Select a 3D/4D GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
     
     pos = [left(1) bottom(3) width height];
     [h.Analysis.segmentation.MuSus100.text.greMaskInput,...
@@ -78,12 +78,12 @@ h.Analysis.panel.Segmentation_MuSus100 = uipanel(hParent,'Title','Segmentation -
     
     % Option 2: Transformation input
     h.Analysis.segmentation.MuSus100.text.Option2 = uicontrol('Parent',panelParent ,'Style','text','units','normalized', 'HorizontalAlignment','left', 'backgroundcolor',get(gcf,'color'),'FontWeight','bold',...
-        'String','Input Option 2','position',[left(1) bottom(7) width height]);
+        'String','Input Option 2: Provide transformation matrices','position',[left(1) bottom(7) width height]);
     pos = [left(1) bottom(8) width height];
     [h.Analysis.segmentation.MuSus100.text.greInput2,...
      h.Analysis.segmentation.MuSus100.edit.greInput2,...
      h.Analysis.segmentation.MuSus100.button.greInput2] = sepia_construct_text_edit_button(panelParent,...
-        'Select a GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
+        'Select a Chimap in native space NIfTI file:',[],open_icon,pos,wratio);
     pos = [left(1) bottom(9) width height];
     [h.Analysis.segmentation.MuSus100.text.gre2T1wMat,...
      h.Analysis.segmentation.MuSus100.edit.gre2T1wMat,...
@@ -110,6 +110,18 @@ h.Analysis.panel.Segmentation_MuSus100 = uipanel(hParent,'Title','Segmentation -
     pos = [left(1) bottom(14) width height];
     h.Analysis.segmentation.MuSus100.checkbox.biasCorr = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
         'String','Correct bias field on input images','Position',pos);
+    % auto contrast match option
+    pos = [left(1) bottom(15) width height];
+    h.Analysis.segmentation.MuSus100.checkbox.contrastMatch = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Automatic contrast matching','Position',pos,'Tooltip','Matching the hybrid image contrast to atlas template','Value',true);
+    % quick registration option
+    pos = [left(1) bottom(16) width height];
+    h.Analysis.segmentation.MuSus100.checkbox.quickReg = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Accelerate using label mask','Position',pos,'Tooltip','Use with caution! The result is likely different from whole-brain registration.');
+    % svae_intermediate file option
+    pos = [left(1) bottom(17) width height];
+    h.Analysis.segmentation.MuSus100.checkbox.saveIntermediate = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Save intermediate files','Position',pos,'Tooltip','Do not remove intermediate output files.');
   
     % run
     pos = [0.79 bottom(end) 0.2 height*2];
@@ -265,6 +277,12 @@ if isPathway1; fprintf(fid,'algorParam.mode = 1;\n'); else; fprintf(fid,'algorPa
     
 % is bias corr
 sepia_print_checkbox_value(fid,'.isBiasFieldCorr',h.Analysis.segmentation.MuSus100.checkbox.biasCorr);
+% is contrastMatch
+sepia_print_checkbox_value(fid,'.isAutoMatchContrast',h.Analysis.segmentation.MuSus100.checkbox.contrastMatch);
+% is acceleration
+sepia_print_checkbox_value(fid,'.isAccelerate',h.Analysis.segmentation.MuSus100.checkbox.quickReg);
+% is acceleration
+sepia_print_checkbox_value(fid,'.saveIntermediate',h.Analysis.segmentation.MuSus100.checkbox.saveIntermediate);
 
 % Determine application based on Tab
 fprintf(fid,'\nget_MuSus100_atlas_labels(input,output_dir,algorParam);\n');
