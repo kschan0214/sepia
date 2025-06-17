@@ -36,10 +36,7 @@ isAutoMatchContrast = algorParam.isAutoMatchContrast;
 % setup ANTs in environment
 SpecifyToolboxesDirectory;
 % test if antsRegistration exists
-[status,~] = system('antsRegistration');
-if status == 127
-    setenv('PATH', [getenv('PATH') ':' ANTS_HOME]);
-end
+[status,~] = system('antsRegistration');if status == 127; setenv('PATH', [getenv('PATH') ':' ANTS_HOME]); end
 % get atlas directory
 SpecifyAtlasDirectory;
 
@@ -47,7 +44,8 @@ output_tmp_dir = fullfile(output_dir,'MuSus100_intermediate_files',filesep);
 if ~exist(output_dir,'dir');        mkdir(output_dir);      end
 if ~exist(output_tmp_dir,'dir');    mkdir(output_tmp_dir);  end
 
-% if 4D then get 1st echo for registration
+%%%%%%%%%% Handle 4D data %%%%%%%%%%
+% %if 4D then get 1st echo for registration
 img = load_nii_img_only(input.gre);
 if ndims(img) == 4      
     img         = img(:,:,:,1); % only first echo
@@ -56,6 +54,7 @@ if ndims(img) == 4
     input.gre = echo1_fn;
 end
 clear img
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch mode
     case 1      % registration is required
@@ -69,8 +68,6 @@ switch mode
         
         % get Chimap basename (just in case is compressed file)
         Chi_t1w_nii = get_nifti_filename(Chi_nii);
-        % [~,Chi_t1w_nii,~] = fileparts(Chi_nii);
-        % [~,Chi_t1w_nii,~] = fileparts(Chi_t1w_nii);
         
         % Step 1: GRE to T1w     
         shell_script    = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_gre_2_t1w.sh');
@@ -93,7 +90,7 @@ switch mode
         mask_t1     = load_nii_img_only(T1w_mask_nii);
         Chi_t1w     = load_nii_img_only(Chi_t1w_nii);
         img_hybrid  = compute_hybrid_t1w_chi(t1w, Chi_t1w, mask_t1, 400, 0.5 );
-        % automatic contrast matching on hybrid image, see Steps #1&2 in https://doi.org/10.1162/imag_a_00456
+        %%%%%%%%%% automatic contrast matching on hybrid image, see Steps #1&2 in https://doi.org/10.1162/imag_a_00456 %%%%%%%%%%
         if isAutoMatchContrast
             img_hybrid_init_nii      = fullfile(output_tmp_dir,'Hybrid_image_init.nii.gz');
             save_nii_img_only(T1w_nii,img_hybrid_init_nii, img_hybrid );
@@ -121,18 +118,20 @@ switch mode
         end
         save_nii_img_only(T1w_nii,img_hybrid_nii, img_hybrid );
         clear img_hybrid Chi_t1w t1w mask_t1
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        % if speed up is enable
+        %%%%%%%%%% if speed up is enable %%%%%%%%%%
         mask_regis_nii = fullfile(output_tmp_dir,'mask_registration.nii.gz');
         if isAccelerate
             label_nii   = fullfile(MuSus100_ATLAS_HOME,'label','mixed.nii.gz');
             label       = load_nii_img_only(label_nii);
-            load(fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'MuSus100_ventricle_index.mat'));
+            load(fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'private','MuSus100_ventricle_index.mat'));
             masK_ventricle = zeros(size(label)); masK_ventricle(idx) = 1;
             mask_regis = imdilate( or(label >0,masK_ventricle), strel('sphere',10));
             save_nii_img_only(label_nii,mask_regis_nii,mask_regis);
             clear mask_regis masK_ventricle label
         end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Step 4: register hybrid image to template space, non linear transform
         shell_script = fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'ANTs_t1w_2_t1w_atlas_template.sh');
@@ -170,7 +169,7 @@ end
 copyfile(fullfile(output_tmp_dir, 'mixed_2gre.nii.gz'),fullfile(output_dir));
 copyfile(fullfile(MuSus100_ATLAS_HOME,'label','mixed.txt'),fullfile(output_dir,'MuSus100_mixed.txt'));
 
-% export csv
+%%%%%%%%%% export csv %%%%%%%%%%
 label_mixed     = load_nii_img_only(fullfile(output_dir,'mixed_2gre.nii.gz'));
 label_unique    = unique(label_mixed(:));
 chimap          = load_nii_img_only(input.chi);
@@ -195,6 +194,7 @@ end
 metric = {'label index','mean (ppm)','sd (ppm)','median (ppm)','iqr (ppm)','no. voxels'};
 T = table(label_unique,roi_mean,roi_sd,roi_median,roi_iqr,Nvoxel,'VariableNames',metric);
 writetable(T,fullfile(output_dir,'stats_Chimap_MuSus100.csv'));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if ~saveIntermediate; rmdir(output_tmp_dir,'s'); end
 

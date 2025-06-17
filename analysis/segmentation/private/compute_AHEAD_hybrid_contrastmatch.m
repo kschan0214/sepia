@@ -4,9 +4,12 @@
 % Created by Kwok-Shing Chan
 % Date created: 25 April 2023
 %
-function [hybrid_t1w_match,fitresult] = compute_MuSus100_hybrid_contrastmatch(chi_t1w_nii,chi_t1w2atlas_nii,t1w_nii,t1w_t1w2atlas_nii)
+function [hybrid_t1w_match,fitresult] = compute_AHEAD_hybrid_contrastmatch(AHEAD_input_struct,chi_t1w_nii,chi_t1w2atlas_nii,t1w_nii,t1w_t1w2atlas_nii)
 %% Main
-
+% current master branch is SEPIA v1.2.2.4
+% addpath('/home/common/matlab/sepia/sepia_1.2.2.4/'); % addpath('/project/3015046.06/QSM/tools/sepia');
+% sepia_addpath;
+% 
 sepia_universal_variables;
 
 SpecifyAtlasDirectory;
@@ -18,27 +21,27 @@ chi_t1w2atlas 	= load_nii_img_only(chi_t1w2atlas_nii);
 t1w_t1w2atlas  	= load_nii_img_only(t1w_t1w2atlas_nii);
 
 % atlas data
-hybrid_atlas	= load_nii_img_only(fullfile(MuSus100_ATLAS_HOME,'atlas','hybrid.nii.gz'));
-t1w_atlas       = load_nii_img_only(fullfile(MuSus100_ATLAS_HOME,'atlas','t1.nii.gz'));
-chi_atlas       = load_nii_img_only(fullfile(MuSus100_ATLAS_HOME,'atlas','qsm.nii.gz'));
-dbn             = uint8(load_nii_img_only(fullfile(MuSus100_ATLAS_HOME,'label','DBN.nii.gz')));
-Thalamus     	= uint8(load_nii_img_only(fullfile(MuSus100_ATLAS_HOME,'label','thalamus.nii.gz')));
-% mask_ventricle  = load_nii_img_only(fullfile(project_dir, 'atlas', 'MuSus100_mask_ventricle.nii.gz'))>0;
-load(fullfile(SEPIA_ANALYSIS_SEGMENTATION_dir,'private','MuSus100_ventricle_index.mat'));
-mask_ventricle = zeros(size(dbn)); mask_ventricle(idx) = 1;
-mixed           = uint8(dbn + Thalamus);
-
+hybrid_atlas	= load_nii_img_only(AHEAD_input_struct.hybrid_nii);
+t1w_atlas       = load_nii_img_only(AHEAD_input_struct.t1w_nii);
+chi_atlas       = load_nii_img_only(AHEAD_input_struct.chi_nii);
+load(AHEAD_input_struct.mask_ventricle_mat);
+mask_ventricle = zeros(size(hybrid_atlas)); mask_ventricle(idx) = 1;
 % coarse tissue classification on hybrid atlas
+mask_list   = dir(fullfile(AHEAD_input_struct.label_dir,'*_mask-*nii*'));
+label       = zeros(numel(mask_list),1);
+mixed  = zeros(size(t1w_atlas));
+for k = 1:numel(mask_list)
+    label(k)    = k;
+    mixed       = mixed + load_nii_img_only(fullfile(AHEAD_input_struct.label_dir, mask_list(k).name))*k;
+end
 mask_mixed              = mixed > 0;
-mask_wm                 = t1w_atlas > 1800;
+mask_wm                 = t1w_atlas > 0.0007;
 mask_wm(mask_mixed==1)  = 0;
-mask_cgm                = and(t1w_atlas > 1000, t1w_atlas <= 1800);
+mask_cgm                = and(t1w_atlas > 0.0004, t1w_atlas <= 0.0007);
 mask_cgm(mask_mixed==1)	= 0;
 
 %% obatin median value per ROI to reduce registration error
 % Subcortical measures
-label = unique(cat(1,dbn(:),Thalamus(:)));
-label = label(label ~= 0);
 t1w_atlas_label = zeros(1,length(label));
 t1w_subj_label  = zeros(1,length(label));
 chi_atlas_label = zeros(1,length(label));

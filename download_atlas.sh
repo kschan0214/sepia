@@ -15,6 +15,8 @@ SEPIA_HOME=`dirname "$script_dir"`
 SEPIA_ATLAS_dir=${SEPIA_HOME}/atlas/
 
 ############ CIT168 reinf learning atlas ############
+export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
+
 CIT168_reinf_learn_dir=${SEPIA_ATLAS_dir}CIT168_Reinf_Learn_v1.1.0/
 CIT168_reinf_learn_file='CIT168_Reinf_Learn_v1.1.0.zip'
 CIT168_reinf_learn_link='https://files.osf.io/v1/resources/jkzwp/providers/osfstorage/5b11f8d6f1f288000d6343aa/?zip='
