@@ -118,7 +118,7 @@ h.Analysis.panel.Segmentation_MuSus100 = uipanel(hParent,'Title','Segmentation -
     pos = [left(1) bottom(16) width height];
     h.Analysis.segmentation.MuSus100.checkbox.quickReg = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
         'String','Accelerate using label mask','Position',pos,'Tooltip','Use with caution! The result is likely different from whole-brain registration.');
-    % svae_intermediate file option
+    % save_intermediate file option
     pos = [left(1) bottom(17) width height];
     h.Analysis.segmentation.MuSus100.checkbox.saveIntermediate = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
         'String','Save intermediate files','Position',pos,'Tooltip','Do not remove intermediate output files.');

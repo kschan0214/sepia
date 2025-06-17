@@ -26,6 +26,8 @@ function h = sepia_handle_panel_analysis_segmentation_AHEAD(hParent,h,position)
 open_icon = imread('folder@0,3x.jpg');
 open_icon = imresize(open_icon,[1 1]*16);
 
+defaultResol = 1;
+
 %% layout of the panel
 nrow        = 20;
 rspacing    = 0.02;
@@ -44,13 +46,13 @@ h.Analysis.panel.Segmentation_AHEAD = uipanel(hParent,'Title','Segmentation - AH
     wratio = [0.3,0.65,0.05];
     % Option 1: NIfTI file input
     h.Analysis.segmentation.AHEAD.text.Option1 = uicontrol('Parent',panelParent ,'Style','text','units','normalized', 'HorizontalAlignment','left', 'backgroundcolor',get(gcf,'color'),'FontWeight','bold',...
-        'String','Input Option 1','position',[left(1) bottom(1) width height]);
+        'String','Input Option 1: Run non-linear registration','position',[left(1) bottom(1) width height]);
     
     pos = [left(1) bottom(2) width height];
     [h.Analysis.segmentation.AHEAD.text.greInput,...
      h.Analysis.segmentation.AHEAD.edit.greInput,...
      h.Analysis.segmentation.AHEAD.button.greInput] = sepia_construct_text_edit_button(panelParent,...
-        'Select a 3D GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
+        'Select a 3D/4D GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
     
     pos = [left(1) bottom(3) width height];
     [h.Analysis.segmentation.AHEAD.text.greMaskInput,...
@@ -78,12 +80,12 @@ h.Analysis.panel.Segmentation_AHEAD = uipanel(hParent,'Title','Segmentation - AH
     
     % Option 2: Transformation input
     h.Analysis.segmentation.AHEAD.text.Option2 = uicontrol('Parent',panelParent ,'Style','text','units','normalized', 'HorizontalAlignment','left', 'backgroundcolor',get(gcf,'color'),'FontWeight','bold',...
-        'String','Input Option 2','position',[left(1) bottom(7) width height]);
+        'String','Input Option 2: Provide transformation matrices','position',[left(1) bottom(7) width height]);
     pos = [left(1) bottom(8) width height];
     [h.Analysis.segmentation.AHEAD.text.greInput2,...
      h.Analysis.segmentation.AHEAD.edit.greInput2,...
      h.Analysis.segmentation.AHEAD.button.greInput2] = sepia_construct_text_edit_button(panelParent,...
-        'Select a GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
+        'Select a Chimap in native space NIfTI file:',[],open_icon,pos,wratio);
     pos = [left(1) bottom(9) width height];
     [h.Analysis.segmentation.AHEAD.text.gre2T1wMat,...
      h.Analysis.segmentation.AHEAD.edit.gre2T1wMat,...
@@ -110,6 +112,36 @@ h.Analysis.panel.Segmentation_AHEAD = uipanel(hParent,'Title','Segmentation - AH
     pos = [left(1) bottom(14) width height];
     h.Analysis.segmentation.AHEAD.checkbox.biasCorr = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
         'String','Correct bias field on input images','Position',pos);
+
+
+    
+    % downsampling option
+    pos = [left(1) bottom(15) width/4 height];
+    h.Analysis.segmentation.AHEAD.checkbox.downsample = uicontrol('Parent',panelParent ,...
+        'Style','checkbox','String','Downsample AHEAD atlas, resolution (mm):',...
+        'units','normalized','position',pos,...
+        'backgroundcolor',get(h.fig,'color'),...
+        'Enable','on');
+    h.Analysis.segmentation.AHEAD.edit.downsample = uicontrol('Parent',panelParent ,...
+        'Style','edit',...
+        'String',num2str(defaultResol),...
+        'units','normalized','position',[left(1)+width/4 bottom(15) width/8 height],...
+        'backgroundcolor','white',...
+        'Enable','off');
+
+
+    % auto contrast match option
+    pos = [left(1) bottom(16) width height];
+    h.Analysis.segmentation.AHEAD.checkbox.contrastMatch = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Automatic contrast matching','Position',pos,'Tooltip','Matching the hybrid image contrast to atlas template','Value',true);
+    % quick registration option
+    pos = [left(1) bottom(17) width height];
+    h.Analysis.segmentation.AHEAD.checkbox.quickReg = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Accelerate using label mask','Position',pos);
+    % save_intermediate file option
+    pos = [left(1) bottom(18) width height];
+    h.Analysis.segmentation.AHEAD.checkbox.saveIntermediate = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Save intermediate files','Position',pos);
   
     % run
     pos = [0.79 bottom(end) 0.2 height*2];
@@ -130,6 +162,9 @@ set(h.Analysis.segmentation.AHEAD.button.t1w2TemplateNii,	'Callback', {@ButtonOp
 set(h.Analysis.segmentation.AHEAD.button.outputDir,          'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'dir',h.Analysis.segmentation.AHEAD.edit.outputDir,[0]});
 
 set(h.Analysis.segmentation.AHEAD.button.start,             'Callback', {@PushbuttonStart_Analysis_segmentation_Callback,h});
+
+set(h.Analysis.segmentation.AHEAD.checkbox.downsample,      'Callback', {@CheckboxEditPair_Callback,{h.Analysis.segmentation.AHEAD.edit.downsample},1});
+set(h.Analysis.segmentation.AHEAD.edit.downsample,          'Callback', {@EditInputMinMax_Callback,defaultResol,0,0});
 end
 
 %% Callback functions
@@ -265,6 +300,18 @@ if isPathway1; fprintf(fid,'algorParam.mode = 1;\n'); else; fprintf(fid,'algorPa
     
 % is bias corr
 sepia_print_checkbox_value(fid,'.isBiasFieldCorr',h.Analysis.segmentation.AHEAD.checkbox.biasCorr);
+% is contrastMatch
+sepia_print_checkbox_value(fid,'.isAutoMatchContrast',h.Analysis.segmentation.AHEAD.checkbox.contrastMatch);
+% is acceleration
+sepia_print_checkbox_value(fid,'.isAccelerate',h.Analysis.segmentation.AHEAD.checkbox.quickReg);
+% is save intermediate files
+sepia_print_checkbox_value(fid,'.saveIntermediate',h.Analysis.segmentation.AHEAD.checkbox.saveIntermediate);
+% is downsample
+sepia_print_checkbox_value(fid,'.isDownsample',h.Analysis.segmentation.AHEAD.checkbox.downsample);
+if get(h.Analysis.segmentation.AHEAD.checkbox.downsample,'Value')
+    sepia_print_edit_as_string(fid,'.targetResolution',h.Analysis.segmentation.AHEAD.edit.downsample)
+end
+
 
 % Determine application based on Tab
 fprintf(fid,'\nget_AHEAD_atlas_labels(input,output_dir,algorParam);\n');

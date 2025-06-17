@@ -44,13 +44,13 @@ h.Analysis.panel.Segmentation_CIT168RL = uipanel(hParent,'Title','Segmentation -
     wratio = [0.3,0.65,0.05];
     % Option 1: NIfTI file input
     h.Analysis.segmentation.CIT168RL.text.Option1 = uicontrol('Parent',panelParent ,'Style','text','units','normalized', 'HorizontalAlignment','left', 'backgroundcolor',get(gcf,'color'),'FontWeight','bold',...
-        'String','Input Option 1','position',[left(1) bottom(1) width height]);
+        'String','Input Option 1: Run non-linear registration','position',[left(1) bottom(1) width height]);
     
     pos = [left(1) bottom(2) width height];
     [h.Analysis.segmentation.CIT168RL.text.greInput,...
      h.Analysis.segmentation.CIT168RL.edit.greInput,...
      h.Analysis.segmentation.CIT168RL.button.greInput] = sepia_construct_text_edit_button(panelParent,...
-        'Select a 3D GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
+        'Select a 3D/4D GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
     
     pos = [left(1) bottom(3) width height];
     [h.Analysis.segmentation.CIT168RL.text.greMaskInput,...
@@ -69,41 +69,55 @@ h.Analysis.panel.Segmentation_CIT168RL = uipanel(hParent,'Title','Segmentation -
      h.Analysis.segmentation.CIT168RL.edit.t1wMaskInput,...
      h.Analysis.segmentation.CIT168RL.button.t1wMaskInput] = sepia_construct_text_edit_button(panelParent,...
         'Select a T1w mask NIfTI file:',[],open_icon,pos,wratio);
+
+    pos = [left(1) bottom(6) width height];
+    [h.Analysis.segmentation.CIT168RL.text.chiInput,...
+     h.Analysis.segmentation.CIT168RL.edit.chiInput,...
+     h.Analysis.segmentation.CIT168RL.button.chiInput] = sepia_construct_text_edit_button(panelParent,...
+        '(Optional) Select a Chimap NIfTI file:',[],open_icon,pos,wratio);
     
     % Option 2: Transformation input
     h.Analysis.segmentation.CIT168RL.text.Option2 = uicontrol('Parent',panelParent ,'Style','text','units','normalized', 'HorizontalAlignment','left', 'backgroundcolor',get(gcf,'color'),'FontWeight','bold',...
-        'String','Input Option 2','position',[left(1) bottom(6) width height]);
-    pos = [left(1) bottom(7) width height];
+        'String','Input Option 2','position',[left(1) bottom(7) width height]);
+    pos = [left(1) bottom(8) width height];
     [h.Analysis.segmentation.CIT168RL.text.greInput2,...
      h.Analysis.segmentation.CIT168RL.edit.greInput2,...
      h.Analysis.segmentation.CIT168RL.button.greInput2] = sepia_construct_text_edit_button(panelParent,...
-        'Select a GRE magnitude NIfTI file:',[],open_icon,pos,wratio);
-    pos = [left(1) bottom(8) width height];
+        'Select a Chimap in native space NIfTI file:',[],open_icon,pos,wratio);
+    pos = [left(1) bottom(9) width height];
     [h.Analysis.segmentation.CIT168RL.text.gre2T1wMat,...
      h.Analysis.segmentation.CIT168RL.edit.gre2T1wMat,...
      h.Analysis.segmentation.CIT168RL.button.gre2T1wMat] = sepia_construct_text_edit_button(panelParent,...
         'Select a GRE-to-T1w rigid-body transformation:',[],open_icon,pos,wratio);
-    pos = [left(1) bottom(9) width height];
+    pos = [left(1) bottom(10) width height];
     [h.Analysis.segmentation.CIT168RL.text.t1w2TemplateMat,...
      h.Analysis.segmentation.CIT168RL.edit.t1w2TemplateMat,...
      h.Analysis.segmentation.CIT168RL.button.t1w2TemplateMat] = sepia_construct_text_edit_button(panelParent,...
         'Select a T1w-to-Atlas affine transformation:',[],open_icon,pos,wratio);
-    pos = [left(1) bottom(10) width height];
+    pos = [left(1) bottom(11) width height];
     [h.Analysis.segmentation.CIT168RL.text.t1w2TemplateNii,...
      h.Analysis.segmentation.CIT168RL.edit.t1w2TemplateNii,...
      h.Analysis.segmentation.CIT168RL.button.t1w2TemplateNii] = sepia_construct_text_edit_button(panelParent,...
         'Select a T1w-to-Atlas Inverse Wrap NIfTI file:',[],open_icon,pos,wratio);
     
     % output
-    pos = [left(1) bottom(12) width height];
+    pos = [left(1) bottom(13) width height];
     [h.Analysis.segmentation.CIT168RL.text.outputDir,...
      h.Analysis.segmentation.CIT168RL.edit.outputDir,...
      h.Analysis.segmentation.CIT168RL.button.outputDir] = sepia_construct_text_edit_button(panelParent,...
         'Ourput directory:',pwd,open_icon,pos,wratio);
     % correct bias field option
-    pos = [left(1) bottom(13) width height];
+    pos = [left(1) bottom(14) width height];
     h.Analysis.segmentation.CIT168RL.checkbox.biasCorr = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
         'String','Correct bias field on input images','Position',pos);
+    % quick registration option
+    pos = [left(1) bottom(15) width height];
+    h.Analysis.segmentation.CIT168RL.checkbox.quickReg = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Accelerate using label mask','Position',pos,'Tooltip','Use with caution! The result is likely different from whole-brain registration.');
+    % save_intermediate file option
+    pos = [left(1) bottom(16) width height];
+    h.Analysis.segmentation.CIT168RL.checkbox.saveIntermediate = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
+        'String','Save intermediate files','Position',pos,'Tooltip','Do not remove intermediate output files.');
   
     % run
     pos = [0.79 bottom(end) 0.2 height*2];
@@ -115,6 +129,7 @@ set(h.Analysis.segmentation.CIT168RL.button.greInput,           'Callback', {@Bu
 set(h.Analysis.segmentation.CIT168RL.button.greMaskInput,       'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'nitfi',h.Analysis.segmentation.CIT168RL.edit.greMaskInput,[1 2]});
 set(h.Analysis.segmentation.CIT168RL.button.t1wInput,           'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'nitfi',h.Analysis.segmentation.CIT168RL.edit.t1wInput,[1 2]});
 set(h.Analysis.segmentation.CIT168RL.button.t1wMaskInput,       'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'nitfi',h.Analysis.segmentation.CIT168RL.edit.t1wMaskInput,[1 2]});
+set(h.Analysis.segmentation.CIT168RL.button.chiInput,           'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'nitfi',h.Analysis.segmentation.CIT168RL.edit.chiInput,[1 2]});
 
 set(h.Analysis.segmentation.CIT168RL.button.greInput2,        	'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'nitfi',h.Analysis.segmentation.CIT168RL.edit.greInput2,[1 1]});
 set(h.Analysis.segmentation.CIT168RL.button.gre2T1wMat,         'Callback', {@ButtonOpen_Analysis_segmentation_Callback,h,'mat',h.Analysis.segmentation.CIT168RL.edit.gre2T1wMat,[1 1]});
@@ -195,6 +210,7 @@ input.gre       = get(h.Analysis.segmentation.CIT168RL.edit.greInput,       'Str
 input.greMask 	= get(h.Analysis.segmentation.CIT168RL.edit.greMaskInput, 	'String');
 input.t1w       = get(h.Analysis.segmentation.CIT168RL.edit.t1wInput,       'String');
 input.t1wMask  	= get(h.Analysis.segmentation.CIT168RL.edit.t1wMaskInput, 	'String');
+input.chi       = get(h.Analysis.segmentation.CIT168RL.edit.chiInput,       'String');
 if ~isempty(input.greMask)
     isPathway1 = true;
 else
@@ -239,6 +255,7 @@ if isPathway1
     fprintf(fid,'input.greMask  = ''%s'' ;\n', 	input.greMask);
     fprintf(fid,'input.t1w      = ''%s'' ;\n', 	input.t1w);
     fprintf(fid,'input.t1wMask  = ''%s'' ;\n', 	input.t1wMask);
+    fprintf(fid,'input.chi      = ''%s'' ;\n', 	input.chi);
 else
     fprintf(fid,'input.gre                  = ''%s'' ;\n',	input.gre);
     fprintf(fid,'input.gre2T1wMat           = ''%s'' ;\n',	input.gre2T1wMat);
@@ -255,6 +272,10 @@ if isPathway1; fprintf(fid,'algorParam.mode = 1;\n'); else; fprintf(fid,'algorPa
     
 % is bias corr
 sepia_print_checkbox_value(fid,'.isBiasFieldCorr',h.Analysis.segmentation.CIT168RL.checkbox.biasCorr);
+% is acceleration
+sepia_print_checkbox_value(fid,'.isAccelerate',h.Analysis.segmentation.CIT168RL.checkbox.quickReg);
+% is acceleration
+sepia_print_checkbox_value(fid,'.saveIntermediate',h.Analysis.segmentation.CIT168RL.checkbox.saveIntermediate);
 
 % Determine application based on Tab
 fprintf(fid,'\nget_CIT168_reinf_learn_labels(input,output_dir,algorParam);\n');
