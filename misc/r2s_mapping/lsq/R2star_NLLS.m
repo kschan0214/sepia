@@ -129,7 +129,7 @@ m0 = x(2);
 sFit = Signal_mGRE(m0,r2s,te,'r2s');
 
 % compute fitting residual
-fiter = computeFiter(sFit(:),sMeas(:),NUM_MAGN);
+fiter = sepia_computeFiter(sFit(:),sMeas(:),NUM_MAGN);
 
 end
 
