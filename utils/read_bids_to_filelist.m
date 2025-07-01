@@ -175,8 +175,9 @@ img = [];
 while numFileLoaded ~= NumFiles
     
     for k = 1:NumFiles
-        
-        if ContainName(fileList(k).name, ['echo-' num2str(numFileLoaded+1) '_']) || ContainName(fileList(k).name, ['echo-' num2str(numFileLoaded+1) '.'])
+        # PSF: Fix to enable numbering of echoes with arbitrary zero padding, i.e. 01,02 etc.
+        echoNumber = str2double(cell2mat(regexp(fileList(k).name,'echo-(\d*)','tokens','once')));
+        if echoNumber == numFileLoaded+1
             nii = load_untouch_nii(fileList(k).name);
             
             if (abs(max(nii.img(:))-pi)>1e-4 || abs(min(nii.img(:))-(-pi))>1e-4) && isPhase % allow small differences possibly due to data stype conversion
