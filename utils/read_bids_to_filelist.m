@@ -175,7 +175,7 @@ img = [];
 while numFileLoaded ~= NumFiles
     
     for k = 1:NumFiles
-        # PSF: Fix to enable numbering of echoes with arbitrary zero padding, i.e. 01,02 etc.
+        % 20250702: bug fix to enable numbering of echoes with arbitrary zero padding, i.e. 01,02 etc.
         echoNumber = str2double(cell2mat(regexp(fileList(k).name,'echo-(\d*)','tokens','once')));
         if echoNumber == numFileLoaded+1
             nii = load_untouch_nii(fileList(k).name);
