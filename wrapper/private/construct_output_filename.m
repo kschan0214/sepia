@@ -15,7 +15,7 @@
 % Date modified:
 %
 %
-function outputFileList = construct_output_filename(outputDir, ouputPrefix)
+function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, ouputPrefix, algorParam)
 
 % phase related
 outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad.nii.gz']);
@@ -49,5 +49,22 @@ outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map.nii.gz
 
 % misc
 outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase.nii.gz']);
+
+if algorParam.general.isDenoise
+ouputPrefix = strcat(ouputPrefix,'denoised_');
+outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag.nii.gz']);
+outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
+outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma.nii.gz']);
+outputFileList.snrgain          = fullfile(outputDir, [ouputPrefix 'SNRgain.nii.gz']);
+outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P.nii.gz']);
+end
+
+if algorParam.general.isUpsample
+ouputPrefix = strcat(ouputPrefix,'upsampled_');
+outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag.nii.gz']);
+outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
+outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled.nii.gz']);
+outputFileList.sepiaHeaderUpsample = fullfile(outputDir, [ouputPrefix 'sepia_header.mat']);
+end
 
 end

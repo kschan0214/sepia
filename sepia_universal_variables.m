@@ -22,6 +22,9 @@ SEPIA_HOME = fileparts(mfilename('fullpath'));
 %% General parameterss
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
 
+%% IO
+skullstrippingMethod = {'FSL bet (MEDI)','SynthStrip','SynthStrip (no CSF)'}; 
+
 %% Total field recovery related parameters
 % Echo combination method available in SEPIA
 sepia_configuration_EchoCombine;

@@ -4,7 +4,7 @@
 % k.chan@donders.ru.nl
 % Date created: 22 Jan 2021
 % Date modified: 12 August 2021 (v1.0)
-%
+% Date modified: 4 July 2025
 %
 function sepia_header = validate_sepia_header_4wrapper(sepia_header, outputNiftiTemplate)
 
@@ -16,9 +16,13 @@ disp('Validating SEPIA header...')
 % Without these two variables -> fatal error
 if ~isfield(sepia_header, 'B0')
     error('Variable ''B0'' is missing in the SEPIA header. Please check the input header .mat file.');
+else
+    sepia_header.B0 = double(sepia_header.B0); % 20250704 bug fix in case B0 is not single or double
 end
 if ~isfield(sepia_header, 'TE')
     error('Variable ''TE'' is missing in the SEPIA header. Please check the input header .mat file.');
+else
+    sepia_header.TE = double(sepia_header.TE);
 end
 
 % In case some parameters are missing in the header file try to get as
@@ -47,9 +51,13 @@ if ~isfield(sepia_header,'delta_TE')
 end
 
 % make sure B0_dir is a unit vector
-sepia_header.B0_dir      = sepia_header.B0_dir ./ norm(sepia_header.B0_dir);
-sepia_header.matrixSize  = sepia_header.matrixSize(:).';          % row vectors
-sepia_header.voxelSize   = sepia_header.voxelSize(:).';           % row vectors
+sepia_header.B0_dir      = double(sepia_header.B0_dir ./ norm(sepia_header.B0_dir));
+sepia_header.matrixSize  = double(sepia_header.matrixSize(:).');          % row vectors
+sepia_header.voxelSize   = double(sepia_header.voxelSize(:).');           % row vectors
+
+if sepia_header.delta_TE > 1
+    warning('The value(s) in TE seems too long(>1s). Please make sure the unit of TE is in second instead of millisecond.'); % additional warning based on Discussion #90
+end
 
 disp('Input SEPIA header is valid.')
 

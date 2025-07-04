@@ -29,6 +29,7 @@
 % Date modified: 6 May 2021 (v0.8.1.1)
 % Date modified: 13 August 2021 (v1.0)
 % Date modified: 12 September 2022 (v1.1)
+% Date modified: 4 July 2025 (v??)
 %
 function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path and universal variables
@@ -55,14 +56,14 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
-outputFileList = construct_output_filename(outputDir, prefix);
-
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
-% generl algorithm parameters
+% general algorithm parameters
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
+
+outputFileList = construct_output_filename(outputDir, prefix, algorParam);
 
 %% Setting up Input
 disp('---------');
@@ -133,6 +134,22 @@ availableFileList           = io_06_get_signal_mask(maskFullName, inputDir, sepi
 % outputFileList        : structure contains default output filenames
 % outputNiftiTemplate   : nifti header with empty 'img' field
 availableFileList           = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
+
+%%%%%% Step 8: Tensor-MPPCA denoising
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+availableFileList          = io_08_denoising(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
+
+%%%%%% Step 9: Upsampling
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+[availableFileList,sepia_header,outputNiftiTemplate] = io_09_upsampling(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
 %%%%%% store some data to headerAndExtraData
 % header
@@ -511,9 +528,18 @@ end
 %% I/O Step 6: loading signal mask
 function availableFileList          = io_06_get_signal_mask(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
 
+sepia_universal_variables;
+
 isBET               = algorParam.general.isBET;
-fractional_threshold= algorParam.general.fractional_threshold;
-gradient_threshold  = algorParam.general.gradient_threshold;
+if isfield(algorParam.general, 'brain_extraction_method')
+    brainExtractMethod  = algorParam.general.brain_extraction_method;
+else
+    brainExtractMethod = skullstrippingMethod{1};
+end
+if strcmp(brainExtractMethod,skullstrippingMethod{1})
+    fractional_threshold    = algorParam.general.fractional_threshold;
+    gradient_threshold      = algorParam.general.gradient_threshold;
+end
 
 matrixSize  = sepia_header.matrixSize;
 voxelSize   = sepia_header.voxelSize;
@@ -555,19 +581,59 @@ end
 if isempty(mask) || isBET
     
     magn = load_nii_img_only(availableFileList.magnitude);
+    mag_e1 = magn(:,:,:,1);
+
+    % for synthstrip
+    [temp_dir,~,~] = fileparts(outputFileList.maskBrain);
+    temp_nii = fullfile(temp_dir,'temp.nii.gz');
+
+    switch brainExtractMethod
+        case skullstrippingMethod{1}    % MEDI implementation of BET
     
-    sepia_addpath('MEDI');
-    
-    disp('Performing FSL BET...');
-    % Here uses MEDI toolboxes MEX implementation
-    mask = BET(magn(:,:,:,1),matrixSize,voxelSize,fractional_threshold,gradient_threshold);
-    disp('Signal mask is obtained.');
-    
-    fprintf('Saving signal mask...')
-    save_nii_quick(outputNiftiTemplate,mask, outputFileList.maskBrain);
-    fprintf('Done!\n');
-    
-    availableFileList.mask = outputFileList.maskBrain;
+            sepia_addpath('MEDI');
+            
+            disp('Performing FSL BET...');
+            % Here uses MEDI toolboxes MEX implementation
+            mask = BET(mag_e1,matrixSize,voxelSize,fractional_threshold,gradient_threshold);
+            disp('Signal mask is obtained.');
+
+            fprintf('Saving signal mask...')
+            save_nii_quick(outputNiftiTemplate,mask, outputFileList.maskBrain);
+
+            fprintf('Done!\n');
+            
+
+        case skullstrippingMethod{2}    % synthstrip
+
+            save_nii_quick(outputNiftiTemplate,mag_e1, temp_nii);
+
+            cmd = sprintf('mri_synthstrip -i %s -m %s',temp_nii,outputFileList.maskBrain);
+
+            status = system(cmd);
+            if status ~= 0
+                error('Failed running SynthStrip in the system. Please check if the tool is available in the PATH environment ot use other methods instead.');
+            end
+            delete(temp_nii);
+
+        case skullstrippingMethod{3}    % synthstrip
+
+            save_nii_quick(outputNiftiTemplate,mag_e1, temp_nii);
+
+            cmd = sprintf('mri_synthstrip -i %s -m %s --no-csf',temp_nii,outputFileList.maskBrain);
+
+            status = system(cmd);
+            if status ~= 0
+                error('Failed running SynthStrip in the system. Please check if the tool is available in the PATH environment ot use other methods instead.');
+            end
+            delete(temp_nii);
+    end
+
+    if exist(outputFileList.maskBrain,'file')
+        fprintf('Brain extraction Done!\n');
+        availableFileList.mask = outputFileList.maskBrain;
+    else
+        error('No signal mask is found. QSM cannot be run without a signal mask.');
+    end
 end
 
 end
@@ -601,6 +667,116 @@ if isRefineBrainMask
     availableFileList.mask = outputFileList.maskRefine;
 end
 
+end
+
+%% I/O Step 8: image denoising
+function availableFileList          = io_08_denoising(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+sepia_universal_variables;
+
+% check if tensor MPPCA code exist, if not then download form GitHub
+tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
+if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end
+if ~exist('denoise_recursive_tensor', 'file')
+
+    fprintf('Cannot find tensor-MPPCA functions. Attempt to download the tool to %s\n',tMPPCA_HOME);
+
+    cmd = sprintf('wget -O %s --no-check-certificate https://github.com/Neurophysics-CFIN/Tensor-MP-PCA/archive/refs/heads/main.zip; unzip %s -d %s',strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME));
+    % cmd = sprintf('git clone https://github.com/Neurophysics-CFIN/Tensor-MP-PCA.git %s',tMPPCA_HOME); % certificate fail
+    system(cmd);
+    delete(strcat(tMPPCA_HOME,'.zip'));
+    addpath(genpath(tMPPCA_HOME));
+
+end
+
+
+if algorParam.general.isDenoise
+    kernel = ceil(algorParam.general.denoiseKernel ./ sepia_header.voxelSize);
+    if any(kernel<3)
+        warning('Denoising kernel size too small. [3x3x3] voxels kernel will be used');
+    end
+    kernel = max(kernel,[3,3,3]); % minimum window are 3 voxels
+
+    disp('Tensor-MP-PCA denoising in progress (can take some time)...')
+    magn        = double(load_nii_img_only(availableFileList.magnitude));
+    phase       = double(load_nii_img_only(availableFileList.phase));
+    mask        = double(load_nii_img_only(availableFileList.mask)) >0;
+
+    % create complex-valued image
+    img         = magn .* exp(1i*phase);
+    
+    tic
+    [img_denoise,sigma,P,snrgain] = denoise_recursive_tensor(img,kernel,'mask',mask);
+    toc
+    
+    save_nii_quick(outputNiftiTemplate, abs(img_denoise),   outputFileList.magDenoise);
+    save_nii_quick(outputNiftiTemplate, angle(img_denoise), outputFileList.phaseDenoise);
+    save_nii_quick(outputNiftiTemplate, sigma,              outputFileList.sigma);
+    save_nii_quick(outputNiftiTemplate, P,                  outputFileList.P);
+    save_nii_quick(outputNiftiTemplate, snrgain,            outputFileList.snrgain);
+
+    % update availableFileList
+    availableFileList.magnitude = outputFileList.magDenoise;
+    availableFileList.phase     = outputFileList.phaseDenoise;
+
+    disp('Done!');
+end
+end
+
+%% I/O Step 9: image upsampling
+function [availableFileList,sepia_header,outputNiftiTemplate] = io_09_upsampling(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+sepia_universal_variables;
+
+
+if algorParam.general.isUpsample
+
+    disp('Upsampling in progress...')
+    magn        = double(load_nii_img_only(availableFileList.magnitude));
+    phase       = double(load_nii_img_only(availableFileList.phase));
+    mask        = double(load_nii_img_only(availableFileList.mask)) >0;
+
+    % create complex-valued image
+    img         = magn .* exp(1i*phase);
+
+    scaleFactor = sepia_header.voxelSize./algorParam.general.target_resolution ;
+    if any(scaleFactor < 1)
+        warning('You are downsampling the data. Thi step will be skipped.');
+        return
+    end
+    matrixSize_upSample = round(scaleFactor .* sepia_header.matrixSize);
+
+    % Assuming `data` is [X Y Z Echo] complex GRE data
+    numEchoes   = size(img, 4);
+    img_us = zeros([matrixSize_upSample numEchoes], 'like', img);
+    
+    for e = 1:numEchoes
+        img_us(:,:,:,e) = fft_upsample_complex(img(:,:,:,e), matrixSize_upSample);
+    end
+
+    upsampledMask = imresize3(double(mask), matrixSize_upSample, 'cubic')> 0.2;
+
+    % update sepia header
+    sepia_header.matrixSize = matrixSize_upSample;
+    sepia_header.voxelSize  = ones(size(sepia_header.voxelSize))*algorParam.general.target_resolution;
+
+    % save output
+    outputNiftiTemplate.hdr.dime.pixdim(2:4) = sepia_header.voxelSize;
+
+    save_nii_quick(outputNiftiTemplate, abs(img_us),    outputFileList.magUpsample);
+    save_nii_quick(outputNiftiTemplate, angle(img_us),  outputFileList.phaseUpsample);
+    save_nii_quick(outputNiftiTemplate, upsampledMask,  outputFileList.maskUpsample);
+    TE = sepia_header.TE; B0 = sepia_header.B0;
+    save(outputFileList.sepiaHeaderUpsample,'TE','B0')
+
+    % update availableFileList
+    availableFileList.magnitude     = outputFileList.magUpsample;
+    availableFileList.phase         = outputFileList.phaseUpsample;
+    availableFileList.mask          = outputFileList.maskUpsample;
+    availableFileList.sepiaheader   = outputFileList.sepiaHeaderUpsample;
+
+    disp('Done!');
+end
 end
 
 %% TF Step 0: bipolar readout phase correction
