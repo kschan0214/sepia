@@ -31,9 +31,13 @@ defaultProcProcConeTol          = eps;
 defaultProcProcConeTolEnergy    = eps;
 defaultResidualWeighting        = 0.2 / 9.4; % will be scale by field strength
 
-menuTikhonov        = {'Default','Partial Gradient weighting','Laplacian'};
-menuSolver          = {'Default','InverseFiltering','SpatialDomainTV'};
-menuDipoleFilter    = {'Default','truncSingularValues'};
+% full lists, needs further testing, current not available
+% menuTikhonov        = {'Default','Partial Gradient weighting','Laplacian'};
+% menuSolver          = {'Default','InverseFiltering','SpatialDomainTV'};
+% menuDipoleFilter    = {'Default','truncSingularValues'};
+menuTikhonov        = {'Default'};
+menuSolver          = {'Default'};
+menuDipoleFilter    = {'Default'};
 
 %% Tooltips
 %%%%%%%% (Optional) Tooltips to elaborate algorithm parameter usage

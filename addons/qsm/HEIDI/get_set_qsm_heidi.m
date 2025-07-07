@@ -21,9 +21,9 @@ function get_set_qsm_heidi(h,mode,input)
 str_pattern = {'.qsm.tolerance',...
                '.qsm.maxiter',...
                '.qsm.residualWeighting',...
-               '.qsm.PostProcCone.threshold',...
-               '.qsm.PostProcCone.tol',...
-               '.qsm.PostProcCone.tolEnergy',...
+               '.qsm.PostProcCone_threshold',...
+               '.qsm.PostProcCone_tol',...
+               '.qsm.PostProcCone_tolEnergy',...
                '.qsm.offsetUseBool',...
                '.qsm.isFourierDomainFormula',...
                '.qsm.TikhonovRegularizationSusceptibility',...
@@ -83,11 +83,11 @@ switch lower(mode)
         val             = get_string_as_string(config_txt, pattern_curr);
         switch lower(val)
             case 'default'
-                set_non_nan_value(action_handle{k},'Value',3)
+                set_non_nan_value(action_handle{k},'Value',1)
             case 'partial gradient weighting'
                 set_non_nan_value(action_handle{k},'Value',2)
             case 'laplacian'
-                set_non_nan_value(action_handle{k},'Value',1)
+                set_non_nan_value(action_handle{k},'Value',3)
         end
 
         % solver
@@ -96,11 +96,11 @@ switch lower(mode)
         val             = get_string_as_string(config_txt, pattern_curr);
         switch lower(val)
             case 'default'
-                set_non_nan_value(action_handle{k},'Value',3)
+                set_non_nan_value(action_handle{k},'Value',1)
             case 'inversefiltering'
                 set_non_nan_value(action_handle{k},'Value',2)
             case 'spatialdomaintv'
-                set_non_nan_value(action_handle{k},'Value',1)
+                set_non_nan_value(action_handle{k},'Value',3)
         end
 
         % dipole filter
@@ -109,9 +109,9 @@ switch lower(mode)
         val             = get_string_as_string(config_txt, pattern_curr);
         switch lower(val)
             case 'default'
-                set_non_nan_value(action_handle{k},'Value',2)
-            case 'truncsingularvalues'
                 set_non_nan_value(action_handle{k},'Value',1)
+            case 'truncsingularvalues'
+                set_non_nan_value(action_handle{k},'Value',2)
         end
         
 end

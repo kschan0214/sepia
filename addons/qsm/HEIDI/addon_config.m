@@ -2,9 +2,9 @@
 %
 % Description: Addon script to incorporate new method to the SEPIA framework
 %
-% Kwok-shing Chan @ DCCN
-% k.chan@donders.ru.nl
-% Date created: 27 June 2020
+% Kwok-shing Chan @ MGH
+% kchan2@mgh.harvard.edu
+% Date created: 6 July 2025
 % Date modified: 
 %
 % DO NOT change the variable names, update the variable value instead
