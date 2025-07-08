@@ -54,12 +54,13 @@ end
 % display output info
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
+fprintf('Output filename suffix : %s\n',suffix);
 
-outputFileList = construct_output_filename(outputDir, prefix);
+outputFileList = construct_output_filename(outputDir, prefix, suffix);
 
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
-% generl algorithm parameters
+% general algorithm parameters
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;

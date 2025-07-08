@@ -21,6 +21,7 @@ SEPIA_HOME = fileparts(mfilename('fullpath'));
 
 %% General parameterss
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
+suffix = '.nii.gz';
 
 %% Total field recovery related parameters
 % Echo combination method available in SEPIA

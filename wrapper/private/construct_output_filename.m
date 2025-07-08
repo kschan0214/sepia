@@ -1,4 +1,4 @@
-%% outputFileList = construct_output_filename(outputDir, ouputPrefix)
+%% outputFileList = construct_output_filename(outputDir, ouputPrefix, outputSufffix)
 %
 % Input
 % --------------
@@ -15,39 +15,39 @@
 % Date modified:
 %
 %
-function outputFileList = construct_output_filename(outputDir, ouputPrefix)
+function outputFileList = construct_output_filename(outputDir, ouputPrefix, outputSuffix)
 
 % phase related
-outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad.nii.gz']);
-outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_reverse.nii.gz']);
-outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_bipolarcorr.nii.gz']);
-outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_unwrapped.nii.gz']);
+outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad' outputSuffix]);
+outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_reverse' outputSuffix]);
+outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_bipolarcorr' outputSuffix]);
+outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_unwrapped' outputSuffix]);
 
 % standard output
-outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap.nii.gz']);
-outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield.nii.gz']);
-outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap.nii.gz']);
+outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap' outputSuffix]);
+outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield' outputSuffix]);
+outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap' outputSuffix]);
 
 % use for regularisation
-outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights.nii.gz']);
-outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd.nii.gz']);
-outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual.nii.gz']);
-outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights.nii.gz']);
+outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights' outputSuffix]);
+outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd' outputSuffix]);
+outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual' outputSuffix]);
+outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights' outputSuffix]);
 
 % derived masks
-outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain.nii.gz']);
-outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable.nii.gz']);
-outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield.nii.gz']);
-outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM.nii.gz']);
-outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion.nii.gz']);
-outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine.nii.gz']);
+outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain' outputSuffix]);
+outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable' outputSuffix]);
+outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield' outputSuffix]);
+outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM' outputSuffix]);
+outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion' outputSuffix]);
+outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine' outputSuffix]);
 
 % R2*
-outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap.nii.gz']);
-outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap.nii.gz']);
-outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map.nii.gz']);
+outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap' outputSuffix]);
+outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap' outputSuffix]);
+outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map' outputSuffix]);
 
 % misc
-outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase.nii.gz']);
+outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase' outputSuffix]);
 
 end

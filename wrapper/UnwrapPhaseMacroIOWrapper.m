@@ -55,7 +55,7 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
-outputFileList = construct_output_filename(outputDir, prefix);
+outputFileList = construct_output_filename(outputDir, prefix, suffix);
 
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
