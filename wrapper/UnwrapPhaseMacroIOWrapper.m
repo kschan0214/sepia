@@ -67,6 +67,8 @@ exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 % isEddyCorrect      	= algorParam.unwrap.isEddyCorrect;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
+isSaveR2s           = algorParam.unwrap.isSaveR2s;
+isMagnitudeCombine  = algorParam.unwrap.isMagnitudeCombine;
 
 %% Setting up Input
 disp('---------');
@@ -214,8 +216,17 @@ if ~isinf(exclude_threshold)
     relativeResidualWeights = (exclude_threshold - relativeResidualWeights) ./ exclude_threshold;
     
     % Save r2s and optimally combine magnitude
-    optimalCombinedMagnitude = ComputeOptimalCombinedMagnitude(TE,r2s,magn);
-    save_nii_quick(outputNiftiTemplate,r2s,outputFileList.r2s);   
+    if isSaveR2s
+        fprintf('Saving R2star map...');
+        save_nii_quick(outputNiftiTemplate,r2s,   	                outputFileList.r2s);
+    end
+    if isMagnitudeCombine
+        fprintf('Combining multi-echo data optimally...');
+        optimalCombinedMagnitude = ComputeOptimalCombinedMagnitude(TE,r2s,magn);
+        save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
+
+        clear optimalCombinedMagnitude
+    end
 
     clear r2s magn 
     
@@ -223,10 +234,9 @@ if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
     save_nii_quick(outputNiftiTemplate,relativeResidualWeights, outputFileList.relativeResidualWeights);
-    save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
     fprintf('Done.\n');
     
-    clear relativeResidual optimalCombinedMagnitude
+    clear relativeResidual
     
     availableFileList.maskReliable      = outputFileList.maskReliable;
     availableFileList.relativeResidual  = outputFileList.relativeResidual;
