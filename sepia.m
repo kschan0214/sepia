@@ -47,10 +47,10 @@
 % Date modified: 3 April 2023 (v1.2.2.4)
 % Date modified: 9 October 2023 (v1.2.2.5)
 %
-function sepia 
+function sepia
 
 % clear previous handles
-clear global h 
+clear global h
 
 % make sure nothing is logged at the moment
 diary off
@@ -58,7 +58,7 @@ diary off
 % add path and check toolboxes availability
 sepia_addpath('',1);
 
-global h 
+global h
 
 % SEPIA version
 sepia_universal_variables;

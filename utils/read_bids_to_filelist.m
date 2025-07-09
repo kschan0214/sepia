@@ -20,13 +20,15 @@
 %
 function inputNIFTIList = read_bids_to_filelist(inputDir,outputPrefix)
 
+sepia_universal_variables;
+
 disp('############################################');
 disp('# Checking input directory for BIDS format #');
 disp('############################################');
 
 % default intput nifti list
-inputNIFTIList(1).name = [outputPrefix 'part-phase.nii.gz'];
-inputNIFTIList(2).name = [outputPrefix 'part-mag.nii.gz'];
+inputNIFTIList(1).name = [outputPrefix 'part-phase' suffix];
+inputNIFTIList(2).name = [outputPrefix 'part-mag' suffix];
 inputNIFTIList(3).name = [];
 inputNIFTIList(4).name = [outputPrefix 'header.mat'];
 

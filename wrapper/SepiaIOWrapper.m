@@ -54,12 +54,13 @@ end
 % display output info
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
+fprintf('Output filename suffix : %s\n',suffix);
 
-outputFileList = construct_output_filename(outputDir, prefix);
+outputFileList = construct_output_filename(outputDir, prefix, suffix);
 
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
-% generl algorithm parameters
+% general algorithm parameters
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
@@ -186,7 +187,7 @@ availableFileList.totalField = outputFileList.totalField;
 
 %%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 % only work with multi-echo data
-if length(TE) == 1 && ~isinf(exclude_threshold)
+if isscalar(TE) && ~isinf(exclude_threshold)
     warning('\nExcluding unreliable voxels can only work with multi-echo data.')
     disp('No voxels are excluded');
     exclude_threshold = inf;
@@ -207,16 +208,19 @@ if ~isinf(exclude_threshold)
     relativeResidualWeights(relativeResidualWeights>exclude_threshold) = exclude_threshold;
     % weightsRelativeResidual should be between [0,1]
     relativeResidualWeights = (exclude_threshold - relativeResidualWeights) ./ exclude_threshold;
-    
-    clear r2s magn 
+
+    % Save r2s and optimal combined magnitude
+    optimalCombinedMagnitude = ComputeOptimalCombinedMagnitude(TE,r2s,magn);
     
     fprintf('Saving other output...');
+    save_nii_quick(outputNiftiTemplate,r2s,   	                outputFileList.r2s);
+    save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
     save_nii_quick(outputNiftiTemplate,relativeResidualWeights,outputFileList.relativeResidualWeights);
     fprintf('Done.\n');
     
-    clear relativeResidual
+    clear relativeResidual r2s magn optimalCombinedMagnitude
     
     availableFileList.maskReliable              = outputFileList.maskReliable;
     availableFileList.relativeResidual          = outputFileList.relativeResidual;
@@ -252,7 +256,7 @@ if ~isfield(availableFileList, 'weights')
     weights = sepia_utils_compute_weights_v1(fieldmapSD,mask);
     weights = weights .* mask;
 
-    % modulate weighting map by relativa residual
+    % modulate weighting map by relative residual
     if ~isinf(exclude_threshold) && strcmp(exclude_method,'Weighting map')
         weights = weights .* relativeResidualWeights;
     end
@@ -270,7 +274,7 @@ else
         weights = weights .* mask;
 %         weights = weights .* and(mask>0,maskReliable);
 
-        % modulate weighting map by relativa residual
+        % modulate weighting map by relative residual
         if ~isinf(exclude_threshold) && strcmp(exclude_method,'Weighting map')
             weights = weights .* relativeResidualWeights;
         end

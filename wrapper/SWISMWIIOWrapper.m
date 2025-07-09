@@ -42,7 +42,7 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
-% outputFileList = construct_output_filename(outputDir, prefix);
+% outputFileList = construct_output_filename(outputDir, prefix, suffix);
 outputFileFullPrefix = fullfile(outputDir,prefix);
 
 %% Setting up Input
