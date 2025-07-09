@@ -250,10 +250,13 @@ if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
     save_nii_quick(outputNiftiTemplate,relativeResidualWeights, outputFileList.relativeResidualWeights);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 08dd246 (Added option for computing optimal combined magnitude map and outputting R2s map)
     fprintf('Done.\n');
     
-    clear relativeResidual optimalCombinedMagnitude
+    clear relativeResidual
     
     availableFileList.maskReliable      = outputFileList.maskReliable;
     availableFileList.relativeResidual  = outputFileList.relativeResidual;
