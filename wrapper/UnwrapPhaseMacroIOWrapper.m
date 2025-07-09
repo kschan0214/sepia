@@ -213,15 +213,20 @@ if ~isinf(exclude_threshold)
     % weightsRelativeResidual should be between [0,1]
     relativeResidualWeights = (exclude_threshold - relativeResidualWeights) ./ exclude_threshold;
     
+    % Save r2s and optimally combine magnitude
+    optimalCombinedMagnitude = ComputeOptimalCombinedMagnitude(TE,r2s,magn);
+    save_nii_quick(outputNiftiTemplate,r2s,outputFileList.r2s);   
+
     clear r2s magn 
     
     fprintf('Saving other output...');
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
-    save_nii_quick(outputNiftiTemplate,relativeResidualWeights,outputFileList.relativeResidualWeights);
+    save_nii_quick(outputNiftiTemplate,relativeResidualWeights, outputFileList.relativeResidualWeights);
+    save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
     fprintf('Done.\n');
     
-    clear relativeResidual
+    clear relativeResidual optimalCombinedMagnitude
     
     availableFileList.maskReliable      = outputFileList.maskReliable;
     availableFileList.relativeResidual  = outputFileList.relativeResidual;

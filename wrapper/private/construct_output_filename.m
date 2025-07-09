@@ -49,5 +49,6 @@ outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map' outpu
 
 % misc
 outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase' outputSuffix]);
+outputFileList.optimalCombinedMagnitude = fullfile(outputDir, [ouputPrefix 'mag_optimal' outputSuffix]);
 
 end
