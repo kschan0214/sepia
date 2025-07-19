@@ -12,7 +12,7 @@
 %% main
 
 % This name will be used thorough the SEPIA framework for usage
-addons.method = 'HEIDI';
+addons.method = 'LSQR+HEIDI';
 
 % Specify the filename of the wrapper function (without extension)
 addons.wrapper_function	= 'Wrapper_QSM_LSQRandHEIDI';

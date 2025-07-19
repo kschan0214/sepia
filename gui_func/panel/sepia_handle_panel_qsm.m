@@ -27,10 +27,11 @@ sepia_universal_variables;
 
 tooltip.QSM.panel.method    = 'Select a QSM algorithm'; 
 tooltip.QSM.panel.reference	= 'Region used to normalise the magnetic susceptibility map';
+tooltip.QSM.panel.isHeidi	= 'Reduce streaking artefact using HEIDI. Adjust HEIDI''s parameters in the LSQR+HEIDI panel and switch back to the target dipole inversion method.';
 
 %% layout of the panel
 % define maximum level of options and spacing between options
-ncol    = 2; % 2 columns in the panel
+ncol    = 4; % 2 columns in the panel
 rspacing = 0.01;
 width   = (1-(ncol+1)*rspacing)/ncol;
 left    = (rspacing:width+rspacing:(width+rspacing)*ncol);
@@ -44,7 +45,7 @@ h.StepsPanel.qsm = uipanel(hParent,...
 %% design of this panel
     
     height = 0.1;
-    wratio = 0.5;
+    wratio = 0.4;
 
     % col 1
     % text|popup pair: select method
@@ -54,7 +55,14 @@ h.StepsPanel.qsm = uipanel(hParent,...
     % col 2
     % text|popup pair: select reference tissue
     [h.qsm.text.tissue,h.qsm.popup.tissue] = sepia_construct_text_popup(...
-        h.StepsPanel.qsm,'Reference tissue:', tissueName, [left(2) 0.85 width height], wratio);
+        h.StepsPanel.qsm,'Reference:', tissueName, [left(2) 0.85 width height], wratio);
+
+    % col 2
+    % check box | Streaking artefact reduction using HEIDI
+    h.qsm.checkbox.isHeidi = uicontrol('Parent',h.StepsPanel.qsm,...
+        'Style','checkbox','String','Streaking reduction by HEIDI',...
+        'units','normalized','Position',[left(3) 0.85 width height],...
+        'backgroundcolor',get(h.fig,'color'));
 
     
 %% create control panel
@@ -70,6 +78,7 @@ end
 %% set tooltip
 set(h.qsm.text.qsm,     'Tooltip',tooltip.QSM.panel.method);
 set(h.qsm.text.tissue,  'Tooltip',tooltip.QSM.panel.reference);
+set(h.qsm.checkbox.isHeidi, 'Tooltip',tooltip.QSM.panel.isHeidi);
 
 %% set callback
 set(h.qsm.popup.qsm, 'Callback', {@PopupQSM_Callback,h});

@@ -9,6 +9,7 @@
 % Date modified: 6 May 2021 (v0.8.1.1)
 % Date modified: 7 June 2021 (v1.0)
 % Date modified: 4 August 2021 (v1.0.1)
+% Date modified: 7 July 2025 (v1.3)
 %
 % DO NOT change the variable name
 % DO NOT change the order of the entities, add a new one at the end instead
@@ -23,7 +24,9 @@ SEPIA_HOME = fileparts(mfilename('fullpath'));
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
 
 %% IO
-skullstrippingMethod = {'FSL bet (MEDI)','SynthStrip','SynthStrip (no CSF)'}; 
+skullstrippingMethod = {'FSL bet (MEDI)',...
+                        'SynthStrip',...
+                        'SynthStrip (no CSF)'}; 
 
 %% Total field recovery related parameters
 % Echo combination method available in SEPIA

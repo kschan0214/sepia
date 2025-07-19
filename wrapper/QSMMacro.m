@@ -24,6 +24,7 @@
 % Date modified: 5 June 2019
 % Date modified: 27 Feb 2020 (v0.8.0)
 % Date modified: 16 August 2021 (v1.0)
+% Date modified: 19 July 2025 (v1.3)
 %
 function [chi,mask_ref] = QSMMacro(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
@@ -107,6 +108,11 @@ for k = 1:length(wrapper_QSM_function)
     if strcmpi(method,methodQSMName{k})
         chi = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
     end
+end
+
+% Post dipole inversion using HEIDI
+if algorParam.qsm.isHEIDI
+    [chi] = Wrapper_QSM_HEIDI4all(localField,chi,mask,matrixSize,voxelSize,algorParam, headerAndExtraData) ;
 end
 
 % remove zero padding 

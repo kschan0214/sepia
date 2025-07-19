@@ -25,7 +25,7 @@
 % Date modified: 6 July 2025
 %
 %
-function [chi] = Wrapper_QSM_LSQRandHEIDI(localField,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)  % 20250614 KC: just make sure the input arguments have the same default input by design
+function [chi] = Wrapper_QSM_HEIDI4all(localField,chiRaw,mask,matrixSize,voxelSize,algorParam, headerAndExtraData)  % 20250614 KC: just make sure the input arguments have the same default input by design
 
 sepia_universal_variables;
 
@@ -36,7 +36,7 @@ HEIDI_HOME = fullfile(SEPIA_HOME,'..','external','HEIDI_SEPIAready');           
 % 20250614 KC: check whether we have execute right to GradientAnisotropicDiffusionImageFilter if not then give the right
 shellcommand = [ 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:' fullfile(HEIDI_HOME,'HEIDI') ';' ...
 fullfile(HEIDI_HOME,'HEIDI','GradientAnisotropicDiffusionImageFilter')];
-status = system(shellcommand);
+[status,~] = system(shellcommand);
 if status == 126    % if no executable right then grant the right
     shellcommand = [ 'chmod a+x ' fullfile(HEIDI_HOME,'HEIDI','GradientAnisotropicDiffusionImageFilter')];
     status = system(shellcommand);
@@ -64,31 +64,10 @@ if ~isempty(magn) && size(magn,4)>1 % maybe add some statement regarding multi-e
     clear r2s
 end
 
-% obtain header info
-options.magneticFieldStrength   = headerAndExtraData.sepia_header.B0;
-options.echoTime                = headerAndExtraData.sepia_header.TE *1e3; % 20250614 KC: HEIDI expect TE in ms
-options.voxelAspectRatio        = headerAndExtraData.sepia_header.voxelSize;
-options.B0_dir                  = headerAndExtraData.sepia_header.B0_dir;
-
-% check and set default algorithm parameters
-algorParam                                      = check_and_set_algorithm_default(algorParam,options);
-
-% get algorithm parameters for LSQR
-options.tolerance                               = algorParam.qsm.heidi_tolerance;
-options.maxiter                                 = algorParam.qsm.heidi_maxiter;       % 20250614 KC: I suggest change this to 'maxiter' to make it consistent across all QSM methods available on SEPIA
-options.offsetUseBool                           = algorParam.qsm.heidi_offsetUseBool;
-options.isFourierDomainFormula                  = algorParam.qsm.heidi_isFourierDomainFormula;
-options.TikhonovRegularizationSusceptibility    = algorParam.qsm.heidi_TikhonovRegularizationSusceptibility;
-options.solvingType                             = algorParam.qsm.heidi_solvingType;
-options.DipoleFilter                            = algorParam.qsm.heidi_DipoleFilter;
-options.residualWeighting                       = algorParam.qsm.heidi_residualWeighting;
-
-% 20250614 KC: don't need to add path for addon
-% add path
-addpath(fullfile(HEIDI_HOME,'LSQR'));
-
 % 20250614 KC: magn need to be 3D, compress multu-echo data as MEDI
 magn = sqrt(sum(abs(magn).^2,4));
+
+addpath(fullfile(HEIDI_HOME,'LSQR'));
 
 initializeswitoolbox('docker',true)
 
@@ -116,7 +95,11 @@ end
 localField = localField /(2*pi);
 
 % main - LSQR
-[chi_raw,~, ~,~,~,~,~,~,~,phaseDiscrepancy] = computesusceptibility_lsqr(localField,options,logical(mask),Constraint,spatialWeightingMatrix);
+% [chi_raw,~, ~,~,~,~,~,~,~,phaseDiscrepancy] = computesusceptibility_lsqr(localField,options,logical(mask),Constraint,spatialWeightingMatrix);
+
+chiRaw = chiRaw/(2*pi)*(headerAndExtraData.sepia_header.B0*gyro);
+chiRaw = zealouscrop(chiRaw,zcInfo);
+chiRaw = prepareforconvolution(chiRaw,[],DEFAULT_ANTIALIASINGFRAMEWIDTH);
 
 %% Now HEIDI begins
 % 20250614: don't need to add path for addon
@@ -127,16 +110,14 @@ initializeswitoolbox('docker',true)
 
 mids;
 
-% Although most of the options are similar, just to have a clear direction
-% in terms of the options being used specifically for HEIDI, clear all 
-% options to ensure the options are HEIDI-specific
-clear options
-
 % obtain header info
 options.magneticFieldStrength   = headerAndExtraData.sepia_header.B0;
 options.echoTime                = headerAndExtraData.sepia_header.TE(end) *1e3; % 20250614 KC: HEIDI expect TE in ms
 options.voxelAspectRatio        = headerAndExtraData.sepia_header.voxelSize;
 options.B0_dir                  = headerAndExtraData.sepia_header.B0_dir;
+
+% check and set default algorithm parameters
+algorParam                                      = check_and_set_algorithm_default(algorParam,options);
 
 % get algorithm parameters
 options.isFourierDomainFormula                  = algorParam.qsm.heidi_isFourierDomainFormula;
@@ -150,7 +131,7 @@ options.PostProcCone.tol                        = algorParam.qsm.heidi_PostProcC
 options.PostProcCone.tolEnergy                  = algorParam.qsm.heidi_PostProcCone_tolEnergy; % makes much better results
 
 % main - HEIDI
-[chi,~, ~,~,~,~,~,~,~,phaseDiscrepancy] = computesusceptibility_heidi(chi_raw,localField,options,logical(mask),Constraint,spatialWeightingMatrix);
+[chi,~, ~,~,~,~,~,~,~,phaseDiscrepancy] = computesusceptibility_heidi(chiRaw,localField,options,logical(mask),Constraint,spatialWeightingMatrix);
 
 phase2susceptibilityFactor=phase2susceptibilityfactor([], options);
 chi = (chi .* phase2susceptibilityFactor * 1e6) .* mask; 

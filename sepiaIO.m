@@ -32,13 +32,27 @@ cd(outputDir)
 
 % 1.2 log command window display to a text file
 % use current time as unique identifier
-identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
-
-logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
+try
+    stack = dbstack('-completenames');
+    if length(stack) >= 2
+        parentScriptName = stack(2).file;
+        [~,parentScriptName,~] = fileparts(parentScriptName);
+    else
+        parentScriptName = [];
+    end
+end
+identifier = datestr(datetime('now'),'yymmddHHMMSS');
+if ~isempty(parentScriptName)
+    logFilename          = fullfile(outputDir, strcat(parentScriptName,'.log',identifier));
+    errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
+end
+    
+% logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
 while exist(logFilename,'file') == 2
     % update current time as unique identifier
-    identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
-    logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
+    identifier = datestr(datetime('now'),'yymmddHHMMSS');
+    logFilename          = fullfile(outputDir, strcat(parentScriptName,'.log',identifier));
+    errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
 end
 diary(logFilename)
 
@@ -116,7 +130,7 @@ catch ME
     cd(currDir)
     
     % open a new text file for error message
-    errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
+    % errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
     fid = fopen(errorMessageFilename,'w');
     fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
     fprintf(fid,'The message was:\n\n');

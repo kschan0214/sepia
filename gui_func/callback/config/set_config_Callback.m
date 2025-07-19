@@ -296,6 +296,21 @@ popup_list       = methodQSMName;
 config_func_list = config_QSM_function;
 read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_func_list, h)
 
+% refine brain mask
+str_pattern     = '.qsm.isHEIDI';
+action_handle   = h.qsm.checkbox.isHeidi;
+val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
+% read HEIDI parameters if true
+if val
+    % matching popup list name
+    for j = 1:length(popup_list)
+        if strcmpi('LSQR+HEIDI',popup_list{j})
+            feval(config_func_list{j},h,'get',config_txt);
+            break
+        end
+    end
+end
+
 end
 
 end
