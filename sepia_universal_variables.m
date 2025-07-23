@@ -49,6 +49,10 @@ tissueName              = {'None',...
                            'Brain mask',...
                            'CSF'};
 
+% Method for two pass masking
+methodTwoPassName       = {'MGF 2 pass masking',...
+                           'None'};
+
 %% SWI/SMWI related parameters
 sepia_configuration_SWISMWI
 
