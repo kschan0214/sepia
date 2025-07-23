@@ -36,6 +36,8 @@ matrixSize      = double(matrixSize(:).');
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 method              = algorParam.qsm.method;
 reference_tissue    = algorParam.qsm.reference_tissue;
+two_pass_masking    = algorParam.qsm.two_pass;
+mfg_lambda          = algorParam.qsm.two_pass_lambda;
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 
@@ -99,6 +101,24 @@ end
 disp('Computing QSM map...');
 disp(['The following QSM algorithm will be used: ' method]);
 
+
+if two_pass_masking
+    % Calculate first pass mask based on the magnitude of the gradient of 
+    % the fieldmap, and original mask.
+    mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mfg_lambda);
+
+    % Calculate the 2nd pass mask by thresholding the noisemap (if available)
+    % throughout brain
+    if isfield(headerAndExtraData,'fieldmapSD')
+        mask_qsm_pass_2 = erode3d(mask_qsm_pass_1, headerAndExtraData.fieldmapSD);
+    else
+        % update reliable voxels with r2s? as in the field fitting mask
+    end
+    mask = imfill(mask_qsm_pass_1, "holes");
+
+end
+
+
 % General steps as follow in the wrapper function:
 % 1. input unit converted for optimal performance (if neccessary)
 % 2. main QSM algorithm
@@ -108,6 +128,21 @@ for k = 1:length(wrapper_QSM_function)
         chi = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
     end
 end
+
+if two_pass_masking
+    % perform second dipole inversion
+    for k = 1:length(wrapper_QSM_function)
+        if strcmpi(method,methodQSMName{k})
+        chi_pass_2 = feval(wrapper_QSM_function{k},localField,mask_qsm_pass_2,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
+        end
+    end
+
+    % Combine the two maps
+    chi(mask_qsm_pass_2) = 0;
+    chi = chi + chi_pass_2;
+end
+    
+
 
 % remove zero padding 
 chi = double(zeropad_odd_dimension(chi,'post',matrixSize));

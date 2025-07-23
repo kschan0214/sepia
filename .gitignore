@@ -15,3 +15,7 @@ addons/qsm/sandbox
 
 # testing segmentation
 atlas/
+
+# matlab project files
+*.prj
+resources
