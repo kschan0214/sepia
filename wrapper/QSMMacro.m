@@ -103,6 +103,8 @@ disp(['The following QSM algorithm will be used: ' method]);
 
 
 if two_pass_masking
+    disp('Two pass masking will be used ...');
+    disp(['The following QSM algorithm will be used: ' method]);
     % Calculate first pass mask based on the magnitude of the gradient of 
     % the fieldmap, and original mask.
     mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mfg_lambda);
@@ -141,8 +143,6 @@ if two_pass_masking
     chi(mask_qsm_pass_2) = 0;
     chi = chi + chi_pass_2;
 end
-    
-
 
 % remove zero padding 
 chi = double(zeropad_odd_dimension(chi,'post',matrixSize));
