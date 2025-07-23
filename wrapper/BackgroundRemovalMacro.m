@@ -85,7 +85,7 @@ disp(['The following method is being used: ' method]);
 
 for k = 1:length(wrapper_BFR_function)
     if strcmpi(method,methodBFRName{k})
-        RDF = feval(wrapper_BFR_function{k},totalField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
+        RDF = feval(wrapper_BFR_function{k},totalField,mask,matrixSize_new,voxelSize,algorParam,headerAndExtraData);
     end
 end
 disp('Done!');
