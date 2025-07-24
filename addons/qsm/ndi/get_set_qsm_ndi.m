@@ -46,7 +46,7 @@ switch lower(mode)
         config_txt = input;
         
         % first 3 edit fields
-        for k = 1:length(action_handle)
+        for k = 1:3 % PSF 2025.07.24 - bugfix since length(action_handle) = 4 with the last being the GPU flag
             pattern_curr    = str_pattern{k};
             val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
             set_non_nan_value(action_handle{k},'String',val)
