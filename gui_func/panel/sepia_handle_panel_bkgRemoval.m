@@ -149,7 +149,7 @@ for k = 1:length(methodBFRName)
 end
 
 end
-
+ 
 % callback for refine slider
 function SliderBkgRemoval_Callback(source,eventdata,h)
 

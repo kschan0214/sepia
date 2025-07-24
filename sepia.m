@@ -328,6 +328,10 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
     
     % reference tissue
     sepia_print_popup_as_string(fid,'.qsm.reference_tissue',h.qsm.popup.tissue);
+    % twopass method
+    sepia_print_popup_as_string(fid,'.qsm.twopass_method',h.qsm.popup.twopass);
+    % twopass threshold
+    sepia_print_edit_as_string(fid,'.qsm.twopass_lambda',h.qsm.edit.lambda);
     
     % set parameters for selected method
     print_method_popup_and_eval(fid, '.qsm.method', h.qsm.popup.qsm, methodQSMName, config_QSM_function, h);

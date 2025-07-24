@@ -36,8 +36,8 @@ matrixSize      = double(matrixSize(:).');
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 method              = algorParam.qsm.method;
 reference_tissue    = algorParam.qsm.reference_tissue;
-two_pass_masking    = algorParam.qsm.two_pass;
-mfg_lambda          = algorParam.qsm.two_pass_lambda;
+two_pass_masking    = algorParam.qsm.twopass_method;
+mfg_lambda          = algorParam.qsm.twopass_lambda;
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 
@@ -102,7 +102,7 @@ disp('Computing QSM map...');
 disp(['The following QSM algorithm will be used: ' method]);
 
 
-if two_pass_masking
+if strcmpi(two_pass_masking,methodTwoPassName{1})
     disp('Two pass masking will be used ...');
     disp(['The following QSM algorithm will be used: ' method]);
     % Calculate first pass mask based on the magnitude of the gradient of 
