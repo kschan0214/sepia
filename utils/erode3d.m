@@ -35,6 +35,6 @@ noise_mask(isnan(noise_mask) | isinf(noise_mask)) = 0;
 thresh     = mean(noise_mask(noise_mask~=0)); 
 
 eroded_mask(noise_mask >= thresh) = 1;
-eroded_mask = eroded_mask && mask;
+eroded_mask = eroded_mask .* mask;
 
 end

@@ -102,22 +102,34 @@ disp('Computing QSM map...');
 disp(['The following QSM algorithm will be used: ' method]);
 
 
-if strcmpi(two_pass_masking,methodTwoPassName{1})
+if strcmpi(two_pass_masking, methodTwoPassName{1})
     disp('Two pass masking will be used ...');
-    disp(['The following QSM algorithm will be used: ' method]);
+    disp(['The following masking algorithm will be used: ' two_pass_masking]);
+    fprintf(['Please cite:\nhttps://archive.ismrm.org/2024/3674.html for',...
+             ' MFG masking, and\nhttps://archive.ismrm.org/2022/2462.html',...
+             ' for the two-pass masking approach.\n'] )
     % Calculate first pass mask based on the magnitude of the gradient of 
     % the fieldmap, and original mask.
     mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mfg_lambda);
 
     % Calculate the 2nd pass mask by thresholding the noisemap (if available)
     % throughout brain
-    if isfield(headerAndExtraData,'fieldmapSD')
-        mask_qsm_pass_2 = erode3d(mask_qsm_pass_1, headerAndExtraData.fieldmapSD);
+    if isfield(headerAndExtraData.availableFileList,'fieldmapSD')
+        fieldmapSD = load_untouch_nii(headerAndExtraData.availableFileList.fieldmapSD);
+        mask_qsm_pass_2 = erode3d(mask_qsm_pass_1, fieldmapSD.img);
     else
         % update reliable voxels with r2s? as in the field fitting mask
     end
     mask = imfill(mask_qsm_pass_1, "holes");
+    % mask = imclose(mask_qsm_pass_1, strel('sphere',3));
 
+    % TEMPORARY FOR DEBUGGING
+    outputNiftiTemplate     = load_untouch_nii(headerAndExtraData.availableFileList.localField);
+    outputNiftiTemplate.img = [];
+
+    save_nii_quick(outputNiftiTemplate, mask, 'mask_qsm.nii');
+    save_nii_quick(outputNiftiTemplate, mask_qsm_pass_2, 'mask_qsm_pass_2.nii');
+    % TEMPORARY FOR DEBUGGING
 end
 
 
@@ -139,8 +151,16 @@ if two_pass_masking
         end
     end
 
+    % TEMPORARY FOR DEBUGGING
+    outputNiftiTemplate     = load_untouch_nii(headerAndExtraData.availableFileList.localField);
+    outputNiftiTemplate.img = [];
+
+    save_nii_quick(outputNiftiTemplate, chi, 'qsm_pass_1.nii');
+    save_nii_quick(outputNiftiTemplate, chi_pass_2, 'qsm_pass_2.nii');
+    % TEMPORARY FOR DEBUGGING
+
     % Combine the two maps
-    chi(mask_qsm_pass_2) = 0;
+    chi(mask_qsm_pass_2 > 0) = 0;
     chi = chi + chi_pass_2;
 end
 

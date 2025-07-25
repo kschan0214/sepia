@@ -50,7 +50,7 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
-outputFileList = construct_output_filename(outputDir, prefix, suffix);
+outputFileList = construct_output_filename(outputDir, prefix, algorParam,  suffix);
 
 %% Setting up Input
 disp('---------');
