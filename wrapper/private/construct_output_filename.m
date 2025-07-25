@@ -15,7 +15,7 @@
 % Date modified:
 %
 %
-function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, algorParam, ouputPrefix)
+function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, ouputPrefix, algorParam, outputSuffix)
 
 % phase related
 outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad' outputSuffix]);
@@ -69,3 +69,4 @@ outputFileList.sepiaHeaderUpsample = fullfile(outputDir, [ouputPrefix 'sepia_hea
 end
 
 end
+
