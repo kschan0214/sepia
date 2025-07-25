@@ -244,14 +244,16 @@ if ~isinf(exclude_threshold)
     end
 
     clear r2s magn 
-
+    
     fprintf('Saving other output...');
+    save_nii_quick(outputNiftiTemplate,r2s,   	                outputFileList.r2s);
+    save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
     save_nii_quick(outputNiftiTemplate,relativeResidualWeights,outputFileList.relativeResidualWeights);
     fprintf('Done.\n');
     
-    clear relativeResidual
+    clear relativeResidual r2s magn optimalCombinedMagnitude
     
     availableFileList.maskReliable              = outputFileList.maskReliable;
     availableFileList.relativeResidual          = outputFileList.relativeResidual;
@@ -836,3 +838,4 @@ if isEddyCorrect
 end
 
 end
+

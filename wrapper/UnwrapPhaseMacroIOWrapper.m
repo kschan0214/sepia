@@ -250,9 +250,10 @@ if ~isinf(exclude_threshold)
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
     save_nii_quick(outputNiftiTemplate,relativeResidualWeights, outputFileList.relativeResidualWeights);
+
     fprintf('Done.\n');
     
-    clear relativeResidual
+    clear relativeResidual optimalCombinedMagnitude
     
     availableFileList.maskReliable      = outputFileList.maskReliable;
     availableFileList.relativeResidual  = outputFileList.relativeResidual;
@@ -747,4 +748,5 @@ if isEddyCorrect
 end
 
 end
+
 
