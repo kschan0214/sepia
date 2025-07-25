@@ -244,15 +244,22 @@ if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
 
+
+% use current time as unique identifier
+identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
 % create a new m file
-configFilename = [outputDir filesep 'sepia_config.m'];
+configFilename = fullfile(outputDir, ['sepia_config' identifier '.m']);
+% configFilename = [outputDir filesep 'sepia_config.m'];
 if exist(configFilename,'file') == 2
-    counter = 1;
-    while exist(configFilename,'file') == 2
-        suffix = ['_' num2str(counter)];
-        configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
-        counter = counter + 1;
-    end
+    % get new time index
+    identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
+    configFilename = fullfile(outputDir, ['sepia_config' identifier '.m']);
+    % counter = 1;
+    % while exist(configFilename,'file') == 2
+    %     suffix = ['_' num2str(counter)];
+    %     configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
+    %     counter = counter + 1;
+    % end
 end
 fid = fopen(configFilename,'w');
 
@@ -286,14 +293,32 @@ fprintf(fid,'%% General algorithm parameters\n');
 fprintf(fid,'algorParam = struct();\n');
 % BET
 isbet = sepia_print_checkbox_value(fid,'.general.isBET',h.dataIO.checkbox.brainExtraction);
+sepia_print_popup_as_string(fid, '.general.brain_extraction_method',h.dataIO.popup.brainExtraction);
 if isbet
-    sepia_print_edit_as_string(fid,'.general.fractional_threshold',h.dataIO.edit.fractionalThres);
-    sepia_print_edit_as_string(fid,'.general.gradient_threshold',h.dataIO.edit.gradientThres);
+    switch h.dataIO.popup.brainExtraction.String{h.dataIO.popup.brainExtraction.Value,1} 
+        case 'FSL bet (MEDI)'
+            % for backward compatability
+            sepia_print_edit_as_string(fid,'.general.fractional_threshold',h.dataIO.edit.fractionalThres);
+            sepia_print_edit_as_string(fid,'.general.gradient_threshold',h.dataIO.edit.gradientThres);
+
+    end
+    
 end
 sepia_print_checkbox_value(fid,'.general.isInvert',h.dataIO.checkbox.invertPhase);
 
 % refine brain mask
 sepia_print_checkbox_value(fid,'.general.isRefineBrainMask',h.dataIO.checkbox.refineBrainMask);
+
+% denoise
+isDenoise = sepia_print_checkbox_value(fid,'.general.isDenoise',h.dataIO.checkbox.denoise);
+if isDenoise
+    sepia_print_edit_as_string(fid,'.general.denoiseKernel',h.dataIO.edit.denoise);
+end
+% upsample
+isUpsample = sepia_print_checkbox_value(fid,'.general.isUpsample',h.dataIO.checkbox.upsample);
+if isUpsample
+    sepia_print_edit_as_string(fid,'.general.target_resolution',h.dataIO.edit.upsample);
+end
 
 % phase unwrap algorithm parameters
 if strcmpi(tab,'SEPIA') || strcmpi(tab,'Phase unwrapping')
@@ -443,6 +468,7 @@ function switch_tab_to_SEPIA
     set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
     % BET is supported with this tab
     set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+    set(h.dataIO.popup.brainExtraction,     'Enable','on');
         % trigger followup callback to switch method panel
         feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
     % phase invert is supported with this tab
@@ -461,6 +487,9 @@ function switch_tab_to_SEPIA
     set(h.dataIO.button.inputData3,         'Enable','on');
     % refine brain mask is supported with this tab
     set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
+    % denoise and upsample
+    set(h.dataIO.checkbox.denoise,          'Enable','on');
+    set(h.dataIO.checkbox.upsample,         'Enable','on');
 
     % phase unwrap
     set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
@@ -478,6 +507,7 @@ global h tooltip fieldString
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
 % BET is supported with this tab
 set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+set(h.dataIO.popup.brainExtraction,     'Enable','on');
     % trigger followup callback to switch method panel
     feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 % phase invert is supported with this tab
@@ -496,6 +526,9 @@ set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
 set(h.dataIO.button.inputData3,         'Enable','off');
 % refine brain mask is supported with this tab
 set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','on');
+set(h.dataIO.checkbox.upsample,         'Enable','on');
 
 % phase unwrap
 set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
@@ -509,6 +542,7 @@ global h tooltip fieldString
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{2});
 % no BET support with this tab
 set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+set(h.dataIO.popup.brainExtraction,     'Enable','on');
     % trigger followup callback to switch method panel
     feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -529,6 +563,12 @@ set(h.dataIO.edit.inputData3,           'Enable','on');
 set(h.dataIO.button.inputData3,         'Enable','on');
 % no refine brain mask with this tab
 set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','off','Value',0);
+set(h.dataIO.checkbox.upsample,         'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.denoise.Callback{1},h.dataIO.checkbox.denoise,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+    feval(h.dataIO.checkbox.upsample.Callback{1},h.dataIO.checkbox.upsample,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
 
 % background field
 set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
@@ -542,6 +582,7 @@ global h tooltip fieldString
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
 % no BET support with this tab
 set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+set(h.dataIO.popup.brainExtraction,     'Enable','off');
     % trigger followup callback to switch method panel
     feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -562,6 +603,12 @@ set(h.dataIO.edit.inputData3,           'Enable','on');
 set(h.dataIO.button.inputData3,         'Enable','on');
 % no refine brain mask with this tab
 set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','off','Value',0);
+set(h.dataIO.checkbox.upsample,         'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.denoise.Callback{1},h.dataIO.checkbox.denoise,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+    feval(h.dataIO.checkbox.upsample.Callback{1},h.dataIO.checkbox.upsample,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
 % QSM
 set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
 end
@@ -586,6 +633,12 @@ set(h.dataIO.button.inputData1,         'Enable','off');
 set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
 set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
 set(h.dataIO.button.inputData3,         'Enable','off');
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','off','Value',0);
+set(h.dataIO.checkbox.upsample,         'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.denoise.Callback{1},h.dataIO.checkbox.denoise,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+    feval(h.dataIO.checkbox.upsample.Callback{1},h.dataIO.checkbox.upsample,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
 end
 
 function switch_tab_to_Analysis

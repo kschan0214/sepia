@@ -22,9 +22,13 @@
 %
 function h = sepia_handle_panel_dataIO(hParent,h,position)
 
+sepia_universal_variables;
+
 % default value
 defaultFractionalThres  = 0.5;
 defaultGradientThres    = 0; 
+defaultUpsample         = 1;
+defaultWindow           = 5;
 
 open_icon = imread('folder@0,3x.jpg');
 open_icon = imresize(open_icon,[1 1]*16);
@@ -42,7 +46,9 @@ tooltip.dataIO.SEPIA.invertPhase= 'Reverse the direction of frequency shift. Thi
 tooltip.dataIO.SEPIA.BET        = 'Use FSL bet for brain extraction';
 tooltip.dataIO.SEPIA.fractThres = 'Fractional intensity threshold (0->1); default=0.5; smaller values give larger brain outline estimates';
 tooltip.dataIO.SEPIA.gradThres  = 'Vertical gradient in fractional intensity threshold (-1->1); default=0; positive values give larger brain outline at bottom, smaller at top';
-tooltip.dataIO.SEPIA.refineBrainMask = 'Thresholding fast R2* voxels on brain edges';
+tooltip.dataIO.SEPIA.refineBrainMask = 'Thresholding fast R2* voxels on brain edges (support multi-echo data only)';
+tooltip.dataIO.SEPIA.upsample   = 'Upsample to target isotropic resolution using k-space filling. Note that the final output will be at the upsampled resolution';
+tooltip.dataIO.SEPIA.denoise    = 'Denoise data using tensor-MP-PCA. Note that denoising takes time and varies depending on data and kernel sizes';
 
 %% layout of the panel
 nrow        = 5;
@@ -105,37 +111,89 @@ h.StepsPanel.dataIO = uipanel(hParent,'Title','I/O',...
  
     % row 3, col 2
     % brain extraction
-    h.dataIO.checkbox.brainExtraction = uicontrol('Parent',h.StepsPanel.dataIO,...
-        'Style','checkbox','String','FSL brain extraction (bet),',...
-        'units','normalized','Position',[left(2) bottom(3) width*0.5 height],...
+    h.dataIO.checkbox.brainExtraction = uicontrol('Parent',panelParent,...
+        'Style','checkbox','String','Brain extraction',...
+        'units','normalized','Position',[left(2) bottom(3) width*0.35 height],...
+        'backgroundcolor',get(h.fig,'color'));
+
+    % check is synthstrip is available
+    [status, ~] = system('mri_synthstrip');
+    if status > 1 % if not then remove options
+        skullstrippingMethod{2} = [];
+        skullstrippingMethod{3} = [];
+    end
+    h.dataIO.popup.brainExtraction = uicontrol('Parent',panelParent,...
+        'Style','popup','String',skullstrippingMethod,...
+        'units','normalized','Position',[left(2)+width*0.35 bottom(3) width*0.35 height],...
+        'Enable','off',...
         'backgroundcolor',get(h.fig,'color'));
     
     % fractional threshold
     wratio = 0.5;
     [h.dataIO.text.fractionalThres,h.dataIO.edit.fractionalThres] = sepia_construct_text_edit(panelParent,...
-        '-f',defaultFractionalThres,[left(2)+width*0.5 bottom(3) width*0.25 height],wratio);
+        '-f',defaultFractionalThres,[left(2)+width*0.7 bottom(3) width*0.15 height],wratio);
     set(h.dataIO.text.fractionalThres, 'HorizontalAlignment','right');
     set(h.dataIO.edit.fractionalThres, 'Enable','off');
     
     % gradient threshold
     wratio = 0.5;
     [h.dataIO.text.gradientThres,h.dataIO.edit.gradientThres] = sepia_construct_text_edit(panelParent,...
-        '-g',defaultGradientThres,[left(2)+width*0.75 bottom(3) width*0.25 height],wratio);
+        '-g',defaultGradientThres,[left(2)+width*0.85 bottom(3) width*0.15 height],wratio);
     set(h.dataIO.text.gradientThres, 'HorizontalAlignment','right');
     set(h.dataIO.edit.gradientThres, 'Enable','off');
 
     % Refine brain mask using R2*
-    h.dataIO.checkbox.refineBrainMask = uicontrol('Parent',h.StepsPanel.dataIO,...
-        'Style','checkbox','String','Refine brain mask using R2* (Multi-echo data only)',...
-        'units','normalized','Position',[left(2) bottom(4) width height],...
+    h.dataIO.checkbox.refineBrainMask = uicontrol('Parent',panelParent,...
+        'Style','checkbox','String','Refine mask',...
+        'units','normalized','Position',[left(2) bottom(4) width*0.5 height],...
+        'backgroundcolor',get(h.fig,'color'));
+
+    % row 4, col 2
+    % invert pahse
+    h.dataIO.checkbox.invertPhase = uicontrol('Parent',panelParent,...
+        'Style','checkbox','String','Invert phase',...
+        'units','normalized','Position',[left(2)+width*0.5 bottom(4) width height],...
         'backgroundcolor',get(h.fig,'color'));
 
     % row 5, col 2
-    % invert pahse
-    h.dataIO.checkbox.invertPhase = uicontrol('Parent',h.StepsPanel.dataIO,...
-        'Style','checkbox','String','Invert phase data',...
-        'units','normalized','Position',[left(2) bottom(5) width height],...
+    % denoising
+    h.dataIO.checkbox.denoise = uicontrol('Parent',panelParent ,...
+        'Style','checkbox','String','T-MPPCA denoise, kernel (mm):',...
+        'units','normalized','position',[left(2) bottom(5) width*0.4 height],...
+        'HorizontalAlignment','left',...
         'backgroundcolor',get(h.fig,'color'));
+    h.dataIO.edit.denoise = uicontrol('Parent',panelParent,...
+        'Style','edit',...
+        'String',num2str(defaultWindow),...
+        'units','normalized','position',[left(2)+width*0.4 bottom(5) width*0.05 height],...
+        'backgroundcolor','white',...
+        'Enable','off');
+    h.dataIO.slider.denoise = uicontrol('Parent',panelParent,...
+        'Style','slider',...
+        'Value',defaultWindow,...
+        'units','normalized','position',[left(2)+width*0.45 bottom(5) 0.01 height],...
+        'Max',20, 'Min',3,'SliderStep',[1 2]./(20 - 3),...
+        'Enable','off');
+
+    % row 5, col 2
+    % upsampling
+    h.dataIO.checkbox.upsample = uicontrol('Parent',panelParent ,...
+        'Style','checkbox','String','Upsamling target (mm):',...
+        'units','normalized','position',[left(2)+width*0.5 bottom(5) width*0.35 height],...
+        'HorizontalAlignment','left',...
+        'backgroundcolor',get(h.fig,'color'));
+    h.dataIO.edit.upsample = uicontrol('Parent',panelParent,...
+        'Style','edit',...
+        'String',num2str(defaultUpsample),...
+        'units','normalized','position',[left(2)+width*0.85 bottom(5) width*0.1 height],...
+        'backgroundcolor','white',...
+        'Enable','off');
+    h.dataIO.slider.upsample = uicontrol('Parent',panelParent,...
+        'Style','slider',...
+        'Value',defaultUpsample,...
+        'units','normalized','position',[left(2)+width*0.95 bottom(5) 0.01 height],...
+        'Max',1.5, 'Min',0.05,'SliderStep',[0.05 0.1]./(1.5-0.05),...
+        'Enable','off');
 
     
 %% set tooltips
@@ -151,6 +209,8 @@ set(h.dataIO.checkbox.brainExtraction,	'Tooltip',tooltip.dataIO.SEPIA.BET);
 set(h.dataIO.text.fractionalThres,      'Tooltip',tooltip.dataIO.SEPIA.fractThres);
 set(h.dataIO.text.gradientThres,        'Tooltip',tooltip.dataIO.SEPIA.gradThres);
 set(h.dataIO.checkbox.refineBrainMask,  'Tooltip',tooltip.dataIO.SEPIA.refineBrainMask);
+set(h.dataIO.checkbox.upsample,         'Tooltip',tooltip.dataIO.SEPIA.upsample);
+set(h.dataIO.checkbox.denoise,          'Tooltip',tooltip.dataIO.SEPIA.denoise);
 
 %% set callback function
 % checkbox/edit pair
@@ -164,7 +224,79 @@ set(h.dataIO.button.inputData2,         'Callback', {@ButtonOpen_Callback,h,'inp
 set(h.dataIO.button.inputData3,         'Callback', {@ButtonOpen_Callback,h,'inputdata3'});
 set(h.dataIO.button.inputHeader,        'Callback', {@ButtonOpen_Callback,h,'header'});
 
+% brain extraction others
+set(h.dataIO.popup.brainExtraction,     'Callback', {@popupBrainExtraction_Callback,h});
 set(h.dataIO.edit.fractionalThres,    	'Callback', {@EditInputMinMax_Callback,defaultFractionalThres,0,0,1});
 set(h.dataIO.edit.gradientThres,        'Callback', {@EditInputMinMax_Callback,defaultGradientThres,0,-1,1});
+
+% denoising
+set(h.dataIO.checkbox.denoise,	        'Callback', {@CheckboxEditPair_Callback,{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1});
+set(h.dataIO.edit.denoise,              'Callback', {@EditInputMinMax_Callback,defaultWindow,true,3,20});
+set(h.dataIO.slider.denoise,            'Callback', {@Slider_denoise_Callback,h});
+% upsampling
+set(h.dataIO.checkbox.upsample,	        'Callback', {@CheckboxEditPair_Callback,{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1});
+set(h.dataIO.edit.upsample,             'Callback', {@EditInputMinMax_Callback,defaultUpsample,false,0.01,1.5});
+set(h.dataIO.slider.upsample,           'Callback', {@Slider_upsample_Callback,h});
     
+end
+
+function CheckboxBrainExtraction_Callback(source,eventdata,h)
+% if BET checkbox is checked then empty mask edit field and disable open
+% pushbutton
+sepia_universal_variables;
+
+if ~h.dataIO.checkbox.brainExtraction.Value
+    set(h.dataIO.button.maskdir,        'Enable','on');
+    set(h.dataIO.edit.maskdir,          'Enable','on');
+    set(h.dataIO.popup.brainExtraction, 'Enable', 'off');
+    set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
+    set(h.dataIO.edit.gradientThres,    'Enable', 'off')
+else
+    set(h.dataIO.button.maskdir,        'Enable','off');
+    set(h.dataIO.edit.maskdir,          'Enable','off');
+    set(h.dataIO.edit.maskdir,          'String','');
+    set(h.dataIO.popup.brainExtraction, 'Enable', 'on');
+    if strcmp(h.dataIO.popup.brainExtraction.String{h.dataIO.popup.brainExtraction.Value,1},skullstrippingMethod{1})
+        set(h.dataIO.edit.fractionalThres,  'Enable', 'on');
+        set(h.dataIO.edit.gradientThres,    'Enable', 'on');
+    end
+end
+
+end
+
+function popupBrainExtraction_Callback(source,eventdata,h) 
+
+sepia_universal_variables;
+
+% get selected background removal method
+method = source.String{source.Value,1} ;
+
+switch method
+    case skullstrippingMethod{1} % FSL bet
+        set(h.dataIO.edit.fractionalThres,  'Enable', 'on');
+        set(h.dataIO.edit.gradientThres,    'Enable', 'on');
+
+    case skullstrippingMethod{2} % FSL betsynthstrip
+        set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
+        set(h.dataIO.edit.gradientThres,    'Enable', 'off');
+
+    case skullstrippingMethod{3} % FSL betsynthstrip
+        set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
+        set(h.dataIO.edit.gradientThres,    'Enable', 'off');
+end
+
+end
+
+function Slider_upsample_Callback(source,eventdata,h)
+
+% get slider value and update the edit field
+set(h.dataIO.edit.upsample, 'String', num2str(source.Value))
+
+end
+
+function Slider_denoise_Callback(source,eventdata,h)
+
+% get slider value and update the edit field
+set(h.dataIO.edit.denoise, 'String', num2str(source.Value))
+
 end
