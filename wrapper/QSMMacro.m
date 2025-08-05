@@ -126,13 +126,6 @@ if strcmpi(two_pass_masking, methodTwoPassName{1})
     mask = imfill(mask_qsm_pass_1, "holes");
     % mask = imclose(mask_qsm_pass_1, strel('sphere',3));
 
-    % TEMPORARY FOR DEBUGGING
-    outputNiftiTemplate     = load_untouch_nii(headerAndExtraData.availableFileList.localField);
-    outputNiftiTemplate.img = [];
-
-    save_nii_quick(outputNiftiTemplate, mask, 'mask_qsm.nii');
-    save_nii_quick(outputNiftiTemplate, mask_qsm_pass_2, 'mask_qsm_pass_2.nii');
-    % TEMPORARY FOR DEBUGGING
 end
 
 
@@ -153,14 +146,6 @@ if two_pass_masking
         chi_pass_2 = feval(wrapper_QSM_function{k},localField,mask_qsm_pass_2,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
         end
     end
-
-    % TEMPORARY FOR DEBUGGING
-    outputNiftiTemplate     = load_untouch_nii(headerAndExtraData.availableFileList.localField);
-    outputNiftiTemplate.img = [];
-
-    save_nii_quick(outputNiftiTemplate, chi, 'qsm_pass_1.nii');
-    save_nii_quick(outputNiftiTemplate, chi_pass_2, 'qsm_pass_2.nii');
-    % TEMPORARY FOR DEBUGGING
 
     % Combine the two maps
     chi(mask_qsm_pass_2 > 0) = 0;
