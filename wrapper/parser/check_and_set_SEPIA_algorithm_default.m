@@ -28,7 +28,8 @@ try algorParam2.general.isGPU       = algorParam.general.isGPU;     catch; algor
 try algorParam2.general.isBET   	= algorParam.general.isBET; 	catch; algorParam2.general.isBET   	= false;	end
 try algorParam2.general.fractional_threshold   	= algorParam.general.fractional_threshold; 	catch; algorParam2.general.fractional_threshold   	= 0.5;	end
 try algorParam2.general.gradient_threshold   	= algorParam.general.gradient_threshold; 	catch; algorParam2.general.gradient_threshold   	= 0;	end
-try algorParam2.general.isRefineBrainMask   	= algorParam.general.isRefineBrainMask; 	catch; algorParam2.general.isRefineBrainMask   	= 0;	end
+try algorParam2.general.isRefineBrainMask   	= algorParam.general.isRefineBrainMask; 	catch; algorParam2.general.isRefineBrainMask   	    = 0;	end
+try algorParam2.general.isDenoise   	        = algorParam.general.isDenoise; 	        catch; algorParam2.general.isDenoise   	            = 0;	end
 
 % default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
 try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = methodEchoCombineName{2};	end
@@ -53,7 +54,8 @@ try algorParam2.bfr.refine_order        = algorParam.bfr.refine_order;	catch; al
 
 % default background field removal method is TKD
 try algorParam2.qsm.method              = algorParam.qsm.method;            catch; algorParam2.qsm.method           = methodQSMName{1};	end
-try algorParam2.qsm.reference_tissue	= algorParam.qsm.reference_tissue;	catch; algorParam2.qsm.reference_tissue	= 'None';      	end
+try algorParam2.qsm.reference_tissue	= algorParam.qsm.reference_tissue;	catch; algorParam2.qsm.reference_tissue	= 'None';      	    end
+try algorParam2.qsm.isTwoPass	        = algorParam.qsm.isTwoPass;	        catch; algorParam2.qsm.isTwoPass	    = 'None';      	    end
 
 if strcmp(algorParam2.unwrap.echoCombMethod ,'ROMEO total field calculation')
     algorParam2.unwrap.unwrapMethod = 'ROMEO';

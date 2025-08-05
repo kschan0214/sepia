@@ -36,8 +36,7 @@ matrixSize      = double(matrixSize(:).');
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 method              = algorParam.qsm.method;
 reference_tissue    = algorParam.qsm.reference_tissue;
-two_pass_masking    = algorParam.qsm.twopass_method;
-mfg_lambda          = algorParam.qsm.twopass_lambda;
+two_pass_masking    = algorParam.qsm.isTwoPass;
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 
@@ -106,11 +105,13 @@ if strcmpi(two_pass_masking, methodTwoPassName{1})
     disp('Two pass masking will be used ...');
     disp(['The following masking algorithm will be used: ' two_pass_masking]);
     fprintf(['Please cite:\nhttps://archive.ismrm.org/2024/3674.html for',...
-             ' MFG masking, and\nhttps://archive.ismrm.org/2022/2462.html',...
-             ' for the two-pass masking approach.\n'] )
+             ' MFG masking, \nhttps://archive.ismrm.org/2022/2462.html',...
+             ' for the two-pass masking approach, and\nhttps://doi.org/10.1002/mrm.29048',...
+             ' also for two-pass QSM.'] )
     % Calculate first pass mask based on the magnitude of the gradient of 
     % the fieldmap, and original mask.
-    mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mfg_lambda);
+    mgf_lambda          = algorParam.qsm.twopass_lambda;
+    mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mgf_lambda);
 
     % Calculate the 2nd pass mask by thresholding the noisemap (if available)
     % throughout brain

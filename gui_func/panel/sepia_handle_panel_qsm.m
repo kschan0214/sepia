@@ -156,8 +156,8 @@ switch source.String{source.Value}
     
     case methodTwoPassName{1}
     % get slider value and update the edit field
-    set(h.qsm.edit.lambda,    'String', 0.5);
-    set(h.qsm.slider.lambda,  'Value',  0.5);
+    set(h.qsm.edit.lambda,    'String', 0.2);
+    set(h.qsm.slider.lambda,  'Value',  0.2);
     set(h.qsm.edit.lambda,    'enable', 'on');
     set(h.qsm.slider.lambda,  'enable', 'on');
 

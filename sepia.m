@@ -354,7 +354,7 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
     % reference tissue
     sepia_print_popup_as_string(fid,'.qsm.reference_tissue',h.qsm.popup.tissue);
     % twopass method
-    sepia_print_popup_as_string(fid,'.qsm.twopass_method',h.qsm.popup.twopass);
+    sepia_print_popup_as_string(fid,'.qsm.isTwoPass',h.qsm.popup.twopass);
     % twopass threshold
     sepia_print_edit_as_string(fid,'.qsm.twopass_lambda',h.qsm.edit.lambda);
     
