@@ -26,7 +26,7 @@ function h = sepia_handle_panel_qsm(hParent,h,position)
 sepia_universal_variables;
 
 % Default value
-defaultMFGThreshold  = 0.5;
+defaultMFGThreshold  = 0.7;
 
 tooltip.QSM.panel.method    = 'Select a QSM algorithm'; 
 tooltip.QSM.panel.reference	= 'Region used to normalise the magnetic susceptibility map';
@@ -156,8 +156,8 @@ switch source.String{source.Value}
     
     case methodTwoPassName{1}
     % get slider value and update the edit field
-    set(h.qsm.edit.lambda,    'String', 0.2);
-    set(h.qsm.slider.lambda,  'Value',  0.2);
+    set(h.qsm.edit.lambda,    'String', source.String{source.Value});
+    set(h.qsm.slider.lambda,  'Value',  source.Value);
     set(h.qsm.edit.lambda,    'enable', 'on');
     set(h.qsm.slider.lambda,  'enable', 'on');
 

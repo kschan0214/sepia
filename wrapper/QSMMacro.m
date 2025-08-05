@@ -105,21 +105,23 @@ if strcmpi(two_pass_masking, methodTwoPassName{1})
     disp('Two pass masking will be used ...');
     disp(['The following masking algorithm will be used: ' two_pass_masking]);
     fprintf(['Please cite:\nhttps://archive.ismrm.org/2024/3674.html for',...
-             ' MFG masking, \nhttps://archive.ismrm.org/2022/2462.html',...
+             ' MGF masking, \nhttps://archive.ismrm.org/2022/2462.html',...
              ' for the two-pass masking approach, and\nhttps://doi.org/10.1002/mrm.29048',...
-             ' also for two-pass QSM.'] )
+             ' if you like for a more recent reference on the application of two-pass masked QSM.\n'] )
     % Calculate first pass mask based on the magnitude of the gradient of 
     % the fieldmap, and original mask.
-    mgf_lambda          = algorParam.qsm.twopass_lambda;
+    mgf_lambda      = algorParam.qsm.twopass_lambda;
     mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mgf_lambda);
 
     % Calculate the 2nd pass mask by thresholding the noisemap (if available)
     % throughout brain
-    if isfield(headerAndExtraData.availableFileList,'fieldmapSD')
+    if not(isempty(headerAndExtraData.availableFileList.fieldmapSD))
         fieldmapSD = load_untouch_nii(headerAndExtraData.availableFileList.fieldmapSD);
         mask_qsm_pass_2 = erode3d(mask_qsm_pass_1, fieldmapSD.img);
     else
-        % update reliable voxels with r2s? as in the field fitting mask
+        % Only MGF refinement, no further noise based refinement performed
+        mask_qsm_pass_2 = mask_qsm_pass_1;
+        mask_qsm_pass_1 = mask;
     end
     mask = imfill(mask_qsm_pass_1, "holes");
     % mask = imclose(mask_qsm_pass_1, strel('sphere',3));
