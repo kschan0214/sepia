@@ -51,6 +51,7 @@ magn = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', mat
 Mask_CSF = [];
 
 if ~isempty(magn) && size(magn,4)>1 % maybe add some statement regarding multi-echo data otherwise this wont be possible
+    sepia_addpath('MEDI');
 
     % if size(magn,4) == 1
     %     error('For magnitude data, only multi-echo data is supported. Please select a 4D [x,y,z,t] magnitude dataset or remove it from the input name');
