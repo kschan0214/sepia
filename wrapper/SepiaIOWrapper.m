@@ -57,8 +57,6 @@ fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 fprintf('Output filename suffix : %s\n',suffix);
 
-outputFileList = construct_output_filename(outputDir, prefix, algorParam, suffix);
-
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 % general algorithm parameters
@@ -120,9 +118,6 @@ availableFileList           = io_05_reverse_phase(availableFileList, outputFileL
 display_sepia_header_info_4wrapper;
 
 %%%%%% Step 6: get signal mask
-disp('-----------');
-disp('Signal mask');
-disp('-----------');
 % maskFullName          : mask filename
 % inputDir              : intput directory of phase image
 % sepia_header          : sepia header
@@ -546,143 +541,21 @@ end
 %% I/O Step 6: loading signal mask
 function availableFileList          = io_06_get_signal_mask(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
 
-sepia_universal_variables;
-
-isBET               = algorParam.general.isBET;
-if isfield(algorParam.general, 'brain_extraction_method')
-    brainExtractMethod  = algorParam.general.brain_extraction_method;
-else
-    brainExtractMethod = skullstrippingMethod{1};
-end
-if strcmp(brainExtractMethod,skullstrippingMethod{1})
-    fractional_threshold    = algorParam.general.fractional_threshold;
-    gradient_threshold      = algorParam.general.gradient_threshold;
-end
-
-matrixSize  = sepia_header.matrixSize;
-voxelSize   = sepia_header.voxelSize;
-
-mask        = [];
-maskList    = dir(fullfile(inputDir,'*mask*nii*'));
-
-% Scenario: No specified mask file + No check BET + there is a file called mask in the input directory
-if isempty(maskFullName) && ~isempty(maskList) && ~isBET
-    
-    fprintf('No mask file is specified but a mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
-    disp('Trying to load the file as signal mask');
-    
-    maskFullName = fullfile(inputDir, maskList(1).name);
-end
-
-% Scenario: User provided a mask file or above scenario was satified
-if ~isempty(maskFullName)
-    
-    % load mask file
-    mask = load_nii_img_only(maskFullName) > 0;
-    
-    % make sure the mask has the same dimension as other input data
-    if ~isequal(size(mask),matrixSize)
-        disp('The file does not have the same dimension as other images.')
-        mask = [];
-    else
-        availableFileList.mask = maskFullName;
-        disp('Mask file is checked.');
-    end
-end
-
-% if no mask is found then display the following message
-if isempty(mask) && ~isBET
-    disp('No mask data is loaded. Using FSL BET to obtain brain mask.');
-end
-    
-% if BET is checked or no mask is found, run FSL's bet
-if isempty(mask) || isBET
-    
-    magn = load_nii_img_only(availableFileList.magnitude);
-    mag_e1 = magn(:,:,:,1);
-
-    % for synthstrip
-    [temp_dir,~,~] = fileparts(outputFileList.maskBrain);
-    temp_nii = fullfile(temp_dir,'temp.nii.gz');
-
-    switch brainExtractMethod
-        case skullstrippingMethod{1}    % MEDI implementation of BET
-    
-            sepia_addpath('MEDI');
-            
-            disp('Performing FSL BET...');
-            % Here uses MEDI toolboxes MEX implementation
-            mask = BET(mag_e1,matrixSize,voxelSize,fractional_threshold,gradient_threshold);
-            disp('Signal mask is obtained.');
-
-            fprintf('Saving signal mask...')
-            save_nii_quick(outputNiftiTemplate,mask, outputFileList.maskBrain);
-
-            fprintf('Done!\n');
-            
-
-        case skullstrippingMethod{2}    % synthstrip
-
-            save_nii_quick(outputNiftiTemplate,mag_e1, temp_nii);
-
-            cmd = sprintf('mri_synthstrip -i %s -m %s',temp_nii,outputFileList.maskBrain);
-
-            status = system(cmd);
-            if status ~= 0
-                error('Failed running SynthStrip in the system. Please check if the tool is available in the PATH environment ot use other methods instead.');
-            end
-            delete(temp_nii);
-
-        case skullstrippingMethod{3}    % synthstrip
-
-            save_nii_quick(outputNiftiTemplate,mag_e1, temp_nii);
-
-            cmd = sprintf('mri_synthstrip -i %s -m %s --no-csf',temp_nii,outputFileList.maskBrain);
-
-            status = system(cmd);
-            if status ~= 0
-                error('Failed running SynthStrip in the system. Please check if the tool is available in the PATH environment ot use other methods instead.');
-            end
-            delete(temp_nii);
-    end
-
-    if exist(outputFileList.maskBrain,'file')
-        fprintf('Brain extraction Done!\n');
-        availableFileList.mask = outputFileList.maskBrain;
-    else
-        error('No signal mask is found. QSM cannot be run without a signal mask.');
-    end
-end
+% PSF20251110: Separate wrapper to ensure SepiaIOWrapper and 
+% UnwrapPhaseMacroIOWrapper use the same masking structure and backend
+availableFileList = MaskWrapper(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
 end
 
 %% I/O Step 7: refine brain mask
 function availableFileList          = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
 
-TE          = sepia_header.TE;
-voxelSize   = sepia_header.voxelSize;
-isMultiEcho         = numel(TE)>1;
-isRefineBrainMask   = algorParam.general.isRefineBrainMask;
-
-if ~isMultiEcho
-    isRefineBrainMask = 0;
-    disp('Refine brain mask only works with multi-echo data');
-end
-
-if isRefineBrainMask
-    disp('Refine brain using R2* info');
-    magn        = double(load_nii_img_only(availableFileList.magnitude));
-    mask        = double(load_nii_img_only(availableFileList.mask));
-    r2s         = R2star_trapezoidal(magn, TE);
-    mask_refine = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
-
-    % save the eddy current corrected output
-    fprintf('Saving refined brain mask...');
-    save_nii_quick(outputNiftiTemplate, mask_refine, outputFileList.maskRefine);
-    fprintf('Done!\n');
-
-    % update availableFileList
-    availableFileList.mask = outputFileList.maskRefine;
+% PSF20251110: Separate wrapper for mask refinement, also used for two-pass
+% masking, and to unify the sub-modules of UnwrapPhaseMacroIOWrapper and
+% SepiaIOWrapper
+if algorParam.general.isRefineBrainMask
+    algorParam.msk.refineMethod = 'r2s-refine';
+    availableFileList = MaskRefinementWrapper(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 end
 
 end

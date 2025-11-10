@@ -18,10 +18,10 @@
 function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, ouputPrefix, algorParam, outputSuffix)
 
 % phase related
-outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad' outputSuffix]);
-outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_reverse' outputSuffix]);
-outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_bipolarcorr' outputSuffix]);
-outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_unwrapped' outputSuffix]);
+outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_desc-rad' outputSuffix]);
+outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-reverse' outputSuffix]);
+outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-bipolarcorr' outputSuffix]);
+outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_desc-unwrapped' outputSuffix]);
 
 % standard output
 outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap' outputSuffix]);
@@ -39,8 +39,8 @@ outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain' 
 outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable' outputSuffix]);
 outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield' outputSuffix]);
 outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM' outputSuffix]);
+outputFileList.maskQSM2pass     = fullfile(outputDir, [ouputPrefix 'mask_QSM-2pass' outputSuffix]);
 outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion' outputSuffix]);
-outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine' outputSuffix]);
 
 % R2*
 outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap' outputSuffix]);
@@ -49,22 +49,22 @@ outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map' outpu
 
 % misc
 outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase' outputSuffix]);
-outputFileList.optimalCombinedMagnitude = fullfile(outputDir, [ouputPrefix 'mag_optimal' outputSuffix]);
+outputFileList.optimalCombinedMagnitude = fullfile(outputDir, [ouputPrefix 'part-mag_desc-optimalcombined' outputSuffix]);
 
 if algorParam.general.isDenoise
 ouputPrefix = strcat(ouputPrefix,'denoised_');
-outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag.nii.gz']);
-outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
-outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma.nii.gz']);
-outputFileList.snrgain          = fullfile(outputDir, [ouputPrefix 'SNRgain.nii.gz']);
-outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P.nii.gz']);
+outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag_desc-denoised' outputSuffix]);
+outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase_desc-denoised' outputSuffix]);
+outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma' outputSuffix]);
+outputFileList.snrgain          = fullfile(outputDir, [ouputPrefix 'SNRgain' outputSuffix]);
+outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P' outputSuffix]);
 end
 
 if algorParam.general.isUpsample
 ouputPrefix = strcat(ouputPrefix,'upsampled_');
-outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag.nii.gz']);
-outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
-outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled.nii.gz']);
+outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag_desc-upsampled' outputSuffix]);
+outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-upsampled' outputSuffix]);
+outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled' outputSuffix]);
 outputFileList.sepiaHeaderUpsample = fullfile(outputDir, [ouputPrefix 'sepia_header.mat']);
 end
 

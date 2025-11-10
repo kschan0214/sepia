@@ -101,9 +101,10 @@ disp('Computing QSM map...');
 disp(['The following QSM algorithm will be used: ' method]);
 
 
-if strcmpi(two_pass_masking, methodTwoPassName{1})
+switch two_pass_masking
+    case methodTwoPassName{2}
     disp('Two pass masking will be used ...');
-    disp(['The following masking algorithm will be used: ' two_pass_masking]);
+    disp(['The following masking algorithm will be used: ' methodTwoPassName{2}]);
     fprintf(['Please cite:\nhttps://archive.ismrm.org/2024/3674.html for',...
              ' MGF masking, \nhttps://archive.ismrm.org/2022/2462.html',...
              ' for the two-pass masking approach, and\nhttps://doi.org/10.1002/mrm.29048',...
@@ -121,9 +122,9 @@ if strcmpi(two_pass_masking, methodTwoPassName{1})
     else
         % Only MGF refinement, no further noise based refinement performed
         mask_qsm_pass_2 = mask_qsm_pass_1;
-        mask_qsm_pass_1 = mask;
+        % mask_qsm_pass_1 = mask;
     end
-    mask = imfill(mask_qsm_pass_1, "holes");
+    % mask = imfill(mask_qsm_pass_1, "holes");
     % mask = imclose(mask_qsm_pass_1, strel('sphere',3));
 
 end
@@ -139,7 +140,7 @@ for k = 1:length(wrapper_QSM_function)
     end
 end
 
-if two_pass_masking
+if not(strcmpi(two_pass_masking,'None'))
     % perform second dipole inversion
     for k = 1:length(wrapper_QSM_function)
         if strcmpi(method,methodQSMName{k})
