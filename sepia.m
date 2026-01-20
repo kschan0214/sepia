@@ -48,7 +48,7 @@
 % Date modified: 9 October 2023 (v1.2.2.5)
 % Date modified: 7 July 2025 (v1.3)
 %
-function sepia 
+function h = sepia 
 
 % clear previous handles
 clear global h 
@@ -379,6 +379,10 @@ fprintf(fid,'\nsepiaIO(input,output_basename,mask_filename,algorParam);\n');
 
 fclose(fid);
 
+% Parse the algorithm parameters from the config file
+h.fig.UserData.algorParam = parse_sepia_config_file(configFilename);
+uiresume(h.fig)     % Typically, external code would call uiwait(h.fig) to wait for the algorParam to be ready
+
 try
     % run process
     run(configFilename);
@@ -399,6 +403,34 @@ catch ME
 end
 
 
+end
+
+function algorParam = parse_sepia_config_file(configFilename)
+% Parse the algorithm parameters from the config file
+
+% Read config and split into lines
+lines = splitlines(fileread(configFilename));
+
+% Process each line to assign the algorParam struct
+algorParam = struct();
+for i = 1:length(lines)
+    
+    % Get the line without trailing semicolon
+    line = regexprep(strtrim(lines{i}), ';$', '');
+
+    % Look for algorParam assignments. Pattern: algorParam.field1.field2...fieldN = value;
+    if startsWith(line, 'algorParam.') && contains(line, '=')
+        parts      = strsplit(line, '=');
+        value      = strtrim(parts{2});
+        if startsWith(value, '''') && endsWith(value, '''')
+            value = value(2:end-1);     % Remove quotes
+        else
+            value = str2num(value);     %#ok<ST2NM>
+        end
+        fields     = strsplit(strtrim(parts{1}), '.');
+        algorParam = setfield(algorParam, fields{2:end}, value);
+    end
+end
 end
 
 function PushbuttonLoadConfig_Callback(source,eventdata)

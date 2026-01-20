@@ -19,6 +19,11 @@
 %
 function sepiaIO(input,output,maskFullName,algorParam)
 
+if isempty(input) || (isstruct(input) && all(strcmp({input.name}, '')))
+    disp('No input found, nothing to do...')
+    return
+end
+
 %%% Step 1 %%%
 currDir = pwd;
 % 20250911 KC: fixed relative path
