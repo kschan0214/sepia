@@ -44,12 +44,7 @@ refine_order        = algorParam.bfr.refine_order;
 
 headerAndExtraData = check_and_set_SEPIA_header_data(headerAndExtraData);
 
-disp('-----------------------------');
-disp('Background field removal step');
-disp('-----------------------------');
-
 %% zero padding for odd number dimension
-fprintf('Zero-padding data if the input images have odd number matrix size...');
 totalField  = double(zeropad_odd_dimension(totalField,'pre'));
 mask        = double(zeropad_odd_dimension(mask,'pre'));
 % additional input
@@ -60,8 +55,6 @@ if ~isempty(headerAndExtraData.phase)
     headerAndExtraData.phase = double(zeropad_odd_dimension(headerAndExtraData.phase,'pre'));
 end
 matrixSize_new = size(totalField);
-
-fprintf('Done!\n');
 
 %% erode mask before BFR
 if erode_before_radius > 0
@@ -80,15 +73,11 @@ if erode_before_radius > 0
 end
 
 %% core of background field removal
-disp('Removing background field...');
-disp(['The following method is being used: ' method]);
-
 for k = 1:length(wrapper_BFR_function)
     if strcmpi(method,methodBFRName{k})
         RDF = feval(wrapper_BFR_function{k},totalField,mask,matrixSize_new,voxelSize,algorParam,headerAndExtraData);
     end
 end
-disp('Done!');
 
 maskLocalFiled = RDF ~=0;
 
