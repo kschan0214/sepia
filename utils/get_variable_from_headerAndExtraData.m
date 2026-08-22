@@ -34,7 +34,7 @@ if isempty(headerAndExtraData.(variableName)) && ~isempty(headerAndExtraData.ava
         
 
 else
-    % if no fieldmapSD variable provided in any formats
+    % if no variable provided in any formats
     output = headerAndExtraData.(variableName);
     
 end

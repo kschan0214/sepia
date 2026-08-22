@@ -22,6 +22,13 @@ SEPIA_HOME = fileparts(mfilename('fullpath'));
 
 %% General parameterss
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
+suffix = '.nii';
+
+%% IO
+skullstrippingMethod = {'FSL bet (MEDI)',...
+                        'SynthStrip',...
+                        'SynthStrip (no CSF)',...
+                        'Otsu thresholding'}; 
 
 %% IO
 skullstrippingMethod = {'FSL bet (MEDI)',...
@@ -54,6 +61,12 @@ tissueName              = {'None',...
                            'Brain mask',...
                            'CSF'};
 
+% Method for two pass masking
+methodTwoPassName       = {'Monoexponential decay model',...
+                        'Magnitude Gradient Field',...
+                        'Noise map',...
+                        'None'};
+
 %% SWI/SMWI related parameters
 sepia_configuration_SWISMWI
 
@@ -62,3 +75,4 @@ sepia_configuration_R2s
 
 %% add-ons capability
 sepia_load_addons
+

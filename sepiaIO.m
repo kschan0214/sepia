@@ -42,6 +42,7 @@ if isRelativePath(output)
 end
 
 % 1.1: get and create output directory
+output = char(output);
 output_index    = strfind(output, filesep);
 outputDir       = output(1:output_index(end));   
 % if the output directory does not exist then create the directory

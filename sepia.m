@@ -51,7 +51,7 @@
 function h = sepia 
 
 % clear previous handles
-clear global h 
+clear global h
 
 % make sure nothing is logged at the moment
 diary off
@@ -59,7 +59,7 @@ diary off
 % add path and check toolboxes availability
 sepia_addpath('',1);
 
-global h 
+global h
 
 % SEPIA version
 sepia_universal_variables;
@@ -349,6 +349,10 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
     
     % reference tissue
     sepia_print_popup_as_string(fid,'.qsm.reference_tissue',h.qsm.popup.tissue);
+    % twopass method
+    sepia_print_popup_as_string(fid,'.qsm.isTwoPass',h.qsm.popup.twopass);
+    % twopass threshold
+    sepia_print_edit_as_string(fid,'.qsm.twopass_lambda',h.qsm.edit.lambda);
     
     % set parameters for selected method
     print_method_popup_and_eval(fid, '.qsm.method', h.qsm.popup.qsm, methodQSMName, config_QSM_function, h);

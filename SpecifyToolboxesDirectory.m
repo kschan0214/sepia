@@ -15,13 +15,13 @@
 % Date modified: 25 Feb 2022 (v1.2)
 %
 %% Specify the directories of the toolbox here
-MEDI_HOME       = '/path/to/MEDI/Toolbox/';
-STISuite_HOME   = '/path/to/STI/Suite/';
-FANSI_HOME      = '/path/to/FANSI/Toolbox/';
-SEGUE_HOME      = '/path/to/SEGUE/Toolbox/';
-MRITOOLS_HOME   = '/path/to/MRITOOLS/mritools_ubuntu-20.04_3.6.6/';
-MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolbox/';
-ANTS_HOME       = '/path/to/ANTs/bin/';
+MEDI_HOME       = '/Users/pfuchs/MATLAB/Toolboxes/MEDI_toolbox';
+STISuite_HOME   = '/Users/pfuchs/MATLAB/Toolboxes/STISuite_V3.0';
+FANSI_HOME      = '/Users/pfuchs/MATLAB/Toolboxes/FANSI';
+SEGUE_HOME      = '/Users/pfuchs/MATLAB/Toolboxes/SEGUE_28012021';
+MRITOOLS_HOME   = '/opt/compileMRI/matlab';
+MRISC_HOME      = '/Users/pfuchs/MATLAB/Toolboxes/UCL-QSM';
+ANTS_HOME       = '/Users/pfuchs/software/ants/bin';
 
 %% if you have any missing toolboxes, then specify it as empty array
 % MEDI_HOME      = [];

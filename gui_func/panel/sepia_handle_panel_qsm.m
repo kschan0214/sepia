@@ -25,8 +25,12 @@ function h = sepia_handle_panel_qsm(hParent,h,position)
 % set up method name displayed on GUI
 sepia_universal_variables;
 
+% Default value
+defaultMFGThreshold  = 0.7;
+
 tooltip.QSM.panel.method    = 'Select a QSM algorithm'; 
 tooltip.QSM.panel.reference	= 'Region used to normalise the magnetic susceptibility map';
+tooltip.QSM.panel.twopass	= 'Two pass masking mask refinement strategy to use';
 tooltip.QSM.panel.isHeidi	= 'Reduce streaking artefact using HEIDI. Adjust HEIDI''s parameters in the LSQR+HEIDI panel and switch back to the target dipole inversion method.';
 
 %% layout of the panel
@@ -52,6 +56,36 @@ h.StepsPanel.qsm = uipanel(hParent,...
     [h.qsm.text.qsm,h.qsm.popup.qsm] = sepia_construct_text_popup(...
         h.StepsPanel.qsm,'Method:', methodQSMName, [left(1) 0.85 width height], wratio);
     
+    % utility function related to two pass masking
+    h.qsm.text.twopass = uicontrol('Parent',h.StepsPanel.qsm,...
+        'Style','text',...
+        'String','Perform two pass masking',...
+        'units','normalized','position',[left(1) 0.03 width*0.3 height],...
+        'HorizontalAlignment','left',...
+        'backgroundcolor',get(h.fig,'color'));
+    h.qsm.popup.twopass = uicontrol('Parent',h.StepsPanel.qsm ,...
+        'Style','popup',...
+        'String',methodTwoPassName,...
+        'Enable','on',...
+        'units','normalized','position',[left(1)+width*0.3 0.03 width*0.35 height]); 
+    h.qsm.text.lambda = uicontrol('Parent',h.StepsPanel.qsm ,...
+        'Style','text','String','λ:',...
+        'units','normalized','position',[left(1)+width*0.7 0.03 width*0.1 height],...
+        'HorizontalAlignment','left',...
+        'backgroundcolor',get(h.fig,'color'));
+    h.qsm.edit.lambda = uicontrol('Parent',h.StepsPanel.qsm ,...
+        'Style','edit',...
+        'String',num2str(defaultMFGThreshold),...
+        'units','normalized','position',[left(1)+width*0.75 0.03 width*0.1 height],...
+        'backgroundcolor','white',...
+        'Enable','on');
+    h.qsm.slider.lambda = uicontrol('Parent',h.StepsPanel.qsm ,...
+        'Style','slider',...
+        'Value',defaultMFGThreshold,...
+        'units','normalized','position',[left(1)+width*0.85 0.03 0.01 height],...
+        'Max',4, 'Min',0,'SliderStep',[0.25 0.50],...
+        'Enable','on');
+
     % col 2
     % text|popup pair: select reference tissue
     [h.qsm.text.tissue,h.qsm.popup.tissue] = sepia_construct_text_popup(...
@@ -68,7 +102,7 @@ h.StepsPanel.qsm = uipanel(hParent,...
 %% create control panel
 
 % define position and size of all method panels
-position_child = [0.01 0.04 0.95 0.75];
+position_child = [0.01 0.2 0.95 0.65];
 
 % construct all method panels
 for k = 1:length(function_QSM_method_panel)
@@ -78,10 +112,14 @@ end
 %% set tooltip
 set(h.qsm.text.qsm,     'Tooltip',tooltip.QSM.panel.method);
 set(h.qsm.text.tissue,  'Tooltip',tooltip.QSM.panel.reference);
+set(h.qsm.text.twopass, 'Tooltip',tooltip.QSM.panel.twopass);
 set(h.qsm.checkbox.isHeidi, 'Tooltip',tooltip.QSM.panel.isHeidi);
 
 %% set callback
-set(h.qsm.popup.qsm, 'Callback', {@PopupQSM_Callback,h});
+set(h.qsm.popup.qsm,     'Callback', {@PopupQSM_Callback,h});
+set(h.qsm.edit.lambda,   'Callback', {@EditInputMinMax_Callback,defaultMFGThreshold,1,0,10});
+set(h.qsm.slider.lambda, 'Callback', {@SliderMGFlambda_Callback,h});
+set(h.qsm.popup.twopass, 'Callback', {@PopupTwoPassMasking_Callback,h});
 
 end
 
@@ -107,6 +145,36 @@ for k = 1:length(methodQSMName)
         set(h.qsm.panel.(fields{k}), 'Visible','on');
         break
     end
+end
+
+end
+
+% callback for refine slider
+function SliderMGFlambda_Callback(source,eventdata,h)
+
+% get slider value and update the edit field
+set(h.qsm.edit.lambda, 'String', num2str(source.Value))
+
+end
+
+% callback for refine edit
+function PopupTwoPassMasking_Callback(source,eventdata,h)
+sepia_universal_variables;
+
+switch source.String{source.Value}
+    
+    case methodTwoPassName{1}
+    % get slider value and update the edit field
+    set(h.qsm.edit.lambda,    'String', source.String{source.Value});
+    set(h.qsm.slider.lambda,  'Value',  source.Value);
+    set(h.qsm.edit.lambda,    'enable', 'on');
+    set(h.qsm.slider.lambda,  'enable', 'on');
+
+    % case methodTwoPassName{2}
+    otherwise
+    % get slider value and update the edit field
+    set(h.qsm.edit.lambda,    'enable', 'off');
+    set(h.qsm.slider.lambda,  'enable', 'off');
 end
 
 end

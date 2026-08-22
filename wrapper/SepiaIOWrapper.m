@@ -55,6 +55,7 @@ end
 % display output info
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
+fprintf('Output filename suffix : %s\n',suffix);
 
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
@@ -62,6 +63,10 @@ algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
 exclude_threshold	= algorParam.unwrap.excludeMaskThreshold;
 exclude_method      = algorParam.unwrap.excludeMethod;
 isSaveUnwrappedEcho = algorParam.unwrap.isSaveUnwrappedEcho;
+isSaveR2s           = algorParam.unwrap.isSaveR2s;
+isMagnitudeCombine  = algorParam.unwrap.isMagnitudeCombine;
+
+outputFileList = construct_output_filename(outputDir, prefix, algorParam, suffix);
 
 outputFileList = construct_output_filename(outputDir, prefix, algorParam);
 
@@ -124,9 +129,6 @@ availableFileList           = io_05_reverse_phase(availableFileList, outputFileL
 display_sepia_header_info_4wrapper;
 
 %%%%%% Step 6: get signal mask
-disp('-----------');
-disp('Signal mask');
-disp('-----------');
 % maskFullName          : mask filename
 % inputDir              : intput directory of phase image
 % sepia_header          : sepia header
@@ -145,6 +147,22 @@ availableFileList           = io_06_get_signal_mask(maskFullName, inputDir, sepi
 availableFileList           = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 % for multi-volume, make sure the same mask is used throughout the process
 if nVol > 1; maskFullName = availableFileList.mask; end
+
+%%%%%% Step 8: Tensor-MPPCA denoising
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+availableFileList          = io_08_denoising(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
+
+%%%%%% Step 9: Upsampling
+% sepia_header          : sepia header
+% algorParam            : structure contains all pipeline parameters
+% availableFileList     : structure contains all data filenames that are already available and validated
+% outputFileList        : structure contains default output filenames
+% outputNiftiTemplate   : nifti header with empty 'img' field
+[availableFileList,sepia_header,outputNiftiTemplate] = io_09_upsampling(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
 %%%%%% Step 8: Tensor-MPPCA denoising
 % sepia_header          : sepia header
@@ -214,7 +232,7 @@ availableFileList.totalField = outputFileList.totalField;
 
 %%%%%%%%%% Step 2: exclude unreliable voxel, based on monoexponential decay model %%%%%%%%%%
 % only work with multi-echo data
-if length(TE) == 1 && ~isinf(exclude_threshold)
+if isscalar(TE) && ~isinf(exclude_threshold)
     warning('\nExcluding unreliable voxels can only work with multi-echo data.')
     disp('No voxels are excluded');
     exclude_threshold = inf;
@@ -248,7 +266,20 @@ if ~isinf(exclude_threshold)
     relativeResidualWeights(relativeResidualWeights>exclude_threshold) = exclude_threshold;
     % weightsRelativeResidual should be between [0,1]
     relativeResidualWeights = (exclude_threshold - relativeResidualWeights) ./ exclude_threshold;
-    
+
+    % Save r2s and optimal combined magnitude
+    if isSaveR2s
+        fprintf('Saving R2star map...');
+        save_nii_quick(outputNiftiTemplate,r2s,   	                outputFileList.r2s);
+    end
+    if isMagnitudeCombine
+        fprintf('Combining multi-echo data optimally...');
+        optimalCombinedMagnitude = ComputeOptimalCombinedMagnitude(TE,r2s,magn);
+        save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
+
+        clear optimalCombinedMagnitude
+    end
+
     clear r2s magn 
     
     fprintf('Saving other output...');
@@ -293,7 +324,7 @@ if ~isfield(availableFileList, 'weights')
     weights = sepia_utils_compute_weights_v1(fieldmapSD,mask);
     weights = weights .* mask;
 
-    % modulate weighting map by relativa residual
+    % modulate weighting map by relative residual
     if ~isinf(exclude_threshold) && strcmp(exclude_method,'Weighting map')
         weights = weights .* relativeResidualWeights;
     end
@@ -311,7 +342,7 @@ else
         weights = weights .* mask;
 %         weights = weights .* and(mask>0,maskReliable);
 
-        % modulate weighting map by relativa residual
+        % modulate weighting map by relative residual
         if ~isinf(exclude_threshold) && strcmp(exclude_method,'Weighting map')
             weights = weights .* relativeResidualWeights;
         end
@@ -571,55 +602,24 @@ end
 %% I/O Step 6: loading signal mask
 function availableFileList          = io_06_get_signal_mask(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
 
-sepia_universal_variables;
+% PSF20251110: Separate wrapper to ensure SepiaIOWrapper and 
+% UnwrapPhaseMacroIOWrapper use the same masking structure and backend
+availableFileList = MaskWrapper(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 
-isBET               = algorParam.general.isBET;
-if isfield(algorParam.general, 'brain_extraction_method')
-    brainExtractMethod  = algorParam.general.brain_extraction_method;
-else
-    brainExtractMethod = skullstrippingMethod{1};
-end
-if strcmp(brainExtractMethod,skullstrippingMethod{1})
-    fractional_threshold    = algorParam.general.fractional_threshold;
-    gradient_threshold      = algorParam.general.gradient_threshold;
 end
 
-matrixSize  = sepia_header.matrixSize;
-voxelSize   = sepia_header.voxelSize;
+%% I/O Step 7: refine brain mask
+function availableFileList          = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
 
-mask        = [];
-maskList    = dir(fullfile(inputDir,'*mask*nii*'));
-
-% Scenario: No specified mask file + No check BET + there is a file called mask in the input directory
-if isempty(maskFullName) && ~isempty(maskList) && ~isBET
-    
-    fprintf('No mask file is specified but a mask file is found in the input directory: %s\n',fullfile(inputDir, maskList(1).name));
-    disp('Trying to load the file as signal mask');
-    
-    maskFullName = fullfile(inputDir, maskList(1).name);
+%% TODO 20260822 KC: here we need to resolve the new masking option and new wrapper function
+% PSF20251110: Separate wrapper for mask refinement, also used for two-pass
+% masking, and to unify the sub-modules of UnwrapPhaseMacroIOWrapper and
+% SepiaIOWrapper
+if algorParam.general.isRefineBrainMask
+    algorParam.msk.refineMethod = 'r2s-refine';
+    availableFileList = MaskRefinementWrapper(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 end
 
-% Scenario: User provided a mask file or above scenario was satified
-if ~isempty(maskFullName)
-    
-    % load mask file
-    mask = load_nii_img_only(maskFullName) > 0;
-    
-    % make sure the mask has the same dimension as other input data
-    if ~isequal(size(mask),matrixSize)
-        disp('The file does not have the same dimension as other images.')
-        mask = [];
-    else
-        availableFileList.mask = maskFullName;
-        disp('Mask file is checked.');
-    end
-end
-
-% if no mask is found then display the following message
-if isempty(mask) && ~isBET
-    disp('No mask data is loaded. Using FSL BET to obtain brain mask.');
-end
-    
 % if BET is checked or no mask is found, run FSL's bet
 if isempty(mask) || isBET
     
@@ -679,21 +679,6 @@ if isempty(mask) || isBET
     end
 end
 
-end
-
-%% I/O Step 7: refine brain mask
-function availableFileList          = io_07_refine_signal_mask(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
-
-TE          = sepia_header.TE;
-voxelSize   = sepia_header.voxelSize;
-isMultiEcho         = numel(TE)>1;
-isRefineBrainMask   = algorParam.general.isRefineBrainMask;
-
-if ~isMultiEcho
-    isRefineBrainMask = 0;
-    disp('Refine brain mask only works with multi-echo data');
-end
-
 if isRefineBrainMask
     disp('Refine brain using R2* info');
     mask        = double(load_nii_img_only(availableFileList.mask));
@@ -714,16 +699,118 @@ if isRefineBrainMask
         availableFileList.r2s = outputFileList.r2s;
     end
     mask_refine = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
-
-    % save the eddy current corrected output
-    fprintf('Saving refined brain mask...');
-    save_nii_quick(outputNiftiTemplate, mask_refine, outputFileList.maskRefine);
-    fprintf('Done!\n');
-
-    % update availableFileList
-    availableFileList.mask = outputFileList.maskRefine;
 end
 
+end
+
+%% I/O Step 8: image denoising
+function availableFileList          = io_08_denoising(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+sepia_universal_variables;
+
+% check if tensor MPPCA code exist, if not then download form GitHub
+tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
+if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end
+if ~exist('denoise_recursive_tensor', 'file')
+
+    fprintf('Cannot find tensor-MPPCA functions. Attempt to download the tool to %s\n',tMPPCA_HOME);
+
+    cmd = sprintf('wget -O %s --no-check-certificate https://github.com/Neurophysics-CFIN/Tensor-MP-PCA/archive/refs/heads/main.zip; unzip %s -d %s',strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME));
+    % cmd = sprintf('git clone https://github.com/Neurophysics-CFIN/Tensor-MP-PCA.git %s',tMPPCA_HOME); % certificate fail
+    system(cmd);
+    delete(strcat(tMPPCA_HOME,'.zip'));
+    addpath(genpath(tMPPCA_HOME));
+
+end
+
+
+if algorParam.general.isDenoise
+    kernel = ceil(algorParam.general.denoiseKernel ./ sepia_header.voxelSize);
+    if any(kernel<3)
+        warning('Denoising kernel size too small. [3x3x3] voxels kernel will be used');
+    end
+    kernel = max(kernel,[3,3,3]); % minimum window are 3 voxels
+
+    disp('Tensor-MP-PCA denoising in progress (can take some time)...')
+    magn        = double(load_nii_img_only(availableFileList.magnitude));
+    phase       = double(load_nii_img_only(availableFileList.phase));
+    mask        = double(load_nii_img_only(availableFileList.mask)) >0;
+
+    % create complex-valued image
+    img         = magn .* exp(1i*phase);
+    
+    tic
+    [img_denoise,sigma,P,snrgain] = denoise_recursive_tensor(img,kernel,'mask',mask);
+    toc
+    
+    save_nii_quick(outputNiftiTemplate, abs(img_denoise),   outputFileList.magDenoise);
+    save_nii_quick(outputNiftiTemplate, angle(img_denoise), outputFileList.phaseDenoise);
+    save_nii_quick(outputNiftiTemplate, sigma,              outputFileList.sigma);
+    save_nii_quick(outputNiftiTemplate, P,                  outputFileList.P);
+    save_nii_quick(outputNiftiTemplate, snrgain,            outputFileList.snrgain);
+
+    % update availableFileList
+    availableFileList.magnitude = outputFileList.magDenoise;
+    availableFileList.phase     = outputFileList.phaseDenoise;
+
+    disp('Done!');
+end
+end
+
+%% I/O Step 9: image upsampling
+function [availableFileList,sepia_header,outputNiftiTemplate] = io_09_upsampling(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
+
+sepia_universal_variables;
+
+
+if algorParam.general.isUpsample
+
+    disp('Upsampling in progress...')
+    magn        = double(load_nii_img_only(availableFileList.magnitude));
+    phase       = double(load_nii_img_only(availableFileList.phase));
+    mask        = double(load_nii_img_only(availableFileList.mask)) >0;
+
+    % create complex-valued image
+    img         = magn .* exp(1i*phase);
+
+    scaleFactor = sepia_header.voxelSize./algorParam.general.target_resolution ;
+    if any(scaleFactor < 1)
+        warning('You are downsampling the data. Thi step will be skipped.');
+        return
+    end
+    matrixSize_upSample = round(scaleFactor .* sepia_header.matrixSize);
+
+    % Assuming `data` is [X Y Z Echo] complex GRE data
+    numEchoes   = size(img, 4);
+    img_us = zeros([matrixSize_upSample numEchoes], 'like', img);
+    
+    for e = 1:numEchoes
+        img_us(:,:,:,e) = fft_upsample_complex(img(:,:,:,e), matrixSize_upSample);
+    end
+
+    upsampledMask = imresize3(double(mask), matrixSize_upSample, 'cubic')> 0.2;
+
+    % update sepia header
+    sepia_header.matrixSize = matrixSize_upSample;
+    sepia_header.voxelSize  = ones(size(sepia_header.voxelSize))*algorParam.general.target_resolution;
+
+    % save output
+    outputNiftiTemplate.hdr.dime.pixdim(2:4) = sepia_header.voxelSize;
+
+    save_nii_quick(outputNiftiTemplate, abs(img_us),    outputFileList.magUpsample);
+    save_nii_quick(outputNiftiTemplate, angle(img_us),  outputFileList.phaseUpsample);
+    save_nii_quick(outputNiftiTemplate, upsampledMask,  outputFileList.maskUpsample);
+    TE = sepia_header.TE; B0 = sepia_header.B0;
+    save(outputFileList.sepiaHeaderUpsample,'TE','B0')
+
+    % update availableFileList
+    availableFileList.magnitude     = outputFileList.magUpsample;
+    availableFileList.phase         = outputFileList.phaseUpsample;
+    availableFileList.mask          = outputFileList.maskUpsample;
+    availableFileList.sepiaheader   = outputFileList.sepiaHeaderUpsample;
+
+    disp('Done!');
+end
 end
 
 %% I/O Step 8: image denoising
@@ -881,3 +968,5 @@ if isEddyCorrect
 end
 
 end
+
+

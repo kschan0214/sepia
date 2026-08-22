@@ -21,15 +21,17 @@
 %
 function inputNIFTIcell = read_bids_to_filelist(inputDir,outputPrefix)
 
+sepia_universal_variables;
+
 disp('############################################');
 disp('# Checking input directory for BIDS format #');
 disp('############################################');
 
 % default intput nifti list
-inputNIFTIcell{1}.inputNIFTIList(1).name = [outputPrefix 'part-phase.nii.gz'];
-inputNIFTIcell{1}.inputNIFTIList(2).name = [outputPrefix 'part-mag.nii.gz'];
-inputNIFTIcell{1}.inputNIFTIList(3).name = [];
-inputNIFTIcell{1}.inputNIFTIList(4).name = [outputPrefix 'header.mat'];
+inputNIFTIList(1).name = [outputPrefix 'part-phase' suffix];
+inputNIFTIList(2).name = [outputPrefix 'part-mag' suffix];
+inputNIFTIList(3).name = [];
+inputNIFTIList(4).name = [outputPrefix 'header.mat'];
 
 % check for NIFTI files with magnitude label
 pattern = 'part-mag';

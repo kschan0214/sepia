@@ -1,4 +1,4 @@
-%% outputFileList = construct_output_filename(outputDir, ouputPrefix)
+%% outputFileList = construct_output_filename(outputDir, ouputPrefix, outputSufffix)
 %
 % Input
 % --------------
@@ -15,58 +15,60 @@
 % Date modified:
 %
 %
-function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, ouputPrefix, algorParam)
+function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, ouputPrefix, algorParam, outputSuffix)
 
 % phase related
-outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad.nii.gz']);
-outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_reverse.nii.gz']);
-outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_bipolarcorr.nii.gz']);
-outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_unwrapped.nii.gz']);
+outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_desc-rad' outputSuffix]);
+outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-reverse' outputSuffix]);
+outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-bipolarcorr' outputSuffix]);
+outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_desc-unwrapped' outputSuffix]);
 
 % standard output
-outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap.nii.gz']);
-outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield.nii.gz']);
-outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap.nii.gz']);
-outputFileList.QSMpara          = fullfile(outputDir, [ouputPrefix 'ChiParamap.nii.gz']);
-outputFileList.QSMdia           = fullfile(outputDir, [ouputPrefix 'ChiDiamap.nii.gz']);
+outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap' outputSuffix]);
+outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield' outputSuffix]);
+outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap' outputSuffix]);
+outputFileList.QSMpara          = fullfile(outputDir, [ouputPrefix 'ChiParamap' outputSuffix]);
+outputFileList.QSMdia           = fullfile(outputDir, [ouputPrefix 'ChiDiamap' outputSuffix]);
 
 % use for regularisation
-outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights.nii.gz']);
-outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd.nii.gz']);
-outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual.nii.gz']);
-outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights.nii.gz']);
+outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights' outputSuffix]);
+outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd' outputSuffix]);
+outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual' outputSuffix]);
+outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights' outputSuffix]);
 
 % derived masks
-outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain.nii.gz']);
-outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable.nii.gz']);
-outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield.nii.gz']);
-outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM.nii.gz']);
-outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion.nii.gz']);
-outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine.nii.gz']);
+outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain' outputSuffix]);
+outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable' outputSuffix]);
+outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield' outputSuffix]);
+outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM' outputSuffix]);
+outputFileList.maskQSM2pass     = fullfile(outputDir, [ouputPrefix 'mask_QSM-2pass' outputSuffix]);
+outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion' outputSuffix]);
 
 % R2*
-outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap.nii.gz']);
-outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap.nii.gz']);
-outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map.nii.gz']);
+outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap' outputSuffix]);
+outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap' outputSuffix]);
+outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map' outputSuffix]);
 
 % misc
-outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase.nii.gz']);
+outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase' outputSuffix]);
+outputFileList.optimalCombinedMagnitude = fullfile(outputDir, [ouputPrefix 'part-mag_desc-optimalcombined' outputSuffix]);
 
 if algorParam.general.isDenoise
 ouputPrefix = strcat(ouputPrefix,'denoised_');
-outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag.nii.gz']);
-outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
-outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma.nii.gz']);
-outputFileList.snrgain          = fullfile(outputDir, [ouputPrefix 'SNRgain.nii.gz']);
-outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P.nii.gz']);
+outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag_desc-denoised' outputSuffix]);
+outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase_desc-denoised' outputSuffix]);
+outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma' outputSuffix]);
+outputFileList.snrgain          = fullfile(outputDir, [ouputPrefix 'SNRgain' outputSuffix]);
+outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P' outputSuffix]);
 end
 
 if algorParam.general.isUpsample
 ouputPrefix = strcat(ouputPrefix,'upsampled_');
-outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag.nii.gz']);
-outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase.nii.gz']);
-outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled.nii.gz']);
+outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag_desc-upsampled' outputSuffix]);
+outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-upsampled' outputSuffix]);
+outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled' outputSuffix]);
 outputFileList.sepiaHeaderUpsample = fullfile(outputDir, [ouputPrefix 'sepia_header.mat']);
 end
 
 end
+

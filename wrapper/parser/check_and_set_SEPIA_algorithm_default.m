@@ -28,7 +28,9 @@ try algorParam2.general.isGPU       = algorParam.general.isGPU;     catch; algor
 try algorParam2.general.isBET   	= algorParam.general.isBET; 	catch; algorParam2.general.isBET   	= false;	end
 try algorParam2.general.fractional_threshold   	= algorParam.general.fractional_threshold; 	catch; algorParam2.general.fractional_threshold   	= 0.5;	end
 try algorParam2.general.gradient_threshold   	= algorParam.general.gradient_threshold; 	catch; algorParam2.general.gradient_threshold   	= 0;	end
-try algorParam2.general.isRefineBrainMask   	= algorParam.general.isRefineBrainMask; 	catch; algorParam2.general.isRefineBrainMask   	= 0;	end
+try algorParam2.general.isRefineBrainMask   	= algorParam.general.isRefineBrainMask; 	catch; algorParam2.general.isRefineBrainMask   	    = 0;	end
+try algorParam2.general.isDenoise   	        = algorParam.general.isDenoise; 	        catch; algorParam2.general.isDenoise   	            = 0;	end
+try algorParam2.general.isUpsample   	        = algorParam.general.isUpsample; 	        catch; algorParam2.general.isUpsample   	        = 0;	end
 
 % default method is MEDI nonlinear fitting + Laplacian + no eddy correct + no voxel exclusion
 try algorParam2.unwrap.echoCombMethod       = algorParam.unwrap.echoCombMethod;         catch; algorParam2.unwrap.echoCombMethod        = methodEchoCombineName{2};	end
@@ -39,7 +41,9 @@ try algorParam2.unwrap.excludeMaskThreshold	= algorParam.unwrap.excludeMaskThres
 % for the rest, if the parameter does not exist then initiates it with an empty array
 try algorParam2.unwrap.isSaveUnwrappedEcho	= algorParam.unwrap.isSaveUnwrappedEcho;	catch; algorParam2.unwrap.isSaveUnwrappedEcho	= 0;                    end
 try algorParam2.unwrap.excludeMethod        = algorParam.unwrap.excludeMethod;          catch; algorParam2.unwrap.excludeMethod         = 'Weighting map';      end
-try algorParam2.unwrap.unit                 = algorParam.unwrap.unit;                   catch; algorParam2.unwrap.unit         = 'Hz';      end
+try algorParam2.unwrap.unit                 = algorParam.unwrap.unit;                   catch; algorParam2.unwrap.unit                  = 'Hz';                 end
+try algorParam2.unwrap.isSaveR2s	        = algorParam.unwrap.isSaveR2s;	            catch; algorParam2.unwrap.isSaveR2s	            = 0;                    end
+try algorParam2.unwrap.isMagnitudeCombine	= algorParam.unwrap.isMagnitudeCombine;	    catch; algorParam2.unwrap.isMagnitudeCombine	= 0;                    end
 
 % default background field removal method is VSHARP
 try algorParam2.bfr.method              = algorParam.bfr.method;        catch; algorParam2.bfr.method = methodBFRName{5};   end
@@ -51,6 +55,7 @@ try algorParam2.bfr.refine_order        = algorParam.bfr.refine_order;	catch; al
 
 % default background field removal method is TKD
 try algorParam2.qsm.method              = algorParam.qsm.method;            catch; algorParam2.qsm.method           = methodQSMName{1};	end
+try algorParam2.qsm.isTwoPass	        = algorParam.qsm.isTwoPass;	        catch; algorParam2.qsm.isTwoPass	    = 0;      	    end
 try algorParam2.qsm.reference_tissue	= algorParam.qsm.reference_tissue;	catch; algorParam2.qsm.reference_tissue	= 'None';      	end
 try algorParam2.qsm.isHEIDI	            = algorParam.qsm.isHEIDI;	        catch; algorParam2.qsm.isHEIDI	        = false;      	end
 
