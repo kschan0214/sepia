@@ -19,6 +19,7 @@
 % Date created: 24 May 2018
 % Date modified: 12 June 2018
 % Date modified: 24 May 2019
+% Date modified: 7 July 2025
 %
 %
 function h = sepia_handle_panel_analysis_segmentation_AHEAD(hParent,h,position)
@@ -111,7 +112,7 @@ h.Analysis.panel.Segmentation_AHEAD = uipanel(hParent,'Title','Segmentation - AH
     % correct bias field option
     pos = [left(1) bottom(14) width height];
     h.Analysis.segmentation.AHEAD.checkbox.biasCorr = uicontrol('Parent',panelParent,'backgroundcolor',get(h.fig,'color'),'Style','checkbox','units','normalized',...
-        'String','Correct bias field on input images','Position',pos);
+        'String','Correct bias field on input images','Position',pos,'Value',true);
 
 
     

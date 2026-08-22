@@ -75,8 +75,14 @@ end
 % zero reference using CSF requires CSF mask
 if isLambdaCSF && ~isempty(iMag)
     disp('Extracting CSF mask....');
-    % R2* mapping
-    r2s         = arlo(TE,iMag);
+    % R2* mapping: reuse the cached R2* map if one is already available,
+    % otherwise compute it using ARLO
+    if isfield(headerAndExtraData,'availableFileList') && isfield(headerAndExtraData.availableFileList,'r2s') && exist(headerAndExtraData.availableFileList.r2s,'file')
+        disp('R2* map is already available. Loading it from disk...');
+        r2s = double(load_nii_img_only(headerAndExtraData.availableFileList.r2s));
+    else
+        r2s = arlo(TE,iMag);
+    end
     Mask_CSF    = extract_CSF(r2s,mask,voxelSize)>0;
 %             magn    = sqrt(sum(magn.^2,4));
 end

@@ -46,8 +46,9 @@
 % Date modified: 3 August 2022 (v1.1)
 % Date modified: 3 April 2023 (v1.2.2.4)
 % Date modified: 9 October 2023 (v1.2.2.5)
+% Date modified: 7 July 2025 (v1.3)
 %
-function sepia
+function h = sepia 
 
 % clear previous handles
 clear global h
@@ -254,12 +255,7 @@ if exist(configFilename,'file') == 2
     % get new time index
     identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
     configFilename = fullfile(outputDir, ['sepia_config' identifier '.m']);
-    % counter = 1;
-    % while exist(configFilename,'file') == 2
-    %     suffix = ['_' num2str(counter)];
-    %     configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
-    %     counter = counter + 1;
-    % end
+
 end
 fid = fopen(configFilename,'w');
 
@@ -361,6 +357,16 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
     % set parameters for selected method
     print_method_popup_and_eval(fid, '.qsm.method', h.qsm.popup.qsm, methodQSMName, config_QSM_function, h);
 
+    % HEIDI
+    isHEIDI = sepia_print_checkbox_value(fid,'.qsm.isHEIDI',h.qsm.checkbox.isHeidi);
+    if isHEIDI
+        if ~strcmp(h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value},'LSQR+HEIDI')
+            print_HEIDI_popup_and_eval(fid, methodQSMName, config_QSM_function, h);
+        else
+            warning('The selected dipole inversion method already includes HEIDI. No extra HEIDI processing will be done.');
+        end
+    end
+
 end
 
 % R2* algorithm parameters
@@ -376,6 +382,10 @@ end
 fprintf(fid,'\nsepiaIO(input,output_basename,mask_filename,algorParam);\n');
 
 fclose(fid);
+
+% Parse the algorithm parameters from the config file
+h.fig.UserData.algorParam = parse_sepia_config_file(configFilename);
+uiresume(h.fig)     % Typically, external code would call uiwait(h.fig) to wait for the algorParam to be ready
 
 try
     % run process
@@ -397,6 +407,34 @@ catch ME
 end
 
 
+end
+
+function algorParam = parse_sepia_config_file(configFilename)
+% Parse the algorithm parameters from the config file
+
+% Read config and split into lines
+lines = splitlines(fileread(configFilename));
+
+% Process each line to assign the algorParam struct
+algorParam = struct();
+for i = 1:length(lines)
+    
+    % Get the line without trailing semicolon
+    line = regexprep(strtrim(lines{i}), ';$', '');
+
+    % Look for algorParam assignments. Pattern: algorParam.field1.field2...fieldN = value;
+    if startsWith(line, 'algorParam.') && contains(line, '=')
+        parts      = strsplit(line, '=');
+        value      = strtrim(parts{2});
+        if startsWith(value, '''') && endsWith(value, '''')
+            value = value(2:end-1);     % Remove quotes
+        else
+            value = str2num(value);     %#ok<ST2NM>
+        end
+        fields     = strsplit(strtrim(parts{1}), '.');
+        algorParam = setfield(algorParam, fields{2:end}, value);
+    end
+end
 end
 
 function PushbuttonLoadConfig_Callback(source,eventdata)
@@ -455,6 +493,17 @@ function print_method_popup_and_eval(fid, str_pattern, action_handle, popup_list
 method = sepia_print_popup_as_string(fid,str_pattern,action_handle);
 for k = 1:length(popup_list)
     if strcmpi(method,popup_list{k})
+        feval(config_list{k},h,'set',fid);
+    end
+end
+    
+end
+
+function print_HEIDI_popup_and_eval(fid, popup_list, config_list, h)
+
+% set parameters for selected method
+for k = 1:length(popup_list)
+    if strcmpi('LSQR+HEIDI',popup_list{k})
         feval(config_list{k},h,'set',fid);
     end
 end
@@ -647,10 +696,10 @@ try
     SpecifyToolboxesDirectory;
     if exist('ANTS_HOME', 'var')
         if ~exist(ANTS_HOME,'dir')
-            warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+            warndlg('Missing ANTs library. All functions in the Analysis Tab cannot be used.')
         end
     else
-            warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+            warndlg('Missing ANTs library. All functions in the Analysis Tab cannot be used.')
     end
 catch
     warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')

@@ -24,8 +24,9 @@
 % Date modified: 5 June 2019
 % Date modified: 27 Feb 2020 (v0.8.0)
 % Date modified: 16 August 2021 (v1.0)
+% Date modified: 19 July 2025 (v1.3)
 %
-function [chi,mask_ref] = QSMMacro(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
+function [chi,mask_ref,chi_para,chi_dia] = QSMMacro(localField,mask,matrixSize,voxelSize,algorParam,headerAndExtraData)
 
 sepia_universal_variables;
 methodQSMName = lower(methodQSMName);
@@ -95,7 +96,7 @@ switch reference_tissue
             end
         end
 end
-    
+
 %% QSM algorithm
 disp('Computing QSM map...');
 disp(['The following QSM algorithm will be used: ' method]);
@@ -136,10 +137,19 @@ end
 % 3. convert output unit to ppm
 for k = 1:length(wrapper_QSM_function)
     if strcmpi(method,methodQSMName{k})
-        chi = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
+        nOut = nargout(wrapper_QSM_function{k});
+        varargout = cell(1, max(nOut,1));
+        [varargout{:}] = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
+        chi = varargout{1};
+        if nOut > 1
+            chi_para = varargout{2};
+            chi_dia  = varargout{3};
+        end
+        % [chi,varargout] = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
     end
 end
 
+% TODO 20260822 KC: here wee need to incoporate the new expanded format
 if not(strcmpi(two_pass_masking,'None'))
     % perform second dipole inversion
     for k = 1:length(wrapper_QSM_function)
@@ -151,10 +161,23 @@ if not(strcmpi(two_pass_masking,'None'))
     % Combine the two maps
     chi(mask_qsm_pass_2 > 0) = 0;
     chi = chi + chi_pass_2;
+% Post dipole inversion using HEIDI
+if algorParam.qsm.isHEIDI
+    [chi] = Wrapper_QSM_HEIDI4all(localField,chi,mask,matrixSize,voxelSize,algorParam, headerAndExtraData) ;
 end
 
 % remove zero padding 
 chi = double(zeropad_odd_dimension(chi,'post',matrixSize));
+if exist("chi_para",'var')
+    chi_para = double(zeropad_odd_dimension(chi_para,'post',matrixSize));
+else
+    chi_para = [];
+end
+if exist("chi_dia",'var')
+    chi_dia = double(zeropad_odd_dimension(chi_dia,'post',matrixSize));
+else
+    chi_dia = [];
+end
 if ~isempty(mask_ref)
     mask_ref = double(zeropad_odd_dimension(mask_ref,'post',matrixSize));
 end
@@ -171,6 +194,13 @@ if ~isempty(mask_ref)
         end
     else
             chi(mask_update) = chi(mask_update) - mean(chi(mask_ref>0));
+            if ~isempty(chi_para)
+                chi_para(mask_update) = chi_para(mask_update) - mean(chi_para(mask_ref>0));
+            end
+            if ~isempty(chi_dia)
+                chi_dia(mask_update) = chi_dia(mask_update) - mean(chi_dia(mask_ref>0));
+            end
+
     end
 end
 

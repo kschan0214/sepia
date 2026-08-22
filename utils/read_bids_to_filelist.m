@@ -1,4 +1,4 @@
-%% inputNIFTIList = read_bids_to_filelist(inputDir,outputPrefix)
+%% inputNIFTIcell = read_bids_to_filelist(inputDir,outputPrefix)
 %
 % Input
 % --------------
@@ -16,9 +16,10 @@
 % k.chan@donders.ru.nl
 % Date created: 11 August 2021 (v1.0)
 % Date modified: 9 February 2023 (v1.2.2.2)
+% Date modified: 16 November 2025 (v2): Support 4D NIFTI input per echo
 %
 %
-function inputNIFTIList = read_bids_to_filelist(inputDir,outputPrefix)
+function inputNIFTIcell = read_bids_to_filelist(inputDir,outputPrefix)
 
 sepia_universal_variables;
 
@@ -64,9 +65,9 @@ if magNumFiles == 1 && phaseNumFiles == 1 && jsonNumFiles == 1
     fprintf('One phase image is found:      %s \n',	phaseFile(1).name);
     
     % phase
-    inputNIFTIList(1).name = phaseFile(1).name;
+    inputNIFTIcell{1}.inputNIFTIList(1).name = phaseFile(1).name;
     % magnitude
-    inputNIFTIList(2).name = magFile(1).name;
+    inputNIFTIcell{1}.inputNIFTIList(2).name = magFile(1).name;
     
 else
     
@@ -104,21 +105,46 @@ else
         error('Numbers of files between magnitude and phase data do not match.');
     end
 
-    % phase 
-    fprintf('Saving multi-echo phase data into a single volume...')
-    isPhase = true;
-    save_nifti_as_4d(phaseFile, inputNIFTIList(1).name, isPhase);
-    fprintf('Done.\n')
-    % magnitude 
-    fprintf('Saving multi-echo magnitude data into a single volume...')
-    isPhase = false;
-    save_nifti_as_4d(magFile, inputNIFTIList(2).name, isPhase);
-    fprintf('Done.\n')
+    % check if input are 3D or 4D per echo
+    nifti_head = load_untouch_header_only(phaseFile(1).name);
+    if nifti_head.dime.dim(1) < 4
+        % phase 
+        fprintf('Saving multi-echo phase data into a single volume...')
+        isPhase = true;
+        save_nifti_as_4d(phaseFile, inputNIFTIcell{1}.inputNIFTIList(1).name, isPhase);
+        fprintf('Done.\n')
+        % magnitude 
+        fprintf('Saving multi-echo magnitude data into a single volume...')
+        isPhase = false;
+        save_nifti_as_4d(magFile, inputNIFTIcell{1}.inputNIFTIList(2).name, isPhase);
+        fprintf('Done.\n')
+    elseif nifti_head.dime.dim(1) == 4
+        
+        fprintf('NIFTI data has multiple volumes per echo. Saving 4D multi-echo data per volume...');
+        % create name for each volume
+        inputNIFTIcell = cell(1,nifti_head.dime.dim(5));
+        for v = 1:nifti_head.dime.dim(5)
+            inputNIFTIcell{v}.inputNIFTIList(1).name = strcat(outputPrefix, 'part-phase_vol-',num2str(v),'.nii.gz');
+            inputNIFTIcell{v}.inputNIFTIList(2).name = strcat(outputPrefix, 'part-mag_vol-',num2str(v),'.nii.gz');
+            inputNIFTIcell{v}.inputNIFTIList(3).name = [];
+            inputNIFTIcell{v}.inputNIFTIList(4).name = strcat(outputPrefix, 'header.mat');
+        end
+        % phase
+        isPhase = true;
+        save_multivol_nifti_as_4d(phaseFile, inputNIFTIcell, isPhase);
+        % mag
+        isPhase = false;
+        save_multivol_nifti_as_4d(magFile, inputNIFTIcell, isPhase);
+        fprintf('Done.\n')
+    
+    else
+        error('Current version does not support input NIFTI volumesare more than 4D.')
+    end
     
 end
 
 % SEPIA header
-save_sepia_header_from_bids(inputNIFTIList(2).name, jsonFile, outputPrefix);
+save_sepia_header_from_bids(inputNIFTIcell{1}.inputNIFTIList(2).name, jsonFile, outputPrefix);
 
 end
 
@@ -196,6 +222,49 @@ while numFileLoaded ~= NumFiles
 
 end
 save_nii_quick(nii,img,outputFilename);
+
+end
+
+%% save multi-echo data from mutiple volume to a single image
+function save_multivol_nifti_as_4d(fileList, outputFilename, isPhase)
+
+if nargin < 3
+    isPhase = false;
+end
+
+NumFiles = length(fileList);
+
+numFileLoaded = 0;
+img = [];
+while numFileLoaded ~= NumFiles
+    
+    for k = 1:NumFiles
+        % 20250702: bug fix to enable numbering of echoes with arbitrary zero padding, i.e. 01,02 etc.
+        echoNumber = str2double(cell2mat(regexp(fileList(k).name,'echo-(\d*)','tokens','once')));
+        if echoNumber == numFileLoaded+1
+            nii = load_untouch_nii(fileList(k).name);
+            
+            if (abs(max(nii.img(:))-pi)>1e-4 || abs(min(nii.img(:))-(-pi))>1e-4) && isPhase % allow small differences possibly due to data stype conversion
+                img	= cat(5, img, DICOM2Phase(nii));
+            else
+                % 20230209: bug fix applying rescale slope and intercept
+                img = cat(5, img, load_nii_img_only(fileList(k).name));
+            end
+            
+            numFileLoaded = numFileLoaded + 1;
+        end
+    end
+
+end
+img = permute(img,[1 2 3 5 4]);
+nVol = size(img,5);
+for v = 1:nVol
+    if isPhase
+        save_nii_quick(nii,img(:,:,:,:,v),outputFilename{v}.inputNIFTIList(1).name);
+    else
+        save_nii_quick(nii,img(:,:,:,:,v),outputFilename{v}.inputNIFTIList(2).name);
+    end
+end
 
 end
 

@@ -26,28 +26,32 @@ defaultTol                      = 1e-5;
 defaultMaxIter                  = 400;               
 defaultOffsetUseBool            = true;         
 defaultIsFourierDomainFormula   = false;   
-defaultProcProcConeThreshold    = 0.1;
-defaultProcProcConeTol          = eps;
-defaultProcProcConeTolEnergy    = eps;
+defaultProcProcConeThreshold    = 0.14;
+defaultProcProcConeTol          = 1e-5;
+defaultProcProcConeTolEnergy    = 1e-5;
 defaultResidualWeighting        = 0.2 / 9.4; % will be scale by field strength
 
-menuTikhonov        = {'Default','Partial Gradient weighting','Laplacian'};
-menuSolver          = {'Default','InverseFiltering','SpatialDomainTV'};
-menuDipoleFilter    = {'Default','truncSingularValues'};
+% full lists, needs further testing, current not available
+% menuTikhonov        = {'Default','Partial Gradient weighting','Laplacian'};
+% menuSolver          = {'Default','InverseFiltering','SpatialDomainTV'};
+% menuDipoleFilter    = {'Default','truncSingularValues'};
+menuTikhonov        = {'Default'};
+menuSolver          = {'Default'};
+menuDipoleFilter    = {'Default'};
 
 %% Tooltips
 %%%%%%%% (Optional) Tooltips to elaborate algorithm parameter usage
 tooltip.qsm.heidi.tol                       = 'Convergence limit';
 tooltip.qsm.heidi.MaxIter                   = 'Maximum iterations allowed';
 tooltip.qsm.heidi.isOffsetUse               = 'Automatic offset determination';
-tooltip.qsm.heidi.isFourierDomainFormula    = '';
+tooltip.qsm.heidi.isFourierDomainFormula    = 'If true, constructs the dipole kernel in the Fourier-domain. If false, constructs the dipole in the spatial domain';
 tooltip.qsm.heidi.Tikhonov                  = 'Performing dipole inversion with Tikhonov regularisation';
 tooltip.qsm.heidi.solver                    = '';
 tooltip.qsm.heidi.DipoleFilter              = '';
 tooltip.qsm.heidi.ResidualWeighting         = 'This value will be scaled by field strength, i.e. ResidualWeighting*B0';
-tooltip.qsm.heidi.ProcProcConeThreshold     = 'Threshold for post-processing of cone';
-tooltip.qsm.heidi.ProcProcConeTol           = 'Tolerance for post-processing of cone';
-tooltip.qsm.heidi.ProcProcConeTolEnergy     = 'Tolerance energy for post-processing of cone';
+tooltip.qsm.heidi.ProcProcConeThreshold     = 'Threshold to define ill-posed "cone" in k-space (|dipole| < threshold). Default: 0.14.';
+tooltip.qsm.heidi.ProcProcConeTol           = 'Convergence tolerance for cone post-processing (e.g., TV minimization). Default: 1e-5.';
+tooltip.qsm.heidi.ProcProcConeTolEnergy     = 'Energy-based convergence tolerance for cone post-processing. Default: 1e-5.';
 
 %% layout of the panel
 nrow        = 4;
@@ -85,7 +89,7 @@ h.qsm.panel.HEIDI = uipanel(hParent,...
     h.qsm.HEIDI.checkbox.isOffsetUse = uicontrol('Parent',h.qsm.panel.HEIDI ,...
         'Style','checkbox','String','Automatic offset determination',...
         'units','normalized','Position',[left(1) bottom(3) width height],...
-        'backgroundcolor',get(h.fig,'color'),'Value',defaultOffsetUseBool);
+        'backgroundcolor',get(h.fig,'color'),'Value',defaultOffsetUseBool,'Enable','off');
 
     % col 1, row 4
     % text|popup field pair: offset
@@ -97,37 +101,41 @@ h.qsm.panel.HEIDI = uipanel(hParent,...
     % col 2, row 1
     % text|popup field pair: Tikhonov
     [h.qsm.HEIDI.text.Tikhonov,h.qsm.HEIDI.popup.Tikhonov] = sepia_construct_text_popup(...
-        panelParent,'Tikhonov:',                menuTikhonov,	[left(2) bottom(1) width height], wratio);
+        panelParent,'Tikhonov:',                menuTikhonov,	[left(3) bottom(1) width height], wratio);
+    h.qsm.HEIDI.popup.Tikhonov.Enable = 'off';
 
     % col 2, row 2
     % text|popup field pair: Solver
     [h.qsm.HEIDI.text.solver,h.qsm.HEIDI.popup.solver] = sepia_construct_text_popup(...
-        panelParent,'Solver:',                  menuSolver,	        [left(2) bottom(2) width height], wratio);
+        panelParent,'Solver:',                  menuSolver,	        [left(3) bottom(2) width height], wratio);
+    h.qsm.HEIDI.popup.solver.Enable = 'off';
 
     % col 2, row 3
      % text|popup field pair: Solver
     [h.qsm.HEIDI.text.DipoleFilter,h.qsm.HEIDI.popup.DipoleFilter] = sepia_construct_text_popup(...
-        panelParent,'Dipole Filter:',           menuDipoleFilter,   [left(2) bottom(3) width height], wratio);
+        panelParent,'Dipole Filter:',           menuDipoleFilter,   [left(3) bottom(3) width height], wratio);
+    h.qsm.HEIDI.popup.DipoleFilter.Enable = 'off';
 
     % col 3, row 1
     % text|edit field pair: Residual weighting
     [h.qsm.HEIDI.text.ResidualWeighting,h.qsm.HEIDI.edit.ResidualWeighting] = sepia_construct_text_edit(...
-        panelParent,'Residual weighting:',     defaultResidualWeighting,        [left(3) bottom(1) width height], wratio);
+        panelParent,'Residual weighting:',     defaultResidualWeighting,        [left(3) bottom(4) width height], wratio);
+    h.qsm.HEIDI.edit.ResidualWeighting.Enable = 'off';
     
     % col 3, row 2
     % text|edit field pair: Post-processing of Cone theshold
     [h.qsm.HEIDI.text.ProcProcConeThreshold,h.qsm.HEIDI.edit.ProcProcConeThreshold] = sepia_construct_text_edit(...
-        panelParent,'Cone post-processing theshold:',     defaultProcProcConeThreshold,        [left(3) bottom(2) width height], wratio);
+        panelParent,'Cone post-processing theshold:',     defaultProcProcConeThreshold,        [left(2) bottom(1) width height], wratio);
 
     % col 3, row 3
     % text|edit field pair: Post-processing of Cone tol
     [h.qsm.HEIDI.text.ProcProcConeTol,h.qsm.HEIDI.edit.ProcProcConeTol] = sepia_construct_text_edit(...
-        panelParent,'Cone post-processing tolerance:',     defaultProcProcConeTol,        [left(3) bottom(3) width height], wratio);
+        panelParent,'Cone post-processing tolerance:',     defaultProcProcConeTol,        [left(2) bottom(2) width height], wratio);
 
     % col 3, row 4
     % text|edit field pair: Post-processing of Cone tol
     [h.qsm.HEIDI.text.ProcProcConeTolEnergy,h.qsm.HEIDI.edit.ProcProcConeTolEnergy] = sepia_construct_text_edit(...
-        panelParent,'Cone post-processing energy:',     defaultProcProcConeTolEnergy,        [left(3) bottom(4) width height], wratio);
+        panelParent,'Cone post-processing energy:',     defaultProcProcConeTolEnergy,        [left(2) bottom(3) width height], wratio);
     
     
 %% set tooltips

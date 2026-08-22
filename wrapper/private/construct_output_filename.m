@@ -27,6 +27,8 @@ outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_d
 outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap' outputSuffix]);
 outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield' outputSuffix]);
 outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap' outputSuffix]);
+outputFileList.QSMpara          = fullfile(outputDir, [ouputPrefix 'ChiParamap' outputSuffix]);
+outputFileList.QSMdia           = fullfile(outputDir, [ouputPrefix 'ChiDiamap' outputSuffix]);
 
 % use for regularisation
 outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights' outputSuffix]);

@@ -14,16 +14,37 @@
 % k.chan@donders.ru.nl
 % Date created: 29 June 2020 (v0.8.0)
 % Date modified: 27 Jan 2021 (v0.8.1)
+% Date modified: 11 Sep 2025 (v1.3.0)
 %
 %
 function sepiaIO(input,output,maskFullName,algorParam)
 
+if isempty(input) || (isstruct(input) && all(strcmp({input.name}, '')))
+    disp('No input found, nothing to do...')
+    return
+end
+
 %%% Step 1 %%%
 currDir = pwd;
+% 20250911 KC: fixed relative path
+if isstruct(input)
+    for k = 1:numel(input)
+        if ~isempty(input(k).name) && isRelativePath(input(k).name)
+            input(k).name = fullfile(pwd,input(k).name);
+        end
+    end
+end
+if ~isempty(maskFullName) && isRelativePath(maskFullName)
+    maskFullName = fullfile(pwd,maskFullName);
+end
+if isRelativePath(output)
+    output = fullfile(pwd,output);
+end
+
 % 1.1: get and create output directory
 output = char(output);
 output_index    = strfind(output, filesep);
-outputDir       = output(1:output_index(end));
+outputDir       = output(1:output_index(end));   
 % if the output directory does not exist then create the directory
 if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
@@ -33,19 +54,35 @@ cd(outputDir)
 
 % 1.2 log command window display to a text file
 % use current time as unique identifier
-identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
-
-logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
+try
+    stack = dbstack('-completenames');
+    if length(stack) >= 2
+        parentScriptName = stack(2).file;
+        [~,parentScriptName,~] = fileparts(parentScriptName);
+    else
+        parentScriptName = [];
+    end
+end
+identifier = datestr(datetime('now'),'yymmddHHMMSS');
+if isempty(parentScriptName)
+    % check if any sepia config file exists in the output directory, if not
+    % then create one
+    check_and_create_sepia_config(input,output,maskFullName,algorParam,identifier);
+    parentScriptName = 'sepia_config';
+end
+% if ~isempty(parentScriptName)
+logFilename          = fullfile(outputDir, strcat(parentScriptName,'.log',identifier));
+errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
+% end
+    
+% logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
 while exist(logFilename,'file') == 2
     % update current time as unique identifier
-    identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
-    logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
+    identifier = datestr(datetime('now'),'yymmddHHMMSS');
+    logFilename          = fullfile(outputDir, strcat(parentScriptName,'.log',identifier));
+    errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
 end
 diary(logFilename)
-
-% check if any sepia config file exists in the output directory, if not
-% then create one
-check_and_create_sepia_config(input,output,maskFullName,algorParam,identifier);
 
 % display the parent script
 fn = dbstack('-completenames');
@@ -117,7 +154,7 @@ catch ME
     cd(currDir)
     
     % open a new text file for error message
-    errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
+    % errorMessageFilename = fullfile(outputDir, ['run_sepia.error' identifier]);
     fid = fopen(errorMessageFilename,'w');
     fprintf(fid,'The identifier was:\n%s\n\n',ME.identifier);
     fprintf(fid,'The message was:\n\n');
@@ -141,7 +178,8 @@ output_index    = strfind(output, filesep);
 outputDir       = output(1:output_index(end));
 
 % create a new m file
-configFileList    = dir(fullfile(outputDir,'*sepia_config*.m*'));
+% configFileList    = dir(fullfile(outputDir,'*sepia_config*.m*'));
+configFileList = []; % 20250919 KC: always export config file
 if ~isempty(configFileList)
     isConfigFileExist = true;
     disp('SEPIA configuration file already exists in the output directory.')
