@@ -56,9 +56,15 @@ if ~isempty(magn) && size(magn,4)>1 % maybe add some statement regarding multi-e
     %     error('For magnitude data, only multi-echo data is supported. Please select a 4D [x,y,z,t] magnitude dataset or remove it from the input name');
     % end
     disp('Extracting CSF mask....');
-    % R2* mapping
-    % r2s         = arlo(TE,iMag);
-    r2s         = arlo(headerAndExtraData.sepia_header.TE,magn);    % 20250628: correct names
+    % R2* mapping: reuse the cached R2* map if one is already available,
+    % otherwise compute it using ARLO
+    if isfield(headerAndExtraData,'availableFileList') && isfield(headerAndExtraData.availableFileList,'r2s') && exist(headerAndExtraData.availableFileList.r2s,'file')
+        disp('R2* map is already available. Loading it from disk...');
+        r2s = double(load_nii_img_only(headerAndExtraData.availableFileList.r2s));
+    else
+        % r2s         = arlo(TE,iMag);
+        r2s         = arlo(headerAndExtraData.sepia_header.TE,magn);    % 20250628: correct names
+    end
     Mask_CSF    = extract_CSF(r2s,mask,voxelSize)>0;
 
     clear r2s
