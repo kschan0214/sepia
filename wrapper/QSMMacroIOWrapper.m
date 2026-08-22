@@ -25,7 +25,7 @@
 % Date modified: 13 August 2021 (v1.0)
 %
 %
-function chi = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
+function [chi,chi_para,chi_dia] = QSMMacroIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path
 sepia_addpath
 
@@ -119,13 +119,22 @@ localField   	= double(load_nii_img_only(availableFileList.localField));
 mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
 
 % core of QSM
-[chi,mask_ref] = QSMMacro(localField,mask_QSM,matrixSize,voxelSize,algorParam,headerAndExtraData);
+% 20260822 KC: expanded for chi-sep type output
+[chi,mask_ref,chi_para,chi_dia] = QSMMacro(localField,mask_QSM,matrixSize,voxelSize,algorParam,headerAndExtraData);
 clear localField mask_QSM
 
 % save results
 fprintf('Saving susceptibility map...');
 save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
-clear chi
+% 20260822 KC: expanded for chi-sep type output
+if ~isempty(chi_para)
+    save_nii_quick(outputNiftiTemplate, chi_para, outputFileList.QSMpara);
+end
+if ~isempty(chi_dia)
+    save_nii_quick(outputNiftiTemplate, chi_dia, outputFileList.QSMdia);
+end
+
+% clear chi
 
 if ~isempty(mask_ref)
     save_nii_quick(outputNiftiTemplate, mask_ref, outputFileList.maskRef);

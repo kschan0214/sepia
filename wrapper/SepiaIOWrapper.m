@@ -29,9 +29,9 @@
 % Date modified: 6 May 2021 (v0.8.1.1)
 % Date modified: 13 August 2021 (v1.0)
 % Date modified: 12 September 2022 (v1.1)
-% Date modified: 16 November 2025 (v2): Add support to bids fMRI/fQSM format
+% Date modified: 16 November 2025 (v1.3): Add support to bids fMRI/fQSM format
 %
-function [chi,localField,totalField,fieldmapSD]=SepiaIOWrapper(input,output,maskFullName,algorParam)
+function [chi,localField,totalField,fieldmapSD,chi_para,chi_dia]=SepiaIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path and universal variables
 sepia_addpath
 
@@ -222,11 +222,24 @@ end
     
     
 if ~isinf(exclude_threshold)
-    
+
     magn = double(load_nii_img_only(availableFileList.magnitude));
-    
+
     % multi-echo data
-    r2s                 = R2star_trapezoidal(magn,TE);
+    % R2* map only needs to be computed once; reuse it if it is already
+    % available, otherwise compute it and make it available for later use
+    if isfield(availableFileList,'r2s') && exist(availableFileList.r2s,'file')
+        disp('R2* map is already available. Loading it from disk...');
+        r2s = double(load_nii_img_only(availableFileList.r2s));
+    else
+        r2s = R2star_trapezoidal(magn,TE);
+
+        fprintf('Saving R2* map...');
+        save_nii_quick(outputNiftiTemplate, r2s, outputFileList.r2s);
+        fprintf('Done!\n');
+
+        availableFileList.r2s = outputFileList.r2s;
+    end
     relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
     maskReliable        = relativeResidual < exclude_threshold;
     % v1.1: 20220919
@@ -352,13 +365,21 @@ mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
 % headerAndExtraData.weights = headerAndExtraData.weights .* mask_QSM;
 
 % core of QSM
-[chi,mask_ref] = QSMMacro(localField,mask_QSM,matrixSize,voxelSize,algorParam,headerAndExtraData);
+% 20260822 KC: expanded for chi-sep type output
+[chi,mask_ref,chi_para,chi_dia] = QSMMacro(localField,mask_QSM,matrixSize,voxelSize,algorParam,headerAndExtraData);
 clear localField mask_QSM
 
 % save results
 fprintf('Saving susceptibility map...');
 save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
-clear chi
+% 20260822 KC: expanded for chi-sep type output
+if ~isempty(chi_para)
+    save_nii_quick(outputNiftiTemplate, chi_para, outputFileList.QSMpara);
+end
+if ~isempty(chi_dia)
+    save_nii_quick(outputNiftiTemplate, chi_dia, outputFileList.QSMdia);
+end
+% clear chi chi_para chi_dia
 
 if ~isempty(mask_ref)
     save_nii_quick(outputNiftiTemplate, mask_ref, outputFileList.maskRef);
@@ -675,9 +696,23 @@ end
 
 if isRefineBrainMask
     disp('Refine brain using R2* info');
-    magn        = double(load_nii_img_only(availableFileList.magnitude));
     mask        = double(load_nii_img_only(availableFileList.mask));
-    r2s         = R2star_trapezoidal(magn, TE);
+
+    % R2* map only needs to be computed once; reuse it if it is already
+    % available, otherwise compute it and make it available for later use
+    if isfield(availableFileList,'r2s') && exist(availableFileList.r2s,'file')
+        disp('R2* map is already available. Loading it from disk...');
+        r2s = double(load_nii_img_only(availableFileList.r2s));
+    else
+        magn = double(load_nii_img_only(availableFileList.magnitude));
+        r2s  = R2star_trapezoidal(magn, TE);
+
+        fprintf('Saving R2* map...');
+        save_nii_quick(outputNiftiTemplate, r2s, outputFileList.r2s);
+        fprintf('Done!\n');
+
+        availableFileList.r2s = outputFileList.r2s;
+    end
     mask_refine = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
 
     % save the eddy current corrected output
@@ -741,6 +776,9 @@ if algorParam.general.isDenoise
     availableFileList.magnitude = outputFileList.magDenoise;
     availableFileList.phase     = outputFileList.phaseDenoise;
 
+    % magnitude has changed, any previously computed R2* map is stale
+    if isfield(availableFileList,'r2s'); availableFileList = rmfield(availableFileList,'r2s'); end
+
     disp('Done!');
 end
 end
@@ -796,6 +834,9 @@ if algorParam.general.isUpsample
     availableFileList.phase         = outputFileList.phaseUpsample;
     availableFileList.mask          = outputFileList.maskUpsample;
     availableFileList.sepiaheader   = outputFileList.sepiaHeaderUpsample;
+
+    % magnitude has changed, any previously computed R2* map is stale
+    if isfield(availableFileList,'r2s'); availableFileList = rmfield(availableFileList,'r2s'); end
 
     disp('Done!');
 end

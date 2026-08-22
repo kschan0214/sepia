@@ -27,6 +27,8 @@ outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_u
 outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap.nii.gz']);
 outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield.nii.gz']);
 outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap.nii.gz']);
+outputFileList.QSMpara          = fullfile(outputDir, [ouputPrefix 'ChiParamap.nii.gz']);
+outputFileList.QSMdia           = fullfile(outputDir, [ouputPrefix 'ChiDiamap.nii.gz']);
 
 % use for regularisation
 outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights.nii.gz']);

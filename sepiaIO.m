@@ -63,10 +63,16 @@ try
     end
 end
 identifier = datestr(datetime('now'),'yymmddHHMMSS');
-if ~isempty(parentScriptName)
-    logFilename          = fullfile(outputDir, strcat(parentScriptName,'.log',identifier));
-    errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
+if isempty(parentScriptName)
+    % check if any sepia config file exists in the output directory, if not
+    % then create one
+    check_and_create_sepia_config(input,output,maskFullName,algorParam,identifier);
+    parentScriptName = 'sepia_config';
 end
+% if ~isempty(parentScriptName)
+logFilename          = fullfile(outputDir, strcat(parentScriptName,'.log',identifier));
+errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
+% end
     
 % logFilename = fullfile(outputDir, ['run_sepia.log' identifier]);
 while exist(logFilename,'file') == 2
@@ -76,10 +82,6 @@ while exist(logFilename,'file') == 2
     errorMessageFilename = fullfile(outputDir, strcat(parentScriptName,'.error',identifier));
 end
 diary(logFilename)
-
-% check if any sepia config file exists in the output directory, if not
-% then create one
-check_and_create_sepia_config(input,output,maskFullName,algorParam,identifier);
 
 % display the parent script
 fn = dbstack('-completenames');
