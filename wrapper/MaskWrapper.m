@@ -81,7 +81,7 @@ if isempty(mask) || isBET
             fprintf('Done!\n');
             
 
-        case skullstrippingMethod{2}    % synthstrip
+        case skullstrippingMethod{3}    % synthstrip
 
             save_nii_quick(outputNiftiTemplate,mag_e1, temp_nii);
 
@@ -93,7 +93,7 @@ if isempty(mask) || isBET
             end
             delete(temp_nii);
 
-        case skullstrippingMethod{3}    % synthstrip-no-CSF
+        case skullstrippingMethod{4}    % synthstrip-no-CSF
 
             save_nii_quick(outputNiftiTemplate,mag_e1, temp_nii);
 
@@ -105,7 +105,7 @@ if isempty(mask) || isBET
             end
             delete(temp_nii);
        
-        case skullstrippingMethod{4}    % Otsu thresholding
+        case skullstrippingMethod{2}    % Otsu thresholding
             
             disp("Performing Otsu's Method Thresholding...");
 
@@ -115,7 +115,7 @@ if isempty(mask) || isBET
             % mask = mag_e1 >= level;
 
             % Slightly more advanced (and robust) multilevel built-in
-            thresh = multithresh(mag,3);
+            thresh = multithresh(magn,3);
             labels = imquantize(mag_e1,thresh);
 
             % Select largest component of the labeled regions

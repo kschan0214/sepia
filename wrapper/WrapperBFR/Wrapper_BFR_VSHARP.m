@@ -35,10 +35,10 @@ addpath(fullfile(SEPIA_HOME,'misc','background_removal','VSHARP_sepia'));
 
 %% Display algorithm parameters
 disp('The following parameter is being used...');
-disp(['Radius range(voxel) = ' num2str(radius)]);
+disp(['Radius range(mm) = ' num2str(radius)]);
 
 %% main
-[RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize,'radius',radius);
+[RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize,voxelSize,'radius',radius);
        
 end
 

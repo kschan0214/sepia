@@ -468,18 +468,6 @@ function availableFileList          = io_06_get_signal_mask(maskFullName, inputD
 % PSF20251110: Separate wrapper to ensure SepiaIOWrapper and 
 % UnwrapPhaseMacroIOWrapper use the same masking structure and backend
 availableFileList = MaskWrapper(maskFullName, inputDir, sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
-sepia_universal_variables;
-
-isBET               = algorParam.general.isBET;
-if isfield(algorParam.general, 'brain_extraction_method')
-    brainExtractMethod  = algorParam.general.brain_extraction_method;
-else
-    brainExtractMethod = skullstrippingMethod{1};
-end
-if strcmp(brainExtractMethod,skullstrippingMethod{1})
-    fractional_threshold    = algorParam.general.fractional_threshold;
-    gradient_threshold      = algorParam.general.gradient_threshold;
-end
 
 end
 
@@ -500,23 +488,23 @@ function availableFileList          = io_08_denoising(sepia_header, algorParam, 
 
 sepia_universal_variables;
 
-% check if tensor MPPCA code exist, if not then download form GitHub
-tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
-if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end
-if ~exist('denoise_recursive_tensor', 'file')
-
-    fprintf('Cannot find tensor-MPPCA functions. Attempt to download the tool to %s\n',tMPPCA_HOME);
-
-    cmd = sprintf('wget -O %s --no-check-certificate https://github.com/Neurophysics-CFIN/Tensor-MP-PCA/archive/refs/heads/main.zip; unzip %s -d %s',strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME));
-    % cmd = sprintf('git clone https://github.com/Neurophysics-CFIN/Tensor-MP-PCA.git %s',tMPPCA_HOME); % certificate fail
-    system(cmd);
-    delete(strcat(tMPPCA_HOME,'.zip'));
-    addpath(genpath(tMPPCA_HOME));
-
-end
-
-
 if algorParam.general.isDenoise
+
+    % check if tensor MPPCA code exist, if not then download form GitHub
+    tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
+    if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end
+    if ~exist('denoise_recursive_tensor', 'file')
+    
+        fprintf('Cannot find tensor-MPPCA functions. Attempt to download the tool to %s\n',tMPPCA_HOME);
+    
+        cmd = sprintf('wget -O %s --no-check-certificate https://github.com/Neurophysics-CFIN/Tensor-MP-PCA/archive/refs/heads/main.zip; unzip %s -d %s',strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME));
+        % cmd = sprintf('git clone https://github.com/Neurophysics-CFIN/Tensor-MP-PCA.git %s',tMPPCA_HOME); % certificate fail
+        system(cmd);
+        delete(strcat(tMPPCA_HOME,'.zip'));
+        addpath(genpath(tMPPCA_HOME));
+    
+    end
+
     kernel = ceil(algorParam.general.denoiseKernel ./ sepia_header.voxelSize);
     if any(kernel<3)
         warning('Denoising kernel size too small. [3x3x3] voxels kernel will be used');
@@ -598,115 +586,6 @@ if isempty(mask) || isBET
         error('No signal mask is found. QSM cannot be run without a signal mask.');
     end
 end
-
-    % update availableFileList
-    availableFileList.magnitude = outputFileList.magDenoise;
-    availableFileList.phase     = outputFileList.phaseDenoise;
-
-    disp('Done!');
-end
-end
-
-%% I/O Step 9: image upsampling
-function [availableFileList,sepia_header,outputNiftiTemplate] = io_09_upsampling(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
-
-sepia_universal_variables;
-
-
-if algorParam.general.isUpsample
-
-    disp('Upsampling in progress...')
-    magn        = double(load_nii_img_only(availableFileList.magnitude));
-    phase       = double(load_nii_img_only(availableFileList.phase));
-    mask        = double(load_nii_img_only(availableFileList.mask)) >0;
-
-    % create complex-valued image
-    img         = magn .* exp(1i*phase);
-
-    scaleFactor = sepia_header.voxelSize./algorParam.general.target_resolution ;
-    if any(scaleFactor < 1)
-        warning('You are downsampling the data. Thi step will be skipped.');
-        return
-    end
-    matrixSize_upSample = round(scaleFactor .* sepia_header.matrixSize);
-
-    % Assuming `data` is [X Y Z Echo] complex GRE data
-    numEchoes   = size(img, 4);
-    img_us = zeros([matrixSize_upSample numEchoes], 'like', img);
-    
-    for e = 1:numEchoes
-        img_us(:,:,:,e) = fft_upsample_complex(img(:,:,:,e), matrixSize_upSample);
-    end
-
-    upsampledMask = imresize3(double(mask), matrixSize_upSample, 'cubic')> 0.2;
-
-    % update sepia header
-    sepia_header.matrixSize = matrixSize_upSample;
-    sepia_header.voxelSize  = ones(size(sepia_header.voxelSize))*algorParam.general.target_resolution;
-
-    % save output
-    outputNiftiTemplate.hdr.dime.pixdim(2:4) = sepia_header.voxelSize;
-
-    save_nii_quick(outputNiftiTemplate, abs(img_us),    outputFileList.magUpsample);
-    save_nii_quick(outputNiftiTemplate, angle(img_us),  outputFileList.phaseUpsample);
-    save_nii_quick(outputNiftiTemplate, upsampledMask,  outputFileList.maskUpsample);
-    TE = sepia_header.TE; B0 = sepia_header.B0;
-    save(outputFileList.sepiaHeaderUpsample,'TE','B0')
-
-    % update availableFileList
-    availableFileList.magnitude     = outputFileList.magUpsample;
-    availableFileList.phase         = outputFileList.phaseUpsample;
-    availableFileList.mask          = outputFileList.maskUpsample;
-    availableFileList.sepiaheader   = outputFileList.sepiaHeaderUpsample;
-
-    disp('Done!');
-end
-end
-%% I/O Step 8: image denoising
-function availableFileList          = io_08_denoising(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate)
-
-sepia_universal_variables;
-
-% check if tensor MPPCA code exist, if not then download form GitHub
-tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
-if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end
-if ~exist('denoise_recursive_tensor', 'file')
-
-    fprintf('Cannot find tensor-MPPCA functions. Attempt to download the tool to %s\n',tMPPCA_HOME);
-
-    cmd = sprintf('wget -O %s --no-check-certificate https://github.com/Neurophysics-CFIN/Tensor-MP-PCA/archive/refs/heads/main.zip; unzip %s -d %s',strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME));
-    % cmd = sprintf('git clone https://github.com/Neurophysics-CFIN/Tensor-MP-PCA.git %s',tMPPCA_HOME); % certificate fail
-    system(cmd);
-    delete(strcat(tMPPCA_HOME,'.zip'));
-    addpath(genpath(tMPPCA_HOME));
-
-end
-
-
-if algorParam.general.isDenoise
-    kernel = ceil(algorParam.general.denoiseKernel ./ sepia_header.voxelSize);
-    if any(kernel<3)
-        warning('Denoising kernel size too small. [3x3x3] voxels kernel will be used');
-    end
-    kernel = max(kernel,[3,3,3]); % minimum window are 3 voxels
-
-    disp('Tensor-MP-PCA denoising in progress (can take some time)...')
-    magn        = double(load_nii_img_only(availableFileList.magnitude));
-    phase       = double(load_nii_img_only(availableFileList.phase));
-    mask        = double(load_nii_img_only(availableFileList.mask)) >0;
-
-    % create complex-valued image
-    img         = magn .* exp(1i*phase);
-    
-    tic
-    [img_denoise,sigma,P,snrgain] = denoise_recursive_tensor(img,kernel,'mask',mask);
-    toc
-    
-    save_nii_quick(outputNiftiTemplate, abs(img_denoise),   outputFileList.magDenoise);
-    save_nii_quick(outputNiftiTemplate, angle(img_denoise), outputFileList.phaseDenoise);
-    save_nii_quick(outputNiftiTemplate, sigma,              outputFileList.sigma);
-    save_nii_quick(outputNiftiTemplate, P,                  outputFileList.P);
-    save_nii_quick(outputNiftiTemplate, snrgain,            outputFileList.snrgain);
 
     % update availableFileList
     availableFileList.magnitude = outputFileList.magDenoise;

@@ -40,7 +40,7 @@ disp('Mask refinement');
 disp('---------------');
 fprintf('Refining brain mask...');
 
-mask  = get_variable_from_headerAndExtraData(headerAndExtraData, 'mask', matrixSize);
+mask        = double(load_nii_img_only(availableFileList.mask));
 
 switch lower(refineMethod)
 
@@ -52,13 +52,22 @@ switch lower(refineMethod)
         end
 
         disp('Refine brain using R2* info');
-        if ~isempty(availableFileList.R2s)
-            r2s     = double(load_nii_img_only(availableFileList.r2s));
+        % R2* map only needs to be computed once; reuse it if it is already
+        % available, otherwise compute it and make it available for later use
+        if isfield(availableFileList,'r2s') && exist(availableFileList.r2s,'file')
+            disp('R2* map is already available. Loading it from disk...');
+            r2s = double(load_nii_img_only(availableFileList.r2s));
         else
-            magn    = double(load_nii_img_only(availableFileList.magnitude));
-            r2s     = R2star_trapezoidal(magn, TE);
+            magn = double(load_nii_img_only(availableFileList.magnitude));
+            r2s  = R2star_trapezoidal(magn, TE);
+    
+            fprintf('Saving R2* map...');
+            save_nii_quick(outputNiftiTemplate, r2s, outputFileList.r2s);
+            fprintf('Done!\n');
+    
+            availableFileList.r2s = outputFileList.r2s;
         end
-        mask        = double(load_nii_img_only(availableFileList.mask));
+        
         maskRefined = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
         
     case {lower(methodMaskName{1}), 'monoexponential','decay','mdm'}

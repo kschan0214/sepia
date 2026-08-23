@@ -103,30 +103,30 @@ disp(['The following QSM algorithm will be used: ' method]);
 
 
 switch two_pass_masking
-    case methodTwoPassName{2}
-    disp('Two pass masking will be used ...');
-    disp(['The following masking algorithm will be used: ' methodTwoPassName{2}]);
-    fprintf(['Please cite:\nhttps://archive.ismrm.org/2024/3674.html for',...
-             ' MGF masking, \nhttps://archive.ismrm.org/2022/2462.html',...
-             ' for the two-pass masking approach, and\nhttps://doi.org/10.1002/mrm.29048',...
-             ' if you like for a more recent reference on the application of two-pass masked QSM.\n'] )
-    % Calculate first pass mask based on the magnitude of the gradient of 
-    % the fieldmap, and original mask.
-    mgf_lambda      = algorParam.qsm.twopass_lambda;
-    mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mgf_lambda);
-
-    % Calculate the 2nd pass mask by thresholding the noisemap (if available)
-    % throughout brain
-    if not(isempty(headerAndExtraData.availableFileList.fieldmapSD))
-        fieldmapSD = load_untouch_nii(headerAndExtraData.availableFileList.fieldmapSD);
-        mask_qsm_pass_2 = erode3d(mask_qsm_pass_1, fieldmapSD.img);
-    else
-        % Only MGF refinement, no further noise based refinement performed
-        mask_qsm_pass_2 = mask_qsm_pass_1;
-        % mask_qsm_pass_1 = mask;
-    end
-    % mask = imfill(mask_qsm_pass_1, "holes");
-    % mask = imclose(mask_qsm_pass_1, strel('sphere',3));
+    case methodTwoPassName{3}
+        disp('Two pass masking will be used ...');
+        disp(['The following masking algorithm will be used: ' methodTwoPassName{3}]);
+        fprintf(['Please cite:\nhttps://archive.ismrm.org/2024/3674.html for',...
+                 ' MGF masking, \nhttps://archive.ismrm.org/2022/2462.html',...
+                 ' for the two-pass masking approach, and\nhttps://doi.org/10.1002/mrm.29048',...
+                 ' if you like for a more recent reference on the application of two-pass masked QSM.\n'] )
+        % Calculate first pass mask based on the magnitude of the gradient of 
+        % the fieldmap, and original mask.
+        mgf_lambda      = algorParam.qsm.twopass_lambda;
+        mask_qsm_pass_1 = GradientBasedThreshold(localField, mask, mgf_lambda);
+    
+        % Calculate the 2nd pass mask by thresholding the noisemap (if available)
+        % throughout brain
+        if not(isempty(headerAndExtraData.availableFileList.fieldmapSD))
+            fieldmapSD = load_untouch_nii(headerAndExtraData.availableFileList.fieldmapSD);
+            mask_qsm_pass_2 = erode3d(mask_qsm_pass_1, fieldmapSD.img);
+        else
+            % Only MGF refinement, no further noise based refinement performed
+            mask_qsm_pass_2 = mask_qsm_pass_1;
+            % mask_qsm_pass_1 = mask;
+        end
+        % mask = imfill(mask_qsm_pass_1, "holes");
+        % mask = imclose(mask_qsm_pass_1, strel('sphere',3));
 
 end
 
@@ -145,22 +145,38 @@ for k = 1:length(wrapper_QSM_function)
             chi_para = varargout{2};
             chi_dia  = varargout{3};
         end
-        % [chi,varargout] = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
     end
 end
 
-% TODO 20260822 KC: here wee need to incoporate the new expanded format
+% Two-pass masking
 if not(strcmpi(two_pass_masking,'None'))
     % perform second dipole inversion
     for k = 1:length(wrapper_QSM_function)
         if strcmpi(method,methodQSMName{k})
-        chi_pass_2 = feval(wrapper_QSM_function{k},localField,mask_qsm_pass_2,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
+            nOut = nargout(wrapper_QSM_function{k});
+            varargout = cell(1, max(nOut,1));
+            [varargout{:}] = feval(wrapper_QSM_function{k},localField,mask,matrixSize_new,voxelSize,algorParam, headerAndExtraData);
+            chi_pass_2 = varargout{1};
+            if nOut > 1
+                chi_para_pass2 = varargout{2};
+                chi_dia_pass2  = varargout{3};
+            end
         end
     end
 
     % Combine the two maps
     chi(mask_qsm_pass_2 > 0) = 0;
     chi = chi + chi_pass_2;
+    if exist("chi_para_pass2",'var')
+        chi_para(mask_qsm_pass_2 > 0) = 0;
+        chi_para = chi_para + chi_para_pass2;
+    end
+    if exist("chi_dia_pass2",'var')
+        chi_dia(mask_qsm_pass_2 > 0) = 0;
+        chi_dia = chi_dia + chi_dia_pass2;
+    end
+end
+
 % Post dipole inversion using HEIDI
 if algorParam.qsm.isHEIDI
     [chi] = Wrapper_QSM_HEIDI4all(localField,chi,mask,matrixSize,voxelSize,algorParam, headerAndExtraData) ;

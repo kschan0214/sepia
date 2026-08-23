@@ -26,6 +26,12 @@ function [chi,chi_para,chi_dia] = Wrapper_QSM_Chi_separation(localField,mask,mat
 % load some constants 
 sepia_universal_variables;
 
+% setup path
+setup_Chi_sepnet_environment;
+addpath(genpath(fullfile(home_directory,'functions')));
+addpath(genpath(fullfile(home_directory,'models')));
+addpath(genpath(fullfile(home_directory,'utils')));
+
 % get algorithm parameters, if user doesn't specify them then set some default values
 % algorParam = check_and_set_algorithm_default(algorParam);
 solver         = algorParam.qsm.solver;
@@ -132,14 +138,14 @@ switch solver
     case 'Chi-sepnet-R2*'
         disp('Chi-sepnet-R2* is running');
 
-        setup_Chi_sepnet_environment
+        % setup_Chi_sepnet_environment
         [x_para, x_dia, x_tot, ~, ~] = chi_sepnet_general_new_wResolGen(home_directory, localField, R2n, mask, params.Dr, ...
             params.b0_dir, params.CF, params.voxel_size, HaveR2prime, params.B0_strength, 0, 0.19, 'sinc', 15, 'hann');
 
     case 'Chi-sepnet-R2'''
         disp('Chi-sepnet-R2'' is running');
 
-        setup_Chi_sepnet_environment
+        % setup_Chi_sepnet_environment
         [x_para, x_dia, x_tot, ~, ~] = chi_sepnet_general_new_wResolGen(home_directory, localField, R2n, mask, params.Dr, ...
             params.b0_dir, params.CF, params.voxel_size, HaveR2prime, params.B0_strength, 0, 0.19, 'sinc', 15, 'hann');
         

@@ -276,11 +276,15 @@ switch method
         set(h.dataIO.edit.fractionalThres,  'Enable', 'on');
         set(h.dataIO.edit.gradientThres,    'Enable', 'on');
 
-    case skullstrippingMethod{2} % FSL betsynthstrip
+    case skullstrippingMethod{2} % Otsu
         set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
         set(h.dataIO.edit.gradientThres,    'Enable', 'off');
 
-    case skullstrippingMethod{3} % FSL betsynthstrip
+    case skullstrippingMethod{3} % synthstrip
+        set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
+        set(h.dataIO.edit.gradientThres,    'Enable', 'off');
+
+    case skullstrippingMethod{4} % synthstrip
         set(h.dataIO.edit.fractionalThres,  'Enable', 'off');
         set(h.dataIO.edit.gradientThres,    'Enable', 'off');
 end
