@@ -55,6 +55,8 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
+write_bids_dataset_description(outputDir);
+
 outputFileList = construct_output_filename(outputDir, prefix, algorParam, suffix);
 
 %% Check and set default algorithm parameters
@@ -197,9 +199,14 @@ if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
 end
 clear fieldmapUnwrapAllEchoes
 
-% save the total fieldmap                       
+% save the total fieldmap
 fprintf('Saving unwrapped fieldmap...');
 save_nii_quick(outputNiftiTemplate,totalField,  outputFileList.totalField);
+save_json_sidecar(outputFileList.totalField, struct( ...
+    'Description', 'Unwrapped total field map estimated by temporo-spatial phase unwrapping.', ...
+    'Units',       'Hz', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}, ...
+    'Parameters',  algorParam.unwrap));
 fprintf('Done.\n');
 availableFileList.totalField = outputFileList.totalField;
             
@@ -270,7 +277,12 @@ switch exclude_method
         
 end
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  outputFileList.fieldmapSD);
-save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField); 
+save_json_sidecar(outputFileList.fieldmapSD, struct( ...
+    'Description', 'Noise standard deviation of the total field map.', ...
+    'Units',       'arbitrary', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}, ...
+    'Parameters',  algorParam.unwrap));
+save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField);
 
 availableFileList.fieldmapSD        = outputFileList.fieldmapSD;
 availableFileList.maskLocalField    = outputFileList.maskLocalField;

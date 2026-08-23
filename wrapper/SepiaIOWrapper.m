@@ -31,7 +31,7 @@
 % Date modified: 12 September 2022 (v1.1)
 % Date modified: 16 November 2025 (v1.3): Add support to bids fMRI/fQSM format
 %
-function [chi,localField,totalField,fieldmapSD,chi_para,chi_dia]=SepiaIOWrapper(input,output,maskFullName,algorParam)
+function [chi,localField,totalField,fieldmapSD,chi_para,chi_dia] = SepiaIOWrapper(input,output,maskFullName,algorParam)
 %% add general Path and universal variables
 sepia_addpath
 
@@ -39,7 +39,6 @@ sepia_universal_variables;
 
 %% define variables
 prefix = 'sepia_';
-% suffix = '.nii.gz';
 
 %% Check if output directory exists 
 output_index    = strfind(output, filesep);
@@ -57,6 +56,8 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 fprintf('Output filename suffix : %s\n',suffix);
+
+write_bids_dataset_description(outputDir);
 
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
@@ -207,9 +208,14 @@ if ~isempty(fieldmapUnwrapAllEchoes) && isSaveUnwrappedEcho
 end
 clear fieldmapUnwrapAllEchoes
 
-% save the total fieldmap                       
+% save the total fieldmap
 fprintf('Saving unwrapped fieldmap...');
 save_nii_quick(outputNiftiTemplate,totalField,  outputFileList.totalField);
+save_json_sidecar(outputFileList.totalField, struct( ...
+    'Description', 'Unwrapped total field map estimated by temporo-spatial phase unwrapping.', ...
+    'Units',       'Hz', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}, ...
+    'Parameters',  algorParam.unwrap));
 fprintf('Done.\n');
 availableFileList.totalField = outputFileList.totalField;
 
@@ -237,6 +243,10 @@ if ~isinf(exclude_threshold)
 
         fprintf('Saving R2* map...');
         save_nii_quick(outputNiftiTemplate, r2s, outputFileList.r2s);
+        save_json_sidecar(outputFileList.r2s, struct( ...
+            'Description', 'R2* map estimated from multi-echo magnitude data (trapezoidal method), used to exclude unreliable voxels.', ...
+            'Units',       '1/s', ...
+            'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}));
         fprintf('Done!\n');
 
         availableFileList.r2s = outputFileList.r2s;
@@ -254,21 +264,40 @@ if ~isinf(exclude_threshold)
     if isSaveR2s
         fprintf('Saving R2star map...');
         save_nii_quick(outputNiftiTemplate,r2s,   	                outputFileList.r2s);
+        save_json_sidecar(outputFileList.r2s, struct( ...
+            'Description', 'R2* map estimated from multi-echo magnitude data (trapezoidal method), used to exclude unreliable voxels.', ...
+            'Units',       '1/s', ...
+            'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}));
     end
     if isMagnitudeCombine
         fprintf('Combining multi-echo data optimally...');
         optimalCombinedMagnitude = ComputeOptimalCombinedMagnitude(TE,r2s,magn);
         save_nii_quick(outputNiftiTemplate,optimalCombinedMagnitude,outputFileList.optimalCombinedMagnitude);
+        save_json_sidecar(outputFileList.optimalCombinedMagnitude, struct( ...
+            'Description', 'Optimally combined multi-echo magnitude image.', ...
+            'Units',       'arbitrary', ...
+            'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}));
 
         clear optimalCombinedMagnitude
     end
 
-    clear r2s magn 
-    
+    clear r2s magn
+
     fprintf('Saving other output...');
     save_nii_quick(outputNiftiTemplate,maskReliable,   	outputFileList.maskReliable);
+    save_json_sidecar(outputFileList.maskReliable, struct( ...
+        'Description', 'Reliable voxel mask based on a monoexponential decay model of the multi-echo magnitude data.', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}));
     save_nii_quick(outputNiftiTemplate,relativeResidual,outputFileList.relativeResidual);
+    save_json_sidecar(outputFileList.relativeResidual, struct( ...
+        'Description', 'Relative residual of the monoexponential decay model fit used to identify unreliable voxels.', ...
+        'Units',       'arbitrary', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}));
     save_nii_quick(outputNiftiTemplate,relativeResidualWeights,outputFileList.relativeResidualWeights);
+    save_json_sidecar(outputFileList.relativeResidualWeights, struct( ...
+        'Description', 'Weighting map derived from the relative residual of the monoexponential decay model fit.', ...
+        'Units',       'arbitrary', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}));
     fprintf('Done.\n');
     
     clear relativeResidual
@@ -293,7 +322,15 @@ switch exclude_method
         
 end
 save_nii_quick(outputNiftiTemplate,fieldmapSD,  outputFileList.fieldmapSD);
-save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField); 
+save_json_sidecar(outputFileList.fieldmapSD, struct( ...
+    'Description', 'Noise standard deviation of the total field map.', ...
+    'Units',       'arbitrary', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}, ...
+    'Parameters',  algorParam.unwrap));
+save_nii_quick(outputNiftiTemplate,mask,        outputFileList.maskLocalField);
+save_json_sidecar(outputFileList.maskLocalField, struct( ...
+    'Description', 'Signal mask used for background field removal, after excluding unreliable voxels.', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}));
 
 availableFileList.fieldmapSD        = outputFileList.fieldmapSD;
 availableFileList.maskLocalField    = outputFileList.maskLocalField;
@@ -313,8 +350,12 @@ if ~isfield(availableFileList, 'weights')
     end
 
     save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
+    save_json_sidecar(outputFileList.weights, struct( ...
+        'Description', 'Weighting map based on field map noise standard deviation, for use in QSM dipole inversion.', ...
+        'Units',       'arbitrary', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}));
     availableFileList.weights = outputFileList.weights;
-    
+
     fprintf('Done!\n');
 else
     if ~isinf(exclude_threshold) % if user select thresholding their own weight
@@ -332,6 +373,10 @@ else
         
         % export modified weights and update filelist
         save_nii_quick(outputNiftiTemplate,weights,	outputFileList.weights);
+        save_json_sidecar(outputFileList.weights, struct( ...
+            'Description', 'User-supplied weighting map, after masking out unreliable voxels.', ...
+            'Units',       'arbitrary', ...
+            'Sources',     {{get_relative_source_path(outputDir, availableFileList.phase)}}));
         availableFileList.weights = outputFileList.weights;
     end
 end
@@ -356,6 +401,11 @@ mask_QSM = imfill(localField ~= 0, 'holes');
 
 fprintf('Saving local field map...');
 save_nii_quick(outputNiftiTemplate,localField, outputFileList.localField);
+save_json_sidecar(outputFileList.localField, struct( ...
+    'Description', 'Local (tissue) field map after background field removal.', ...
+    'Units',       'Hz', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.totalField)}}, ...
+    'Parameters',  algorParam.bfr));
 fprintf('done!\n');
 availableFileList.localField = outputFileList.localField;
 clear localField
@@ -363,6 +413,9 @@ clear localField
 % save results
 fprintf('Saving mask for chi mapping...');
 save_nii_quick(outputNiftiTemplate,mask_QSM, outputFileList.maskQSM);
+save_json_sidecar(outputFileList.maskQSM, struct( ...
+    'Description', 'Signal mask for QSM dipole inversion, derived from the background field removal result.', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.totalField)}}));
 fprintf('done!\n');
 availableFileList.maskQSM = outputFileList.maskQSM;
 clear mask_QSM
@@ -386,17 +439,35 @@ clear localField mask_QSM
 % save results
 fprintf('Saving susceptibility map...');
 save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
+save_json_sidecar(outputFileList.QSM, struct( ...
+    'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
+    'Units',       'ppm', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+    'Parameters',  algorParam.qsm));
 % 20260822 KC: expanded for chi-sep type output
 if ~isempty(chi_para)
     save_nii_quick(outputNiftiTemplate, chi_para, outputFileList.QSMpara);
+    save_json_sidecar(outputFileList.QSMpara, struct( ...
+        'Description', 'Paramagnetic susceptibility component map from chi-separation.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
 end
 if ~isempty(chi_dia)
     save_nii_quick(outputNiftiTemplate, chi_dia, outputFileList.QSMdia);
+    save_json_sidecar(outputFileList.QSMdia, struct( ...
+        'Description', 'Diamagnetic susceptibility component map from chi-separation.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
 end
 % clear chi chi_para chi_dia
 
 if ~isempty(mask_ref)
     save_nii_quick(outputNiftiTemplate, mask_ref, outputFileList.maskRef);
+    save_json_sidecar(outputFileList.maskRef, struct( ...
+        'Description', 'Reference region mask used for susceptibility referencing.', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}));
 end
 fprintf('done!\n');
 

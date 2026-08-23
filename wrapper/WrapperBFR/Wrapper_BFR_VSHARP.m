@@ -28,6 +28,7 @@ sepia_universal_variables;
 algorParam  = check_and_set_algorithm_default(algorParam);
 method      = algorParam.bfr.method;
 radius    	= algorParam.bfr.radius;
+threshold   = algorParam.bfr.threshold;
 
 % add path
 sepia_addpath;
@@ -36,10 +37,11 @@ addpath(fullfile(SEPIA_HOME,'misc','background_removal','VSHARP_sepia'));
 %% Display algorithm parameters
 disp('The following parameter is being used...');
 disp(['Radius range(mm) = ' num2str(radius)]);
+disp(['Threshold = ' num2str(threshold)]);
 
 %% main
-[RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize,voxelSize,'radius',radius);
-       
+[RDF,~] = BKGRemovalVSHARP(totalField,mask,matrixSize,voxelSize,'radius',radius,'threshold',threshold);
+
 end
 
 %% set default parameter if not specified
@@ -48,5 +50,6 @@ function algorParam2 = check_and_set_algorithm_default(algorParam)
 algorParam2 = algorParam;
 
 try algorParam2.bfr.radius      = algorParam.bfr.radius;  	catch; algorParam2.bfr.radius  	 = [5:-1:1];  end
+try algorParam2.bfr.threshold   = algorParam.bfr.threshold;	catch; algorParam2.bfr.threshold    = 0.05;  end
 
 end

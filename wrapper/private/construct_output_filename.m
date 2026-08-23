@@ -54,7 +54,7 @@ outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phas
 outputFileList.optimalCombinedMagnitude = fullfile(outputDir, [ouputPrefix 'part-mag_desc-optimalcombined' outputSuffix]);
 
 if algorParam.general.isDenoise
-ouputPrefix = strcat(ouputPrefix,'denoised_');
+% ouputPrefix = strcat(ouputPrefix,'denoised_');
 outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag_desc-denoised' outputSuffix]);
 outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase_desc-denoised' outputSuffix]);
 outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma' outputSuffix]);
@@ -63,7 +63,7 @@ outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P' outputSuf
 end
 
 if algorParam.general.isUpsample
-ouputPrefix = strcat(ouputPrefix,'upsampled_');
+% ouputPrefix = strcat(ouputPrefix,'upsampled_');
 outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag_desc-upsampled' outputSuffix]);
 outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-upsampled' outputSuffix]);
 outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled' outputSuffix]);

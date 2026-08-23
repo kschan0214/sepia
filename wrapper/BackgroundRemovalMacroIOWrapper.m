@@ -51,6 +51,8 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
+write_bids_dataset_description(outputDir);
+
 outputFileList = construct_output_filename(outputDir, prefix, algorParam, suffix);
 
 %% Setting up Input
@@ -130,11 +132,19 @@ mask_QSM = imfill(localField ~= 0, 'holes');
 % save results
 fprintf('Saving local field map...');
 save_nii_quick(outputNiftiTemplate,localField, outputFileList.localField);
+save_json_sidecar(outputFileList.localField, struct( ...
+    'Description', 'Local (tissue) field map after background field removal.', ...
+    'Units',       'Hz', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.totalField)}}, ...
+    'Parameters',  algorParam.bfr));
 fprintf('done!\n');
 availableFileList.localField = outputFileList.localField;
 
 fprintf('Saving mask for chi mapping...');
 save_nii_quick(outputNiftiTemplate,mask_QSM, outputFileList.maskQSM);
+save_json_sidecar(outputFileList.maskQSM, struct( ...
+    'Description', 'Signal mask for QSM dipole inversion, derived from the background field removal result.', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.totalField)}}));
 fprintf('done!\n');
 availableFileList.maskQSM = outputFileList.maskQSM;
 

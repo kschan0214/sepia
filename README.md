@@ -41,7 +41,48 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.2.2.6 (current master)
+### 1.3.0 (current, dev1.3.0 branch, commit db8c09d)
+
+**New QSM methods & toolboxes**
+* Added support for the χ-separation (Chi-separation) toolbox as a new QSM add-on (paramagnetic/diamagnetic susceptibility separation via Chi-sepnet, chi_sep_MEDI and chi_sep_iLSQR; requires ONNX checkpoint files and the Deep Learning Toolbox Converter for ONNX Model Format support package)
+* Added HEIDI as a dipole inversion method, selectable across all applicable QSM add-ons
+* New `setup_FANSI_toolbox.m` script to automatically download a pinned FANSI-toolbox commit and register it in `SpecifyToolboxesDirectory.m`
+
+**Preprocessing**
+* New Tensor-MPPCA denoising option (automatically downloads the required external toolbox on first use)
+* New upsampling option for the phase/magnitude data prior to processing
+* Added STI-Suite's V-SHARP 2D as a background field removal method for multi-slice/2D EPI acquisitions
+* New "no unwrapping" option when only field mapping is required (e.g. for functional QSM)
+
+**Masking**
+* New two-pass masking option, and a new mask refinement pipeline (`MaskRefinementWrapper`/`MaskWrapper`), including Otsu's-method-based masking
+* Built-in V-SHARP: fixed a bug where the k-space deconvolution step was missing, causing incomplete background field removal; kernel radius is now specified in mm instead of voxels (and supports anisotropic voxel sizes)
+
+**R2\* handling**
+* The R2* map is now computed once per pipeline run and reused across the mask refinement, unreliable-voxel exclusion, and QSM CSF-masking steps (previously recomputed redundantly); it is only recomputed automatically if the data is subsequently denoised or upsampled
+
+**Configuration & GUI**
+* SEPIA can now parse `sepia_config*.m` pipeline configuration files and extract the algorithm parameters directly, storing them in the GUI figure handle
+* Various GUI bug fixes for loading saved configuration files (e.g. NDI's GPU option, VSHARP/FANSI parameters)
+
+**BIDS / I/O**
+* Added support for reading multiple volumes per echo in BIDS-formatted data (e.g. functional QSM)
+* Fixed echo-tag (`_echo-##_`) parsing to work regardless of zero-padding used in the echo number
+
+**Segmentation & analysis**
+* Automatic contrast matching, quick nonlinear registration using a dilated subcortical mask, label-based registration, and CSV statistics export added to the MuSus-100/CIT168/AHEAD atlas-based segmentation tools
+* Chimap values can now be exported to a CSF file after segmentation
+
+**Bug fixes**
+* Fixed `get_set_qsm_ndi.m` erroring when loading a saved configuration file
+* Fixed a bug in R2* NLLS mapping
+* Fixed direct file loads (e.g. user-supplied R2*/R2 maps in the Chi-separation wrapper) bypassing the odd-matrix-size zero-padding step
+
+**Housekeeping**
+* `SpecifyToolboxesDirectory.m` is no longer tracked in git (now machine-specific and gitignored; see `SpecifyToolboxesDirectory.template.m`)
+* Removed a large set of unused/deprecated legacy wrapper and parser files
+
+### 1.2.2.6 (commit 1790ac6)
 * Support read Input/Output information from sepia_config.m 
 * Phase DICOM values are rescaled using the max/min values in the data instead of rescale slope/intercept of the NIFTI
 
