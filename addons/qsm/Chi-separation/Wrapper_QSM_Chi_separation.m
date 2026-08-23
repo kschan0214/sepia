@@ -70,14 +70,15 @@ if strcmp(R2s_path,'')
     % otherwise compute it using ARLO
     if isfield(headerAndExtraData,'availableFileList') && isfield(headerAndExtraData.availableFileList,'r2s') && exist(headerAndExtraData.availableFileList.r2s,'file')
         disp('R2star path was not entered. R2* map is already available. Loading it from disk...');
-        R2s = double(load_nii_img_only(headerAndExtraData.availableFileList.r2s));
+        R2s = get_variable_from_headerAndExtraData(headerAndExtraData, 'r2s', matrixSize);
     else
         disp('R2star path was not entered. R2star is created using ARLO (MEDI toolbox)')
         sepia_addpath('MEDI');
         R2s = arlo(params.TE,iMag);
     end
 else
-    R2s = load_nii_img_only(R2s_path);
+    headerAndExtraData.availableFileList.r2s = R2s_path;
+    R2s = get_variable_from_headerAndExtraData(headerAndExtraData, 'r2s', matrixSize);
 end
 
 if strcmp(R2_path,'')
@@ -86,7 +87,9 @@ if strcmp(R2_path,'')
     R2n = R2s .* mask;
     HaveR2prime = 0;
 else
-    R2 = load_nii_img_only(R2_path);
+    % use get_variable_from_headerAndExtraData to get data that have the same matrix size as the loaded data 
+    headerAndExtraData.availableFileList.R2 = R2_path;
+    R2 = get_variable_from_headerAndExtraData(headerAndExtraData, 'R2', matrixSize);
     R2p = R2s - R2; R2p(R2p < 0) = 0;
     R2n = R2p .* mask;
     HaveR2prime = 1;
