@@ -125,12 +125,6 @@ dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITO
 gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir', 'ANTsDir'};
 
 sepia_universal_variables;
-SpecifyToolboxesDirectory;
-
-% get all the text from SpecifyToolboxesDirectory.m 
-fid             = fopen( fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m') );
-directory_text  = textscan( fid, '%s', 'Delimiter','\n', 'CollectOutput',true );
-fclose( fid );
 
 isOverWrite = false;
 
@@ -141,58 +135,15 @@ gui_field = get(h.Utility.magageDependency.edit.(gui_handles{k}),'String');
 
 % if GUI is not empty, then allows changes
 if ~isempty( gui_field )
-    
-    gui_HOME = fileparts(fullfile(gui_field,filesep));
-    
-    % default update is false
-    isUpdateHome = false;
-    
-    % check if changing is needed for the following conditions
-    if ~exist(dependency_homes{k},'var')                % scenario 1: if such variable doesn't exist yet
-        isUpdateHome = true;
-
-    elseif isempty(eval(dependency_homes{k}))           % scenario 2: if such variable is empty
-        isUpdateHome = true;
-    else                                                % scenario 3: check if the variable is the same as in the GUI
-        curr_HOME = fileparts(eval(dependency_homes{k}));
-        isUpdateHome = ~strcmp(curr_HOME,gui_HOME);    % if not identical then update
-    end
-    
-    % update SpecifyToolboxesDirectory.m
-    if isUpdateHome
-        
-        % check if the file contains the variable name that is about to be changed 
-        % if so, and if the 1st char is not '%' then comment the line out
-        for j = 1:length(directory_text{1})
-            
-            isContain = ContainName(directory_text{1}{j},lower(dependency_homes{k}));
-            
-            if isContain && ~strcmp(directory_text{1}{j}(1),'%')
-                % insert a '%' to comment the line out
-                directory_text{1}{j} = ['% ' directory_text{1}{j}];
-            end
-                
-        end
-        % insert the variable to the end of the file
-        directory_text{1}{j+1} = sprintf('%s = ''%s'';',dependency_homes{k}, fullfile(gui_HOME,filesep));
-        
-        isOverWrite = true;
-    end
-    
+    isUpdated   = update_toolbox_directory_entry(SEPIA_HOME, dependency_homes{k}, gui_field);
+    isOverWrite = isOverWrite || isUpdated;
 end
 end
 
-% overwrite SpecifyToolboxesDirectory.m
 if isOverWrite
-    
-    fid = fopen( fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m'), 'w');
-    for j = 1:length(directory_text{1})
-        fprintf( fid, '%s\n', directory_text{1}{j} );
-    end
-    fclose( fid );
-
+    disp('The paths are save in SpecifyToolboxesDirectory.m!')
+else
+    disp('No changes to SpecifyToolboxesDirectory.m were needed.')
 end
-
-disp('The paths are save in SpecifyToolboxesDirectory.m!')
 
 end
