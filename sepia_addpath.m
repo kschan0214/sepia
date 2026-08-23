@@ -21,8 +21,19 @@ if nargin < 1
     method = 'None';
 end
 
+% get SEPIA_HOME from this file 
+SEPIA_HOME = fileparts(mfilename('fullpath'));
+
+localFile = fullfile(SEPIA_HOME, 'SpecifyToolboxesDirectory.m');
+if ~isfile(localFile)
+    setup_sepia();
+    error('SEPIA:missingConfig', ...
+        'Toolbox directory file was missing and has been created from the template. Edit it, then re-run sepia_addpath.');
+end
+run(localFile);
+
 % specify the toolbox(es) directory
-SpecifyToolboxesDirectory;
+% SpecifyToolboxesDirectory;
 if isStartCheck
     if ~exist('MEDI_HOME','var')
         MEDI_HOME = [];
@@ -45,9 +56,6 @@ if isStartCheck
         
     CheckPathValidity(MEDI_HOME,STISuite_HOME,FANSI_HOME,SEGUE_HOME,MRITOOLS_HOME,MRISC_HOME);
 end
-
-% get SEPIA_HOME from this file 
-SEPIA_HOME = fileparts(mfilename('fullpath'));
 
 % disable warning related to remove path
 warning('off');
