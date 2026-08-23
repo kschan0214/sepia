@@ -30,6 +30,24 @@ sepia_universal_variables;
 % set default value
 defaultThreshold = 0.5;
 
+% Default echo phase combination method: prefer ROMEO total field
+% calculation if the ROMEO/mritools toolbox is available, otherwise fall
+% back to Optimum weights (paired with SEGUE, see
+% sepia_handle_panel_EchoCombine_optimum_weights.m) if SEGUE is
+% available, otherwise MEDI nonlinear fit.
+toolboxPaths = get_sepia_toolbox_home_paths();
+if exist(toolboxPaths.MRITOOLS_HOME,'dir') == 7
+    defaultEchoCombineMethod = 'ROMEO total field calculation';
+elseif exist(toolboxPaths.SEGUE_HOME,'dir') == 7
+    defaultEchoCombineMethod = 'Optimum weights';
+else
+    defaultEchoCombineMethod = 'MEDI nonlinear fit';
+end
+defaultEchoCombineIdx = find(strcmpi(methodEchoCombineName, defaultEchoCombineMethod), 1);
+if isempty(defaultEchoCombineIdx)
+    defaultEchoCombineIdx = 1;
+end
+
 % tooltips
 tooltip.unwrap.panel.method         = 'Select a method to combine field maps from multi-echo data';
 
@@ -59,6 +77,7 @@ h.StepsPanel.phaseUnwrap = uipanel(hParent,...
     % text|popup pair: select method
     [h.phaseUnwrap.text.phaseCombMethod,h.phaseUnwrap.popup.phaseCombMethod] = sepia_construct_text_popup(...
         h.StepsPanel.phaseUnwrap,'Echo phase combination:', methodEchoCombineName, [left(1) 0.85 width height], wratio);
+    set(h.phaseUnwrap.popup.phaseCombMethod, 'Value', defaultEchoCombineIdx);
 
 %% create control panel
 
@@ -69,13 +88,18 @@ position_child = [0.01 0.04 0.95 0.75];
 for k = 1:length(function_EchoCombine_method_panel)
     h = feval(function_EchoCombine_method_panel{k},h.StepsPanel.phaseUnwrap,h,position_child);
 end
- 
+
+% each method panel is constructed with its own hardcoded 'Visible'
+% state; sync it here so the one matching the (possibly toolbox-dependent)
+% default selection above is the one actually shown
+sync_echoCombine_panel_visibility(h, methodEchoCombineName, defaultEchoCombineMethod);
+
 %% set tooltips
 set(h.phaseUnwrap.text.phaseCombMethod, 'Tooltip',tooltip.unwrap.panel.method);
-% 
+%
 %% set callback functions
 set(h.phaseUnwrap.popup.phaseCombMethod, 'Callback', {@PopupEchoCombine_Callback,h});
-        
+
 end
 
 %% Callback functions
@@ -88,13 +112,18 @@ sepia_universal_variables;
 % get selected QSM method
 method = source.String{source.Value,1} ;
 
-% switch off all panels
+sync_echoCombine_panel_visibility(h, methodEchoCombineName, method);
+
+end
+
+%% switch on the method panel matching 'method', switch off all others
+function sync_echoCombine_panel_visibility(h, methodEchoCombineName, method)
+
 fields = fieldnames(h.phaseUnwrap.panel);
 for kf = 1:length(fields)
     set(h.phaseUnwrap.panel.(fields{kf}),   'Visible','off');
 end
 
-% switch on only target panel
 for k = 1:length(methodEchoCombineName)
     if strcmpi(method,methodEchoCombineName{k})
         set(h.phaseUnwrap.panel.(fields{k}), 'Visible','on');

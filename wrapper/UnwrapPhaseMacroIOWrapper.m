@@ -32,6 +32,7 @@ function [totalField,fieldmapSD,mask]=UnwrapPhaseMacroIOWrapper(input,output,mas
 sepia_addpath;
 
 sepia_universal_variables;
+suffix = get_nifti_extension_from_input(input);
 
 %% define variables
 prefix = 'sepia_';

@@ -31,6 +31,23 @@ defaultRadius       = 0;
 defaultRadiusBefore = 0;
 defaultRefineOrder  = 4;
 
+% Default BFR method: prefer VSHARP (STI suite) if the STI suite toolbox
+% is available, otherwise fall back to SEPIA's own VSHARP implementation.
+toolboxPaths = get_sepia_toolbox_home_paths();
+if exist(toolboxPaths.STISuite_HOME,'dir') == 7
+    defaultBFRMethod = 'VSHARP (STI suite)';
+else
+    defaultBFRMethod = 'VSHARP';
+end
+defaultBFRIdx = find(strcmpi(methodBFRName, defaultBFRMethod), 1);
+if isempty(defaultBFRIdx)
+    defaultBFRIdx = 1;
+end
+
+% Default 'remove residual B1 field' method, kept in sync with whichever
+% BFR method is selected (see get_default_bfr_refine_method below)
+defaultRefineMethod = get_default_bfr_refine_method(defaultBFRMethod);
+
 tooltip.BFR.panel.method    = 'Select a background field removal method';
 tooltip.BFR.panel.polyfit   = 'Remove residual B1 field using a 3D polynomial/spherical harmonic fitting';
 tooltip.BFR.panel.erode_before = 'Remove edge voxels before background field removal. Might improve the final local field result';
@@ -59,6 +76,7 @@ h.StepsPanel.bkgRemoval = uipanel(hParent,...
     % text|popup pair: select method
     [h.bkgRemoval.text.bkgRemoval,h.bkgRemoval.popup.bkgRemoval] = sepia_construct_text_popup(...
         h.StepsPanel.bkgRemoval,'Method:', methodBFRName, [left(1) 0.85 width height], wratio);
+    set(h.bkgRemoval.popup.bkgRemoval, 'Value', defaultBFRIdx);
 
     % utility function related to background field removal
     h.bkgRemoval.text.refine = uicontrol('Parent',h.StepsPanel.bkgRemoval,...
@@ -89,7 +107,9 @@ h.StepsPanel.bkgRemoval = uipanel(hParent,...
         'units','normalized','position',[left(1)+width*0.85 0.03 0.01 height],...
         'Max',4, 'Min',0,'SliderStep',[0.25 0.50],...
         'Enable','on');
-    
+    apply_bfr_refine_default(h, methodRefineName, defaultRefineMethod);
+
+
     % col 2
     % text|field pair: utility function related to erode local field ROI
     [h.bkgRemoval.text.imerodebefore,h.bkgRemoval.edit.imerodebefore] = sepia_construct_text_edit(...
@@ -107,6 +127,11 @@ position_child = [0.01 0.17 0.95 0.65];
 for k = 1:length(function_BFR_method_panel)
     h = feval(function_BFR_method_panel{k},h.StepsPanel.bkgRemoval,h,position_child);
 end
+
+% each method panel is constructed with its own hardcoded 'Visible'
+% state; sync it here so the one matching the (possibly toolbox-dependent)
+% default selection above is the one actually shown
+sync_bkgRemoval_panel_visibility(h, methodBFRName, defaultBFRMethod);
 
 %% set tooltip
 set(h.bkgRemoval.text.bkgRemoval,       'Tooltip',tooltip.BFR.panel.method);
@@ -126,21 +151,30 @@ set(h.bkgRemoval.popup.refine,     'Callback', {@PopupBkgRemovalRefine_Callback,
 end
 
 %% Callback function
-% display corresponding background field removal method's panel
+% display corresponding background field removal method's panel, and keep
+% the 'remove residual B1 field' default in sync with the newly selected
+% BFR method
 function PopupBkgRemoval_Callback(source,eventdata,h)
 
 sepia_universal_variables;
-                           
+
 % get selected background removal method
 method = source.String{source.Value,1} ;
 
-% switch off all panels first
+sync_bkgRemoval_panel_visibility(h, methodBFRName, method);
+
+apply_bfr_refine_default(h, methodRefineName, get_default_bfr_refine_method(method));
+
+end
+
+% switch on the method panel matching 'method', switch off all others
+function sync_bkgRemoval_panel_visibility(h, methodBFRName, method)
+
 fields = fieldnames(h.bkgRemoval.panel);
 for kf = 1:length(fields)
     set(h.bkgRemoval.panel.(fields{kf}),    'Visible','off');
 end
 
-% switch on only target panel
 for k = 1:length(methodBFRName)
     if strcmpi(method,methodBFRName{k})
         set(h.bkgRemoval.panel.(fields{k}), 'Visible','on');
@@ -149,7 +183,7 @@ for k = 1:length(methodBFRName)
 end
 
 end
- 
+
 % callback for refine slider
 function SliderBkgRemoval_Callback(source,eventdata,h)
 
@@ -158,27 +192,66 @@ set(h.bkgRemoval.edit.order, 'String', num2str(source.Value))
 
 end
 
-% callback for refine edit
+% callback for refine popup (user manually changes 'remove residual B1
+% field by')
 function PopupBkgRemovalRefine_Callback(source,eventdata,h)
 sepia_universal_variables;
 
-% change the order of fit to optimum
-switch source.String{source.Value}
-    
+set_bfr_refine_order_controls(h, source.String{source.Value}, methodRefineName);
+
+end
+
+% Default 'remove residual B1 field' method for a given BFR method:
+% SHARP-family methods (name contains 'sharp'), iHARPERELLA and BFRnet
+% already handle background removal robustly near the ROI boundary and
+% do not need an additional polynomial/harmonic refit; LBV and PDF do.
+function refineMethod = get_default_bfr_refine_method(bfrMethod)
+
+if strcmpi(bfrMethod,'LBV') || strcmpi(bfrMethod,'PDF')
+    refineMethod = '3D Polynomial';
+elseif ~isempty(regexpi(bfrMethod,'sharp','once')) || strcmpi(bfrMethod,'iHARPERELLA') || strcmpi(bfrMethod,'BFRnet')
+    refineMethod = 'None';
+else
+    % unrecognised/future addon: keep the previous overall default
+    refineMethod = '3D Polynomial';
+end
+
+end
+
+% set the refine popup's Value to 'refineMethod' and update the
+% order edit/slider controls to match
+function apply_bfr_refine_default(h, methodRefineName, refineMethod)
+
+idx = find(strcmpi(methodRefineName, refineMethod), 1);
+if isempty(idx)
+    idx = 1;
+end
+set(h.bkgRemoval.popup.refine, 'Value', idx);
+
+set_bfr_refine_order_controls(h, methodRefineName{idx}, methodRefineName);
+
+end
+
+% enable/disable and set the order edit/slider controls for a given
+% refine method
+function set_bfr_refine_order_controls(h, refineMethod, methodRefineName)
+
+switch refineMethod
+
     case methodRefineName{1}
         % get slider value and update the edit field
         set(h.bkgRemoval.edit.order,    'String', 4);
         set(h.bkgRemoval.slider.order,  'Value', 4);
         set(h.bkgRemoval.edit.order,    'enable', 'on');
         set(h.bkgRemoval.slider.order,  'enable', 'on');
-        
+
     case methodRefineName{2}
         % get slider value and update the edit field
         set(h.bkgRemoval.edit.order,    'String', 2);
         set(h.bkgRemoval.slider.order,  'Value', 2);
         set(h.bkgRemoval.edit.order,    'enable', 'on');
         set(h.bkgRemoval.slider.order,  'enable', 'on');
-        
+
     case methodRefineName{3}
         % get slider value and update the edit field
         set(h.bkgRemoval.edit.order,    'enable', 'off');

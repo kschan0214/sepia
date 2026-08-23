@@ -30,6 +30,7 @@ function [chi,chi_para,chi_dia] = QSMMacroIOWrapper(input,output,maskFullName,al
 sepia_addpath
 
 sepia_universal_variables;
+suffix = get_nifti_extension_from_input(input);
 
 %% define variables
 prefix = 'sepia_';

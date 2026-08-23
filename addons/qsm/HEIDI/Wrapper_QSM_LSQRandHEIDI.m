@@ -31,7 +31,7 @@ sepia_universal_variables;
 
 % 20250614 KC: system check
 if ~isunix || ismac; error('HEIDI add-on on SEPIA currently supports Linux systems only'); end  % check if it is linux system
-HEIDI_HOME = fullfile(SEPIA_HOME,'..','external','HEIDI_SEPIAready');                                      % temporary hard-coded, will update
+HEIDI_HOME = fullfile(SEPIA_HOME,'..','external','HEIDI_SEPIAready');                                      % TODo: temporary hard-coded, will update
 
 % 20250614 KC: check whether we have execute right to GradientAnisotropicDiffusionImageFilter if not then give the right
 shellcommand = [ 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:' fullfile(HEIDI_HOME,'HEIDI') ';' ...

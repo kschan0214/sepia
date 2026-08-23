@@ -22,7 +22,7 @@ SEPIA_HOME = fileparts(mfilename('fullpath'));
 
 %% General parameterss
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
-suffix = '.nii.gz'; % TODO: we should check input data then decide whether we use '.nii' or '.nii.gz'
+suffix = '.nii.gz'; % default output extension; I/O wrappers override this via get_nifti_extension_from_input(input) based on the actual input data
 
 %% IO
 skullstrippingMethod = {'FSL bet (MEDI)',...

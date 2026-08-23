@@ -25,6 +25,20 @@ sepia_universal_variables;
 %% set default values
 defaultThreshold = 0.5;
 
+% Default spatial phase unwrapping method for this echo combination
+% method: prefer SEGUE if the SEGUE toolbox is available, otherwise fall
+% back to Laplacian (MEDI).
+toolboxPaths = get_sepia_toolbox_home_paths();
+if exist(toolboxPaths.SEGUE_HOME,'dir') == 7
+    defaultUnwrapMethod = 'SEGUE';
+else
+    defaultUnwrapMethod = 'Laplacian (MEDI)';
+end
+defaultUnwrapIdx = find(strcmpi(methodUnwrapName, defaultUnwrapMethod), 1);
+if isempty(defaultUnwrapIdx)
+    defaultUnwrapIdx = 1;
+end
+
 %% Tooltips
 % tooltips
 tooltip.unwrap.panel.unwrap         = 'Select a phase unwrapping algorithm for spatial unwrapping';
@@ -61,6 +75,7 @@ h.phaseUnwrap.panel.OptimumWights = uipanel(hParent,...
     % phase unwrapping method, 'text|popup' 
     [h.phaseUnwrap.optimumWeights.text.phaseUnwrap,h.phaseUnwrap.optimumWeights.popup.phaseUnwrap] = sepia_construct_text_popup(...
         panelParent,'Phase unwrapping:', methodUnwrapName, [left(1) bottom(krow) width height], wratio);
+    set(h.phaseUnwrap.optimumWeights.popup.phaseUnwrap, 'Value', defaultUnwrapIdx);
     
     % row 2, left
     krow = 2;

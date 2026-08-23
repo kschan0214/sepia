@@ -31,6 +31,7 @@ function [localField,mask_QSM] = BackgroundRemovalMacroIOWrapper(input,output,ma
 sepia_addpath;
 
 sepia_universal_variables;
+suffix = get_nifti_extension_from_input(input);
 
 %% define variables
 prefix = 'sepia_';

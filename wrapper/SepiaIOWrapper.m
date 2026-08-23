@@ -36,11 +36,12 @@ function [chi,localField,totalField,fieldmapSD,chi_para,chi_dia] = SepiaIOWrappe
 sepia_addpath
 
 sepia_universal_variables;
+suffix = get_nifti_extension_from_input(input);
 
 %% define variables
 prefix = 'sepia_';
 
-%% Check if output directory exists 
+%% Check if output directory exists
 output_index    = strfind(output, filesep);
 outputDir       = output(1:output_index(end));
 % get prefix

@@ -30,6 +30,7 @@ function [r2s,t2s,s0] = R2sIOWrapper(input,output,maskFullName,algorParam)
 sepia_addpath
 
 sepia_universal_variables;
+suffix = get_nifti_extension_from_input(input);
 
 %% define variables
 prefix = 'sepia_';

@@ -28,7 +28,27 @@ sepia_universal_variables;
 % Default value
 defaultMFGThreshold  = 0.7;
 
-tooltip.QSM.panel.method    = 'Select a QSM algorithm'; 
+% Default QSM dipole inversion method: prefer FANSI, then MEDI, then the
+% LSQR+HEIDI addon (Linux only, bundled at
+% <SEPIA_HOME>/../external/HEIDI_SEPIAready), falling back to TKD
+% (self-contained) if none of these are available.
+toolboxPaths = get_sepia_toolbox_home_paths();
+isHEIDIavailable = isunix && ~ismac && exist(fullfile(SEPIA_HOME,'..','external','HEIDI_SEPIAready'),'dir') == 7;
+if exist(toolboxPaths.FANSI_HOME,'dir') == 7
+    defaultQSMMethod = 'FANSI';
+elseif exist(toolboxPaths.MEDI_HOME,'dir') == 7
+    defaultQSMMethod = 'MEDI';
+elseif isHEIDIavailable
+    defaultQSMMethod = 'LSQR+HEIDI';
+else
+    defaultQSMMethod = 'TKD';
+end
+defaultQSMIdx = find(strcmpi(methodQSMName, defaultQSMMethod), 1);
+if isempty(defaultQSMIdx)
+    defaultQSMIdx = 1;
+end
+
+tooltip.QSM.panel.method    = 'Select a QSM algorithm';
 tooltip.QSM.panel.reference	= 'Region used to normalise the magnetic susceptibility map';
 tooltip.QSM.panel.twopass	= 'Two pass masking mask refinement strategy to use';
 tooltip.QSM.panel.isHeidi	= 'Reduce streaking artefact using HEIDI. Adjust HEIDI''s parameters in the LSQR+HEIDI panel and switch back to the target dipole inversion method.';
@@ -55,6 +75,7 @@ h.StepsPanel.qsm = uipanel(hParent,...
     % text|popup pair: select method
     [h.qsm.text.qsm,h.qsm.popup.qsm] = sepia_construct_text_popup(...
         h.StepsPanel.qsm,'Method:', methodQSMName, [left(1) 0.85 width height], wratio);
+    set(h.qsm.popup.qsm, 'Value', defaultQSMIdx);
     
     % col 2
     % utility function related to two pass masking
@@ -111,6 +132,11 @@ for k = 1:length(function_QSM_method_panel)
     h = feval(function_QSM_method_panel{k},h.StepsPanel.qsm,h,position_child);
 end
 
+% each method panel is constructed with its own hardcoded 'Visible'
+% state; sync it here so the one matching the (possibly toolbox-dependent)
+% default selection above is the one actually shown
+sync_qsm_panel_visibility(h, methodQSMName, defaultQSMMethod);
+
 %% set tooltip
 set(h.qsm.text.qsm,     'Tooltip',tooltip.QSM.panel.method);
 set(h.qsm.text.tissue,  'Tooltip',tooltip.QSM.panel.reference);
@@ -135,13 +161,18 @@ sepia_universal_variables;
 % get selected QSM method
 method = source.String{source.Value,1} ;
 
-% switch off all panels
+sync_qsm_panel_visibility(h, methodQSMName, method);
+
+end
+
+% switch on the method panel matching 'method', switch off all others
+function sync_qsm_panel_visibility(h, methodQSMName, method)
+
 fields = fieldnames(h.qsm.panel);
 for kf = 1:length(fields)
     set(h.qsm.panel.(fields{kf}),   'Visible','off');
 end
 
-% switch on only target panel
 for k = 1:length(methodQSMName)
     if strcmpi(method,methodQSMName{k})
         set(h.qsm.panel.(fields{k}), 'Visible','on');
