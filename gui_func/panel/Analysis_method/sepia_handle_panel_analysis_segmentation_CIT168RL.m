@@ -122,7 +122,7 @@ h.Analysis.panel.Segmentation_CIT168RL = uipanel(hParent,'Title','Segmentation -
   
     % run
     pos = [0.79 bottom(end) 0.2 height*2];
-    h.Analysis.segmentation.CIT168RL.button.start = uicontrol('Parent',panelParent,'Style','pushbutton','backgroundcolor','white','units','normalized',...
+    h.Analysis.segmentation.CIT168RL.button.start = uicontrol('Parent',panelParent,'Style','pushbutton','backgroundcolor',sepia_theme_bg_color(),'foregroundcolor',sepia_theme_fg_color(),'units','normalized',...
         'String','Start', 'position',pos);
 %     
 %% set callback functions

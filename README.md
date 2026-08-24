@@ -64,10 +64,15 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 **Configuration & GUI**
 * SEPIA can now parse `sepia_config*.m` pipeline configuration files and extract the algorithm parameters directly, storing them in the GUI figure handle
 * Various GUI bug fixes for loading saved configuration files (e.g. NDI's GPU option, VSHARP/FANSI parameters)
+* GUI default method selection is now toolbox-availability-aware for the total field/phase unwrapping, background field removal, and QSM dipole inversion steps, following a consensus-informed priority chain per step (e.g. QSM defaults to FANSI → MEDI → LSQR+HEIDI → TKD, whichever is actually installed); the background field removal "remove residual B1 field" default (3D Polynomial / None) now automatically follows whichever BFR method is selected
 
 **BIDS / I/O**
 * Added support for reading multiple volumes per echo in BIDS-formatted data (e.g. functional QSM)
 * Fixed echo-tag (`_echo-##_`) parsing to work regardless of zero-padding used in the echo number
+* Pipeline outputs now include BIDS-Derivatives-style JSON sidecars (units, source files, algorithm parameters) alongside the NIfTI files, plus a `dataset_description.json` at the output root
+* Output NIfTI extension (`.nii` vs `.nii.gz`) is now detected from the input data instead of always being forced to `.nii.gz`
+* Fixed output filenames ending up with two `desc-` BIDS entities when the output prefix already contained one (e.g. from a previous processing stage); it is now merged with SEPIA's own output-type label instead, chained in actual processing order (e.g. denoised → upsampled)
+* Renamed the paramagnetic/diamagnetic susceptibility map outputs from the non-standard `ChiParamap`/`ChiDiamap` suffixes to the BIDS-valid `desc-paramagnetic_Chimap`/`desc-diamagnetic_Chimap`
 
 **Segmentation & analysis**
 * Automatic contrast matching, quick nonlinear registration using a dilated subcortical mask, label-based registration, and CSV statistics export added to the MuSus-100/CIT168/AHEAD atlas-based segmentation tools

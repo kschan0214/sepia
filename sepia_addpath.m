@@ -27,7 +27,7 @@ SEPIA_HOME = fileparts(mfilename('fullpath'));
 localFile = fullfile(SEPIA_HOME, 'SpecifyToolboxesDirectory.m');
 if ~isfile(localFile)
     setup_sepia();
-    error('SEPIA:missingConfig', ...
+    warning('SEPIA:missingConfig', ...
         'Toolbox directory file was missing and has been created from the template. Edit it, then re-run sepia_addpath.');
 end
 run(localFile);
