@@ -30,6 +30,6 @@ else
 end
 
 icon = imread(iconFilename);
-icon = imresize(icon,[1 1]*16);
+icon = imresize(icon,[1 1]*20);
 
 end
