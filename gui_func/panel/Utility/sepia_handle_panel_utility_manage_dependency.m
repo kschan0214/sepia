@@ -22,8 +22,7 @@
 %
 function h = sepia_handle_panel_utility_manage_dependency(hParent,h,position)
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 %% layout of the panel
 nrow        = 10;

@@ -30,8 +30,7 @@ defaultGradientThres    = 0;
 defaultUpsample         = 1;
 defaultWindow           = 5;
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 %% Tooltips
 tooltip.dataIO.SEPIA.input   	= 'Directory contains all essential files (*ph*.nii*, *mag*.nii* and *header*.mat)';

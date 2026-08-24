@@ -24,8 +24,7 @@
 %
 function h = sepia_handle_panel_analysis_segmentation_AHEAD(hParent,h,position)
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 defaultResol = 1;
 

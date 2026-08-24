@@ -23,8 +23,7 @@ defaultDr = 137;
 
 menuSolver       = {'Chi-separation-MEDI', 'Chi-separation-iLSQR', 'Chi-sepnet-R2*', 'Chi-sepnet-R2'''};
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 %% Tooltips
 tooltip.qsm.Chi_separation.solver   	 = 'Select a Chi-separation algorithm';
