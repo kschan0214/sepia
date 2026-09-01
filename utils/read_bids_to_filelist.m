@@ -108,6 +108,11 @@ else
     % check if input are 3D or 4D per echo
     nifti_head = load_untouch_header_only(phaseFile(1).name);
     if nifti_head.dime.dim(1) < 4
+        inputNIFTIcell{1}.inputNIFTIList(1).name = strcat(outputPrefix, 'part-phase.nii.gz');
+        inputNIFTIcell{1}.inputNIFTIList(2).name = strcat(outputPrefix, 'part-mag.nii.gz');
+        inputNIFTIcell{1}.inputNIFTIList(3).name = [];
+        inputNIFTIcell{1}.inputNIFTIList(4).name = strcat(outputPrefix, 'header.mat');
+
         % phase 
         fprintf('Saving multi-echo phase data into a single volume...')
         isPhase = true;
