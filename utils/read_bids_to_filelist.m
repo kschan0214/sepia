@@ -110,11 +110,13 @@ else
     if nifti_head.dime.dim(1) < 4
         % phase 
         fprintf('Saving multi-echo phase data into a single volume...')
+        inputNIFTIcell{1}.inputNIFTIList(1).name = inputNIFTIList(1).name;
         isPhase = true;
         save_nifti_as_4d(phaseFile, inputNIFTIcell{1}.inputNIFTIList(1).name, isPhase);
         fprintf('Done.\n')
         % magnitude 
         fprintf('Saving multi-echo magnitude data into a single volume...')
+        inputNIFTIcell{1}.inputNIFTIList(2).name = inputNIFTIList(2).name;
         isPhase = false;
         save_nifti_as_4d(magFile, inputNIFTIcell{1}.inputNIFTIList(2).name, isPhase);
         fprintf('Done.\n')
@@ -138,13 +140,14 @@ else
         fprintf('Done.\n')
     
     else
-        error('Current version does not support input NIFTI volumesare more than 4D.')
+        error('Current version does not support input NIFTI volumes more than 4D.')
     end
     
 end
 
 % SEPIA header
 save_sepia_header_from_bids(inputNIFTIcell{1}.inputNIFTIList(2).name, jsonFile, outputPrefix);
+inputNIFTIcell{1}.inputNIFTIList(4).name  = [outputPrefix,'header.mat'];
 
 end
 
@@ -269,7 +272,7 @@ end
 end
 
 %% save sepia header
-function save_sepia_header_from_bids(niiFilename, jsonList, outpitPrefix)
+function save_sepia_header_from_bids(niiFilename, jsonList, outputPrefix)
 
 input.nifti         = niiFilename;
 
@@ -278,7 +281,7 @@ for k = 1:length(jsonList)
 end
 input.TEFileList    = TEFileList;
 
-save_sepia_header(input,[],outpitPrefix);
+save_sepia_header(input,[],outputPrefix);
 
 end
 

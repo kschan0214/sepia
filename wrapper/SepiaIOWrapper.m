@@ -105,14 +105,13 @@ availableFileList           = io_02_validate_nifti_input(inputFileList);
 outputNiftiTemplate         = io_03_get_nifti_template(availableFileList);
 
 % 3.2 load and validate SEPIA header 
-if ~isempty(inputFileList(4).name)
+if numel(inputFileList) < 4 || isempty(inputFileList(4).name)
+    error('Please specify a header required by SEPIA.');
+else
     sepia_header = load([inputFileList(4).name]);
     disp('SEPIA header data is loaded.');
     % Validate header information
     sepia_header = validate_sepia_header_4wrapper(sepia_header, outputNiftiTemplate);
-
-else
-    error('Please specify a header required by SEPIA.');
 end
 
 %%%%%% Step 4: Check whether phase data contains DICOM values or wrapped phase value
@@ -577,15 +576,13 @@ end
 
 
 % 2.3 Weights data 
-if ~isempty(inputFileList(3).name)
-    
+if numel(inputFileList) < 3 || isempty(inputFileList(3).name)
+    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
+else
     % get header info from NIFTI for validation
     weightsNIFTIHeader = load_untouch_header_only(inputFileList(3).name);
     
-    availableFileList.weights = inputFileList(3).name;
-   
-else
-    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
+    availableFileList.weights = inputFileList(3).name;    
 end
 
 % check dimension of weights
