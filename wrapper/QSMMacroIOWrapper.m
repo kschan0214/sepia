@@ -119,7 +119,30 @@ headerAndExtraData.outputDirectory   = outputDir;
 
 %% Dipole inversion
 localField   	= double(load_nii_img_only(availableFileList.localField));
-mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
+
+% Two-pass masking
+% 20260905 KC: incorporated two-pass masking, mirroring SepiaIOWrapper
+if isfield(algorParam.qsm,'isTwoPass') && ~strcmpi(algorParam.qsm.isTwoPass, 'None')
+    % backup algorParam, availableFileList, and outputFileList
+    algorParamTwoPass = algorParam;
+    algorParamTwoPass.msk.refineMethod = algorParam.qsm.isTwoPass;
+    algorParamTwoPass.msk.threshold    = algorParam.qsm.twopass_lambda;
+    availableFileListTwoPass = availableFileList;
+    availableFileListTwoPass.mask      = availableFileList.maskQSM;
+    outputFileListTwoPass = outputFileList;
+    outputFileListTwoPass.maskReliable = outputFileList.maskQSM2pass;
+    availableFileList = MaskRefinementIOWrapper(sepia_header, ...
+                                                algorParamTwoPass, ...
+                                                availableFileListTwoPass, ...
+                                                outputFileListTwoPass, ...
+                                                outputNiftiTemplate);
+    mask_QSM_pass_2 = double(load_nii_img_only(availableFileList.maskReliable));
+    mask_QSM_pass_1 = double(load_nii_img_only(availableFileList.maskQSM));
+    mask_QSM{1} = mask_QSM_pass_1;
+    mask_QSM{2} = mask_QSM_pass_2;
+else
+    mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
+end
 
 % core of QSM
 % 20260822 KC: expanded for chi-sep type output
@@ -127,15 +150,40 @@ mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
 clear localField mask_QSM
 
 % save results
+% 20260905 KC: expanded for two-pass masking output
 fprintf('Saving susceptibility map...');
-save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
-save_json_sidecar(outputFileList.QSM, struct( ...
-    'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
-    'Units',       'ppm', ...
-    'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
-    'Parameters',  algorParam.qsm));
+if iscell(chi)
+    save_nii_quick(outputNiftiTemplate, chi{1}, outputFileList.QSM);
+    save_json_sidecar(outputFileList.QSM, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+    save_nii_quick(outputNiftiTemplate, chi{2}, outputFileList.QSMpass1);
+    save_json_sidecar(outputFileList.QSMpass1, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion with first mask.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+    save_nii_quick(outputNiftiTemplate, chi{3}, outputFileList.QSMpass2);
+    save_json_sidecar(outputFileList.QSMpass2, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion with second mask.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+else
+    save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
+    save_json_sidecar(outputFileList.QSM, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+end
 % 20260822 KC: expanded for chi-sep type output
 if ~isempty(chi_para)
+    if iscell(chi_para)
+        chi_para = chi_para{1};
+    end
     save_nii_quick(outputNiftiTemplate, chi_para, outputFileList.QSMpara);
     save_json_sidecar(outputFileList.QSMpara, struct( ...
         'Description', 'Paramagnetic susceptibility component map from chi-separation.', ...
@@ -144,6 +192,9 @@ if ~isempty(chi_para)
         'Parameters',  algorParam.qsm));
 end
 if ~isempty(chi_dia)
+    if iscell(chi_dia)
+        chi_dia = chi_dia{1};
+    end
     save_nii_quick(outputNiftiTemplate, chi_dia, outputFileList.QSMdia);
     save_json_sidecar(outputFileList.QSMdia, struct( ...
         'Description', 'Diamagnetic susceptibility component map from chi-separation.', ...
@@ -152,7 +203,7 @@ if ~isempty(chi_dia)
         'Parameters',  algorParam.qsm));
 end
 
-% clear chi
+% clear chi chi_para chi_dia
 
 if ~isempty(mask_ref)
     save_nii_quick(outputNiftiTemplate, mask_ref, outputFileList.maskRef);

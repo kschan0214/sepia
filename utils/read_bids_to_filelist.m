@@ -230,6 +230,17 @@ while numFileLoaded ~= NumFiles
 
 end
 save_nii_quick(nii,img,outputFilename);
+if isPhase
+    save_json_sidecar(outputFilename, struct( ...
+        'Description', 'Combined multi-echo phase data compiled from individual echo images.', ...
+        'Units',       'rad', ...
+        'Sources',     {arrayfun(@(x) get_relative_source_path(fileparts(outputFilename), x.name), fileList, 'UniformOutput', false)}));
+else
+    save_json_sidecar(outputFilename, struct( ...
+        'Description', 'Combined multi-echo magnitude data compiled from individual echo images.', ...
+        'Units',       'arbitrary', ...
+        'Sources',     {arrayfun(@(x) get_relative_source_path(fileparts(outputFilename), x.name), fileList, 'UniformOutput', false)}));
+end
 
 end
 
@@ -268,9 +279,19 @@ img = permute(img,[1 2 3 5 4]);
 nVol = size(img,5);
 for v = 1:nVol
     if isPhase
-        save_nii_quick(nii,img(:,:,:,:,v),outputFilename{v}.inputNIFTIList(1).name);
+        outFile = outputFilename{v}.inputNIFTIList(1).name;
+        save_nii_quick(nii,img(:,:,:,:,v),outFile);
+        save_json_sidecar(outFile, struct( ...
+            'Description', 'Combined multi-echo phase data compiled from individual echo images.', ...
+            'Units',       'rad', ...
+            'Sources',     {arrayfun(@(x) get_relative_source_path(fileparts(outFile), x.name), fileList, 'UniformOutput', false)}));
     else
-        save_nii_quick(nii,img(:,:,:,:,v),outputFilename{v}.inputNIFTIList(2).name);
+        outFile = outputFilename{v}.inputNIFTIList(2).name;
+        save_nii_quick(nii,img(:,:,:,:,v),outFile);
+        save_json_sidecar(outFile, struct( ...
+            'Description', 'Combined multi-echo magnitude data compiled from individual echo images.', ...
+            'Units',       'arbitrary', ...
+            'Sources',     {arrayfun(@(x) get_relative_source_path(fileparts(outFile), x.name), fileList, 'UniformOutput', false)}));
     end
 end
 

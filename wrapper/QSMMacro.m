@@ -54,7 +54,7 @@ if iscell(mask)
 end
 localField  = double(zeropad_odd_dimension(localField,'pre'));
 mask        = double(zeropad_odd_dimension(mask,'pre'));
-mask_twopass= double(zeropad_odd_dimension(mask_twopass,'pre'));
+if exist('mask_twopass','var'); mask_twopass= double(zeropad_odd_dimension(mask_twopass,'pre')); end % only when 2-pass masking is available
 matrixSize_new = size(localField);
 
 % additional input

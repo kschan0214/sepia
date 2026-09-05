@@ -492,7 +492,7 @@ function availableFileList          = io_07_refine_signal_mask(sepia_header, alg
 % SepiaIOWrapper
 if algorParam.general.isRefineBrainMask
     algorParam.msk.refineMethod = 'r2s-refine';
-    availableFileList = MaskRefinementWrapper(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
+    availableFileList = MaskRefinementIOWrapper(sepia_header, algorParam, availableFileList, outputFileList, outputNiftiTemplate);
 end
 
 end

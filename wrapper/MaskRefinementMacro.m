@@ -1,4 +1,4 @@
-%% availableFileList = MaskRefinementWrapper(Mask,algorParam,headerAndExtraData)
+%% [mask_refined,r2s,relativeResidual] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
 %
 % Input
 % --------------
@@ -24,7 +24,7 @@
 % Date created: 5 August 2025
 % Date modified: 
 %
-function [mask_refined,r2s,residual] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
+function [mask_refined,r2s,relativeResidual] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
 
 sepia_universal_variables;
 
@@ -33,7 +33,7 @@ TE           = headerAndExtraData.sepia_header.TE;
 matrixSize   = size(mask);
 
 refineMethod = algorParam.msk.refineMethod;
-threshold    = algorParam.msk.threshold;
+if isfield(algorParam.msk,'threshold'); threshold = algorParam.msk.threshold; end
 
 disp('--------------------');
 disp('Mask refinement step');
@@ -41,7 +41,7 @@ disp('--------------------');
 
 mask_refined = mask;
 r2s = [];
-residual = [];
+relativeResidual = [];
 
 switch lower(refineMethod)
 
@@ -54,28 +54,25 @@ switch lower(refineMethod)
             return
         end
 
-        if( isempty(headerAndExtraData.availableFileList.magnitude))
-            warning('Please specify a magnitude data (at least 3 echoes) if you want to use r2s based mask refinement.');
+        sepia_addpath('MEDI');
+        magn = check_and_load(headerAndExtraData, 'magnitude');
+        if isempty(magn)
+            return
+        end
+        if size(magn,4) < 3
+            warning('Please specify a magnitude data with at least 3 echoes if you want to use r2s based mask refinement.');
             warning('No mask refinement is done in this instance.');
             return
-        else
-            sepia_addpath('MEDI');
-            magn        = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude');
-            if size(magn,4) < 3
-                warning('Please specify a magnitude data (at least 3 echoes) if you want to use CSF as reference.');
-                warning('No normalisation will be done on the susceptibility map in this instance.');
-                return                
-            else
-                if isfield(headerAndExtraData.availableFileList,'r2s') && ...
-                    exist(headerAndExtraData.availableFileList.r2s,'file')
-                    disp('R2* map is already available. Loading it from disk...');
-                    r2s = get_variable_from_headerAndExtraData(headerAndExtraData, 'r2s');
-                else
-                    r2s  = R2star_trapezoidal(magn, TE);
-                end
-                clear magn
-            end
         end
+
+        if isfield(headerAndExtraData.availableFileList,'r2s') && ...
+            exist(headerAndExtraData.availableFileList.r2s,'file')
+            disp('R2* map is already available. Loading it from disk...');
+            r2s = check_and_load(headerAndExtraData, 'r2s');
+        else
+            r2s = R2star_trapezoidal(magn, TE);
+        end
+        clear magn
 
         mask_refined = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
         
@@ -84,6 +81,10 @@ switch lower(refineMethod)
         magn = check_and_load(headerAndExtraData,'magnitude');
         phase = check_and_load(headerAndExtraData, 'phase');
         totalField = check_and_load(headerAndExtraData, 'totalField');
+        if isempty(phase) || isempty(totalField)
+            warning('Monoexponential decay model masking requires both phase and total field data; keeping mask unchanged.');
+            return
+        end
 
         if isfield(headerAndExtraData.availableFileList,'r2s') && ...
             exist(headerAndExtraData.availableFileList.r2s,'file')
@@ -93,7 +94,7 @@ switch lower(refineMethod)
             r2s  = R2star_trapezoidal(magn, TE);
         end
         relativeResidual   = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*phase));
-        mask_refined        = (relativeResidual < threshold) & mask;
+        mask_refined       = (relativeResidual < threshold) & mask;
 
     case {lower(methodTwoPassName{3}), 'mgf','magnitude gradient field'}
         disp('Refine brain using the magnitude of the gradient of the fieldmap.');
@@ -109,7 +110,17 @@ switch lower(refineMethod)
 
     case {lower(methodTwoPassName{4}),'noisemap','nstd'}
         disp('Refine brain using the noise map.');
-        fieldmapSD = check_and_load(headerAndExtraData, 'fieldmapSD');
+        if ~isfield(headerAndExtraData.availableFileList,'fieldmapSD')
+            if isfield(headerAndExtraData.availableFileList,'weights')
+                weights = check_and_load(headerAndExtraData, 'weights');
+            end
+        end
+        if exist('weights','var')
+            fieldmapSD = 1./weights;
+            fieldmapSD(~isfinite(fieldmapSD)) = 0;
+        else
+            fieldmapSD = check_and_load(headerAndExtraData, 'fieldmapSD');
+        end
         if isempty(fieldmapSD)
             warning('Cannot perform noise based mask refinement when no noisemap is provided')
             return

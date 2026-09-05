@@ -512,6 +512,13 @@ end
 
 function switch_tab_to_SEPIA
     global h tooltip fieldString
+    sepia_universal_variables;
+    % restore full two-pass masking option list (Monoexponential decay model
+    % requires phase/total field data, which is available again on this tab)
+    currLabel = h.qsm.popup.twopass.String{h.qsm.popup.twopass.Value};
+    newValue  = find(strcmp(methodTwoPassName, currLabel), 1);
+    if isempty(newValue); newValue = 1; end
+    set(h.qsm.popup.twopass, 'String', methodTwoPassName, 'Value', newValue);
     % I/O
     % Change essential files if input is a directory
     set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
@@ -626,6 +633,20 @@ end
 
 function switch_tab_to_QSM
 global h tooltip fieldString
+sepia_universal_variables;
+% Monoexponential decay model masking requires phase and total field data,
+% which are not available on this tab (it starts from the local field map,
+% i.e. downstream of phase unwrapping/background field removal); remove it
+% from the two-pass masking option list to avoid a crash.
+currLabel = h.qsm.popup.twopass.String{h.qsm.popup.twopass.Value};
+if strcmp(currLabel, methodTwoPassName{2})
+    warndlg('Monoexponential decay model masking is not available on the QSM tab (requires phase and total field data). Resetting two-pass masking to ''None''.', 'Two-pass masking unavailable');
+    currLabel = methodTwoPassName{1};
+end
+qsmTabTwoPassOptions = methodTwoPassName(~strcmp(methodTwoPassName, methodTwoPassName{2}));
+newValue = find(strcmp(qsmTabTwoPassOptions, currLabel), 1);
+if isempty(newValue); newValue = 1; end
+set(h.qsm.popup.twopass, 'String', qsmTabTwoPassOptions, 'Value', newValue);
 % I/O
 % This tab supports only NIfTI files
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
