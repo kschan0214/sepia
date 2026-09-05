@@ -105,14 +105,13 @@ availableFileList           = io_02_validate_nifti_input(inputFileList);
 outputNiftiTemplate         = io_03_get_nifti_template(availableFileList);
 
 % 3.2 load and validate SEPIA header 
-if ~isempty(inputFileList(4).name)
+if numel(inputFileList) < 4 || isempty(inputFileList(4).name)
+    error('Please specify a header required by SEPIA.');
+else
     sepia_header = load([inputFileList(4).name]);
     disp('SEPIA header data is loaded.');
     % Validate header information
     sepia_header = validate_sepia_header_4wrapper(sepia_header, outputNiftiTemplate);
-
-else
-    error('Please specify a header required by SEPIA.');
 end
 
 %%%%%% Step 4: Check whether phase data contains DICOM values or wrapped phase value
@@ -395,7 +394,7 @@ maskLocalfield	= double(load_nii_img_only(availableFileList.maskLocalField));
 localField = BackgroundRemovalMacro(totalField,maskLocalfield,matrixSize,voxelSize,algorParam,headerAndExtraData);
 clear totalField maskLocalfield % clear variables that no longer be needed
 
-% generate new mask based on backgroudn field removal result
+% generate new mask based on background field removal result
 % mask_QSM = localField ~=0;
 % 20230124 v1.2.2: make sure no holes inide ROIs
 mask_QSM = imfill(localField ~= 0, 'holes');
@@ -427,10 +426,32 @@ headerAndExtraData.availableFileList = availableFileList;
 %% QSM
 % make sure all variables are double
 localField   	= double(load_nii_img_only(availableFileList.localField));
-mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
 
 % Apply final mask to weights
 % headerAndExtraData.weights = headerAndExtraData.weights .* mask_QSM;
+
+% Two-pass masking
+if not(strcmpi(algorParam.qsm.isTwoPass, 'None'))
+    % backup algorParam, availableFileList, and outputFileList
+    algorParamTwoPass = algorParam;
+    algorParamTwoPass.msk.refineMethod = algorParam.qsm.isTwoPass;
+    algorParamTwoPass.msk.threshold    = algorParam.qsm.twopass_lambda;
+    availableFileListTwoPass = availableFileList;
+    availableFileListTwoPass.mask      = availableFileList.maskQSM;
+    outputFileListTwoPass = outputFileList;
+    outputFileListTwoPass.maskReliable = outputFileList.maskQSM2pass;
+    availableFileList = MaskRefinementIOWrapper(sepia_header, ...
+                                                algorParamTwoPass, ...
+                                                availableFileListTwoPass, ...
+                                                outputFileListTwoPass, ...
+                                                outputNiftiTemplate);
+    mask_QSM_pass_2 = double(load_nii_img_only(availableFileList.maskReliable));
+    mask_QSM_pass_1 = double(load_nii_img_only(availableFileList.maskQSM));
+    mask_QSM{1} = mask_QSM_pass_1;
+    mask_QSM{2} = mask_QSM_pass_2;
+else
+    mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
+end
 
 % core of QSM
 % 20260822 KC: expanded for chi-sep type output
@@ -438,15 +459,40 @@ mask_QSM        = double(load_nii_img_only(availableFileList.maskQSM));
 clear localField mask_QSM
 
 % save results
+%20250903 PSF: expanded for two-pass masking output
 fprintf('Saving susceptibility map...');
-save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
-save_json_sidecar(outputFileList.QSM, struct( ...
-    'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
-    'Units',       'ppm', ...
-    'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
-    'Parameters',  algorParam.qsm));
+if iscell(chi)
+    save_nii_quick(outputNiftiTemplate, chi{1}, outputFileList.QSM);
+    save_json_sidecar(outputFileList.QSM, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+    save_nii_quick(outputNiftiTemplate, chi{2}, outputFileList.QSMpass1);
+    save_json_sidecar(outputFileList.QSM, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion with first mask.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+    save_nii_quick(outputNiftiTemplate, chi{3}, outputFileList.QSMpass2);
+    save_json_sidecar(outputFileList.QSM, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion with second mask.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+else
+    save_nii_quick(outputNiftiTemplate, chi, outputFileList.QSM);
+    save_json_sidecar(outputFileList.QSM, struct( ...
+        'Description', 'Quantitative susceptibility map from dipole field inversion.', ...
+        'Units',       'ppm', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.qsm));
+end
 % 20260822 KC: expanded for chi-sep type output
 if ~isempty(chi_para)
+    if iscell(chi_para)
+        chi_para = chi_para{1};
+    end
     save_nii_quick(outputNiftiTemplate, chi_para, outputFileList.QSMpara);
     save_json_sidecar(outputFileList.QSMpara, struct( ...
         'Description', 'Paramagnetic susceptibility component map from chi-separation.', ...
@@ -455,6 +501,9 @@ if ~isempty(chi_para)
         'Parameters',  algorParam.qsm));
 end
 if ~isempty(chi_dia)
+    if iscell(chi_dia)
+        chi_dia = chi_dia{1};
+    end
     save_nii_quick(outputNiftiTemplate, chi_dia, outputFileList.QSMdia);
     save_json_sidecar(outputFileList.QSMdia, struct( ...
         'Description', 'Diamagnetic susceptibility component map from chi-separation.', ...
@@ -577,15 +626,13 @@ end
 
 
 % 2.3 Weights data 
-if ~isempty(inputFileList(3).name)
-    
+if numel(inputFileList) < 3 || isempty(inputFileList(3).name)
+    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
+else
     % get header info from NIFTI for validation
     weightsNIFTIHeader = load_untouch_header_only(inputFileList(3).name);
     
-    availableFileList.weights = inputFileList(3).name;
-   
-else
-    disp('No weighting map is loaded. Default QSM weighting method will be used for QSM.');
+    availableFileList.weights = inputFileList(3).name;    
 end
 
 % check dimension of weights

@@ -34,6 +34,7 @@ sepia_universal_variables;
 TE           = sepia_header.TE;
 voxelSize    = sepia_header.voxelSize;
 refineMethod = algorParam.msk.refineMethod;
+threshold    = algorParam.msk.threshold;
 
 disp('---------------');
 disp('Mask refinement');
@@ -70,16 +71,14 @@ switch lower(refineMethod)
         
         maskRefined = refine_brain_mask_using_r2s(r2s,mask,voxelSize);
         
-    case {lower(methodMaskName{1}), 'monoexponential','decay','mdm'}
-        threshold = algorparam.msk.threshold;
-        magn        = get_variable_from_headerAndExtraData(headerAndExtraData, 'magnitude', matrixSize);
-        fieldMap    = get_variable_from_headerAndExtraData(headerAndExtraData, 'fieldMap',  matrixSize);
-        totalField  = get_variable_from_headerAndExtraData(headerAndExtraData, 'totalField',matrixSize);
+    case {lower(methodTwoPassName{2}), 'monoexponential','decay','mdm'}
 
-        TE = headerAndExtraData.sepia_header.TE;
+        magn = load_nii_img_only(availableFileList.magnitude);
+        fieldMap = load_nii_img_only(availableFileList.phase);
+        totalField = load_nii_img_only(availableFileList.totalField);
 
         if availableFileList.r2s
-            r2s = load_nii_img(availableFileList.r2s);
+            r2s = load_nii_img_only(availableFileList.r2s);
         else
             % multi-echo data
             r2s = R2star_trapezoidal(magn,TE); 
@@ -87,9 +86,10 @@ switch lower(refineMethod)
             save_nii_quick(outputNiftiTemplate,r2s, outputFileList.r2s);
             availableFileList.r2s = outputFileList.r2s;
         end
-        relativeResidual    = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
+        relativeResidual   = ComputeResidualGivenR2sFieldmap(TE,r2s,totalField,magn.*exp(1i*fieldMap));
         maskRefined        = relativeResidual < threshold;
-        % 
+        %
+        exclude_threshold = 0.5;
         relativeResidualWeights = relativeResidual;
         % clipping
         relativeResidualWeights(relativeResidualWeights>exclude_threshold) = exclude_threshold;
@@ -105,23 +105,30 @@ switch lower(refineMethod)
         availableFileList.relativeResidual          = outputFileList.relativeResidual;
         availableFileList.relativeResidualWeights   = outputFileList.relativeResidualWeights;
 
-    case {lower(methodMaskName{2}), 'mgf','magnitude gradient field'}
-        threshold = algorparam.msk.threshold;
-
-        localField  = get_variable_from_headerAndExtraData(headerAndExtraData, 'localField', matrixSize);
-
+    case {lower(methodTwoPassName{3}), 'mgf','magnitude gradient field'}
+        if availableFileList.localField
+            localField = load_nii_img_only(availableFileList.localField);
+        else
+            error('Magnitude Gradient Field masking is only possible when a fieldmap is available.')
+        end
         maskRefined = GradientBasedThreshold(localField, mask, threshold);
 
         save_nii_quick(outputNiftiTemplate,maskRefined, outputFileList.maskReliable);
         availableFileList.maskReliable                 = outputFileList.maskReliable;
 
-    case {lower(methodMaskName{3}),'noisemap','nstd'}
+    case {lower(methodTwoPassName{4}),'noisemap','nstd'}
 
-        fieldmapSD  = get_variable_from_headerAndExtraData(headerAndExtraData, 'fieldmapSD', matrixSize);
+        if not(isempty(availableFileList.fieldmapSD))
+            fieldmapSD  = load_nii_img_only(availableFileList.fieldmapSD);
 
+            maskRefined = erode3d(mask, fieldmapSD);
+        else
+            warning('Cannot perform noise based mask refinement when no noisemap is provided')
+        end
 
-        maskRefined = erode3d(mask, fieldmapSD);
-
+    otherwise
+        warning('Invalid mask refinement strategy given, keeping mask unchanged.');
+        maskRefined = mask;
 end
 
 fprintf('Saving refined brain mask...');

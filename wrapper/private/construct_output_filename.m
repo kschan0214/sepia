@@ -36,6 +36,8 @@ outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_d
 outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap' outputSuffix]);
 outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield' outputSuffix]);
 outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap' outputSuffix]);
+outputFileList.QSMpass1         = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'firstpass') '_Chimap'  outputSuffix]);
+outputFileList.QSMpass2         = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'secondpass') '_Chimap'  outputSuffix]);
 outputFileList.QSMpara          = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'paramagnetic') '_Chimap' outputSuffix]);
 outputFileList.QSMdia           = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'diamagnetic') '_Chimap' outputSuffix]);
 
