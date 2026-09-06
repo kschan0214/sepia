@@ -19,3 +19,9 @@ atlas/
 # matlab project files
 *.prj
 resources
+
+# regression test suite: generated artifacts and machine-local config
+# (test/references/ IS tracked - those are the small, deliberately
+# committed reference .mat files)
+test/tools/*.tap
+test/config/real_dataset.json

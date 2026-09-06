@@ -53,6 +53,9 @@ fprintf('Output filename prefix : %s\n',prefix);
 
 write_bids_dataset_description(outputDir);
 
+%% Check and set default algorithm parameters
+algorParam = check_and_set_SEPIA_algorithm_default(algorParam);
+
 outputFileList = construct_output_filename(outputDir, prefix, algorParam,  suffix);
 
 %% Setting up Input

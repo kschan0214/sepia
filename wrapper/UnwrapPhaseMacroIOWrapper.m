@@ -58,10 +58,10 @@ fprintf('Output filename prefix : %s\n',prefix);
 
 write_bids_dataset_description(outputDir);
 
-outputFileList = construct_output_filename(outputDir, prefix, algorParam, suffix);
-
 %% Check and set default algorithm parameters
 algorParam          = check_and_set_SEPIA_algorithm_default(algorParam);
+
+outputFileList = construct_output_filename(outputDir, prefix, algorParam, suffix);
 % isInvert            = algorParam.general.isInvert;
 % isBET               = algorParam.general.isBET ;
 % fractional_threshold= algorParam.general.fractional_threshold;
@@ -337,9 +337,18 @@ else
     % If it doesn't work then check BIDS compatibility
     if ~isLoadSuccessful
         disp('Searching input directory based on BIDS...');
-        inputNiftiList = read_bids_to_filelist(inputDir,fullfile(outputDir,prefix));
+        % read_bids_to_filelist returns a 1xnVol cell (one entry per BIDS
+        % volume, e.g. for functional QSM with multiple volumes per echo -
+        % see SepiaIOWrapper.m for the multi-volume-aware version of this
+        % step). This standalone wrapper does not support multi-volume
+        % BIDS input; only the first volume is used.
+        inputNiftiCell = read_bids_to_filelist(inputDir,fullfile(outputDir,prefix));
+        if numel(inputNiftiCell) > 1
+            warning('Multiple BIDS volumes detected; only the first volume will be processed by this standalone wrapper.');
+        end
+        inputNiftiList = inputNiftiCell{1}.inputNIFTIList;
     end
-    
+
 end
 
 end

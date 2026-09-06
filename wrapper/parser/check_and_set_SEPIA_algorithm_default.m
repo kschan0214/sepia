@@ -55,7 +55,8 @@ try algorParam2.bfr.refine_order        = algorParam.bfr.refine_order;	catch; al
 
 % default background field removal method is TKD
 try algorParam2.qsm.method              = algorParam.qsm.method;            catch; algorParam2.qsm.method           = methodQSMName{1};	end
-try algorParam2.qsm.isTwoPass	        = algorParam.qsm.isTwoPass;	        catch; algorParam2.qsm.isTwoPass	    = 0;      	    end
+try algorParam2.qsm.isTwoPass	        = algorParam.qsm.isTwoPass;	        catch; algorParam2.qsm.isTwoPass	    = 'None';      	    end
+try algorParam2.qsm.twopass_lambda	    = algorParam.qsm.twopass_lambda;	    catch; algorParam2.qsm.twopass_lambda	= 0.7;      	    end
 try algorParam2.qsm.reference_tissue	= algorParam.qsm.reference_tissue;	catch; algorParam2.qsm.reference_tissue	= 'None';      	end
 try algorParam2.qsm.isHEIDI	            = algorParam.qsm.isHEIDI;	        catch; algorParam2.qsm.isHEIDI	        = false;      	end
 

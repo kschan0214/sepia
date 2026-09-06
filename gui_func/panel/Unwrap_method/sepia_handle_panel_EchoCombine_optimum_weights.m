@@ -132,6 +132,13 @@ set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask,	'Callback', {@CheckboxEdi
 set(h.phaseUnwrap.optimumWeights.edit.excludeMask,      'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
 set(h.phaseUnwrap.optimumWeights.popup.phaseUnwrap,     'Callback', {@popupPhaseUnwrap_Callback,h});
 
+% programmatically setting the popup's 'Value' above (defaultUnwrapIdx)
+% does not fire its Callback, so the 'Exclude voxels' checkbox's Enable
+% state must be synced with the default method here too, otherwise it is
+% left at its construction-time default ('off') even when the default
+% method (e.g. SEGUE) actually supports it.
+set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{defaultUnwrapIdx});
+
 end
 
 %% Callback functions
