@@ -39,6 +39,8 @@ SEGUE_HOME      = [];
 MRITOOLS_HOME   = [];
 MRISC_HOME      = [];
 ANTS_HOME       = [];
+HEIDI_HOME      = [];
+ChiSepNet_HOME  = [];
 
 SpecifyToolboxesDirectory;
 
@@ -86,13 +88,23 @@ wratio = [0.2,0.75,0.05];
     [h.Utility.magageDependency.text.ANTsDir,h.Utility.magageDependency.edit.ANTsDir,h.Utility.magageDependency.button.ANTsDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
         'ANTs Home:',ANTS_HOME,open_icon,[left bottom(7) width height],wratio);
-    
+
+    % Dependency HEIDI
+    [h.Utility.magageDependency.text.HEIDIDir,h.Utility.magageDependency.edit.HEIDIDir,h.Utility.magageDependency.button.HEIDIDir] = ...
+        sepia_construct_text_edit_button(parent_panel,...
+        'HEIDI Home:',HEIDI_HOME,open_icon,[left bottom(8) width height],wratio);
+
+    % Dependency Chi-separation
+    [h.Utility.magageDependency.text.ChiSepNetDir,h.Utility.magageDependency.edit.ChiSepNetDir,h.Utility.magageDependency.button.ChiSepNetDir] = ...
+        sepia_construct_text_edit_button(parent_panel,...
+        'Chi-separation Home:',ChiSepNet_HOME,open_icon,[left bottom(9) width height],wratio);
+
     % run
     h.Utility.magageDependency.button.save = uicontrol('Parent',parent_panel,...
         'Style','pushbutton','String','Save',...
         'units','normalized','position',[0.79 bottom(10) 0.2 height],...
         'backgroundcolor',sepia_theme_bg_color(),'foregroundcolor',sepia_theme_fg_color(),'enable','on');
-    
+
 %% set callback functions
 set(h.Utility.magageDependency.button.FANSIDir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.FANSIDir});
 set(h.Utility.magageDependency.button.MEDIDir,          'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MEDIDir});
@@ -101,6 +113,8 @@ set(h.Utility.magageDependency.button.SEGUEDir,         'Callback', {@open_direc
 set(h.Utility.magageDependency.button.MRITOOLSDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRITOOLSDir});
 set(h.Utility.magageDependency.button.MRISuscCalcDir,   'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRISuscCalcDir});
 set(h.Utility.magageDependency.button.ANTsDir,       	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ANTsDir});
+set(h.Utility.magageDependency.button.HEIDIDir,       	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.HEIDIDir});
+set(h.Utility.magageDependency.button.ChiSepNetDir,   	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ChiSepNetDir});
 set(h.Utility.magageDependency.button.save,             'Callback', {@PushbuttonSave_Utility_magageDependency_Callback,h});
 end
 
@@ -120,8 +134,8 @@ end
 
 function PushbuttonSave_Utility_magageDependency_Callback(source,eventdata,h)
 
-dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME', 'ANTS_HOME'};
-gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir', 'ANTsDir'};
+dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME', 'ANTS_HOME', 'HEIDI_HOME', 'ChiSepNet_HOME'};
+gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir', 'ANTsDir', 'HEIDIDir', 'ChiSepNetDir'};
 
 sepia_universal_variables;
 

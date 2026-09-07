@@ -731,19 +731,7 @@ sepia_universal_variables;
 if algorParam.general.isDenoise
 
     % check if tensor MPPCA code exist, if not then download form GitHub
-    tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
-    if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end
-    if ~exist('denoise_recursive_tensor', 'file')
-    
-        fprintf('Cannot find tensor-MPPCA functions. Attempt to download the tool to %s\n',tMPPCA_HOME);
-    
-        cmd = sprintf('wget -O %s --no-check-certificate https://github.com/Neurophysics-CFIN/Tensor-MP-PCA/archive/refs/heads/main.zip; unzip %s -d %s',strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME,'.zip'),strcat(tMPPCA_HOME));
-        % cmd = sprintf('git clone https://github.com/Neurophysics-CFIN/Tensor-MP-PCA.git %s',tMPPCA_HOME); % certificate fail
-        system(cmd);
-        delete(strcat(tMPPCA_HOME,'.zip'));
-        addpath(genpath(tMPPCA_HOME));
-    
-    end
+    setup_tMPPCA_toolbox();
 
     kernel = ceil(algorParam.general.denoiseKernel ./ sepia_header.voxelSize);
     if any(kernel<3)

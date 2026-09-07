@@ -10,9 +10,8 @@
 % Output
 % --------------
 % tb : struct with logical fields MEDI, STISuite, FANSI, SEGUE, MRITOOLS,
-%      MRISC, ANTs, HEIDI (the HEIDI add-on package, checked separately
-%      since it is not one of the *_HOME toolboxes but an external folder
-%      alongside SEPIA_HOME, see docs/method/qsm/HEIDI.rst)
+%      MRISC, ANTs, HEIDI, ChiSepNet. HEIDI is also gated on being run on
+%      Linux (its wrapper only supports Linux, see docs/method/qsm/HEIDI.rst).
 %
 function tb = discover_toolboxes()
 
@@ -30,8 +29,15 @@ sepia_addpath('None', false);
 % variables here via run() is fine).
 MEDI_HOME = []; STISuite_HOME = []; FANSI_HOME = []; SEGUE_HOME = [];
 MRITOOLS_HOME = []; MRISC_HOME = []; ANTS_HOME = [];
+HEIDI_HOME = []; ChiSepNet_HOME = [];
 
 run(fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m'));
+
+% HEIDI_HOME defaults to the historical sibling-folder convention if not
+% explicitly configured (kept in sync with the HEIDI wrappers' own fallback).
+if isempty(HEIDI_HOME)
+    HEIDI_HOME = fullfile(SEPIA_HOME,'..','external','HEIDI_SEPIAready');
+end
 
 tb = struct();
 tb.MEDI      = ~isempty(MEDI_HOME)     && exist(MEDI_HOME,'dir')     == 7;
@@ -41,9 +47,7 @@ tb.SEGUE     = ~isempty(SEGUE_HOME)    && exist(SEGUE_HOME,'dir')    == 7;
 tb.MRITOOLS  = ~isempty(MRITOOLS_HOME) && exist(MRITOOLS_HOME,'dir') == 7;
 tb.MRISC     = ~isempty(MRISC_HOME)    && exist(MRISC_HOME,'dir')    == 7;
 tb.ANTs      = ~isempty(ANTS_HOME)     && exist(ANTS_HOME,'dir')     == 7;
-
-% HEIDI add-on package lives at <SEPIA_HOME>/../external/HEIDI_SEPIAready
-% (hard-coded location, see docs/method/qsm/HEIDI.rst), Linux-only.
-tb.HEIDI = isunix && ~ismac && exist(fullfile(SEPIA_HOME,'..','external','HEIDI_SEPIAready'),'dir') == 7;
+tb.HEIDI     = isunix && ~ismac && exist(HEIDI_HOME,'dir') == 7;
+tb.ChiSepNet = ~isempty(ChiSepNet_HOME) && exist(ChiSepNet_HOME,'dir') == 7;
 
 end

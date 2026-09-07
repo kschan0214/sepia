@@ -22,6 +22,8 @@ SEGUE_HOME      = '/path/to/SEGUE/Toolbox/';
 MRITOOLS_HOME   = '/path/to/MRITOOLS/mritools_ubuntu-20.04_3.6.6/';
 MRISC_HOME      = '/path/to/MRISusceptibilityCalculationmethods/Toolbox/';
 ANTS_HOME       = '/path/to/ANTs/bin/';
+HEIDI_HOME      = '/path/to/HEIDI_SEPIAready/';
+ChiSepNet_HOME  = '/path/to/Chisep_Toolbox/';
 
 %% if you have any missing toolboxes, then specify it as empty array
 % MEDI_HOME      = [];
@@ -31,3 +33,5 @@ ANTS_HOME       = '/path/to/ANTs/bin/';
 % MRITOOLS_HOME  = [];
 % MRISC_HOME     = [];
 % ANTS_HOME     = [];
+% HEIDI_HOME     = [];
+% ChiSepNet_HOME = [];

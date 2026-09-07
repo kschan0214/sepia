@@ -24,6 +24,8 @@ SEGUE_HOME      = [];
 MRITOOLS_HOME   = [];
 MRISC_HOME      = [];
 ANTS_HOME       = [];
+HEIDI_HOME      = [];
+ChiSepNet_HOME  = [];
 
 SpecifyToolboxesDirectory;
 
@@ -34,5 +36,7 @@ paths.SEGUE_HOME     = SEGUE_HOME;
 paths.MRITOOLS_HOME  = MRITOOLS_HOME;
 paths.MRISC_HOME     = MRISC_HOME;
 paths.ANTS_HOME      = ANTS_HOME;
+paths.HEIDI_HOME     = HEIDI_HOME;
+paths.ChiSepNet_HOME = ChiSepNet_HOME;
 
 end
