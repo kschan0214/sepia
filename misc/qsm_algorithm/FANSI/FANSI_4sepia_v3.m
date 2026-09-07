@@ -76,6 +76,11 @@ params.weight = magn/max(magn(:));
 if isfield(options,'mu')
     params.mu1 = options.mu;
 end
+% S.R. Update START: Also update mu2 parameter
+if isfield(options, 'mu2')
+    params.mu2 = options.mu2;
+end
+% S.R. Update END
 if isfield(options,'isGPU') % This variable is new in release 3.0
     params.isGPU = options.isGPU;
 end
