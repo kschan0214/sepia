@@ -2,9 +2,10 @@ function regenerate_reference(varargin)
 %% regenerate_reference('confirm', true, 'tier', 'tier1', 'filter', '*')
 %
 % Description: (re)generates saved reference outputs used by the
-% regression comparisons in test/tier1_smoke and test/tier2_matrix.
-% This is a DELIBERATE, DESTRUCTIVE action - it overwrites files under
-% test/references/ - so it refuses to run at all unless called with
+% regression comparisons in test/tier1_smoke, test/tier2_matrix (all
+% methods, synthetic phantom) and test/tier3_matrix (all methods, real
+% dataset). This is a DELIBERATE, DESTRUCTIVE action - it overwrites files
+% under test/references/ - so it refuses to run at all unless called with
 % 'confirm', true, and prints an old-vs-new diff for anything it
 % overwrites so the change is reviewable (e.g. via `git diff`) before
 % being committed.
@@ -12,8 +13,7 @@ function regenerate_reference(varargin)
 % Name-value arguments
 % --------------
 % confirm : (required) must be passed as true, else errors immediately.
-% tier    : 'tier1' (default) or 'tier2'. Only 'tier1' (the toolbox-free
-%           smoke tier) is implemented so far.
+% tier    : 'tier1' (default), 'tier2', or 'tier3'.
 % filter  : glob-style filter on which reference file(s) to regenerate
 %           within the tier, e.g. 'smoke_TKD' (default '*' = all).
 %
@@ -33,8 +33,15 @@ if ~isequal(opt.confirm, true)
          'existing reference is expected to change.']);
 end
 
-testRoot = sepiatest.test_root();
-SEPIA_HOME = sepiatest.sepia_home();
+% derive paths via mfilename rather than sepiatest.* here, since test/
+% (which the +sepiatest package lives under) isn't necessarily on the
+% MATLAB path yet if this function is the very first thing called in a
+% fresh session (e.g. `matlab -batch "regenerate_reference(...)"` without
+% having run_tier1/run_tier2/run_tier3 first in the same session).
+thisFile   = mfilename('fullpath');          % .../test/tools/regenerate_reference
+testRoot   = fileparts(fileparts(thisFile)); % .../test
+SEPIA_HOME = fileparts(testRoot);            % repo root
+
 addpath(SEPIA_HOME);
 sepia_addpath;
 addpath(testRoot);
@@ -45,6 +52,8 @@ switch lower(opt.tier)
         regenerate_tier1(testRoot, opt.filter);
     case 'tier2'
         regenerate_tier2(testRoot, opt.filter);
+    case 'tier3'
+        regenerate_tier3(testRoot, opt.filter);
     otherwise
         error('regenerate_reference:unsupportedTier', ...
             'Tier "%s" is not implemented yet in regenerate_reference.m.', opt.tier);
@@ -110,15 +119,106 @@ end
 
 end
 
-%% Tier 2: real-dataset method matrices (mirrors TestQSMMatrix.m /
-%% TestBFRMatrix.m / TestUnwrapMatrix.m exactly - one category per call)
+%% Tier 2: synthetic-phantom method matrices, all methods incl.
+%% toolbox-dependent (mirrors TestQSMMatrixPhantom.m / TestBFRMatrixPhantom.m /
+%% TestUnwrapMatrixPhantom.m in test/tier2_matrix/ exactly - one category per
+%% call). References are generated at the single default phantom matrix size
+%% only ([32 32 24]) - the odd/even matrix-size cases in those test classes
+%% are shape/no-NaN checks only, they don't need a saved numeric reference.
 function regenerate_tier2(testRoot, filterExpr)
+
+toolboxes = sepiatest.discover_toolboxes();
+addpath(testRoot); addpath(fullfile(testRoot,'tools')); % discover_toolboxes calls sepia_addpath internally, which strips test/ off the path
+addpath(fullfile(testRoot,'phantom'));
+
+sepia_universal_variables;
+
+refDir = fullfile(testRoot, 'references', 'tier2');
+if exist(refDir,'dir') ~= 7; mkdir(refDir); end
+
+categories = { ...
+    struct('name','qsm',    'methods', {methodQSMName(:)'},    'prefix','qsm_',    'toolboxKeyFn', @sepiatest.qsm_method_toolbox_key,    'field','qsm.method',    'outputKey','Chimap',    'outputDesc','QSM'), ...
+    struct('name','bfr',    'methods', {methodBFRName(:)'},    'prefix','bfr_',    'toolboxKeyFn', @sepiatest.bfr_method_toolbox_key,    'field','bfr.method',    'outputKey','localfield','outputDesc','BFR'), ...
+    struct('name','unwrap', 'methods', {methodUnwrapName(:)'}, 'prefix','unwrap_', 'toolboxKeyFn', @sepiatest.unwrap_method_toolbox_key, 'field','unwrap.unwrapMethod', 'outputKey','fieldmap', 'outputDesc','Unwrap') ...
+    };
+
+for c = 1:numel(categories)
+    cat = categories{c};
+    for k = 1:numel(cat.methods)
+        method = cat.methods{k};
+        slug = matlab.lang.makeValidName(method);
+        if ~isempty(filterExpr) && ~strcmp(filterExpr,'*') && ~strcmpi(filterExpr, slug)
+            continue
+        end
+
+        toolboxKey = cat.toolboxKeyFn(method);
+        if strcmp(toolboxKey, 'unavailable')
+            fprintf('--- %s:%s --- skipped (no model/checkpoint files available)\n', cat.outputDesc, method);
+            continue
+        elseif strcmp(toolboxKey, 'excluded')
+            fprintf('--- %s:%s --- skipped (deliberately excluded, see test/README.md)\n', cat.outputDesc, method);
+            continue
+        elseif ~strcmp(toolboxKey, 'none') && ~toolboxes.(toolboxKey)
+            fprintf('--- %s:%s --- skipped (%s toolbox not installed on this machine)\n', cat.outputDesc, method, toolboxKey);
+            continue
+        end
+
+        tmp = tempname; mkdir(tmp);
+        phantomPaths = generate_synthetic_phantom(fullfile(tmp,'phantom'));
+        outputPrefix = fullfile(tmp, 'sepia');
+
+        algorParam = struct();
+        algorParam.general.isInvert = false;
+        algorParam.general.isBET    = false;
+        algorParam.unwrap.unwrapMethod   = 'None';
+        algorParam.unwrap.echoCombMethod = 'Optimum weights';
+        algorParam.bfr.method = 'VSHARP';
+        algorParam.qsm.method = 'TKD';
+        algorParam = setfield_dotted(algorParam, cat.field, method); %#ok<*AGROW>
+        if strcmp(cat.name,'qsm') && strcmp(method, 'NDI')
+            algorParam.qsm.isGPU = false;
+        end
+
+        sepiaIO(phantomPaths.input, outputPrefix, phantomPaths.mask, algorParam);
+        addpath(testRoot); addpath(fullfile(testRoot,'tools')); addpath(fullfile(testRoot,'phantom')); % re-add after sepiaIO's internal sepia_addpath strips it
+
+        maskImg  = load_nii_img_only(phantomPaths.mask) > 0;
+        outImg   = load_nii_img_only([outputPrefix '_' cat.outputKey '.nii.gz']);
+        stats    = sepiatest.mask_stats(outImg, maskImg);
+
+        refFile = fullfile(refDir, sprintf('%s%s.mat', cat.prefix, slug));
+
+        oldStats = [];
+        if isfile(refFile)
+            old = load(refFile);
+            oldStats = old.stats;
+        end
+        print_diff(sprintf('%s:%s', cat.outputDesc, method), oldStats, stats);
+
+        meta = struct();
+        meta.sepiaVersion  = get_sepia_version();
+        meta.generatedDate = datestr(datetime('now'),'yyyy-mm-ddTHH:MM:SS');
+        meta.matlabVersion = version();
+        meta.hostname      = getenv_or('HOSTNAME','');
+        meta.phantomMatrixSize = [32 32 24];
+
+        save(refFile, 'stats', 'meta');
+        fprintf('Wrote %s\n', refFile);
+    end
+end
+
+end
+
+%% Tier 3: real-dataset method matrices (mirrors TestQSMMatrix.m /
+%% TestBFRMatrix.m / TestUnwrapMatrix.m in test/tier3_matrix/ exactly -
+%% one category per call)
+function regenerate_tier3(testRoot, filterExpr)
 
 ds = sepiatest.get_real_dataset();
 if isempty(ds.inputDir) || isempty(ds.maskFile)
     error('regenerate_reference:noRealDataset', ...
         ['No real dataset configured (SEPIA_TEST_REAL_DATA_DIR/SEPIA_TEST_REAL_DATA_MASK or ', ...
-         'test/config/real_dataset.json) - cannot regenerate Tier-2 references.']);
+         'test/config/real_dataset.json) - cannot regenerate Tier-3 references.']);
 end
 
 toolboxes = sepiatest.discover_toolboxes();
@@ -126,7 +226,7 @@ addpath(testRoot); addpath(fullfile(testRoot,'tools')); % discover_toolboxes cal
 
 sepia_universal_variables;
 
-refDir = fullfile(testRoot, 'references', 'tier2');
+refDir = fullfile(testRoot, 'references', 'tier3');
 if exist(refDir,'dir') ~= 7; mkdir(refDir); end
 
 % category, method list, prefix, per-method toolbox-key function, and the

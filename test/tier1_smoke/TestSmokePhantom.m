@@ -63,10 +63,13 @@ classdef TestSmokePhantom < matlab.unittest.TestCase
             sepiaIO(testCase.PhantomPaths.input, outputPrefix, testCase.PhantomPaths.mask, algorParam);
 
             % sepiaIO/SepiaIOWrapper calls sepia_addpath internally, which
-            % does rmpath(genpath(SEPIA_HOME)) and so strips test/ (a
-            % subfolder of SEPIA_HOME) back off the path - re-add it
-            % before using any sepiatest.* helper below.
+            % does rmpath(genpath(SEPIA_HOME)) and so strips test/ AND
+            % this file's own tier1_smoke/ folder back off the path -
+            % both must be re-added: test/ before using any sepiatest.*
+            % helper below, and tier1_smoke/ or this class itself becomes
+            % undispatchable for the next parameterized test case.
             addpath(fileparts(fileparts(mfilename('fullpath'))));
+            addpath(fileparts(mfilename('fullpath')));
 
             suffix = '.nii.gz';
             sepiatest.assert_output_contract(testCase, outputPrefix, suffix, ...

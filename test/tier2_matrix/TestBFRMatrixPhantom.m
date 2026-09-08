@@ -1,24 +1,27 @@
-%% TestBFRMatrix - Tier 2 real-dataset background-field-removal method regression matrix
+%% TestBFRMatrixPhantom - Tier 2 synthetic-phantom background-field-removal method regression matrix
 %
-% Mirrors TestQSMMatrix.m: runs the one-stop SEPIA pipeline on a real
-% dataset once per background-field-removal method in methodBFRName
-% (sepia_universal_variables.m), holding phase unwrapping ('None') and
-% QSM dipole inversion ('TKD', toolbox-free) fixed so the BFR method is
-% the only isolated variable.
+% Mirrors TestQSMMatrixPhantom.m: runs the one-stop SEPIA pipeline on the
+% synthetic phantom once per background-field-removal method in
+% methodBFRName (sepia_universal_variables.m) AND per matrix size (the
+% same 5 odd/even sizes TestOddMatrixSize.m uses in Tier 1), holding phase
+% unwrapping ('None') and QSM dipole inversion ('TKD', toolbox-free) fixed
+% so the BFR method is the only isolated variable. Only the baseline
+% matrix size ([32 32 24]) is compared numerically against a saved
+% reference; the odd-size cases only assert output shape/no-NaN.
 %
-classdef TestBFRMatrix < matlab.unittest.TestCase
+classdef TestBFRMatrixPhantom < matlab.unittest.TestCase
 
     properties (TestParameter)
-        bfrMethod = get_bfr_methods();
+        bfrMethod  = get_bfr_methods();
+        matrixSize = {[32 32 24], [31 32 24], [32 31 24], [32 32 25], [31 31 25]};
     end
 
     properties
-        Dataset
         Toolboxes
     end
 
     methods (TestClassSetup)
-        function setupPathAndData(testCase)
+        function setupPathAndToolboxes(testCase)
             thisFile   = mfilename('fullpath');
             testRoot   = fileparts(fileparts(thisFile));
             SEPIA_HOME = fileparts(testRoot);
@@ -26,19 +29,15 @@ classdef TestBFRMatrix < matlab.unittest.TestCase
             addpath(SEPIA_HOME);
             sepia_addpath;
             addpath(testRoot);
+            addpath(fullfile(testRoot, 'phantom'));
 
-            testCase.Dataset   = sepiatest.get_real_dataset();
             testCase.Toolboxes = sepiatest.discover_toolboxes();
-            addpath(testRoot);
-
-            testCase.assumeTrue(~isempty(testCase.Dataset.inputDir) && ~isempty(testCase.Dataset.maskFile), ...
-                ['Tier 2 real-dataset tests skipped: set SEPIA_TEST_REAL_DATA_DIR/SEPIA_TEST_REAL_DATA_MASK ', ...
-                 '(or test/config/real_dataset.json) to point at a real dataset. See test/README.md.']);
+            addpath(testRoot); addpath(fullfile(testRoot, 'phantom'));
         end
     end
 
     methods (Test)
-        function testBFRMethodMatchesReference(testCase, bfrMethod)
+        function testBFRMethodMatchesReference(testCase, bfrMethod, matrixSize)
             import matlab.unittest.fixtures.TemporaryFolderFixture
 
             addpath(fileparts(fileparts(mfilename('fullpath'))));
@@ -46,7 +45,10 @@ classdef TestBFRMatrix < matlab.unittest.TestCase
             sepiatest.assume_toolbox_available(testCase, testCase.Toolboxes, toolboxKey, bfrMethod);
 
             fixture = testCase.applyFixture(TemporaryFolderFixture);
-            outputPrefix = fullfile(fixture.Folder, 'sepia');
+            phantomPaths = generate_synthetic_phantom(fullfile(fixture.Folder, 'phantom'), matrixSize);
+
+            outFixture   = testCase.applyFixture(TemporaryFolderFixture);
+            outputPrefix = fullfile(outFixture.Folder, 'sepia');
 
             algorParam = struct();
             algorParam.general.isInvert = false;
@@ -56,16 +58,23 @@ classdef TestBFRMatrix < matlab.unittest.TestCase
             algorParam.bfr.method = bfrMethod;
             algorParam.qsm.method = 'TKD';
 
-            sepiaIO(testCase.Dataset.inputDir, outputPrefix, testCase.Dataset.maskFile, algorParam);
+            sepiaIO(phantomPaths.input, outputPrefix, phantomPaths.mask, algorParam);
+
             addpath(fileparts(fileparts(mfilename('fullpath'))));
+            addpath(fileparts(mfilename('fullpath')));
+            addpath(fullfile(fileparts(fileparts(mfilename('fullpath'))), 'phantom'));
 
             suffix = '.nii.gz';
             slug   = matlab.lang.makeValidName(bfrMethod);
 
             sepiatest.assert_output_contract(testCase, outputPrefix, suffix, ...
-                { {'localfield', true}, {'Chimap', true} }, testCase.Dataset.maskFile);
+                { {'localfield', true}, {'Chimap', true} }, phantomPaths.mask);
 
-            maskImg = load_nii_img_only(testCase.Dataset.maskFile) > 0;
+            if ~isequal(matrixSize, [32 32 24])
+                return
+            end
+
+            maskImg = load_nii_img_only(phantomPaths.mask) > 0;
             localFieldImg = load_nii_img_only([outputPrefix '_localfield' suffix]);
             actual = sepiatest.mask_stats(localFieldImg, maskImg);
 
@@ -87,7 +96,14 @@ thisFile   = mfilename('fullpath');
 testRoot   = fileparts(fileparts(thisFile));
 SEPIA_HOME = fileparts(testRoot);
 if exist('sepia_universal_variables','file') ~= 2
+    % bare addpath(SEPIA_HOME) is not enough - sepia_universal_variables
+    % itself needs configuration/ (and other subfolders) on path too,
+    % which only the real sepia_addpath sets up. This matters because
+    % TestSuite.fromFolder evaluates TestParameter defaults (i.e. calls
+    % this function) at suite-CONSTRUCTION time, before any
+    % TestClassSetup method has run.
     addpath(SEPIA_HOME);
+    sepia_addpath;
 end
 sepia_universal_variables;
 methods = methodBFRName(:)';

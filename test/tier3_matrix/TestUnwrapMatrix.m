@@ -1,4 +1,4 @@
-%% TestUnwrapMatrix - Tier 2 real-dataset phase-unwrapping method regression matrix
+%% TestUnwrapMatrix - Tier 3 real-dataset phase-unwrapping method regression matrix
 %
 % Mirrors TestQSMMatrix.m: runs the one-stop SEPIA pipeline on a real
 % dataset once per phase-unwrapping method in methodUnwrapName
@@ -33,7 +33,7 @@ classdef TestUnwrapMatrix < matlab.unittest.TestCase
             addpath(testRoot);
 
             testCase.assumeTrue(~isempty(testCase.Dataset.inputDir) && ~isempty(testCase.Dataset.maskFile), ...
-                ['Tier 2 real-dataset tests skipped: set SEPIA_TEST_REAL_DATA_DIR/SEPIA_TEST_REAL_DATA_MASK ', ...
+                ['Tier 3 real-dataset tests skipped: set SEPIA_TEST_REAL_DATA_DIR/SEPIA_TEST_REAL_DATA_MASK ', ...
                  '(or test/config/real_dataset.json) to point at a real dataset. See test/README.md.']);
         end
     end
@@ -70,10 +70,10 @@ classdef TestUnwrapMatrix < matlab.unittest.TestCase
             fieldImg  = load_nii_img_only([outputPrefix '_fieldmap' suffix]);
             actual    = sepiatest.mask_stats(fieldImg, maskImg);
 
-            refFile = fullfile(sepiatest.test_root(), 'references', 'tier2', sprintf('unwrap_%s.mat', slug));
+            refFile = fullfile(sepiatest.test_root(), 'references', 'tier3', sprintf('unwrap_%s.mat', slug));
             testCase.assumeTrue(isfile(refFile), ...
-                sprintf(['No Tier-2 reference saved yet for unwrap method "%s". ', ...
-                         'Run regenerate_reference(''confirm'',true,''tier'',''tier2'') to create it after a manual review.'], unwrapMethod));
+                sprintf(['No Tier-3 reference saved yet for unwrap method "%s". ', ...
+                         'Run regenerate_reference(''confirm'',true,''tier'',''tier3'') to create it after a manual review.'], unwrapMethod));
 
             ref = load(refFile);
             tol = sepiatest.tolerance_for_method('unwrap', unwrapMethod);
@@ -88,7 +88,14 @@ thisFile   = mfilename('fullpath');
 testRoot   = fileparts(fileparts(thisFile));
 SEPIA_HOME = fileparts(testRoot);
 if exist('sepia_universal_variables','file') ~= 2
+    % bare addpath(SEPIA_HOME) is not enough - sepia_universal_variables
+    % itself needs configuration/ (and other subfolders) on path too,
+    % which only the real sepia_addpath sets up. This matters because
+    % TestSuite.fromFolder evaluates TestParameter defaults (i.e. calls
+    % this function) at suite-CONSTRUCTION time, before any
+    % TestClassSetup method has run.
     addpath(SEPIA_HOME);
+    sepia_addpath;
 end
 sepia_universal_variables;
 methods = methodUnwrapName(:)';

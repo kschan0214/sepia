@@ -1,4 +1,4 @@
-%% paths = generate_synthetic_phantom(outputDir)
+%% paths = generate_synthetic_phantom(outputDir, matrixSize)
 %
 % Description: deterministically builds a small multi-echo GRE-like
 % synthetic phantom (magnitude + phase NIfTI, a brain mask NIfTI, and a
@@ -18,7 +18,11 @@
 %
 % Input
 % --------------
-% outputDir : directory to write the phantom files into (created if missing)
+% outputDir  : directory to write the phantom files into (created if missing)
+% matrixSize : (optional) 1x3 matrix size, default [32 32 24]. Pass an
+%              odd value in one or more dimensions to exercise SEPIA's
+%              odd-dimension zero-pad/crop handling (see
+%              test/tier1_smoke/TestOddMatrixSize.m).
 %
 % Output
 % --------------
@@ -31,7 +35,7 @@
 %                       brain mask, voxelSize and matrixSize (debug/reference
 %                       use only - not consumed by any SEPIA wrapper)
 %
-function paths = generate_synthetic_phantom(outputDir)
+function paths = generate_synthetic_phantom(outputDir, matrixSize)
 
 if nargin < 1 || isempty(outputDir)
     error('generate_synthetic_phantom:missingOutputDir', 'An outputDir must be provided.');
@@ -43,7 +47,9 @@ end
 rng(42, 'twister');
 
 %% geometry / acquisition parameters
-matrixSize = [32 32 24];
+if nargin < 2 || isempty(matrixSize)
+    matrixSize = [32 32 24];
+end
 voxelSize  = [2 2 2];      % mm
 B0         = 3;            % T
 B0_dir     = [0 0 1];
