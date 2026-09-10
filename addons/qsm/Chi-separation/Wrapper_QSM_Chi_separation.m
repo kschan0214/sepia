@@ -26,8 +26,11 @@ function [chi,chi_para,chi_dia] = Wrapper_QSM_Chi_separation(localField,mask,mat
 % load some constants 
 sepia_universal_variables;
 
-% setup path
-setup_Chi_sepnet_environment;
+% setup path - ChiSepNet_HOME is configured centrally in
+% SpecifyToolboxesDirectory.m (editable via the Utility tab's Manage
+% Dependency panel), same as every other optional toolbox
+paths = get_sepia_toolbox_home_paths();
+home_directory = paths.ChiSepNet_HOME;
 addpath(genpath(fullfile(home_directory,'functions')));
 addpath(genpath(fullfile(home_directory,'models')));
 addpath(genpath(fullfile(home_directory,'utils')));
@@ -141,14 +144,12 @@ switch solver
     case 'Chi-sepnet-R2*'
         disp('Chi-sepnet-R2* is running');
 
-        % setup_Chi_sepnet_environment
         [x_para, x_dia, x_tot, ~, ~] = chi_sepnet_general_new_wResolGen(home_directory, localField, R2n, mask, params.Dr, ...
             params.b0_dir, params.CF, params.voxel_size, HaveR2prime, params.B0_strength, 0, 0.19, 'sinc', 15, 'hann');
 
     case 'Chi-sepnet-R2'''
         disp('Chi-sepnet-R2'' is running');
 
-        % setup_Chi_sepnet_environment
         [x_para, x_dia, x_tot, ~, ~] = chi_sepnet_general_new_wResolGen(home_directory, localField, R2n, mask, params.Dr, ...
             params.b0_dir, params.CF, params.voxel_size, HaveR2prime, params.B0_strength, 0, 0.19, 'sinc', 15, 'hann');
         
