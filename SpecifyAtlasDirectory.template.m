@@ -12,9 +12,9 @@
 SEPIA_ANALYSIS_SEGMENTATION_dir = fullfile(SEPIA_HOME,'analysis','segmentation');
 SEPIA_ATLAS_dir                 = fullfile(SEPIA_HOME,'atlas');
 
-% These are the default directories if you use the 'download_atlas.sh' shell script
-% If you prefer the atlases to be stored at a different paths, you may
-% modified the paths here
+% These are the default directories if you use download_atlas.m to fetch
+% the atlases. If you prefer the atlases to be stored at different paths,
+% you may modify the paths here
 
 % AHEAD atlas
 AHEAD_ATLAS_HOME                = fullfile(SEPIA_ATLAS_dir,'AHEAD_atlas');
