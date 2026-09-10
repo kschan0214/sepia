@@ -8,33 +8,38 @@ function explore_twopass_masking(varargin)
 %
 % Runs across ALL 8 vendor/sequence combinations of the QSM Consensus Paper
 % example dataset (https://doi.org/10.1002/mrm.29048), with a fixed
-% processing pipeline (per instruction):
-%   - Echo phase combination: ROMEO total field calculation, with phase
-%     offset correction ON (Wrapper_TotalField_ROMEO.m) - replaces spatial
-%     unwrap + temporal echo combination with ROMEO's own 3D+time unwrapping.
-%   - Background field removal: VSHARP, default settings.
-%   - QSM dipole inversion: "MRI Suscep. Calc." addon, Iterative Tikhonov
-%     solver, default settings (alpha=0.05, CG stopping threshold=0.03).
+% processing pipeline adopted verbatim from a manually-tuned SEPIA-generated
+% config file
+% (sandbox/sepia_test_2passmasking/pipeline-romeovsharpfansi/sepia_config*.m):
+%   - Echo phase combination: ROMEO total field calculation, phase offset
+%     correction ON (Wrapper_TotalField_ROMEO.m).
+%   - Background field removal: VSHARP (STI suite) - Wrapper_BFR_VSHARPSTI.m,
+%     NOT SEPIA's own built-in VSHARP - radius=12 (single value, not a
+%     descending range), refine_method='None', erode_before_radius=0.
+%   - QSM dipole inversion: FANSI, non-linear solver, TV constraint,
+%     tol=0.1, maxiter=150, lambda=0.0001, mu1=0.01, mu2=1, isWeakHarmonic=0.
 % so two-pass masking is the only isolated variable.
 %
-% NOTE on inversion method choice: two earlier candidates were tried and
-% rejected because they cannot show a two-pass masking effect *by
-% construction*, not because of a script bug:
-%   - Truncated K-space Division (both SEPIA's built-in TKD and the "MRI
-%     Suscep. Calc." addon's TKD solver): TKD.m computes the whole-volume
-%     susceptibility map by direct k-space division BEFORE masking - the
-%     mask is only a final multiplication (SusceptibilityMap .* Mask),
-%     never entering the deconvolution. Confirmed empirically (boundary and
-%     core stats were exactly equal between pass-1 and combined at every
-%     tested lambda).
+% NOTE on inversion method choice: two earlier candidates (both from the
+% "MRI Suscep. Calc." addon) were tried and rejected because they cannot
+% show a two-pass masking effect *by construction*, not because of a script
+% bug:
+%   - Truncated K-space Division (both SEPIA's built-in TKD and the addon's
+%     TKD solver): TKD.m computes the whole-volume susceptibility map by
+%     direct k-space division BEFORE masking - the mask is only a final
+%     multiplication (SusceptibilityMap .* Mask), never entering the
+%     deconvolution. Confirmed empirically (boundary and core stats were
+%     exactly equal between pass-1 and combined at every tested lambda).
 %   - Direct Tikhonov (same addon): dirTik.m is the same closed-form
 %     k-space-division structure (Kernel = dipole./(dipole.^2+alpha)) with
 %     the same post-hoc masking - same null result expected.
-% Iterative Tikhonov (iterTik.m) is different: it solves via conjugate
-% gradient with the mask baked into the system matrix
-% (A = D*W^2*D + alpha*Mask^2), so a refined mask changes the whole-volume
-% solution, not just which voxels get zeroed at the end - only this class
-% of method can actually exercise two-pass masking's intended benefit.
+% FANSI (like the addon's Iterative Tikhonov solver, tried in between) is
+% iterative/regularised: the mask enters the data-fidelity term of the
+% solve directly, so a refined mask changes the whole-volume solution, not
+% just which voxels get zeroed at the end - only this class of method can
+% actually exercise two-pass masking's intended benefit (see the
+% method-dependence warning added to
+% sepia.documentation/docs/method/qsm/Two-pass-masking.rst).
 %
 % For each dataset this script:
 %   1. Runs the baseline single-pass QSM (isTwoPass='None').
@@ -96,11 +101,15 @@ if isempty(MRITOOLS_HOME) || exist(MRITOOLS_HOME, 'dir') ~= 7
         ['MRITOOLS_HOME is not configured (or does not exist) in SpecifyToolboxesDirectory.m. ', ...
          'This script uses ROMEO (echoCombMethod) for total field calculation, which needs mritools.']);
 end
-if isempty(MRISC_HOME) || exist(MRISC_HOME, 'dir') ~= 7
-    error('explore_twopass_masking:mriscMissing', ...
-        ['MRISC_HOME is not configured (or does not exist) in SpecifyToolboxesDirectory.m. ', ...
-         'This script uses the "MRI Suscep. Calc." addon''s Iterative Tikhonov solver as the ', ...
-         'fixed dipole-inversion read-out.']);
+if isempty(FANSI_HOME) || exist(FANSI_HOME, 'dir') ~= 7
+    error('explore_twopass_masking:fansiMissing', ...
+        ['FANSI_HOME is not configured (or does not exist) in SpecifyToolboxesDirectory.m. ', ...
+         'This script uses FANSI as the fixed dipole-inversion read-out.']);
+end
+if isempty(STISuite_HOME) || exist(STISuite_HOME, 'dir') ~= 7
+    error('explore_twopass_masking:stisuiteMissing', ...
+        ['STISuite_HOME is not configured (or does not exist) in SpecifyToolboxesDirectory.m. ', ...
+         'This script uses VSHARP (STI suite) for background field removal.']);
 end
 
 %% Define the 8 QSM Consensus Paper vendor/sequence datasets
@@ -180,18 +189,20 @@ for iDs = 1:numel(datasets)
 
     try
 
-    % Matches the consensus-paper's own reference config exactly
-    % (QSM_Consensus_Paper_Example_Code/SEPIA_Pipeline_FANSI/
-    %  SEPIA_<VENDOR>_<SEQ>_config.m), except the QSM inversion method
-    % (that reference uses FANSI; here it's fixed to MRI Suscep. Calc. /
-    % Iterative Tikhonov to isolate the two-pass masking effect - see file
-    % header for why). isInvert and isEddyCorrect come from ds (per-dataset,
-    % taken from the matching reference config file).
+    % Adopted verbatim from the manually-tuned, SEPIA-generated config file
+    % (sandbox/sepia_test_2passmasking/pipeline-romeovsharpfansi/
+    %  sepia_config260909230843493.m), except isInvert and isEddyCorrect,
+    % which come from ds (per-dataset - that file was generated for
+    % SIEMENS/Monopolar specifically, where both happen to be 0).
     baseAlgorParam = struct();
-    baseAlgorParam.general.isBET               = 1; % no external mask - BET run internally
-    baseAlgorParam.general.fractional_threshold = 0.5;
-    baseAlgorParam.general.gradient_threshold   = 0;
-    baseAlgorParam.general.isInvert             = ds.isInvert;
+    baseAlgorParam.general.isBET                    = 1; % no external mask - BET run internally
+    baseAlgorParam.general.brain_extraction_method  = 'FSL bet (MEDI)';
+    baseAlgorParam.general.fractional_threshold     = 0.5;
+    baseAlgorParam.general.gradient_threshold       = 0;
+    baseAlgorParam.general.isInvert                 = ds.isInvert;
+    baseAlgorParam.general.isRefineBrainMask        = 0;
+    baseAlgorParam.general.isDenoise                = 0;
+    baseAlgorParam.general.isUpsample               = 0;
 
     % Echo phase combination: ROMEO total field calculation, phase offset
     % correction ON. ROMEO computes totalField directly from the wrapped
@@ -204,25 +215,33 @@ for iDs = 1:numel(datasets)
     baseAlgorParam.unwrap.useRomeoMask         = false;
     baseAlgorParam.unwrap.isEddyCorrect        = ds.isEddyCorrect;
     baseAlgorParam.unwrap.isSaveUnwrappedEcho  = 0;
-    baseAlgorParam.unwrap.excludeMaskThreshold = 0.3;
-    baseAlgorParam.unwrap.excludeMethod        = 'Weighting map';
 
-    % Background field removal: VSHARP, matching the consensus-paper
-    % example config's radius range (12mm down to 1mm), no polynomial
-    % refinement step.
-    baseAlgorParam.bfr.method             = 'VSHARP';
-    baseAlgorParam.bfr.refine_method      = 'None';
-    baseAlgorParam.bfr.refine_order       = 2;
-    baseAlgorParam.bfr.erode_before_radius = 1;
-    baseAlgorParam.bfr.erode_radius       = 0;
-    baseAlgorParam.bfr.radius             = 12:-1:1;
+    % Background field removal: VSHARP (STI suite) - NOT SEPIA's own
+    % built-in VSHARP - radius=12 (single value), no polynomial refinement.
+    baseAlgorParam.bfr.method              = 'VSHARP (STI suite)';
+    baseAlgorParam.bfr.refine_method       = 'None';
+    baseAlgorParam.bfr.refine_order        = 4;
+    baseAlgorParam.bfr.erode_radius        = 0;
+    baseAlgorParam.bfr.erode_before_radius = 0;
+    baseAlgorParam.bfr.radius              = 12;
 
-    % QSM dipole inversion: "MRI Suscep. Calc." addon, Iterative Tikhonov
-    % solver, default settings (alpha=0.05, CG stopping threshold=0.03) -
-    % see file header for why this solver (and not TKD/Direct Tikhonov)
-    % is required for two-pass masking to have any effect.
-    baseAlgorParam.qsm.method = 'MRI Suscep. Calc.';
-    baseAlgorParam.qsm.solver = 'Iterative Tikhonov';
+    % QSM dipole inversion: FANSI, non-linear solver, TV constraint - the
+    % mask enters the data-fidelity term of the solve directly, so a
+    % refined mask changes the whole-volume solution, not just which
+    % voxels get zeroed at the end (see file header for why this matters).
+    baseAlgorParam.qsm.reference_tissue = 'None';
+    baseAlgorParam.qsm.method       = 'FANSI';
+    baseAlgorParam.qsm.tol          = 0.1;
+    baseAlgorParam.qsm.maxiter      = 150;
+    baseAlgorParam.qsm.lambda       = 0.0001;
+    baseAlgorParam.qsm.mu1          = 0.01;
+    baseAlgorParam.qsm.mu2          = 1;
+    baseAlgorParam.qsm.solver       = 'Non-linear';
+    baseAlgorParam.qsm.constraint   = 'TV';
+    baseAlgorParam.qsm.gradient_mode = 'Vector field';
+    baseAlgorParam.qsm.isGPU        = 0;
+    baseAlgorParam.qsm.isWeakHarmonic = 0;
+    baseAlgorParam.qsm.isHEIDI      = 0;
 
     %% 1. Baseline (single pass)
     outPrefix = fullfile(dsOutRoot, 'baseline', 'sepia');
@@ -373,9 +392,9 @@ end
 function write_markdown_report(results, outFile)
 fid = fopen(outFile, 'w');
 fprintf(fid, '# Two-pass masking exploration report\n\n');
-fprintf(fid, ['Fixed pipeline: ROMEO total field calculation (offset correction on) + VSHARP ', ...
-              '(radius 12:-1:1, no polynomial refine) + MRI Suscep. Calc. Iterative Tikhonov ', ...
-              '(alpha=0.05, tol=0.03), isBET=1, matching the consensus-paper reference configs.\n\n']);
+fprintf(fid, ['Fixed pipeline: ROMEO total field calculation (offset correction on) + ', ...
+              'VSHARP (STI suite) (radius=12, no polynomial refine) + FANSI ', ...
+              '(non-linear, TV, tol=0.1, maxiter=150, lambda=0.0001, mu1=0.01), isBET=1.\n\n']);
 
 for iDs = 1:numel(results)
     r = results(iDs);

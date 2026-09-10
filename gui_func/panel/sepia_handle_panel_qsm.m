@@ -161,6 +161,14 @@ sepia_universal_variables;
 % get selected QSM method
 method = source.String{source.Value,1} ;
 
+% LSQR+HEIDI ships Linux-only compiled binaries (see the platform check in
+% Wrapper_QSM_LSQRandHEIDI.m); warn immediately on selection rather than
+% only failing once the user has already configured and run the pipeline
+if strcmpi(method,'LSQR+HEIDI') && (~isunix || ismac)
+    warndlg('LSQR+HEIDI is only supported on Linux systems. Running the pipeline with this method selected on the current platform will fail.', ...
+        'Unsupported platform');
+end
+
 sync_qsm_panel_visibility(h, methodQSMName, method);
 
 end
