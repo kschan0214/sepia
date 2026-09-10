@@ -148,6 +148,7 @@ set(h.qsm.popup.qsm,     'Callback', {@PopupQSM_Callback,h});
 set(h.qsm.edit.lambda,   'Callback', {@EditInputMinMax_Callback,defaultMFGThreshold,1,0,10});
 set(h.qsm.slider.lambda, 'Callback', {@SliderMGFlambda_Callback,h});
 set(h.qsm.popup.twopass, 'Callback', {@PopupTwoPassMasking_Callback,h});
+set(h.qsm.checkbox.isHeidi, 'Callback', {@CheckboxHEIDI_Callback,h});
 
 end
 
@@ -169,8 +170,38 @@ if strcmpi(method,'LSQR+HEIDI') && (~isunix || ismac)
         'Unsupported platform');
 end
 
+warn_if_twopass_has_no_effect(h, method);
+
 sync_qsm_panel_visibility(h, methodQSMName, method);
 
+end
+
+% warn if the current QSM method + two-pass masking combination is known
+% to have no effect (see utils/qsm_method_uses_mask_in_inversion.m and
+% sepia.documentation/docs/method/qsm/Two-pass-masking.rst)
+function warn_if_twopass_has_no_effect(h, method)
+
+twopass = h.qsm.popup.twopass.String{h.qsm.popup.twopass.Value};
+solver  = '';
+if isfield(h.qsm,'iterTik') && isfield(h.qsm.iterTik,'popup') && isfield(h.qsm.iterTik.popup,'solver')
+    solver = h.qsm.iterTik.popup.solver.String{h.qsm.iterTik.popup.solver.Value};
+end
+
+if ~strcmpi(twopass,'None') && ~qsm_method_uses_mask_in_inversion(method, solver)
+    warndlg(sprintf(['The selected QSM method (%s%s) applies the mask only after a ', ...
+        'closed-form/direct k-space inversion, so two-pass masking (%s) will have no ', ...
+        'effect on the result.'], method, format_solver_suffix(solver), twopass), ...
+        'Two-pass masking has no effect with this method');
+end
+
+end
+
+function suffix = format_solver_suffix(solver)
+if isempty(solver)
+    suffix = '';
+else
+    suffix = [' / ' solver];
+end
 end
 
 % switch on the method panel matching 'method', switch off all others
@@ -186,6 +217,20 @@ for k = 1:length(methodQSMName)
         set(h.qsm.panel.(fields{k}), 'Visible','on');
         break
     end
+end
+
+end
+
+% callback for the "Streaking reduction by HEIDI" checkbox
+function CheckboxHEIDI_Callback(source,eventdata,h)
+
+% HEIDI post-processing (Wrapper_QSM_HEIDI4all.m) ships Linux-only compiled
+% binaries, same as the "LSQR+HEIDI" method (see the platform check in
+% Wrapper_QSM_LSQRandHEIDI.m); warn immediately on selection rather than
+% only failing once the user has already configured and run the pipeline
+if source.Value && (~isunix || ismac)
+    warndlg('Streaking reduction by HEIDI is only supported on Linux systems. Running the pipeline with this option checked on the current platform will fail.', ...
+        'Unsupported platform');
 end
 
 end
@@ -217,5 +262,8 @@ switch source.String{source.Value}
         set(h.qsm.edit.lambda,    'enable', 'off');
         set(h.qsm.slider.lambda,  'enable', 'off');
 end
+
+method = h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value};
+warn_if_twopass_has_no_effect(h, method);
 
 end
