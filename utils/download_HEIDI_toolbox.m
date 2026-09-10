@@ -1,4 +1,4 @@
-function setup_HEIDI_toolbox()
+function download_HEIDI_toolbox()
 % One-time setup: check whether the HEIDI_SEPIAready package is available;
 % if not, download it into SEPIA_HOME/external/ and register its path in
 % SpecifyToolboxesDirectory.m.
@@ -41,7 +41,7 @@ end
 
 if isempty(url) || strcmp(url,'<HEIDI_SEPIAready_DOWNLOAD_URL>')
     error('SEPIA:HEIDIDownloadURLNotSet', ...
-        'The download URL for HEIDI_SEPIAready has not been set in setup_HEIDI_toolbox.m yet. Please obtain the package manually and set HEIDI_HOME in SpecifyToolboxesDirectory.m (or the Utility tab''s Manage Dependency panel) instead.');
+        'The download URL for HEIDI_SEPIAready has not been set in download_HEIDI_toolbox.m yet. Please obtain the package manually and set HEIDI_HOME in SpecifyToolboxesDirectory.m (or the Utility tab''s Manage Dependency panel) instead.');
 end
 
 fprintf('HEIDI_SEPIAready not found. Downloading from %s...\n', url);

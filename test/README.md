@@ -166,7 +166,7 @@ odd-size cases in Tier 2 don't have (or need) their own reference.
   this suite for determinism.
 - **Tensor-MPPCA denoising** isn't exercised in the Tier 1 CI tier: its toolbox lives
   under `external/`, which is gitignored, so it won't exist on a fresh checkout (it
-  auto-downloads on first use, or via `setup_tMPPCA_toolbox.m`/`setup_sepia_downloads.m`).
+  auto-downloads on first use, or via `download_tMPPCA_toolbox.m`/`download_toolboxes.m`).
   Fine to include in a local Tier 2 or Tier 3 run.
 - **Chi-separation / LPCNN / QSMnet+ / xQSM / BFRnet** (deep-learning methods) have no
   model/checkpoint files distributed with SEPIA or tracked in this repo, so this suite

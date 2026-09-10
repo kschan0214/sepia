@@ -1,4 +1,4 @@
-function setup_FANSI_toolbox()
+function download_FANSI_toolbox()
 % One-time setup: check whether FANSI-toolbox (https://gitlab.com/cmilovic/FANSI-toolbox)
 % is available; if not, download the pinned commit into SEPIA_HOME/external/
 % and register its path in SpecifyToolboxesDirectory.m.

@@ -1,8 +1,8 @@
-function setup_sepia_downloads()
+function download_toolboxes()
 % One-stop setup: checks every SEPIA add-on that can be fetched
 % automatically (FANSI, HEIDI, Tensor-MP-PCA) and downloads whichever
 % ones are missing, instead of you having to call each
-% setup_<toolbox>_toolbox() script separately.
+% download_<toolbox>_toolbox() script separately.
 %
 % Safe to run repeatedly - each individual setup function skips its own
 % toolbox if it's already installed. A failure on one toolbox (e.g. no
@@ -23,10 +23,10 @@ function setup_sepia_downloads()
 %
 SEPIA_HOME = fileparts(mfilename('fullpath'));
 addpath(SEPIA_HOME);
-addpath(fullfile(SEPIA_HOME,'utils')); % setup_FANSI_toolbox/setup_HEIDI_toolbox/setup_tMPPCA_toolbox live here
+addpath(fullfile(SEPIA_HOME,'utils')); % download_FANSI_toolbox/download_HEIDI_toolbox/download_tMPPCA_toolbox live here
 
 toolboxes = {'FANSI', 'HEIDI', 'Tensor-MP-PCA'};
-setupFcns = {@setup_FANSI_toolbox, @setup_HEIDI_toolbox, @setup_tMPPCA_toolbox};
+setupFcns = {@download_FANSI_toolbox, @download_HEIDI_toolbox, @download_tMPPCA_toolbox};
 
 isOK = false(size(toolboxes));
 for k = 1:numel(toolboxes)

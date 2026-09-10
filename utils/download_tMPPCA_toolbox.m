@@ -1,4 +1,4 @@
-function setup_tMPPCA_toolbox()
+function download_tMPPCA_toolbox()
 % Check whether Tensor-MP-PCA (https://github.com/Neurophysics-CFIN/Tensor-MP-PCA)
 % is available on the path; if not, download it into SEPIA_HOME/external/
 % and add it to the path.
@@ -11,7 +11,7 @@ function setup_tMPPCA_toolbox()
 % This function is called both automatically (lazily, from
 % SepiaIOWrapper.m/UnwrapPhaseMacroIOWrapper.m, the first time denoising is
 % actually requested) and can be called directly by the user, e.g. via
-% setup_sepia_downloads() to pre-fetch every auto-downloadable toolbox at
+% download_toolboxes() to pre-fetch every auto-downloadable toolbox at
 % once.
 %
 % Kwok-shing Chan @ DCCN

@@ -731,7 +731,7 @@ sepia_universal_variables;
 if algorParam.general.isDenoise
 
     % check if tensor MPPCA code exist, if not then download form GitHub
-    setup_tMPPCA_toolbox();
+    download_tMPPCA_toolbox();
 
     kernel = ceil(algorParam.general.denoiseKernel ./ sepia_header.voxelSize);
     if any(kernel<3)
