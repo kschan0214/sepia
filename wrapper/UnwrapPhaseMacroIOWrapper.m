@@ -373,7 +373,7 @@ if ~isempty(inputFileList(1).name)
     fprintf('Done.\n');
     
 else
-    error('Fail! \nPlease specify a single-echo(3D0/multi-echo(4D) phase data.');
+    error('Fail! \nPlease specify a single-echo(3D-/multi-echo(4D) phase data.');
 end
 
 % 2.2 magnitude data 
@@ -390,7 +390,7 @@ if ~isempty(inputFileList(2).name)
     fprintf('Done.\n');
     
 else
-    error('Fail! \nPlease specify a single-echo(3D0/multi-echo(4D) magnitude data.');
+    error('Fail! \nPlease specify a single-echo(3D-/multi-echo(4D) magnitude data.');
 end
 
 fprintf('Validating input phase and magnitude images...')
