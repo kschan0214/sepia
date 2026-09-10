@@ -12,7 +12,7 @@ function setup_HEIDI_toolbox()
 % Date created: 6 September 2026
 %
 %
-SEPIA_HOME = fileparts(mfilename('fullpath'));
+SEPIA_HOME = fileparts(fileparts(mfilename('fullpath')));
 addpath(SEPIA_HOME);
 
 % TODO: fill in once HEIDI_SEPIAready is uploaded somewhere (e.g. a GitHub

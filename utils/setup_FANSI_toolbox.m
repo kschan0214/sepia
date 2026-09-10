@@ -11,7 +11,7 @@ function setup_FANSI_toolbox()
 % Date created: 23 August 2026
 %
 %
-SEPIA_HOME = fileparts(mfilename('fullpath'));
+SEPIA_HOME = fileparts(fileparts(mfilename('fullpath')));
 addpath(SEPIA_HOME);
 
 % pinned commit of FANSI-toolbox

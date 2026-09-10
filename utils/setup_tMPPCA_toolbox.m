@@ -19,7 +19,7 @@ function setup_tMPPCA_toolbox()
 % Date created: 6 September 2026
 %
 %
-SEPIA_HOME = fileparts(mfilename('fullpath'));
+SEPIA_HOME = fileparts(fileparts(mfilename('fullpath')));
 
 tMPPCA_HOME = fullfile(SEPIA_HOME,'external','Tensor-MP-PCA');
 if exist(tMPPCA_HOME,'dir'); addpath(genpath(tMPPCA_HOME)); end

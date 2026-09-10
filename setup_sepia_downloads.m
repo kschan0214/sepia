@@ -23,6 +23,7 @@ function setup_sepia_downloads()
 %
 SEPIA_HOME = fileparts(mfilename('fullpath'));
 addpath(SEPIA_HOME);
+addpath(fullfile(SEPIA_HOME,'utils')); % setup_FANSI_toolbox/setup_HEIDI_toolbox/setup_tMPPCA_toolbox live here
 
 toolboxes = {'FANSI', 'HEIDI', 'Tensor-MP-PCA'};
 setupFcns = {@setup_FANSI_toolbox, @setup_HEIDI_toolbox, @setup_tMPPCA_toolbox};
