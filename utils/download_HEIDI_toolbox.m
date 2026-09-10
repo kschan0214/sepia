@@ -15,12 +15,13 @@ function download_HEIDI_toolbox()
 SEPIA_HOME = fileparts(fileparts(mfilename('fullpath')));
 addpath(SEPIA_HOME);
 
-% TODO: fill in once HEIDI_SEPIAready is uploaded somewhere (e.g. a GitHub
-% Release asset on the SEPIA repo, or a Zenodo record) - see the archive
-% expected to unzip directly into a folder containing 'HEIDI/' and
-% 'LSQR/' subfolders (i.e. matching the existing external/HEIDI_SEPIAready
-% sibling-folder convention).
-url = '<HEIDI_SEPIAready_DOWNLOAD_URL>';
+% Hosted as a GitHub Release asset on the SEPIA repo, under a tag
+% deliberately decoupled from SEPIA's own version tags
+% (heidi-sepiaready-v1, not vX.Y.Z) so updating this package never
+% requires cutting a new SEPIA release. The archive unzips directly into
+% a folder containing 'HEIDI/' and 'LSQR/' subfolders (matching the
+% existing external/HEIDI_SEPIAready sibling-folder convention).
+url = 'https://github.com/kschan0214/sepia/releases/download/heidi-sepiaready-v1/HEIDI_SEPIAready.zip';
 
 % make sure SpecifyToolboxesDirectory.m exists
 setup_sepia();
