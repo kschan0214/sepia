@@ -404,7 +404,7 @@ else
     fprintf('Passed.\n');
 end
 
-
+% No weighting data is required for this application
 % % 2.3 Weights data 
 % if ~isempty(inputFileList(3).name)
 %     
