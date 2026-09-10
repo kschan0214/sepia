@@ -38,7 +38,7 @@ mask = double(load_nii_img_only(availableFileList.mask));
 % derive the output directory from one of the (always present) output filenames
 [outputDir,~,~] = fileparts(outputFileList.maskReliable);
 
-[mask_refined,r2s,residual] = MaskRefinementMacro(mask,algorParam,headerAndExtraData);
+[mask_refined,r2s,residual,gradientMagnitude,gradientStats] = MaskRefinementMacro(mask,algorParam,headerAndExtraData);
 
 if not(isempty(r2s)) && (~isfield(availableFileList,'r2s') || isempty(availableFileList.r2s) )
     disp('Saving R2* map.');
@@ -62,13 +62,31 @@ if not(isempty(residual)) && (~isfield(availableFileList,'relativeResidual') || 
     availableFileList.relativeResidual = outputFileList.relativeResidual;
 end
 
+if not(isempty(gradientMagnitude)) && (~isfield(availableFileList,'gradientMagnitude') || isempty(availableFileList.gradientMagnitude) )
+    disp('Saving gradient magnitude map.');
+    save_nii_quick(outputNiftiTemplate, gradientMagnitude, outputFileList.gradientMagnitude);
+    save_json_sidecar(outputFileList.gradientMagnitude, struct( ...
+        'Description', 'Magnitude of the local field map gradient, used by the Magnitude Gradient Field mask refinement strategy.', ...
+        'Units',       'Hz/voxel', ...
+        'Sources',     {{get_relative_source_path(outputDir, availableFileList.localField)}}, ...
+        'Parameters',  algorParam.msk));
+    availableFileList.gradientMagnitude = outputFileList.gradientMagnitude;
+end
+
 disp('Saving refined brain mask.');
 save_nii_quick(outputNiftiTemplate, mask_refined, outputFileList.maskReliable);
-save_json_sidecar(outputFileList.maskReliable, struct( ...
+maskReliableInfo = struct( ...
         'Description', 'Refined signal mask excluding unreliable voxels.', ...
         'Units',       'binary', ...
         'Sources',     {{get_relative_source_path(outputDir, availableFileList.mask)}}, ...
-        'Parameters',  algorParam.msk));
+        'Parameters',  algorParam.msk);
+if not(isempty(gradientStats))
+    % Magnitude Gradient Field: record the mean/std/threshold actually used,
+    % so the threshold applied to this specific mask can be traced back
+    % without re-deriving it from the gradient magnitude map.
+    maskReliableInfo.GradientStatistics = gradientStats;
+end
+save_json_sidecar(outputFileList.maskReliable, maskReliableInfo);
 availableFileList.maskReliable = outputFileList.maskReliable;
 
 end

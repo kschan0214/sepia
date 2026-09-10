@@ -1,4 +1,4 @@
-%% [mask_refined,r2s,relativeResidual] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
+%% [mask_refined,r2s,relativeResidual,gradientMagnitude,gradientStats] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
 %
 % Input
 % --------------
@@ -10,8 +10,18 @@
 % Output
 % --------------
 % RefinedMask       : Refined mask
+% gradientMagnitude : magnitude of the local field gradient used by the
+%                      Magnitude Gradient Field strategy (empty for the
+%                      other strategies), so it can be exported for
+%                      inspection
+% gradientStats     : struct with fields mean, std, lambda, threshold
+%                      (Hz/voxel except lambda) describing the threshold
+%                      GradientBasedThreshold.m actually used (empty for
+%                      strategies other than Magnitude Gradient Field), so
+%                      callers can record it (e.g. in the refined mask's
+%                      JSON sidecar)
 %
-% Description: exclude unreliable mask voxels, based on various refinement 
+% Description: exclude unreliable mask voxels, based on various refinement
 % strategies. Possible strategies are:
 %
 %       - Monoexponential decay model   (requires R2star map)
@@ -22,9 +32,9 @@
 % Based on code by Kwok-shing Chan, Anita Karsa and Oliver C. Kiersnowski
 % patrick.fuchs@uantwerpen.be
 % Date created: 5 August 2025
-% Date modified: 
+% Date modified:
 %
-function [mask_refined,r2s,relativeResidual] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
+function [mask_refined,r2s,relativeResidual,gradientMagnitude,gradientStats] = MaskRefinementMacro(mask,algorParam,headerAndExtraData)
 
 sepia_universal_variables;
 
@@ -42,6 +52,8 @@ disp('--------------------');
 mask_refined = mask;
 r2s = [];
 relativeResidual = [];
+gradientMagnitude = [];
+gradientStats = [];
 
 switch lower(refineMethod)
 
@@ -106,7 +118,7 @@ switch lower(refineMethod)
             return
         end
 
-        mask_refined = GradientBasedThreshold(localField, mask, threshold);
+        [mask_refined, gradientMagnitude, gradientStats] = GradientBasedThreshold(localField, mask, threshold);
 
     case {lower(methodTwoPassName{4}),'noisemap','nstd'}
         disp('Refine brain using the noise map.');

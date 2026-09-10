@@ -46,7 +46,11 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 **New QSM methods & toolboxes**
 * Added support for the χ-separation (Chi-separation) toolbox as a new QSM add-on (paramagnetic/diamagnetic susceptibility separation via Chi-sepnet, chi_sep_MEDI and chi_sep_iLSQR; requires ONNX checkpoint files and the Deep Learning Toolbox Converter for ONNX Model Format support package)
 * Added HEIDI as a dipole inversion method, selectable across all applicable QSM add-ons
+* Updated the `mu2` parameter handling for FANSI
 * New `setup_FANSI_toolbox.m` script to automatically download a pinned FANSI-toolbox commit and register it in `SpecifyToolboxesDirectory.m`
+* `HEIDI_HOME` and `ChiSepNet_HOME` are now configured centrally in `SpecifyToolboxesDirectory.m` (editable via the Utility tab's Manage Dependency panel), instead of hand-editing `setup_Chi_sepnet_environment.m` or a hardcoded path
+* New `setup_HEIDI_toolbox.m` script to automatically download the HEIDI package and register it in `SpecifyToolboxesDirectory.m`
+* New `setup_sepia_downloads.m` script to check/download FANSI, HEIDI and Tensor-MPPCA in one go, instead of running each toolbox's own setup script separately
 
 **Preprocessing**
 * New Tensor-MPPCA denoising option (automatically downloads the required external toolbox on first use)
@@ -55,7 +59,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * New "no unwrapping" option when only field mapping is required (e.g. for functional QSM)
 
 **Masking**
-* New two-pass masking option, and a new mask refinement pipeline (`MaskRefinementWrapper`/`MaskWrapper`), including Otsu's-method-based masking
+* New two-pass masking option, and a new mask refinement pipeline (`MaskRefinementIOWrapper`/`MaskRefinementMacro`/`MaskWrapper`), including Otsu's-method-based masking
 * Built-in V-SHARP: fixed a bug where the k-space deconvolution step was missing, causing incomplete background field removal; kernel radius is now specified in mm instead of voxels (and supports anisotropic voxel sizes)
 
 **R2\* handling**
@@ -65,6 +69,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * SEPIA can now parse `sepia_config*.m` pipeline configuration files and extract the algorithm parameters directly, storing them in the GUI figure handle
 * Various GUI bug fixes for loading saved configuration files (e.g. NDI's GPU option, VSHARP/FANSI parameters)
 * GUI default method selection is now toolbox-availability-aware for the total field/phase unwrapping, background field removal, and QSM dipole inversion steps, following a consensus-informed priority chain per step (e.g. QSM defaults to FANSI → MEDI → LSQR+HEIDI → TKD, whichever is actually installed); the background field removal "remove residual B1 field" default (3D Polynomial / None) now automatically follows whichever BFR method is selected
+* Added a dark theme for the GUI
 
 **BIDS / I/O**
 * Added support for reading multiple volumes per echo in BIDS-formatted data (e.g. functional QSM)
@@ -73,6 +78,8 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * Output NIfTI extension (`.nii` vs `.nii.gz`) is now detected from the input data instead of always being forced to `.nii.gz`
 * Fixed output filenames ending up with two `desc-` BIDS entities when the output prefix already contained one (e.g. from a previous processing stage); it is now merged with SEPIA's own output-type label instead, chained in actual processing order (e.g. denoised → upsampled)
 * Renamed the paramagnetic/diamagnetic susceptibility map outputs from the non-standard `ChiParamap`/`ChiDiamap` suffixes to the BIDS-valid `desc-paramagnetic_Chimap`/`desc-diamagnetic_Chimap`
+* Fixed `sepiaIO` not resolving relative input/mask/output paths against the working directory before processing (could break since SEPIA changes its current directory internally mid-run)
+* `sepiaIO` now always generates a fresh `sepia_config` file for a run, instead of reusing one already present in the output directory
 
 **Segmentation & analysis**
 * Automatic contrast matching, quick nonlinear registration using a dilated subcortical mask, label-based registration, and CSV statistics export added to the MuSus-100/CIT168/AHEAD atlas-based segmentation tools

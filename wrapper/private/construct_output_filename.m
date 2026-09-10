@@ -46,6 +46,7 @@ outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights' out
 outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd' outputSuffix]);
 outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual' outputSuffix]);
 outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights' outputSuffix]);
+outputFileList.gradientMagnitude	= fullfile(outputDir, [ouputPrefix 'gradientmagnitude' outputSuffix]);
 
 % derived masks
 outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain' outputSuffix]);
