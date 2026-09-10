@@ -303,6 +303,75 @@ for c = 1:numel(categories)
     end
 end
 
+%% Two-pass masking (TestTwoPassMasking.m): fixed QSM method (FANSI - see
+%% that test's file header for why TKD/Direct Tikhonov can't be used here),
+%% varying refinement strategy. Doesn't fit the single-output-key loop
+%% above (each row needs pass1/pass2/combined stats plus the refined
+%% mask's volume ratio), so it's a separate block.
+if ~toolboxes.FANSI
+    fprintf('--- TwoPass --- skipped (FANSI toolbox not installed on this machine)\n');
+else
+    twoPassStrategies = methodTwoPassName(2:end); % exclude 'None'
+    for k = 1:numel(twoPassStrategies)
+        strategy = twoPassStrategies{k};
+        slug = matlab.lang.makeValidName(strategy);
+        if ~isempty(filterExpr) && ~strcmp(filterExpr,'*') && ~strcmpi(filterExpr, slug)
+            continue
+        end
+
+        tmp = tempname; mkdir(tmp);
+        outputPrefix = fullfile(tmp, 'sepia');
+
+        algorParam = struct();
+        algorParam.general.isInvert = false;
+        algorParam.general.isBET    = false;
+        algorParam.unwrap.unwrapMethod   = 'None';
+        algorParam.unwrap.echoCombMethod = 'Optimum weights';
+        algorParam.bfr.method = 'VSHARP';
+        algorParam.qsm.method = 'FANSI';
+        algorParam.qsm.isGPU  = false;
+        algorParam.qsm.isTwoPass = strategy;
+
+        sepiaIO(ds.inputDir, outputPrefix, ds.maskFile, algorParam);
+        addpath(testRoot); addpath(fullfile(testRoot,'tools')); % re-add after sepiaIO's internal sepia_addpath strips it
+
+        maskImg = load_nii_img_only(ds.maskFile) > 0;
+        stats = struct();
+        stats.combined = sepiatest.mask_stats(load_nii_img_only([outputPrefix '_Chimap.nii.gz']), maskImg);
+        stats.pass1    = sepiatest.mask_stats(load_nii_img_only([outputPrefix '_desc-firstpass_Chimap.nii.gz']), maskImg);
+        stats.pass2    = sepiatest.mask_stats(load_nii_img_only([outputPrefix '_desc-secondpass_Chimap.nii.gz']), maskImg);
+        refinedMask = load_nii_img_only([outputPrefix '_mask_QSM-2pass.nii.gz']) > 0;
+        stats.maskVolumeRatio = nnz(refinedMask) / max(nnz(maskImg),1);
+
+        refFile = fullfile(refDir, sprintf('twopass_%s.mat', slug));
+
+        oldStats = struct('combined',[], 'pass1',[], 'pass2',[], 'maskVolumeRatio',[]);
+        if isfile(refFile)
+            old = load(refFile);
+            oldStats = old.stats;
+        end
+        print_diff(sprintf('TwoPass:%s:combined', strategy), oldStats.combined, stats.combined);
+        print_diff(sprintf('TwoPass:%s:pass1',    strategy), oldStats.pass1,    stats.pass1);
+        print_diff(sprintf('TwoPass:%s:pass2',    strategy), oldStats.pass2,    stats.pass2);
+        if ~isempty(oldStats.maskVolumeRatio)
+            fprintf('--- TwoPass:%s:maskVolumeRatio --- old=%.4f new=%.4f\n', strategy, oldStats.maskVolumeRatio, stats.maskVolumeRatio);
+        else
+            fprintf('--- TwoPass:%s:maskVolumeRatio --- (no existing reference; creating new, new=%.4f)\n', strategy, stats.maskVolumeRatio);
+        end
+
+        meta = struct();
+        meta.sepiaVersion  = get_sepia_version();
+        meta.generatedDate = datestr(datetime('now'),'yyyy-mm-ddTHH:MM:SS');
+        meta.matlabVersion = version();
+        meta.hostname      = getenv_or('HOSTNAME','');
+        meta.datasetInputDir = ds.inputDir;
+        meta.datasetMaskFile = ds.maskFile;
+
+        save(refFile, 'stats', 'meta');
+        fprintf('Wrote %s\n', refFile);
+    end
+end
+
 end
 
 %% algorParam = setfield_dotted(algorParam, 'qsm.method', 'TKD') sets algorParam.qsm.method='TKD'

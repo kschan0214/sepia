@@ -29,10 +29,15 @@ Three tiers:
 - **Tier 3 — real-dataset regression matrix** (`test/tier3_matrix/`): the same method
   matrix as Tier 2, but run once (no matrix-size parameterization) against a real
   dataset at its native, larger resolution - the slower, most realistic check.
-  Implemented: `TestQSMMatrix.m`, `TestBFRMatrix.m`, `TestUnwrapMatrix.m`. Not yet
-  implemented in any tier: two-pass masking, R2*, a dedicated JSON-sidecar-contract
-  audit. Not run in CI — it needs the proprietary toolboxes installed locally, and a
-  real dataset. Run manually before tagging a release.
+  Implemented: `TestQSMMatrix.m`, `TestBFRMatrix.m`, `TestUnwrapMatrix.m`,
+  `TestTwoPassMasking.m` (holds the QSM method fixed at FANSI and varies the
+  two-pass mask refinement strategy instead — TKD/Direct Tikhonov apply the
+  mask only after a closed-form k-space inversion, so two-pass masking has
+  no effect on their output by construction; see
+  sepia.documentation's Two-pass-masking.rst). Not yet implemented in any
+  tier: R2*, a dedicated JSON-sidecar-contract audit. Not run in CI — it
+  needs the proprietary toolboxes installed locally, and a real dataset.
+  Run manually before tagging a release.
 
 ## Running Tier 1 locally
 
