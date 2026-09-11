@@ -37,12 +37,14 @@ try headerAndExtraData2.phase       = headerAndExtraData.phase;     catch; heade
 try headerAndExtraData2.mask_ref    = headerAndExtraData.mask_ref; 	catch; headerAndExtraData2.mask_ref  = []; end
 try headerAndExtraData2.initGuess   = headerAndExtraData.initGuess;	catch; headerAndExtraData2.initGuess = []; end
 try headerAndExtraData2.fieldmapSD 	= headerAndExtraData.fieldmapSD;     catch; headerAndExtraData2.fieldmapSD     = []; end
+try headerAndExtraData2.r2s 	    = headerAndExtraData.r2s;     catch; headerAndExtraData2.r2s     = []; end
 
 try headerAndExtraData2.availableFileList.phase = headerAndExtraData.availableFileList.phase;           catch; headerAndExtraData2.availableFileList.phase = []; end
 try headerAndExtraData2.availableFileList.magnitude = headerAndExtraData.availableFileList.magnitude;   catch; headerAndExtraData2.availableFileList.magnitude = []; end
 try headerAndExtraData2.availableFileList.mask = headerAndExtraData.availableFileList.mask;             catch; headerAndExtraData2.availableFileList.mask = []; end
 try headerAndExtraData2.availableFileList.fieldmapSD = headerAndExtraData.availableFileList.fieldmapSD; catch; headerAndExtraData2.availableFileList.fieldmapSD = []; end
 try headerAndExtraData2.availableFileList.weights = headerAndExtraData.availableFileList.weights; catch; headerAndExtraData2.availableFileList.weights = []; end
+try headerAndExtraData2.availableFileList.r2s = headerAndExtraData.availableFileList.r2s; catch; headerAndExtraData2.availableFileList.r2s = []; end
 
 try headerAndExtraData2.phasechi 	= headerAndExtraData.phasechi;      catch; headerAndExtraData2.phasechi     = []; end
 try headerAndExtraData2.availableFileList.phasechi 	= headerAndExtraData.availableFileList.phasechi;     catch; headerAndExtraData2.availableFileList.phasechi     = []; end

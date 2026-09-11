@@ -66,37 +66,49 @@ switch lower(mode)
         switch val
             case menuSolver{1}
                 set_non_nan_value(action_handle{k},'Value',1)
+                % trigger popup callback to enable/disable fields for the selected solver
+                feval(action_handle{1}.Callback{1},action_handle{1},[],h,menuSolver);
 
                 for k = 2:4
                     pattern_curr    = str_pattern{k};
                     val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+                    if ischar(val); val = strrep(val,'''',''); end    % remove quotation marks before setting the edit field value
                     set_non_nan_value(action_handle{k},'String',val)
                 end
-                
+
             case menuSolver{2}
                 set_non_nan_value(action_handle{k},'Value',2)
-                
+                % trigger popup callback to enable/disable fields for the selected solver
+                feval(action_handle{1}.Callback{1},action_handle{1},[],h,menuSolver);
+
                 for k = 2:4
                     pattern_curr    = str_pattern{k};
                     val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+                    if ischar(val); val = strrep(val,'''',''); end    % remove quotation marks before setting the edit field value
                     set_non_nan_value(action_handle{k},'String',val)
                 end
 
             case menuSolver{3}
                 set_non_nan_value(action_handle{k},'Value',3)
-                
+                % trigger popup callback to enable/disable fields for the selected solver
+                feval(action_handle{1}.Callback{1},action_handle{1},[],h,menuSolver);
+
                 for k = [2,4]
                     pattern_curr    = str_pattern{k};
                     val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+                    if ischar(val); val = strrep(val,'''',''); end    % remove quotation marks before setting the edit field value
                     set_non_nan_value(action_handle{k},'String',val)
                 end
 
             case menuSolver{4}
                 set_non_nan_value(action_handle{k},'Value',4)
-                
+                % trigger popup callback to enable/disable fields for the selected solver
+                feval(action_handle{1}.Callback{1},action_handle{1},[],h,menuSolver);
+
                 for k = 2:4
                     pattern_curr    = str_pattern{k};
                     val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+                    if ischar(val); val = strrep(val,'''',''); end    % remove quotation marks before setting the edit field value
                     set_non_nan_value(action_handle{k},'String',val)
                 end
         end
