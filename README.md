@@ -43,7 +43,7 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.3.0 (current, commit f6c4536)
+### 1.3.0 (current, commit 3ad47fd)
 
 Thank you to everyone who contributed to this major release! Special thanks to Patrick, whose engagement and input made many of this update's features possible.
 
