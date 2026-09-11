@@ -45,9 +45,8 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 
 ### 1.3.0 (current, commit 3881d67)
 
-> **Upgrade notes / breaking changes**
-> * The paramagnetic/diamagnetic susceptibility map output filenames changed from the non-standard `ChiParamap`/`ChiDiamap` suffixes to the BIDS-valid `desc-paramagnetic_Chimap`/`desc-diamagnetic_Chimap`. If you have downstream scripts or pipelines that look for the old filenames (chi-separation outputs only - the core `Chimap` output is unaffected), update them to the new names.
-> * `SpecifyToolboxesDirectory.m` is no longer tracked in git (see "Housekeeping" below). No action needed - your existing local copy is untouched - but `git status` will now show it as untracked instead of unmodified.
+> **Upgrade notes**
+> `SpecifyToolboxesDirectory.m` and `SpecifyAtlasDirectory.m` are no longer tracked in git (see "Housekeeping" below). No action needed - your existing local copies are untouched - but `git status` will now show them as untracked instead of unmodified.
 
 **New QSM methods & toolboxes**
 * Added support for the χ-separation (Chi-separation) toolbox as a new QSM add-on (paramagnetic/diamagnetic susceptibility separation via Chi-sepnet, chi_sep_MEDI and chi_sep_iLSQR; requires ONNX checkpoint files and the Deep Learning Toolbox Converter for ONNX Model Format support package)
@@ -102,7 +101,7 @@ For full update log, please visit https://sepia-documentation.readthedocs.io/en/
 * Fixed direct file loads (e.g. user-supplied R2*/R2 maps in the Chi-separation wrapper) bypassing the odd-matrix-size zero-padding step - they now go through the same loading path as other auxiliary data
 
 **Housekeeping**
-* `SpecifyToolboxesDirectory.m` is no longer tracked in git (now machine-specific and gitignored; see `SpecifyToolboxesDirectory.template.m` and the new `setup_sepia.m`)
+* `SpecifyToolboxesDirectory.m` and `SpecifyAtlasDirectory.m` are no longer tracked in git (now machine-specific and gitignored; see their `.template.m` files and the new `setup_sepia.m`)
 * Removed a large set of unused/deprecated legacy wrapper and parser files (e.g. the deprecated `parse_varargin_*` argument parsers, the GPU-prototype `cuBackgroundRemovalMacro.m`/`cuQSMMacro.m` wrappers, and a deprecated GUI callback)
 * Renamed/reorganised a few internal analysis and R2* utility functions to avoid name clashes with other repositories
 
