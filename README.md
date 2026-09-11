@@ -43,15 +43,17 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.3.0 (current, commit 3881d67)
+### 1.3.0 (current, commit f6c4536)
+
+Thank you to everyone who contributed to this major release! Special thanks to Patrick, whose engagement and input made many of this update's features possible.
 
 > **Upgrade notes**
 > `SpecifyToolboxesDirectory.m` and `SpecifyAtlasDirectory.m` are no longer tracked in git (see "Housekeeping" below). No action needed - your existing local copies are untouched - but `git status` will now show them as untracked instead of unmodified.
 
 **New QSM methods & toolboxes**
-* Added support for the χ-separation (Chi-separation) toolbox as a new QSM add-on (paramagnetic/diamagnetic susceptibility separation via Chi-sepnet, chi_sep_MEDI and chi_sep_iLSQR; requires ONNX checkpoint files and the Deep Learning Toolbox Converter for ONNX Model Format support package)
-* Added HEIDI as a dipole inversion method, available both as the two-stage "LSQR+HEIDI" pipeline and as a "Streaking reduction by HEIDI" post-processing option that can be applied on top of any other QSM dipole-inversion method's output
-* Updated the `mu2` parameter handling for FANSI
+* Added support for the χ-separation (Chi-separation) toolbox as a new QSM add-on (paramagnetic/diamagnetic susceptibility separation via Chi-sepnet, chi_sep_MEDI and chi_sep_iLSQR; requires ONNX checkpoint files and the Deep Learning Toolbox Converter for ONNX Model Format support package) Thanks to Taechang and the SNU team for making this possible!
+* Added HEIDI as a dipole inversion method, available both as the two-stage "LSQR+HEIDI" pipeline and as a "Streaking reduction by HEIDI" post-processing option that can be applied on top of any other QSM dipole-inversion method's output. Thanks to Fahad and Ferdinand for sharing the code and libraries that made this possible!
+* Updated the `mu2` parameter handling for FANSI. Thanks to Sebastian for the bug fix.
 * New `download_FANSI_toolbox.m` script to automatically download a pinned FANSI-toolbox commit and register it in `SpecifyToolboxesDirectory.m`
 * `HEIDI_HOME` and `ChiSepNet_HOME` are now configured centrally in `SpecifyToolboxesDirectory.m` (editable via the Utility tab's Manage Dependency panel), instead of hand-editing `setup_Chi_sepnet_environment.m` or a hardcoded path
 * New `download_HEIDI_toolbox.m` script to automatically download the HEIDI package and register it in `SpecifyToolboxesDirectory.m`; the package itself is hosted as a GitHub Release asset on the SEPIA repo (tag `heidi-sepiaready-v1`, kept separate from SEPIA's own version tags)
