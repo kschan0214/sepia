@@ -311,6 +311,21 @@ if val
     end
 end
 
+% 20260910 v1.3: two-pass masking
+str_pattern     = '.qsm.isTwoPass';
+action_handle   = h.qsm.popup.twopass;
+sepia_read_popup_value(config_txt, str_pattern, action_handle, methodTwoPassName);
+% trigger popup callback to sync the lambda edit/slider enable state
+feval(h.qsm.popup.twopass.Callback{1}, h.qsm.popup.twopass, [], h);
+
+% two-pass masking lambda (only meaningful for the Magnitude Gradient
+% Field strategy, but harmless to restore regardless)
+str_pattern     = '.qsm.twopass_lambda';
+lambdaStr       = sepia_read_edit_string(config_txt, str_pattern, h.qsm.edit.lambda);
+if ischar(lambdaStr)
+    set_non_nan_value(h.qsm.slider.lambda, 'Value', str2double(lambdaStr));
+end
+
 end
 
 end
