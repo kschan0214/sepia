@@ -178,8 +178,10 @@ val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
 % trigger checkout callback
 feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 
-% isBet is true then change the BET parameters
-if str2double(val)
+% isBet is true then change the BET parameters (guard against .general.isBET
+% being absent from a hand-written/partial config file, in which case val
+% is NaN - 'if NaN' errors outright rather than evaluating false)
+if ~isnan(str2double(val)) && str2double(val)
 
     % 20250705 v1.3
     str_pattern     = '.general.brain_extraction_method';
@@ -209,9 +211,9 @@ sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
 str_pattern     = '.general.isDenoise';
 action_handle   = h.dataIO.checkbox.denoise;
 val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
-% trigger callback 
-feval(action_handle.Callback{1},action_handle,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1); 
-if str2double(val)
+% trigger callback
+feval(action_handle.Callback{1},action_handle,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+if ~isnan(str2double(val)) && str2double(val)
 % modifiy edit field value
 str_pattern     = '.general.denoiseKernel';
 val             = get_num_as_string(config_txt, str_pattern, '=', ';');
@@ -221,9 +223,9 @@ end
 str_pattern     = '.general.isUpsample';
 action_handle   = h.dataIO.checkbox.upsample;
 val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
-% trigger callback 
-feval(action_handle.Callback{1},action_handle,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1); 
-if str2double(val)
+% trigger callback
+feval(action_handle.Callback{1},action_handle,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
+if ~isnan(str2double(val)) && str2double(val)
 % modifiy edit field value
 str_pattern     = '.general.target_resolution';
 val             = get_num_as_string(config_txt, str_pattern, '=', ';');
@@ -300,8 +302,10 @@ read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_fun
 str_pattern     = '.qsm.isHEIDI';
 action_handle   = h.qsm.checkbox.isHeidi;
 val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
-% read HEIDI parameters if true
-if val
+% read HEIDI parameters if true (guard against .qsm.isHEIDI being absent
+% from a hand-written/partial config file, in which case val is NaN -
+% 'if NaN' errors outright rather than evaluating false)
+if ~isnan(str2double(val)) && str2double(val)
     % matching popup list name
     for j = 1:length(popup_list)
         if strcmpi('LSQR+HEIDI',popup_list{j})
