@@ -46,11 +46,12 @@
 % Date modified: 3 August 2022 (v1.1)
 % Date modified: 3 April 2023 (v1.2.2.4)
 % Date modified: 9 October 2023 (v1.2.2.5)
+% Date modified: 7 July 2025 (v1.3)
 %
-function sepia 
+function h = sepia 
 
 % clear previous handles
-clear global h 
+clear global h
 
 % make sure nothing is logged at the moment
 diary off
@@ -58,7 +59,7 @@ diary off
 % add path and check toolboxes availability
 sepia_addpath('',1);
 
-global h 
+global h
 
 % SEPIA version
 sepia_universal_variables;
@@ -244,15 +245,17 @@ if exist(outputDir,'dir') ~= 7
     mkdir(outputDir);
 end
 
+
+% use current time as unique identifier
+identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
 % create a new m file
-configFilename = [outputDir filesep 'sepia_config.m'];
+configFilename = fullfile(outputDir, ['sepia_config' identifier '.m']);
+% configFilename = [outputDir filesep 'sepia_config.m'];
 if exist(configFilename,'file') == 2
-    counter = 1;
-    while exist(configFilename,'file') == 2
-        suffix = ['_' num2str(counter)];
-        configFilename = [outputDir filesep 'sepia_config' suffix '.m'];
-        counter = counter + 1;
-    end
+    % get new time index
+    identifier = datestr(datetime('now'),'yymmddHHMMSSFFF');
+    configFilename = fullfile(outputDir, ['sepia_config' identifier '.m']);
+
 end
 fid = fopen(configFilename,'w');
 
@@ -286,14 +289,32 @@ fprintf(fid,'%% General algorithm parameters\n');
 fprintf(fid,'algorParam = struct();\n');
 % BET
 isbet = sepia_print_checkbox_value(fid,'.general.isBET',h.dataIO.checkbox.brainExtraction);
+sepia_print_popup_as_string(fid, '.general.brain_extraction_method',h.dataIO.popup.brainExtraction);
 if isbet
-    sepia_print_edit_as_string(fid,'.general.fractional_threshold',h.dataIO.edit.fractionalThres);
-    sepia_print_edit_as_string(fid,'.general.gradient_threshold',h.dataIO.edit.gradientThres);
+    switch h.dataIO.popup.brainExtraction.String{h.dataIO.popup.brainExtraction.Value,1} 
+        case 'FSL bet (MEDI)'
+            % for backward compatability
+            sepia_print_edit_as_string(fid,'.general.fractional_threshold',h.dataIO.edit.fractionalThres);
+            sepia_print_edit_as_string(fid,'.general.gradient_threshold',h.dataIO.edit.gradientThres);
+
+    end
+    
 end
 sepia_print_checkbox_value(fid,'.general.isInvert',h.dataIO.checkbox.invertPhase);
 
 % refine brain mask
 sepia_print_checkbox_value(fid,'.general.isRefineBrainMask',h.dataIO.checkbox.refineBrainMask);
+
+% denoise
+isDenoise = sepia_print_checkbox_value(fid,'.general.isDenoise',h.dataIO.checkbox.denoise);
+if isDenoise
+    sepia_print_edit_as_string(fid,'.general.denoiseKernel',h.dataIO.edit.denoise);
+end
+% upsample
+isUpsample = sepia_print_checkbox_value(fid,'.general.isUpsample',h.dataIO.checkbox.upsample);
+if isUpsample
+    sepia_print_edit_as_string(fid,'.general.target_resolution',h.dataIO.edit.upsample);
+end
 
 % phase unwrap algorithm parameters
 if strcmpi(tab,'SEPIA') || strcmpi(tab,'Phase unwrapping')
@@ -328,9 +349,23 @@ if strcmpi(tab,'SEPIA') || strcmpi(tab,'QSM')
     
     % reference tissue
     sepia_print_popup_as_string(fid,'.qsm.reference_tissue',h.qsm.popup.tissue);
+    % twopass method
+    sepia_print_popup_as_string(fid,'.qsm.isTwoPass',h.qsm.popup.twopass);
+    % twopass threshold
+    sepia_print_edit_as_string(fid,'.qsm.twopass_lambda',h.qsm.edit.lambda);
     
     % set parameters for selected method
     print_method_popup_and_eval(fid, '.qsm.method', h.qsm.popup.qsm, methodQSMName, config_QSM_function, h);
+
+    % HEIDI
+    isHEIDI = sepia_print_checkbox_value(fid,'.qsm.isHEIDI',h.qsm.checkbox.isHeidi);
+    if isHEIDI
+        if ~strcmp(h.qsm.popup.qsm.String{h.qsm.popup.qsm.Value},'LSQR+HEIDI')
+            print_HEIDI_popup_and_eval(fid, methodQSMName, config_QSM_function, h);
+        else
+            warning('The selected dipole inversion method already includes HEIDI. No extra HEIDI processing will be done.');
+        end
+    end
 
 end
 
@@ -347,6 +382,10 @@ end
 fprintf(fid,'\nsepiaIO(input,output_basename,mask_filename,algorParam);\n');
 
 fclose(fid);
+
+% Parse the algorithm parameters from the config file
+h.fig.UserData.algorParam = parse_sepia_config_file(configFilename);
+uiresume(h.fig)     % Typically, external code would call uiwait(h.fig) to wait for the algorParam to be ready
 
 try
     % run process
@@ -368,6 +407,34 @@ catch ME
 end
 
 
+end
+
+function algorParam = parse_sepia_config_file(configFilename)
+% Parse the algorithm parameters from the config file
+
+% Read config and split into lines
+lines = splitlines(fileread(configFilename));
+
+% Process each line to assign the algorParam struct
+algorParam = struct();
+for i = 1:length(lines)
+    
+    % Get the line without trailing semicolon
+    line = regexprep(strtrim(lines{i}), ';$', '');
+
+    % Look for algorParam assignments. Pattern: algorParam.field1.field2...fieldN = value;
+    if startsWith(line, 'algorParam.') && contains(line, '=')
+        parts      = strsplit(line, '=');
+        value      = strtrim(parts{2});
+        if startsWith(value, '''') && endsWith(value, '''')
+            value = value(2:end-1);     % Remove quotes
+        else
+            value = str2num(value);     %#ok<ST2NM>
+        end
+        fields     = strsplit(strtrim(parts{1}), '.');
+        algorParam = setfield(algorParam, fields{2:end}, value);
+    end
+end
 end
 
 function PushbuttonLoadConfig_Callback(source,eventdata)
@@ -432,13 +499,32 @@ end
     
 end
 
+function print_HEIDI_popup_and_eval(fid, popup_list, config_list, h)
+
+% set parameters for selected method
+for k = 1:length(popup_list)
+    if strcmpi('LSQR+HEIDI',popup_list{k})
+        feval(config_list{k},h,'set',fid);
+    end
+end
+    
+end
+
 function switch_tab_to_SEPIA
     global h tooltip fieldString
+    sepia_universal_variables;
+    % restore full two-pass masking option list (Monoexponential decay model
+    % requires phase/total field data, which is available again on this tab)
+    currLabel = h.qsm.popup.twopass.String{h.qsm.popup.twopass.Value};
+    newValue  = find(strcmp(methodTwoPassName, currLabel), 1);
+    if isempty(newValue); newValue = 1; end
+    set(h.qsm.popup.twopass, 'String', methodTwoPassName, 'Value', newValue);
     % I/O
     % Change essential files if input is a directory
     set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
     % BET is supported with this tab
     set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+    set(h.dataIO.popup.brainExtraction,     'Enable','on');
         % trigger followup callback to switch method panel
         feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
     % phase invert is supported with this tab
@@ -457,6 +543,9 @@ function switch_tab_to_SEPIA
     set(h.dataIO.button.inputData3,         'Enable','on');
     % refine brain mask is supported with this tab
     set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
+    % denoise and upsample
+    set(h.dataIO.checkbox.denoise,          'Enable','on');
+    set(h.dataIO.checkbox.upsample,         'Enable','on');
 
     % phase unwrap
     set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.Sepia,'Position',[0.01 0.59 0.95 0.2]);
@@ -474,6 +563,7 @@ global h tooltip fieldString
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{1});
 % BET is supported with this tab
 set(h.dataIO.checkbox.brainExtraction,  'Enable','on');
+set(h.dataIO.popup.brainExtraction,     'Enable','on');
     % trigger followup callback to switch method panel
     feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 % phase invert is supported with this tab
@@ -492,6 +582,9 @@ set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
 set(h.dataIO.button.inputData3,         'Enable','off');
 % refine brain mask is supported with this tab
 set(h.dataIO.checkbox.refineBrainMask,  'Enable','on');
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','on');
+set(h.dataIO.checkbox.upsample,         'Enable','on');
 
 % phase unwrap
 set(h.StepsPanel.phaseUnwrap,   'Parent',h.Tabs.phaseUnwrap,'Position',[0.01 0.59 0.95 0.2]);
@@ -505,6 +598,7 @@ global h tooltip fieldString
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{2});
 % no BET support with this tab
 set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+set(h.dataIO.popup.brainExtraction,     'Enable','on');
     % trigger followup callback to switch method panel
     feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -525,6 +619,12 @@ set(h.dataIO.edit.inputData3,           'Enable','on');
 set(h.dataIO.button.inputData3,         'Enable','on');
 % no refine brain mask with this tab
 set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','off','Value',0);
+set(h.dataIO.checkbox.upsample,         'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.denoise.Callback{1},h.dataIO.checkbox.denoise,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+    feval(h.dataIO.checkbox.upsample.Callback{1},h.dataIO.checkbox.upsample,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
 
 % background field
 set(h.StepsPanel.bkgRemoval,    'Parent',h.Tabs.bkgRemoval,'Position',[0.01 0.54 0.95 0.25]);
@@ -533,11 +633,26 @@ end
 
 function switch_tab_to_QSM
 global h tooltip fieldString
+sepia_universal_variables;
+% Monoexponential decay model masking requires phase and total field data,
+% which are not available on this tab (it starts from the local field map,
+% i.e. downstream of phase unwrapping/background field removal); remove it
+% from the two-pass masking option list to avoid a crash.
+currLabel = h.qsm.popup.twopass.String{h.qsm.popup.twopass.Value};
+if strcmp(currLabel, methodTwoPassName{2})
+    warndlg('Monoexponential decay model masking is not available on the QSM tab (requires phase and total field data). Resetting two-pass masking to ''None''.', 'Two-pass masking unavailable');
+    currLabel = methodTwoPassName{1};
+end
+qsmTabTwoPassOptions = methodTwoPassName(~strcmp(methodTwoPassName, methodTwoPassName{2}));
+newValue = find(strcmp(qsmTabTwoPassOptions, currLabel), 1);
+if isempty(newValue); newValue = 1; end
+set(h.qsm.popup.twopass, 'String', qsmTabTwoPassOptions, 'Value', newValue);
 % I/O
 % This tab supports only NIfTI files
 set(h.dataIO.text.input,                'Tooltip',tooltip.input_dir{3});
 % no BET support with this tab
 set(h.dataIO.checkbox.brainExtraction,  'Enable','off','Value',0);
+set(h.dataIO.popup.brainExtraction,     'Enable','off');
     % trigger followup callback to switch method panel
     feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 set(h.dataIO.edit.maskdir,              'Enable','on');
@@ -558,6 +673,12 @@ set(h.dataIO.edit.inputData3,           'Enable','on');
 set(h.dataIO.button.inputData3,         'Enable','on');
 % no refine brain mask with this tab
 set(h.dataIO.checkbox.refineBrainMask,  'Enable','off','Value',0);
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','off','Value',0);
+set(h.dataIO.checkbox.upsample,         'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.denoise.Callback{1},h.dataIO.checkbox.denoise,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+    feval(h.dataIO.checkbox.upsample.Callback{1},h.dataIO.checkbox.upsample,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
 % QSM
 set(h.StepsPanel.qsm,           'Parent',h.Tabs.qsm,'Position',[0.01 0.54 0.95 0.25]);
 end
@@ -582,6 +703,12 @@ set(h.dataIO.button.inputData1,         'Enable','off');
 set(h.dataIO.text.inputData3,           'String',fieldString.inputData3{1});
 set(h.dataIO.edit.inputData3,           'Enable','off','String',[]);
 set(h.dataIO.button.inputData3,         'Enable','off');
+% denoise and upsample
+set(h.dataIO.checkbox.denoise,          'Enable','off','Value',0);
+set(h.dataIO.checkbox.upsample,         'Enable','off','Value',0);
+    % trigger followup callback to switch method panel
+    feval(h.dataIO.checkbox.denoise.Callback{1},h.dataIO.checkbox.denoise,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+    feval(h.dataIO.checkbox.upsample.Callback{1},h.dataIO.checkbox.upsample,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
 end
 
 function switch_tab_to_Analysis
@@ -590,10 +717,10 @@ try
     SpecifyToolboxesDirectory;
     if exist('ANTS_HOME', 'var')
         if ~exist(ANTS_HOME,'dir')
-            warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+            warndlg('Missing ANTs library. All functions in the Analysis Tab cannot be used.')
         end
     else
-            warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')
+            warndlg('Missing ANTs library. All functions in the Analysis Tab cannot be used.')
     end
 catch
     warndlg('Missing ANTs library. All functions in Analysis Tab cannot be used.')

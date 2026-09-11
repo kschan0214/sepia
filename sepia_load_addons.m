@@ -82,7 +82,7 @@ end
 listing = dir(addons_qsm_dir);
 
 for klist = 3:length(listing)
-    if listing(klist).isdir 
+    if listing(klist).isdir
         curr_dir = fullfile(addons_qsm_dir,listing(klist).name);
         if exist(fullfile(curr_dir,'addon_config.m'),'file')
             run(fullfile(curr_dir,'addon_config.m'))

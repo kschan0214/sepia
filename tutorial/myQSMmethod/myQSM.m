@@ -1,6 +1,6 @@
 %% chi = myQSM(localField,mask,matrixSize,voxelSize,thres,b0dir)
 %
-% Description: compute QSM based on threshol-based k-space division (TKD)
+% Description: compute QSM based on threshold-based k-space division (TKD)
 % Ref        : Wharton et al. MRM 63:1292-1304(2010)
 %
 % Input

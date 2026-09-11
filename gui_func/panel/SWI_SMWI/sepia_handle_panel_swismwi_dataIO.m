@@ -22,8 +22,7 @@
 %
 function h = sepia_handle_panel_swismwi_dataIO(hParent,h,position)
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 %% Tooltips
 tooltip.swismwi.dataIO.output = 'Output basename. Default output basename is the input directory followed by /output/Sepia';

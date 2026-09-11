@@ -10,7 +10,7 @@
 % --------------
 % h             : global structure contains all new and other handles
 %
-% Description: This GUI function creates a panel for LBV method
+% Description: This GUI function creates a panel for myQSM method
 %
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl

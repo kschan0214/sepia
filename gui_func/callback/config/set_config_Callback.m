@@ -10,7 +10,8 @@
 % Kwok-shing Chan @ DCCN
 % k.chan@donders.ru.nl
 % Date created: 6 March 2020 (v0.8.1)
-% Date modified:12 JUne 2021 (v1.0)
+% Date modified:12 June 2021 (v1.0)
+% Date modified:5 July 2025 (v1.3)
 %
 %
 function set_config_Callback(config_filename,h)
@@ -177,8 +178,18 @@ val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
 % trigger checkout callback
 feval(h.dataIO.checkbox.brainExtraction.Callback{1},h.dataIO.checkbox.brainExtraction,[],h);
 
-% isBet is true then change the BET parameters
-if str2double(val)
+% isBet is true then change the BET parameters (guard against .general.isBET
+% being absent from a hand-written/partial config file, in which case val
+% is NaN - 'if NaN' errors outright rather than evaluating false)
+if ~isnan(str2double(val)) && str2double(val)
+
+    % 20250705 v1.3
+    str_pattern     = '.general.brain_extraction_method';
+    action_handle   = h.dataIO.popup.brainExtraction;
+    sepia_read_popup_value(config_txt, str_pattern, action_handle, skullstrippingMethod);
+    % trigger checkout callback
+    feval(h.dataIO.popup.brainExtraction.Callback{1},h.dataIO.popup.brainExtraction,[],h);
+
     % -f
     str_pattern     = '.general.fractional_threshold';
     action_handle   = h.dataIO.edit.fractionalThres;
@@ -194,7 +205,32 @@ end
 % refine brain mask
 str_pattern     = '.general.isRefineBrainMask';
 action_handle   = h.dataIO.checkbox.refineBrainMask;
+sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
+
+% 20250705 v1.3 popup manu for denoise
+str_pattern     = '.general.isDenoise';
+action_handle   = h.dataIO.checkbox.denoise;
 val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
+% trigger callback
+feval(action_handle.Callback{1},action_handle,[],{h.dataIO.edit.denoise,h.dataIO.slider.denoise},1);
+if ~isnan(str2double(val)) && str2double(val)
+% modifiy edit field value
+str_pattern     = '.general.denoiseKernel';
+val             = get_num_as_string(config_txt, str_pattern, '=', ';');
+set_non_nan_value(h.dataIO.edit.denoise, 'String', val);
+end
+% 20250705 v1.3 popup manu for denoise
+str_pattern     = '.general.isUpsample';
+action_handle   = h.dataIO.checkbox.upsample;
+val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
+% trigger callback
+feval(action_handle.Callback{1},action_handle,[],{h.dataIO.edit.upsample,h.dataIO.slider.upsample},1);
+if ~isnan(str2double(val)) && str2double(val)
+% modifiy edit field value
+str_pattern     = '.general.target_resolution';
+val             = get_num_as_string(config_txt, str_pattern, '=', ';');
+set_non_nan_value(h.dataIO.edit.upsample, 'String', val);
+end
 
 end
 
@@ -261,6 +297,38 @@ action_handle    = h.qsm.popup.qsm;
 popup_list       = methodQSMName;
 config_func_list = config_QSM_function;
 read_method_popup(config_txt, str_pattern, action_handle, popup_list, config_func_list, h)
+
+% refine brain mask
+str_pattern     = '.qsm.isHEIDI';
+action_handle   = h.qsm.checkbox.isHeidi;
+val = sepia_read_checkbox_value(config_txt, str_pattern, action_handle);
+% read HEIDI parameters if true (guard against .qsm.isHEIDI being absent
+% from a hand-written/partial config file, in which case val is NaN -
+% 'if NaN' errors outright rather than evaluating false)
+if ~isnan(str2double(val)) && str2double(val)
+    % matching popup list name
+    for j = 1:length(popup_list)
+        if strcmpi('LSQR+HEIDI',popup_list{j})
+            feval(config_func_list{j},h,'get',config_txt);
+            break
+        end
+    end
+end
+
+% 20260910 v1.3: two-pass masking
+str_pattern     = '.qsm.isTwoPass';
+action_handle   = h.qsm.popup.twopass;
+sepia_read_popup_value(config_txt, str_pattern, action_handle, methodTwoPassName);
+% trigger popup callback to sync the lambda edit/slider enable state
+feval(h.qsm.popup.twopass.Callback{1}, h.qsm.popup.twopass, [], h);
+
+% two-pass masking lambda (only meaningful for the Magnitude Gradient
+% Field strategy, but harmless to restore regardless)
+str_pattern     = '.qsm.twopass_lambda';
+lambdaStr       = sepia_read_edit_string(config_txt, str_pattern, h.qsm.edit.lambda);
+if ischar(lambdaStr)
+    set_non_nan_value(h.qsm.slider.lambda, 'Value', str2double(lambdaStr));
+end
 
 end
 

@@ -19,17 +19,20 @@
 function get_set_bfr_vsharp(h,mode,input)
 
 
-str_pattern = {'.bfr.radius'};
+str_pattern = {'.bfr.radius',...
+               '.bfr.threshold'};
 
 action_handle = {h.bkgRemoval.VSHARP.edit.maxRadius,...
-                 h.bkgRemoval.VSHARP.edit.minRadius};
+                 h.bkgRemoval.VSHARP.edit.minRadius,...
+                 h.bkgRemoval.VSHARP.edit.threshold};
 
 switch lower(mode)
     case 'set'
         fid = input;
-        
+
         fprintf(fid,'algorParam%s = [%s:-1:%s] ;\n'	,str_pattern{1},get(action_handle{1},	'String'),get(action_handle{2},	'String'));
-        
+        fprintf(fid,'algorParam%s = %s ;\n'            ,str_pattern{2},get(action_handle{3},   'String'));
+
     case 'get'
         
         config_txt = input;
@@ -64,5 +67,10 @@ switch lower(mode)
         end
         
         set_non_nan_value(action_handle{2},'String',val)
+
+        % threshold
+        pattern_curr    = str_pattern{2};
+        val             = get_num_as_string(config_txt, pattern_curr, '=', ';');
+        set_non_nan_value(action_handle{3},'String',val)
 
 end

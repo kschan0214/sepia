@@ -9,18 +9,26 @@
 % Date modified: 6 May 2021 (v0.8.1.1)
 % Date modified: 7 June 2021 (v1.0)
 % Date modified: 4 August 2021 (v1.0.1)
+% Date modified: 7 July 2025 (v1.3)
 %
 % DO NOT change the variable name
 % DO NOT change the order of the entities, add a new one at the end instead
 %
 %% Version
-SEPIA_version = 'v1.2.2.6';
+SEPIA_version = 'v1.3.0';
 
 %% PATH
 SEPIA_HOME = fileparts(mfilename('fullpath'));
 
 %% General parameterss
 gyro = 42.57747892; % Larmor frequency of 1H, in MHz/T
+suffix = '.nii.gz'; % default output extension; I/O wrappers override this via get_nifti_extension_from_input(input) based on the actual input data
+
+%% IO
+skullstrippingMethod = {'FSL bet (MEDI)',...
+                        'Otsu thresholding',...
+                        'SynthStrip',...
+                        'SynthStrip (no CSF)'}; 
 
 %% Total field recovery related parameters
 % Echo combination method available in SEPIA
@@ -48,6 +56,12 @@ tissueName              = {'None',...
                            'Brain mask',...
                            'CSF'};
 
+% Method for two pass masking, KC: re-order for backward compatibility
+methodTwoPassName       = {'None',...
+                           'Monoexponential decay model',...
+                           'Magnitude Gradient Field',...
+                           'Noise map'};
+
 %% SWI/SMWI related parameters
 sepia_configuration_SWISMWI
 
@@ -56,3 +70,4 @@ sepia_configuration_R2s
 
 %% add-ons capability
 sepia_load_addons
+

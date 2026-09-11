@@ -25,6 +25,20 @@ sepia_universal_variables;
 %% set default values
 defaultThreshold = 0.5;
 
+% Default spatial phase unwrapping method for this echo combination
+% method: prefer SEGUE if the SEGUE toolbox is available, otherwise fall
+% back to Laplacian (MEDI).
+toolboxPaths = get_sepia_toolbox_home_paths();
+if exist(toolboxPaths.SEGUE_HOME,'dir') == 7
+    defaultUnwrapMethod = 'SEGUE';
+else
+    defaultUnwrapMethod = 'Laplacian (MEDI)';
+end
+defaultUnwrapIdx = find(strcmpi(methodUnwrapName, defaultUnwrapMethod), 1);
+if isempty(defaultUnwrapIdx)
+    defaultUnwrapIdx = 1;
+end
+
 %% Tooltips
 % tooltips
 tooltip.unwrap.panel.unwrap         = 'Select a phase unwrapping algorithm for spatial unwrapping';
@@ -61,6 +75,7 @@ h.phaseUnwrap.panel.OptimumWights = uipanel(hParent,...
     % phase unwrapping method, 'text|popup' 
     [h.phaseUnwrap.optimumWeights.text.phaseUnwrap,h.phaseUnwrap.optimumWeights.popup.phaseUnwrap] = sepia_construct_text_popup(...
         panelParent,'Phase unwrapping:', methodUnwrapName, [left(1) bottom(krow) width height], wratio);
+    set(h.phaseUnwrap.optimumWeights.popup.phaseUnwrap, 'Value', defaultUnwrapIdx);
     
     % row 2, left
     krow = 2;
@@ -90,7 +105,7 @@ h.phaseUnwrap.panel.OptimumWights = uipanel(hParent,...
         'Style','edit',...
         'String',num2str(defaultThreshold),...
         'units','normalized','position',[left(1)+0.4 bottom(krow) 0.04 height],...
-        'backgroundcolor','white',...
+        'backgroundcolor',sepia_theme_bg_color(),'foregroundcolor',sepia_theme_fg_color(),...
         'Enable','off');
     % excluding method
     h.phaseUnwrap.optimumWeights.text.excludeMethod = uicontrol('Parent',panelParent ,...
@@ -116,6 +131,13 @@ set(h.phaseUnwrap.optimumWeights.checkbox.saveEchoPhase,    'Tooltip',tooltip.un
 set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask,	'Callback', {@CheckboxEditPair_Callback,{h.phaseUnwrap.optimumWeights.edit.excludeMask,h.phaseUnwrap.optimumWeights.popup.excludeMethod},1});
 set(h.phaseUnwrap.optimumWeights.edit.excludeMask,      'Callback', {@EditInputMinMax_Callback,defaultThreshold,0,0,1});
 set(h.phaseUnwrap.optimumWeights.popup.phaseUnwrap,     'Callback', {@popupPhaseUnwrap_Callback,h});
+
+% programmatically setting the popup's 'Value' above (defaultUnwrapIdx)
+% does not fire its Callback, so the 'Exclude voxels' checkbox's Enable
+% state must be synced with the default method here too, otherwise it is
+% left at its construction-time default ('off') even when the default
+% method (e.g. SEGUE) actually supports it.
+set(h.phaseUnwrap.optimumWeights.checkbox.excludeMask, 'Enable', gui_unwrap_exclusion{defaultUnwrapIdx});
 
 end
 

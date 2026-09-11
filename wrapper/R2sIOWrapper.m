@@ -30,6 +30,7 @@ function [r2s,t2s,s0] = R2sIOWrapper(input,output,maskFullName,algorParam)
 sepia_addpath
 
 sepia_universal_variables;
+suffix = get_nifti_extension_from_input(input);
 
 %% define variables
 prefix = 'sepia_';
@@ -50,7 +51,12 @@ end
 fprintf('Output directory       : %s\n',outputDir);
 fprintf('Output filename prefix : %s\n',prefix);
 
-outputFileList = construct_output_filename(outputDir, prefix);
+write_bids_dataset_description(outputDir);
+
+%% Check and set default algorithm parameters
+algorParam = check_and_set_SEPIA_algorithm_default(algorParam);
+
+outputFileList = construct_output_filename(outputDir, prefix, algorParam,  suffix);
 
 %% Setting up Input
 disp('---------');
@@ -129,8 +135,23 @@ end
 % save results
 fprintf('Saving R2* map...');
 save_nii_quick(outputNiftiTemplate, r2s, outputFileList.r2s);
+save_json_sidecar(outputFileList.r2s, struct( ...
+    'Description', 'R2* map estimated from multi-echo magnitude data.', ...
+    'Units',       '1/s', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}, ...
+    'Parameters',  algorParam.r2s));
 save_nii_quick(outputNiftiTemplate, t2s, outputFileList.t2s);
+save_json_sidecar(outputFileList.t2s, struct( ...
+    'Description', 'T2* map estimated from multi-echo magnitude data.', ...
+    'Units',       's', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}, ...
+    'Parameters',  algorParam.r2s));
 save_nii_quick(outputNiftiTemplate, s0,  outputFileList.s0);
+save_json_sidecar(outputFileList.s0, struct( ...
+    'Description', 'Extrapolated S0 (TE=0) signal intensity map from multi-echo magnitude data.', ...
+    'Units',       'arbitrary', ...
+    'Sources',     {{get_relative_source_path(outputDir, availableFileList.magnitude)}}, ...
+    'Parameters',  algorParam.r2s));
 
 fprintf('Done!\n');
 

@@ -69,6 +69,6 @@ function algorParam2 = check_and_set_algorithm_default(algorParam)
 
 algorParam2 = algorParam;
 
-try algorParam2.qsm.padSize = algorParam.qsm.padSize; catch; algorParam2.qsm.padSize = [12,12,12]; end
+try algorParam2.qsm.padsize = algorParam.qsm.padsize; catch; algorParam2.qsm.padsize = [12,12,12]; end
 
 end

@@ -22,8 +22,7 @@
 %
 function h = sepia_handle_panel_utility_manage_dependency(hParent,h,position)
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 %% layout of the panel
 nrow        = 10;
@@ -40,6 +39,8 @@ SEGUE_HOME      = [];
 MRITOOLS_HOME   = [];
 MRISC_HOME      = [];
 ANTS_HOME       = [];
+HEIDI_HOME      = [];
+ChiSepNet_HOME  = [];
 
 SpecifyToolboxesDirectory;
 
@@ -87,13 +88,23 @@ wratio = [0.2,0.75,0.05];
     [h.Utility.magageDependency.text.ANTsDir,h.Utility.magageDependency.edit.ANTsDir,h.Utility.magageDependency.button.ANTsDir] = ...
         sepia_construct_text_edit_button(parent_panel,...
         'ANTs Home:',ANTS_HOME,open_icon,[left bottom(7) width height],wratio);
-    
+
+    % Dependency HEIDI
+    [h.Utility.magageDependency.text.HEIDIDir,h.Utility.magageDependency.edit.HEIDIDir,h.Utility.magageDependency.button.HEIDIDir] = ...
+        sepia_construct_text_edit_button(parent_panel,...
+        'HEIDI Home:',HEIDI_HOME,open_icon,[left bottom(8) width height],wratio);
+
+    % Dependency Chi-separation
+    [h.Utility.magageDependency.text.ChiSepNetDir,h.Utility.magageDependency.edit.ChiSepNetDir,h.Utility.magageDependency.button.ChiSepNetDir] = ...
+        sepia_construct_text_edit_button(parent_panel,...
+        'Chi-separation Home:',ChiSepNet_HOME,open_icon,[left bottom(9) width height],wratio);
+
     % run
     h.Utility.magageDependency.button.save = uicontrol('Parent',parent_panel,...
         'Style','pushbutton','String','Save',...
         'units','normalized','position',[0.79 bottom(10) 0.2 height],...
-        'backgroundcolor','white','enable','on');
-    
+        'backgroundcolor',sepia_theme_bg_color(),'foregroundcolor',sepia_theme_fg_color(),'enable','on');
+
 %% set callback functions
 set(h.Utility.magageDependency.button.FANSIDir,         'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.FANSIDir});
 set(h.Utility.magageDependency.button.MEDIDir,          'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MEDIDir});
@@ -102,6 +113,8 @@ set(h.Utility.magageDependency.button.SEGUEDir,         'Callback', {@open_direc
 set(h.Utility.magageDependency.button.MRITOOLSDir,      'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRITOOLSDir});
 set(h.Utility.magageDependency.button.MRISuscCalcDir,   'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.MRISuscCalcDir});
 set(h.Utility.magageDependency.button.ANTsDir,       	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ANTsDir});
+set(h.Utility.magageDependency.button.HEIDIDir,       	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.HEIDIDir});
+set(h.Utility.magageDependency.button.ChiSepNetDir,   	'Callback', {@open_directory_Callback,h.Utility.magageDependency.edit.ChiSepNetDir});
 set(h.Utility.magageDependency.button.save,             'Callback', {@PushbuttonSave_Utility_magageDependency_Callback,h});
 end
 
@@ -121,16 +134,10 @@ end
 
 function PushbuttonSave_Utility_magageDependency_Callback(source,eventdata,h)
 
-dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME', 'ANTS_HOME'};
-gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir', 'ANTsDir'};
+dependency_homes = {'FANSI_HOME','MEDI_HOME','STISuite_HOME','SEGUE_HOME','MRITOOLS_HOME','MRISC_HOME', 'ANTS_HOME', 'HEIDI_HOME', 'ChiSepNet_HOME'};
+gui_handles      = {'FANSIDir'  ,'MEDIDir'  ,'STISuiteDir'  ,'SEGUEDir'  ,'MRITOOLSDir'  ,'MRISuscCalcDir', 'ANTsDir', 'HEIDIDir', 'ChiSepNetDir'};
 
 sepia_universal_variables;
-SpecifyToolboxesDirectory;
-
-% get all the text from SpecifyToolboxesDirectory.m 
-fid             = fopen( fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m') );
-directory_text  = textscan( fid, '%s', 'Delimiter','\n', 'CollectOutput',true );
-fclose( fid );
 
 isOverWrite = false;
 
@@ -141,58 +148,15 @@ gui_field = get(h.Utility.magageDependency.edit.(gui_handles{k}),'String');
 
 % if GUI is not empty, then allows changes
 if ~isempty( gui_field )
-    
-    gui_HOME = fileparts(fullfile(gui_field,filesep));
-    
-    % default update is false
-    isUpdateHome = false;
-    
-    % check if changing is needed for the following conditions
-    if ~exist(dependency_homes{k},'var')                % scenario 1: if such variable doesn't exist yet
-        isUpdateHome = true;
-
-    elseif isempty(eval(dependency_homes{k}))           % scenario 2: if such variable is empty
-        isUpdateHome = true;
-    else                                                % scenario 3: check if the variable is the same as in the GUI
-        curr_HOME = fileparts(eval(dependency_homes{k}));
-        isUpdateHome = ~strcmp(curr_HOME,gui_HOME);    % if not identical then update
-    end
-    
-    % update SpecifyToolboxesDirectory.m
-    if isUpdateHome
-        
-        % check if the file contains the variable name that is about to be changed 
-        % if so, and if the 1st char is not '%' then comment the line out
-        for j = 1:length(directory_text{1})
-            
-            isContain = ContainName(directory_text{1}{j},lower(dependency_homes{k}));
-            
-            if isContain && ~strcmp(directory_text{1}{j}(1),'%')
-                % insert a '%' to comment the line out
-                directory_text{1}{j} = ['% ' directory_text{1}{j}];
-            end
-                
-        end
-        % insert the variable to the end of the file
-        directory_text{1}{j+1} = sprintf('%s = ''%s'';',dependency_homes{k}, fullfile(gui_HOME,filesep));
-        
-        isOverWrite = true;
-    end
-    
+    isUpdated   = update_toolbox_directory_entry(SEPIA_HOME, dependency_homes{k}, gui_field);
+    isOverWrite = isOverWrite || isUpdated;
 end
 end
 
-% overwrite SpecifyToolboxesDirectory.m
 if isOverWrite
-    
-    fid = fopen( fullfile(SEPIA_HOME,'SpecifyToolboxesDirectory.m'), 'w');
-    for j = 1:length(directory_text{1})
-        fprintf( fid, '%s\n', directory_text{1}{j} );
-    end
-    fclose( fid );
-
+    disp('The paths are save in SpecifyToolboxesDirectory.m!')
+else
+    disp('No changes to SpecifyToolboxesDirectory.m were needed.')
 end
-
-disp('The paths are save in SpecifyToolboxesDirectory.m!')
 
 end

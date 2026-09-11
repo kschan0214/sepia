@@ -7,8 +7,11 @@
 # Creator: Kwok-shing Chan @DCCN
 # kwokshing.chan@donders.ru.nl
 # Date created: 6 October 2022
-# Date edit:
+# Date edit: 15 June 2025
 ############################################################
+
+# export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=8
+
 # get SEPIA_HOME and atlas dir
 script_dir=`readlink -f "$0"`
 SEPIA_HOME=`dirname "$script_dir"`
@@ -21,6 +24,7 @@ t1w_nii=$2
 t1w_mask_nii=$3
 atlas_template_nii=$4
 isBiasCorr=$5
+mask_nii=$6
 
 # get some basenames from input
 t1w_basename=$(basename -- "$t1w_nii")
@@ -82,4 +86,5 @@ antsRegistration \
         --convergence [500x500x250,1e-6,10] \
         --shrink-factors 4x2x1 \
         --smoothing-sigmas 2x1x0vox \
+        --x ${mask_nii} \
         --verbose 1 

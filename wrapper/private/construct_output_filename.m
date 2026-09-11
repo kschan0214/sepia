@@ -1,4 +1,4 @@
-%% outputFileList = construct_output_filename(outputDir, ouputPrefix)
+%% outputFileList = construct_output_filename(outputDir, ouputPrefix, outputSufffix)
 %
 % Input
 % --------------
@@ -15,39 +15,105 @@
 % Date modified:
 %
 %
-function outputFileList = construct_output_filename(outputDir, ouputPrefix)
+function [outputFileList,ouputPrefix] = construct_output_filename(outputDir, ouputPrefix, algorParam, outputSuffix)
 
-% phase related
-outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_rad.nii.gz']);
-outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_reverse.nii.gz']);
-outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_bipolarcorr.nii.gz']);
-outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_unwrapped.nii.gz']);
+% This function assigns its own 'desc-' label to (some of) its outputs to
+% distinguish output types (e.g. desc-rad, desc-unwrapped,
+% desc-paramagnetic). BIDS filenames can only contain one 'desc-' entity,
+% so if ouputPrefix already carries one, merge it with SEPIA's own
+% label(s) into a single camelCase-joined value, in the order processing
+% actually happens, instead of ending up with two 'desc-' entities.
+[ouputPrefix, existingDesc] = extract_and_remove_desc_entity(ouputPrefix);
+
+% phase related: independent, one-off outputs, each merged only with
+% whatever desc- was already in the prefix (not with one another)
+outputFileList.phaseRadian      = fullfile(outputDir, [ouputPrefix 'part-phase_desc-' join_desc_label(existingDesc,'rad')          outputSuffix]);
+outputFileList.phaseReversed    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-' join_desc_label(existingDesc,'reverse')      outputSuffix]);
+outputFileList.phaseEddyCorr    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-' join_desc_label(existingDesc,'bipolarcorr')  outputSuffix]);
+outputFileList.unwrappedPhase   = fullfile(outputDir, [ouputPrefix 'part-phase_desc-' join_desc_label(existingDesc,'unwrapped')    outputSuffix]);
 
 % standard output
-outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap.nii.gz']);
-outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield.nii.gz']);
-outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap.nii.gz']);
+outputFileList.totalField       = fullfile(outputDir, [ouputPrefix 'fieldmap' outputSuffix]);
+outputFileList.localField       = fullfile(outputDir, [ouputPrefix 'localfield' outputSuffix]);
+outputFileList.QSM              = fullfile(outputDir, [ouputPrefix 'Chimap' outputSuffix]);
+outputFileList.QSMpass1         = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'firstpass') '_Chimap'  outputSuffix]);
+outputFileList.QSMpass2         = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'secondpass') '_Chimap'  outputSuffix]);
+outputFileList.QSMpara          = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'paramagnetic') '_Chimap' outputSuffix]);
+outputFileList.QSMdia           = fullfile(outputDir, [ouputPrefix 'desc-' join_desc_label(existingDesc,'diamagnetic') '_Chimap' outputSuffix]);
 
 % use for regularisation
-outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights.nii.gz']);
-outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd.nii.gz']);
-outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual.nii.gz']);
-outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights.nii.gz']);
+outputFileList.weights          = fullfile(outputDir, [ouputPrefix 'weights' outputSuffix]);
+outputFileList.fieldmapSD       = fullfile(outputDir, [ouputPrefix 'noisesd' outputSuffix]);
+outputFileList.relativeResidual	= fullfile(outputDir, [ouputPrefix 'relativeresidual' outputSuffix]);
+outputFileList.relativeResidualWeights	= fullfile(outputDir, [ouputPrefix 'relativeresidualweights' outputSuffix]);
+outputFileList.gradientMagnitude	= fullfile(outputDir, [ouputPrefix 'gradientmagnitude' outputSuffix]);
 
 % derived masks
-outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain.nii.gz']);
-outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable.nii.gz']);
-outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield.nii.gz']);
-outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM.nii.gz']);
-outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion.nii.gz']);
-outputFileList.maskRefine       = fullfile(outputDir, [ouputPrefix 'mask_refine.nii.gz']);
+outputFileList.maskBrain        = fullfile(outputDir, [ouputPrefix 'mask_brain' outputSuffix]);
+outputFileList.maskReliable     = fullfile(outputDir, [ouputPrefix 'mask_reliable' outputSuffix]);
+outputFileList.maskLocalField 	= fullfile(outputDir, [ouputPrefix 'mask_localfield' outputSuffix]);
+outputFileList.maskQSM          = fullfile(outputDir, [ouputPrefix 'mask_QSM' outputSuffix]);
+outputFileList.maskQSM2pass     = fullfile(outputDir, [ouputPrefix 'mask_QSM-2pass' outputSuffix]);
+outputFileList.maskRef      	= fullfile(outputDir, [ouputPrefix 'mask_referenceregion' outputSuffix]);
 
 % R2*
-outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap.nii.gz']);
-outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap.nii.gz']);
-outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map.nii.gz']);
+outputFileList.r2s              = fullfile(outputDir, [ouputPrefix 'R2starmap' outputSuffix]);
+outputFileList.t2s              = fullfile(outputDir, [ouputPrefix 'T2starmap' outputSuffix]);
+outputFileList.s0               = fullfile(outputDir, [ouputPrefix 'S0map' outputSuffix]);
 
 % misc
-outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase.nii.gz']);
+outputFileList.phase_bipolar    = fullfile(outputDir, [ouputPrefix 'bipolar_phase' outputSuffix]);
+outputFileList.optimalCombinedMagnitude = fullfile(outputDir, [ouputPrefix 'part-mag_desc-' join_desc_label(existingDesc,'optimalcombined') outputSuffix]);
+
+% denoising and upsampling are sequential steps on the SAME data
+% (upsampling runs on the already-denoised data when both are enabled),
+% so their desc- labels are chained in that processing order rather than
+% each being merged with existingDesc independently.
+descChain = existingDesc;
+
+if algorParam.general.isDenoise
+descChain = join_desc_label(descChain, 'denoised');
+outputFileList.magDenoise       = fullfile(outputDir, [ouputPrefix 'part-mag_desc-'   descChain outputSuffix]);
+outputFileList.phaseDenoise     = fullfile(outputDir, [ouputPrefix 'part-phase_desc-' descChain outputSuffix]);
+outputFileList.sigma            = fullfile(outputDir, [ouputPrefix 'sigma' outputSuffix]);
+outputFileList.snrgain          = fullfile(outputDir, [ouputPrefix 'SNRgain' outputSuffix]);
+outputFileList.P                = fullfile(outputDir, [ouputPrefix 'P' outputSuffix]);
+end
+
+if algorParam.general.isUpsample
+descChain = join_desc_label(descChain, 'upsampled');
+outputFileList.magUpsample      = fullfile(outputDir, [ouputPrefix 'part-mag_desc-'   descChain outputSuffix]);
+outputFileList.phaseUpsample    = fullfile(outputDir, [ouputPrefix 'part-phase_desc-' descChain outputSuffix]);
+outputFileList.maskUpsample     = fullfile(outputDir, [ouputPrefix 'mask_upsampled' outputSuffix]);
+outputFileList.sepiaHeaderUpsample = fullfile(outputDir, [ouputPrefix 'sepia_header.mat']);
+end
+
+end
+
+%% Remove a 'desc-<label>_' entity from a BIDS-style prefix, if present
+function [prefix, descLabel] = extract_and_remove_desc_entity(prefix)
+
+tok = regexp(prefix, 'desc-([A-Za-z0-9]+)_', 'tokens', 'once');
+if isempty(tok)
+    descLabel = '';
+else
+    descLabel = tok{1};
+    prefix    = regexprep(prefix, 'desc-[A-Za-z0-9]+_', '', 'once');
+    warning('construct_output_filename:mergedDescEntity', ...
+        ['The output prefix already contains a ''desc-%s'' entity. Since BIDS filenames can only ', ...
+         'contain one ''desc-'' entity, it will be merged with SEPIA''s own output-type label(s) ', ...
+         '(e.g. ''desc-%sRad'').'], descLabel, descLabel);
+end
+
+end
+
+%% Combine an existing desc- label (if any) with a new one into a single BIDS-valid, camelCase value
+function combined = join_desc_label(existingDesc, newLabel)
+
+if isempty(existingDesc)
+    combined = newLabel;
+else
+    combined = [existingDesc, upper(newLabel(1)), newLabel(2:end)];
+end
 
 end

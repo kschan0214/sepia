@@ -22,8 +22,7 @@
 %
 function h = sepia_handle_panel_utility_convert_realImaginary2phase(hParent,h,position)
 
-open_icon = imread('folder@0,3x.jpg');
-open_icon = imresize(open_icon,[1 1]*16);
+open_icon = sepia_theme_open_icon();
 
 %% layout of the panel
 nrow        = 6;
@@ -73,7 +72,7 @@ h.Utility.panel.realimag2phase = uipanel(hParent,'Title','Convert GE real/imagin
     h.Utility.realimag2phase.button.run = uicontrol('Parent',h.Utility.panel.realimag2phase,...
         'Style','pushbutton','String','Run',...
         'units','normalized','position',pos,...
-        'backgroundcolor','white');
+        'backgroundcolor',sepia_theme_bg_color(),'foregroundcolor',sepia_theme_fg_color());
 
 %% set callbacks
 set(h.Utility.realimag2phase.button.imagInput,  	'Callback',     	{@ButtonOpen_Utility_realimag2phase_Callback,h,'imag'});
