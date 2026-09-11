@@ -124,7 +124,26 @@ files = { ...
 for i = 1:size(files,1)
     tarFile = fullfile(atlasDir, files{i,1});
     fprintf('Downloading %s...\n', files{i,1});
-    websave(tarFile, files{i,2}, weboptions('CertificateFilename', ''));
+    savedFile = websave(tarFile, files{i,2}, weboptions('CertificateFilename', ''));
+
+    % figshare sometimes serves an HTML bot-challenge page instead of the
+    % actual archive (e.g. an AWS WAF challenge) - websave saves whatever
+    % it's given, appending .html when it detects that content type, so
+    % the expected .tar.gz never actually exists and untar's error message
+    % ("unable to find file") is confusing about the real cause. Detect
+    % that case and fail with a clear explanation + manual fallback instead.
+    if ~strcmp(savedFile, tarFile) || exist(tarFile,'file') ~= 2
+        if isfile(savedFile); delete(savedFile); end
+        error('SEPIA:AHEADBlockedByHost', ...
+            ['Downloading %s from figshare did not return the expected archive ', ...
+             '(got a %s response instead - likely a bot/CDN challenge, e.g. AWS WAF, ', ...
+             'rather than a genuine failure of this script). A web browser can usually ', ...
+             'get past this where a scripted download cannot.\n', ...
+             'Manual fallback: download %s yourself from\n  %s\nand save it as\n  %s\n', ...
+             'then re-run download_atlas() (it will extract/skip already-downloaded files).'], ...
+            files{i,1}, savedFile(max(1,end-4):end), files{i,1}, files{i,2}, tarFile);
+    end
+
     untar(tarFile, destDir);
     delete(tarFile);
 end

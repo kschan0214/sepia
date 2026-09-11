@@ -101,6 +101,8 @@ Thank you to everyone who contributed to this major release! Special thanks to P
 * Fixed `get_set_qsm_ndi.m` erroring when loading a saved configuration file
 * Fixed a bug in R2* NLLS mapping
 * Fixed direct file loads (e.g. user-supplied R2*/R2 maps in the Chi-separation wrapper) bypassing the odd-matrix-size zero-padding step - they now go through the same loading path as other auxiliary data
+* Fixed `get_set_qsm_Chi_separation.m` leaving literal quotation marks in the R2*/R2 edit fields when reloading a saved configuration file, and not re-triggering the solver dropdown's callback on load (so field enable/disable state and the Dr default could be left mismatched with the loaded solver)
+* Fixed `check_and_set_SEPIA_header_data.m` dropping the `r2s` field (and its `availableFileList` entry) when passing header/extra data through
 
 **Housekeeping**
 * `SpecifyToolboxesDirectory.m` and `SpecifyAtlasDirectory.m` are no longer tracked in git (now machine-specific and gitignored; see their `.template.m` files and the new `setup_sepia.m`)
