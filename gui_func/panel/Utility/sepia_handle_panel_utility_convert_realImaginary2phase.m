@@ -91,7 +91,7 @@ prefix = 'Sepia';
 switch field
     case 'imag'
         % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select NIfTI file');
+        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select NIfTI file');
 
         if pathDir ~= 0
             set(h.Utility.realimag2phase.edit.imagInput,    'String',fullfile(pathDir,nitfiName));
@@ -101,7 +101,7 @@ switch field
 
     case 'real'
         % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'},'Select NIfTI file');
+        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select NIfTI file');
 
         if pathDir ~= 0
             set(h.Utility.realimag2phase.edit.realInput,    'String',fullfile(pathDir,nitfiName));
