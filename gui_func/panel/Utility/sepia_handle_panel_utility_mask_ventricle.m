@@ -141,7 +141,7 @@ switch field
 
     case 'nitfi'
         % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii*','NIfTI file (*.nii, *.nii.gz)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select NIfTI file');
+        [nitfiName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select NIfTI file');
 
         if pathDir ~= 0
             set(h.Utility.csfMask.edit.niftiInput,    'String',fullfile(pathDir,nitfiName));
@@ -151,7 +151,7 @@ switch field
         
     case 'mask'
         % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii*','NIfTI file (*.nii, *.nii.gz)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select mask file');
+        [nitfiName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select mask file');
 
         if pathDir ~= 0
             set(h.Utility.csfMask.edit.maskInput,    'String',fullfile(pathDir,nitfiName));
