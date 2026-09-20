@@ -240,7 +240,7 @@ switch field
 
     case 'nitfi'
         % read NIfTI file 
-        [nitfiName,pathDir] = uigetfile({'*.nii;*.nii.gz','NIfTI file (*.nii,*.nii.gz)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select mask file');
+        [nitfiName,pathDir] = uigetfile({'*.nii*','NIfTI file (*.nii, *.nii.gz)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select mask file');
         
         if pathDir ~= 0
             
