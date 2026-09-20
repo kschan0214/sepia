@@ -149,7 +149,7 @@ function ButtonOpen_Analysis_segmentation_Callback(source,eventdata,h,field,fiel
 switch field
     case 'nitfi'
         % only read NIfTI file for mask
-        [niftiFileName,pathDir] = uigetfile('*.*','Select a NIFTI file');
+        [niftiFileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select a NIFTI file');
         
         % set edit field
         if pathDir ~= 0

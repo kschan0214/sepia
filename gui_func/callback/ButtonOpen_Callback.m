@@ -9,7 +9,7 @@ prefix = 'Sepia';
 switch field
     case 'mask'
         % only read NIfTI file for mask
-        [maskfileName,pathDir] = uigetfile('*.*','Select mask file');
+        [maskfileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select mask file');
 
         if pathDir ~= 0
             set(h.dataIO.edit.maskdir,'String',fullfile(pathDir,maskfileName));
@@ -43,7 +43,7 @@ switch field
         
     case 'inputdata1'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
+        [fileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display
@@ -58,7 +58,7 @@ switch field
         
     case 'inputdata2'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
+        [fileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display
@@ -74,7 +74,7 @@ switch field
     
     case 'inputdata3'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
+        [fileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display

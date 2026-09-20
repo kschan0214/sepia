@@ -111,7 +111,7 @@ switch field
         
     case 'inputdata1'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
+        [fileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display
@@ -123,7 +123,7 @@ switch field
         
     case 'inputdata2'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
+        [fileName,pathDir] = uigetfile(sepia_get_nifti_uigetfile_filter(),'Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display
