@@ -106,7 +106,7 @@ h.StepsPanel.qsm = uipanel(hParent,...
         'Style','slider',...
         'Value',defaultMFGThreshold,...
         'units','normalized','position',[left(2)+width*(ratio2+ratio1+ratio3+ratio4) 0.85 0.01 height],...
-        'Max',4, 'Min',0,'SliderStep',[0.25 0.50],...
+        'Max',4, 'Min',0,'SliderStep',[0.025 0.125],...
         'Enable','off');
 
     % col 3
@@ -145,7 +145,7 @@ set(h.qsm.checkbox.isHeidi, 'Tooltip',tooltip.QSM.panel.isHeidi);
 
 %% set callback
 set(h.qsm.popup.qsm,     'Callback', {@PopupQSM_Callback,h});
-set(h.qsm.edit.lambda,   'Callback', {@EditInputMinMax_Callback,defaultMFGThreshold,1,0,10});
+set(h.qsm.edit.lambda,   'Callback', {@EditInputMinMax_Callback,defaultMFGThreshold,0,0,4});
 set(h.qsm.slider.lambda, 'Callback', {@SliderMGFlambda_Callback,h});
 set(h.qsm.popup.twopass, 'Callback', {@PopupTwoPassMasking_Callback,h});
 set(h.qsm.checkbox.isHeidi, 'Callback', {@CheckboxHEIDI_Callback,h});
@@ -252,7 +252,7 @@ switch source.String{source.Value}
     case methodTwoPassName{3} % for MGF only
         % get slider value and update the edit field
         set(h.qsm.edit.lambda,    'String', num2str(h.qsm.edit.lambda.String)); % KC: bug fix for reading the wrong text
-        set(h.qsm.slider.lambda,  'Value',  source.Value);
+        set(h.qsm.slider.lambda,  'Value',  str2double(h.qsm.edit.lambda.String));
         set(h.qsm.edit.lambda,    'enable', 'on');
         set(h.qsm.slider.lambda,  'enable', 'on');
 
