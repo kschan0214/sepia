@@ -89,7 +89,7 @@ function ButtonOpen_Callback_(source,eventdata,h,field)
 switch field
     case 'R2star'
         % only read NIfTI file for R2star
-        [fileName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select a NIfTI file for R2star');
+        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file for R2star');
 
         if pathDir ~= 0
             % set input edit field for display
@@ -98,7 +98,7 @@ switch field
 
     case 'R2'
         % only read NIfTI file for R2star
-        [fileName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select a NIfTI file for R2');
+        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file for R2');
 
         if pathDir ~= 0
             % set input edit field for display

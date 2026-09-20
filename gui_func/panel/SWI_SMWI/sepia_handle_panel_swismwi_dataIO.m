@@ -111,7 +111,7 @@ switch field
         
     case 'inputdata1'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select a NIfTI file');
+        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display
@@ -123,7 +123,7 @@ switch field
         
     case 'inputdata2'
         % only read NIfTI file for mask
-        [fileName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select a NIfTI file');
+        [fileName,pathDir] = uigetfile('*.*','Select a NIfTI file');
 
         if pathDir ~= 0
             % set input edit field for display

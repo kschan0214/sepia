@@ -153,7 +153,7 @@ function ButtonOpen_Analysis_segmentation_Callback(source,eventdata,h,field,fiel
 switch field
     case 'nitfi'
         % only read NIfTI file for mask
-        [niftiFileName,pathDir] = uigetfile({'*.*','All Files (select a *.nii or *.nii.gz file)'; '*.nii','NIfTI file (*.nii)'; '*.nii.gz','Gzipped NIfTI file (*.nii.gz)'},'Select a NIFTI file');
+        [niftiFileName,pathDir] = uigetfile('*.*','Select a NIFTI file');
         
         % set edit field
         if pathDir ~= 0
