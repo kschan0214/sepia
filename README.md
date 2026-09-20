@@ -43,7 +43,11 @@ If you have a more general question regarding the usage of SEPIA and/or other QS
 
 For full update log, please visit https://sepia-documentation.readthedocs.io/en/latest/getting_started/Release-note.html.
 
-### 1.3.0 (current, commit 3ad47fd)
+### 1.3.0.1 (current, commit df0befb)
+* Fix `uigetfile` NIfTI file filters (`*.nii;*.nii.gz`) not working reliably on some MATLAB versions and platforms, particularly macOS
+* Fix the QSM MGF lambda parameter's slider/edit field being restricted to integer values
+
+### 1.3.0 (commit 3ad47fd)
 
 Thank you to everyone who contributed to this major release! Special thanks to Patrick, whose engagement and input made many of this update's features possible.
 
