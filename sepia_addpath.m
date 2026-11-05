@@ -21,6 +21,12 @@ if nargin < 1
     method = 'None';
 end
 
+% Protect against deployment (MATLAB Compiler) environment
+if isdeployed
+    warning('SEPIA:Deployed:MATLABPath', 'Running in deployed mode, so MATLAB path cannot be altered/restored. This may cause SEPIA (%s) method errors', method)
+    return
+end
+
 % get SEPIA_HOME from this file 
 SEPIA_HOME = fileparts(mfilename('fullpath'));
 
