@@ -156,7 +156,7 @@ algorParam2 = algorParam;
 try algorParam2.qsm.lambda      = algorParam.qsm.lambda;        catch; algorParam2.qsm.lambda       = 1000; end
 try algorParam2.qsm.wData       = algorParam.qsm.wData;         catch; algorParam2.qsm.wData        = 1;    end
 try algorParam2.qsm.zeropad     = algorParam.qsm.zeropad;       catch; algorParam2.qsm.zeropad      = 0;    end
-try algorParam2.qsm.percentage  = algorParam.qsm.percentage;    catch; algorParam2.qsm.percentage   = 0.9;  end
+try algorParam2.qsm.percentage  = algorParam.qsm.percentage;    catch; algorParam2.qsm.percentage   = 90;   end
 try algorParam2.qsm.isSMV       = algorParam.qsm.isSMV;         catch; algorParam2.qsm.isSMV        = false;end
 try algorParam2.qsm.radius      = algorParam.qsm.radius;        catch; algorParam2.qsm.radius       = 5;    end
 try algorParam2.qsm.merit       = algorParam.qsm.merit;         catch; algorParam2.qsm.merit        = false;end
