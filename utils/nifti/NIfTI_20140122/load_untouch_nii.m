@@ -112,8 +112,8 @@ function nii = load_untouch_nii(filename, img_idx, dim5_idx, dim6_idx, dim7_idx,
          error('Please check filename.');
       end
 
-      if 100*str2num(v(1:3)) < 910 && ~usejava('jvm')
-         error('Please use MATLAB with jvm (java), use a version later than R2020b, or run gunzip outside MATLAB');
+      if str2num(v(1:3)) < 7.1 | ~usejava('jvm')
+         error('Please use MATLAB 7.1 (with java) and above, or run gunzip outside MATLAB.');
       elseif strcmp(filename(end-6:end), '.img.gz')
          filename1 = filename;
          filename2 = filename;
